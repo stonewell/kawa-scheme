@@ -562,7 +562,7 @@ public class Shell
             Compilation comp
                 = language.parse(lexer, Language.PARSE_IMMEDIATE, minfo);
             CallContext ctx = CallContext.getInstance();
-            ctx.values = Values.noArgs;
+            //ctx.values = Values.noArgs;
             Object inst = ModuleExp.evalModule1(env, comp, url, null);
             messages.printAll(perr, 20);
             perr.flush();

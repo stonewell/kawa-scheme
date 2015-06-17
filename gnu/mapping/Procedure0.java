@@ -1,5 +1,9 @@
 package gnu.mapping;
 
+/* #ifdef use:java.lang.invoke */
+import java.lang.invoke.*;
+/* #endif */
+
 /**
  * Abstract class for 0-argument procedures.
  * @author	Per Bothner
@@ -7,15 +11,13 @@ package gnu.mapping;
 
 public abstract class Procedure0 extends Procedure
 {
-  public Procedure0 ()
-  {
-    super();
-  }
+    public Procedure0() {
+        super(false, Procedure0.applyToObject);
+    }
 
-  public Procedure0 (java.lang.String n)
-  {
-    super(n);
-  }
+    public Procedure0(String name) {
+        super(false, Procedure0.applyToObject, name);
+    }
 
   public int numArgs() { return 0; }
 
@@ -48,4 +50,21 @@ public abstract class Procedure0 extends Procedure
       throw new WrongArguments(this, args.length);
     return apply0 ();
   }
+
+    public static Object applyToObject(Procedure proc, CallContext ctx)
+    throws Throwable {
+        if (ctx.checkDone() == 0)
+            return proc.apply0();
+        return ctx;
+    }
+
+    public static final MethodHandle applyToObject;
+    static {
+        try {
+            applyToObject = MethodHandles.lookup()
+                .findStatic(Procedure0.class, "applyToObject", applyMethodType);
+        } catch (Exception ex) {
+            throw new RuntimeException(ex);
+        }
+    }
 }

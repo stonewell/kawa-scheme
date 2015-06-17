@@ -22,10 +22,11 @@ public abstract class Expression extends Procedure0
 {
   public final Object eval (CallContext ctx) throws Throwable
   {
+      ctx.setupApply(this);
     int start = ctx.startFromContext();
     try
       {
-	match0(ctx);
+          //match0(ctx);
 	return ctx.getFromContext(start);
       }
     catch (Throwable ex)

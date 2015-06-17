@@ -197,7 +197,9 @@ public class QuoteExp extends Expression
             comp.error('e', msg, args[0]);
           }
       }
-    if (comp.inlineOk(proc) && exp.isSimple()
+    if (comp.inlineOk(proc)
+        // FIXME - should allow non-simple calls to compiled proceures
+        && exp.isSimple()
         && ! ApplyExp.isInlineable(proc))
       {
 	PrimProcedure mproc

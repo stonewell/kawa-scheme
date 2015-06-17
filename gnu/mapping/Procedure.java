@@ -1,7 +1,11 @@
-// Copyright (c) 2004  Per M.A. Bothner.
+// Copyright (c) 2004, 2015  Per M.A. Bothner.
 // This is free software;  for terms and warranty disclaimer see ./COPYING.
 
 package gnu.mapping;
+
+/* #ifdef use:java.lang.invoke */
+import java.lang.invoke.*;
+/* #endif */
 
 /**
  * The abstract parent for all Scheme functions.
@@ -10,6 +14,19 @@ package gnu.mapping;
 
 public abstract class Procedure extends PropertySet
 {
+    /** A static method with signature ??apply(Procedure,CallContext)
+     */
+    protected /*final?*/ MethodHandle applyToObjectMethod;
+    protected /*final?*/ MethodHandle applyToConsumerMethod;
+
+    ///** Does impemention write Object to Consumer?
+    // * If so, implement applyToObjectMethod using applyToConsumerMethod.
+    // * If false, impement applyToConsumerMethod using applyToObjectMethod.
+    // */
+    //protected boolean resultGoesToConsumer() {
+    //        return false;
+    //}
+
   private static final String sourceLocationKey = "source-location";
   private static final Symbol setterKey = Namespace.EmptyNamespace.getSymbol("setter");
 
@@ -43,27 +60,110 @@ public abstract class Procedure extends PropertySet
     return value == null ? null : value.toString();
   }
 
-  public Procedure()
-  {
-  }
+    /*
+    public final Object applyToConsumer(Procedure proc, CallContext ctx) throws Throwable {
+        return applyToConsumerMethod.invokeExact(proc, ctx);
+    }
+    */
+    public final MethodHandle getApplyToConsumerMethod() {
+        return applyToConsumerMethod;
+    }
+    public final MethodHandle getApplyToObjectMethod() {
+        return applyToObjectMethod;
+    }
 
-  public Procedure(String n)
-  {
-    setName(n);
-  }
+    public static Object applyToConsumerDefault(Procedure proc, CallContext ctx) throws Throwable {
+        //System.err.println("Proc.applyToConsumerDefault proc:"+proc+" ctx.count:"+ctx.count+" ctx.next:"+ctx.next+" state:"+Integer.toHexString(ctx.matchState));
+        Object r = proc.applyToObjectMethod.invokeExact(proc, ctx);
+        //System.err.println("Proc.applyToConsumerDefault proc:"+proc+" r:"+r);
+        if (r != ctx) {
+            ctx.consumer.writeObject(r);
+            r = null;
+        }
+        return r;
+    }
+
+    public static Object applyToObjectDefault(Procedure proc, CallContext ctx)
+            throws Throwable {
+        int start = ctx.startFromContext();
+        try {
+            if (proc.applyToConsumerMethod.invokeExact(proc, ctx) != ctx)
+              return ctx.getFromContext(start);
+            ctx.cleanupFromContext(start);
+            return ctx;
+            //Object v = ctx.getFromContext(start);
+            //return r == ctx ? null : v;
+        } catch (Throwable ex) {
+            ctx.cleanupFromContext(start);
+            throw ex;
+        }
+        //return ctx.runUntilValue();
+        
+    }
+    public Procedure() {
+    }
+
+    public Procedure(String n) {
+        setName(n);
+    }
+
+    /* #ifdef use:java.lang.invoke */
+    public Procedure(boolean resultGoesToConsumer, MethodHandle applyMethod) {
+        if (resultGoesToConsumer) {
+            applyToConsumerMethod = applyMethod;
+            applyToObjectMethod = applyToObjectDefault;
+        } else {
+            applyToObjectMethod = applyMethod;
+            applyToConsumerMethod = applyToConsumerDefault;
+        }
+    }
+    public Procedure(boolean resultGoesToConsumer, MethodHandle applyMethod, String n) {
+        this(resultGoesToConsumer, applyMethod);
+        setName(n);
+    }
+    /* #endif */
+
+    public void checkBadCode(CallContext ctx) {
+        int code = 0; // FIXME
+	//throw MethodProc.matchFailAsException(code, this, args);
+    }
 
   public abstract Object applyN (Object[] args) throws Throwable;
 
-  public abstract Object apply0 () throws Throwable;
+    public Object apply0() throws Throwable {
+        CallContext ctx = CallContext.getInstance();
+        ctx.setupApply(this);
+        return ctx.runUntilValue();
+    }
 
-  public abstract Object apply1 (Object arg1) throws Throwable;
+    public Object apply1(Object arg1) throws Throwable {
+        CallContext ctx = CallContext.getInstance();
+        ctx.setupApply(this, arg1);
+        return ctx.runUntilValue();
+    }
 
-  public abstract Object apply2 (Object arg1,Object arg2) throws Throwable;
+    public Object apply2(Object arg1,Object arg2) throws Throwable {
+        //System.err.println("Proc.apply2 a1:"+arg1+" a2:"+arg2+" p:"+this);
+        CallContext ctx = CallContext.getInstance();
+        ctx.setupApply(this, arg1, arg2);
+        Object r = ctx.runUntilValue();
+        //System.err.println("-> Proc.apply2 p:"+this+" r:"+r);
+        return r;
+    }
 
-  public abstract Object apply3 (Object arg1, Object arg2, Object arg3) throws Throwable;
+    public Object apply3(Object arg1, Object arg2,
+                         Object arg3) throws Throwable {
+        CallContext ctx = CallContext.getInstance();
+        ctx.setupApply(this, arg1, arg2, arg3);
+        return ctx.runUntilValue();
+    }
 
-  public abstract Object apply4(Object arg1,Object arg2,
-				Object arg3,Object arg4) throws Throwable;
+    public Object apply4(Object arg1, Object arg2,
+                         Object arg3, Object arg4) throws Throwable {
+        CallContext ctx = CallContext.getInstance();
+        ctx.setupApply(this, arg1, arg2, arg3, arg4);
+        return ctx.runUntilValue();
+    }
 
   /** Minimum number of arguments required. */
   public final int minArgs() { return minArgs(numArgs()); }
@@ -109,66 +209,57 @@ public abstract class Procedure extends PropertySet
   }
   */
 
+    int nesting = 0;
+
   /** Call this Procedure using the explicit-CallContext-convention.
    * The input arguments are (by default) in stack.args;
    * the result is written to ctx.consumer. */
 
   public void apply (CallContext ctx) throws Throwable
   {
-    apply(this, ctx);
+        ctx.next = 0;
+        ctx.matchState = CallContext.MATCH_THROW_ON_EXCEPTION;
+        //if (++nesting > 10)
+        //    throw new Error("CYCLE! "+this+" ::"+getClass().getName());
+        try {
+            //System.err.println("Proc.apply before applyToConsumerMethod proc:"+this);
+        Object ignored = applyToConsumerMethod.invokeExact(this, ctx);
+        } catch (NullPointerException ex) {
+            System.err.println("Proc.apply NPE proc:"+this+"::"+this.getClass().getName()+" app:"+applyToConsumerMethod);
+            throw ex;
+        } finally {
+            nesting--;
+        }
   }
 
   public static void apply (Procedure proc, CallContext ctx) throws Throwable
   {
-    Object result;
-    int count = ctx.count;
-    if (ctx.where == 0 && count != 0)
-      result = proc.applyN(ctx.values);
-    else
-      {
-	switch (count)
-	  {
-	  case 0:
-	    result = proc.apply0();
-	    break;
-	  case 1:
-	    result = proc.apply1(ctx.getNextArg());
-	    break;
-	  case 2:
-	    result = proc.apply2(ctx.getNextArg(), ctx.getNextArg());
-	    break;
-	  case 3:
-	    result = proc.apply3(ctx.getNextArg(), ctx.getNextArg(),
-				 ctx.getNextArg());
-	    break;
-	  case 4:
-	    result = proc.apply4(ctx.getNextArg(), ctx.getNextArg(),
-				 ctx.getNextArg(), ctx.getNextArg());
-	    break;
-	  default:
-	    result = proc.applyN(ctx.getArgs());
-	    break;
-	  }
-      }
-    ctx.writeValue(result);
+        ctx.next = 0;
+        ctx.matchState = CallContext.MATCH_THROW_ON_EXCEPTION;
+        Object ignored = proc.applyToConsumerMethod.invokeExact(proc, ctx);
   }
+
+    protected int matchX(CallContext ctx) {
+        ctx.matchState = CallContext.MATCH_CHECK_ONLY;
+        try {
+            Object r = applyToConsumerMethod.invokeExact(this, ctx);
+            ctx.next = 0;
+            int r2= r == ctx && ctx.matchState != CallContext.MATCH_CHECK_ONLY ? ctx.matchState : 0;
+            //System.err.println("matchX p:"+this+" -> r:"+r+" c.proc:"+ctx.proc+" state:"+Integer.toHexString(ctx.matchState)+" r2:"+r2);
+            return r2;
+        } catch (Throwable ex) {
+            ctx.next = 0;
+            return MethodProc.NO_MATCH;
+        }
+    }
 
   /** Pass zero arguments.
    * @return non-negative if the match succeeded, else negative.
    */
   public int match0 (CallContext ctx)
   {
-    int num = numArgs();
-    int min = minArgs(num);
-    if (min > 0)
-      return MethodProc.NO_MATCH_TOO_FEW_ARGS|min;
-    if (num < 0)
-      return matchN(ProcedureN.noArgs, ctx);
-    ctx.count = 0;
-    ctx.where = 0;
-    ctx.next = 0;
-    ctx.proc = this;
-    return 0;
+        ctx.setupApply(this);
+        return matchX(ctx);
   }
 
   /** Pass one argument.
@@ -176,24 +267,8 @@ public abstract class Procedure extends PropertySet
    */
   public int match1 (Object arg1, CallContext ctx)
   {
-    int num = numArgs();
-    int min = minArgs(num);
-    if (min > 1)
-      return MethodProc.NO_MATCH_TOO_FEW_ARGS|min;
-    if (num >= 0)
-      {
-        int max = maxArgs(num);
-	if (max < 1)
-          return MethodProc.NO_MATCH_TOO_MANY_ARGS|max;
-	ctx.value1 = arg1;
-	ctx.count = 1;
-	ctx.where = CallContext.ARG_IN_VALUE1;
-	ctx.next = 0;
-	ctx.proc = this;
-	return 0;
-      }
-    Object[] args = { arg1 };
-    return matchN(args, ctx);
+        ctx.setupApply(this, arg1);
+        return matchX(ctx);
   }
 
   /** Pass two arguments.
@@ -201,56 +276,18 @@ public abstract class Procedure extends PropertySet
    */
   public int match2 (Object arg1, Object arg2, CallContext ctx)
   {
-    int num = numArgs();
-    int min = minArgs(num);
-    if (min > 2)
-      return MethodProc.NO_MATCH_TOO_FEW_ARGS|min;
-    if (num >= 0)
-      {
-        int max = maxArgs(num);
-	if (max < 2)
-          return MethodProc.NO_MATCH_TOO_MANY_ARGS|max;
-	ctx.value1 = arg1;
-	ctx.value2 = arg2;
-	ctx.count = 2;
-	ctx.where = CallContext.ARG_IN_VALUE1
-	  |(CallContext.ARG_IN_VALUE2<<4);
-	ctx.next = 0;
-	ctx.proc = this;
-	return 0;
-      }
-    Object[] args = { arg1, arg2 };
-    return matchN(args, ctx);
+        ctx.setupApply(this, arg1, arg2);
+        return matchX(ctx);
   }
 
   /** Pass three arguments.
    * @return non-negative if the match succeeded, else negative.
    */
-  public int match3 (Object arg1, Object arg2, Object arg3, CallContext ctx)
-  {
-    int num = numArgs();
-    int min = minArgs(num);
-    if (min > 3)
-      return MethodProc.NO_MATCH_TOO_FEW_ARGS|min;
-    if (num >= 0)
-      {
-        int max = maxArgs(num);
-	if (max < 3)
-          return MethodProc.NO_MATCH_TOO_MANY_ARGS|max;
-	ctx.value1 = arg1;
-	ctx.value2 = arg2;
-	ctx.value3 = arg3;
-	ctx.count = 3;
-	ctx.where = CallContext.ARG_IN_VALUE1
-	  |(CallContext.ARG_IN_VALUE2<<4)
-	  |(CallContext.ARG_IN_VALUE3<<8);
-	ctx.next = 0;
-	ctx.proc = this;
-	return 0;
-      }
-    Object[] args = { arg1, arg2, arg3 };
-    return matchN(args, ctx);
-  }
+    public int match3 (Object arg1, Object arg2, Object arg3, CallContext ctx)
+    {
+        ctx.setupApply(this, arg1, arg2, arg3);
+        return matchX(ctx);
+    }
 
   /** Pass four arguments.
    * @return non-negative if the match succeeded, else negative.
@@ -258,64 +295,14 @@ public abstract class Procedure extends PropertySet
   public int match4 (Object arg1, Object arg2, Object arg3, Object arg4,
 		     CallContext ctx)
   {
-    int num = numArgs();
-    int min = minArgs(num);
-    if (min > 4)
-      return MethodProc.NO_MATCH_TOO_FEW_ARGS|min;
-    if (num >= 0)
-      {
-        int max = maxArgs(num);
-	if (max < 4)
-          return MethodProc.NO_MATCH_TOO_MANY_ARGS|max;
-	ctx.value1 = arg1;
-	ctx.value2 = arg2;
-	ctx.value3 = arg3;
-	ctx.value4 = arg4;
-	ctx.count = 4;
-	ctx.where = (CallContext.ARG_IN_VALUE1
-		     |(CallContext.ARG_IN_VALUE2<<4)
-		     |(CallContext.ARG_IN_VALUE3<<8)
-		     |(CallContext.ARG_IN_VALUE4<<12));
-	ctx.next = 0;
-	ctx.proc = this;
-	return 0;
-      }
-    Object[] args = { arg1, arg2, arg3, arg4 };
-    return matchN(args, ctx);
-  }
+        ctx.setupApply(this, arg1, arg2, arg3, arg4);
+        return matchX(ctx);
+   }
 
-  public int matchN (Object[] args, CallContext ctx)
+  public int matchN(Object[] args, CallContext ctx)
   {
-    int num = numArgs();
-    int min = minArgs(num);
-    if (args.length < min)
-      return MethodProc.NO_MATCH_TOO_FEW_ARGS|min;
-    if (num >= 0)
-      {
-	switch (args.length)
-	  {
-	  case 0:
-	    return match0(ctx);
-	  case 1:
-	    return match1(args[0], ctx);
-	  case 2:
-	    return match2(args[0], args[1], ctx);
-	  case 3:
-	    return match3(args[0], args[1], args[2], ctx);
-	  case 4:
-	    return match4(args[0], args[1], args[2], args[3], ctx);
-	  default:
-	    int max = maxArgs(num);
-	    if (args.length > max)
-	      return MethodProc.NO_MATCH_TOO_MANY_ARGS|max;
-	  }
-      }
-    ctx.values = args;
-    ctx.count = args.length;
-    ctx.where = 0;
-    ctx.next = 0;
-    ctx.proc = this;
-    return 0;
+        ctx.setupApplyAll(this, args);
+        return matchX(ctx);
   }
 
   /** Does match0, plus throws exception on argument mismatch. */
@@ -452,4 +439,18 @@ public abstract class Procedure extends PropertySet
     sbuf.append('>');
     return sbuf.toString();
   }
+
+    public static final MethodType applyMethodType =
+        MethodType.methodType(Object.class, Procedure.class, CallContext.class); 
+    public static final MethodHandle applyToObjectDefault;
+    public static final MethodHandle applyToConsumerDefault;
+    static {
+        MethodHandles.Lookup lookup = MethodHandles.lookup();
+        try {
+            applyToObjectDefault = lookup.findStatic(Procedure.class, "applyToObjectDefault", applyMethodType);
+            applyToConsumerDefault = lookup.findStatic(Procedure.class, "applyToConsumerDefault", applyMethodType);
+        } catch (Exception ex) {
+            throw new RuntimeException(ex);
+        }
+    }
 }

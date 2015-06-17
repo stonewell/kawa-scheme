@@ -109,10 +109,15 @@ public class Translator extends Compilation
 
   public final Expression rewrite_car (Pair pair, SyntaxForm syntax)
   {
-    if (syntax == null || syntax.getScope() == current_scope
+    return rewrite_car(pair, syntax == null ? current_scope : syntax.getScope());
+  }
+
+  public final Expression rewrite_car (Pair pair, ScopeExp templateScope)
+  {
+    if (templateScope == current_scope
 	|| pair.getCar() instanceof SyntaxForm)
       return rewrite_car(pair, false);
-    ScopeExp save_scope = setPushCurrentScope(syntax.getScope());
+    ScopeExp save_scope = setPushCurrentScope(templateScope);
     try
       {
 	return rewrite_car(pair, false);
@@ -316,6 +321,7 @@ public class Translator extends Compilation
           }
         catch (Error ex)
           {
+            ex.printStackTrace();
             throw ex;
           }
         catch (Throwable ex)
@@ -329,6 +335,7 @@ public class Translator extends Compilation
 	StaticFieldLocation loc = StaticFieldLocation.make(decl);
 	obj = loc.get(null);
       }
+
     return obj instanceof Syntax ? (Syntax) obj : null;
   }
 
@@ -1243,6 +1250,18 @@ public class Translator extends Compilation
 
   PairWithPosition positionPair;
 
+    /*
+  public Object pushPositionOfCar(Object pair)
+  {
+    if (pair instanceof Pair)
+      {
+        Object car = ((Pair) pair).getCar();
+        if (car instanceof PairWithPosition)
+          pair = car;
+      }
+    return pushPositionOf(pair);
+    }*/
+
   /** Note current line number position from a PairWithPosition.
    * Return an object to pass to popPositionOf.
    */
@@ -1348,7 +1367,7 @@ public class Translator extends Compilation
 		     + ((ReferenceExp) texp).getName() + '\'');
 	     else
 	       error('e',
-		 "invalid type spec (must be \"type\" or 'type or <type>)");
+		 "invalid type spec");
 	     type = Type.pointer_type;
 	   }
         if (decl != null)
@@ -1510,8 +1529,8 @@ public class Translator extends Compilation
           }
         finally
           {
-            if (savedScope != current_scope)
-              setPopCurrentScope(savedScope);
+              if (savedScope != current_scope)
+                setPopCurrentScope(savedScope);
             popPositionOf(savedPosition);
           }
 	if (syntax != null)

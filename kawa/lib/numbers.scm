@@ -255,7 +255,7 @@
         (else (primitive-throw (java.lang.IllegalArgumentException)))))
 
 (define-procedure log
-  (lambda ((x ::java.lang.Number) (base ::java.lang.Number))
+  (lambda ((x ::java.lang.Number) (base ::java.lang.Number)) name: 'log2
     ::java.lang.Number
     (cond ((and (gnu.math.RealNum? x) (gnu.math.RealNum? base))
            (/ (log x) (log base)))
@@ -263,7 +263,7 @@
                 (or (java.lang.real? base) (gnu.math.RealNum? base)))
            (/ (java.lang.Math:log x) (java.lang.Math:log base)))
           (else (/ (log x) (log base)))))
-  (lambda (x ::java.lang.Number)
+  (lambda (x ::java.lang.Number) name: 'log1
     ::java.lang.Number
     (cond ((java.lang.real? x) (java.lang.Math:log x))
           ((gnu.math.Quaternion? x)

@@ -67,8 +67,8 @@ public class Declaration
    * It is null if the type is un-specified and not yet inferred.
    * Will get set implicitly by getType, to avoid inconsistencies.
    */
-  protected Type type;
-  protected Expression typeExp;
+    public/*protected*/ Type type;
+    public/*protected*/ Expression typeExp;
   public final Expression getTypeExp()
   {
     if (typeExp == null)
@@ -617,7 +617,16 @@ public class Declaration
     public static final long SKIP_FOR_METHOD_PARAMETER = 0x8000000000l;
     public static final long IS_REST_PARAMETER = 0x10000000000l;
     public static final long IS_PARAMETER = 0x20000000000l;
-    public static final long DONT_COPY = 0x40000000000l;
+    /** Is this a supplied-parameter variable?
+     * If IS_SUPPLIED_PARAMETER is true and IS_PARAMETER is false
+     * then this is a boolean variable reports if the previous parameter
+     * was provided by the argument list, rather than defaulted.
+     * If IS_SUPPLIED_PARAMETER is true and IS_PARAMETER is true then
+     * this is an optional or keyword parameter that has corresponding
+     * supplied-parameter later in the parameter list.
+     */
+    public static final long IS_SUPPLIED_PARAMETER = 0x40000000000l;
+    public static final long DONT_COPY = 0x80000000000l;
 
     protected long flags = IS_SIMPLE;
 

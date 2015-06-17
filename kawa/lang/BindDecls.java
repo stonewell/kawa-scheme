@@ -33,7 +33,7 @@ public class BindDecls {
     }
 
     /** Parse a declaration or more generally a pattern.
-     * The actual pattern is an initial sublist (usuing just the initial
+     * The actual pattern is an initial sublist (using just the initial
      * car) of the patList.
      * @return A 2-element array, where element 0 is the unused remainder
      *   of patList, while element 1 is a Declaration for that pattern.
@@ -156,7 +156,7 @@ public class BindDecls {
             cdr = sawEllipsis ?  ((Pair) patpair.getCdr()).getCdr() : r[0];
             Declaration d = (Declaration) r[1];
             d.setScanNesting(curScanNesting);
-            d.setFlag(Declaration.PATTERN_NESTED|Declaration.SKIP_FOR_METHOD_PARAMETER);
+            d.setFlag(Declaration.PATTERN_NESTED);
             Expression init;
             if (sawEllipsis) {
                 int restCount = Translator.listLength(cdr);

@@ -41,6 +41,8 @@
       ((_ expr)
        (syntax->expression (syntax expr))))))
 
+;; FIXME Maybe #!rest args::object[]
+;; FIXME maybe (Expression[] @(gnu.kawa.functions.Map:map1 ->exp args))
 (define (apply-exp func . args) ::gnu.expr.ApplyExp
   (gnu.expr.ApplyExp (->exp func)
                      @(gnu.kawa.functions.Map:map1 ->exp args)))

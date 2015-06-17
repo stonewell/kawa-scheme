@@ -19097,6 +19097,18 @@ Applying the procedure returns the length of the array.
 @node FAQs
 @chapter Frequently Asked Questions
 
+@ignore
+@subsubheading What is the difference between load, require, import, and include?
+
+Handling @code{include} is all done at compile time.  It's as if the text
+of the included file is copied and replaces the include command.
+If the include is inside a @code{let}, the included text can
+use the name defined in the @code{let}.
+
+In contrast @code{load} is a procedure, not syntax.
+It reads and evaluates each line in the file, one at a time,
+@end ignore
+
 @subsubheading What is the equivalent of Java import?
 
 To provide a short name for a class instead of the complete fully-qualified

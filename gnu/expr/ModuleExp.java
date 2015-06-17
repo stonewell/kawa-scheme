@@ -295,7 +295,8 @@ public class ModuleExp extends LambdaExp
                     }
                     else
                         ((Runnable) inst).run();
-                }
+                } else if (inst instanceof RunnableModule)
+                    ModuleBody.runToVoid((RunnableModule) inst);
 
                 if (mexp == null)
                     gnu.kawa.reflect.ClassMemberLocation.defineAll(inst, language, env);

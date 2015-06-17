@@ -4,24 +4,27 @@
 package gnu.expr;
 import gnu.mapping.*;
 import gnu.bytecode.Type;
+/* #ifdef use:java.lang.invoke */
+import java.lang.invoke.*;
+/* #endif */
 
 /** A collection of MethodProcs;  one is chosen at apply time. */
 
 public class GenericProc extends MethodProc
 {
-  protected MethodProc[] methods;
-  int count;
-  int minArgs;
-  int maxArgs;
+    protected MethodProc[] methods;
+    int count;
+    int minArgs;
+    int maxArgs;
 
-  public GenericProc (String name)
-  {
-    setName(name);
-  }
+    public GenericProc(String name) {
+        super(true, applyToConsumerGP);
+        setName(name);
+    }
 
-  public GenericProc ()
-  {
-  }
+    public GenericProc() {
+        super(true, applyToConsumerGP);
+    }
 
   public int getMethodCount ()
   {
@@ -116,8 +119,13 @@ public class GenericProc extends MethodProc
       {
         MethodProc method = methods[i];
 	int m = method.matchN(args, ctx);
-        if (m == 0)
-	  return ctx.runUntilValue();
+        //System.err.println("GP nargs:"+args.length+" meth:"+method+"::"+method.getClass().getName()+" m:"+m+" c.proc:"+ctx.proc+"::"+ctx.proc.getClass().getName()+" c.count:"+ctx.count);
+        if (m == 0) {
+            ctx.rewind(CallContext.MATCH_THROW_ON_EXCEPTION);
+            Object r = ctx.runUntilValue();
+            //System.err.println("GP meth:"+method+" r:"+r);
+            return r;
+        }
       }
     throw new WrongType(this, WrongType.ARG_UNKNOWN, null);
   }
@@ -227,9 +235,38 @@ public class GenericProc extends MethodProc
       }
     ctx.proc = null;
     return NO_MATCH;
+
   }
 
-  public void setProperty (Keyword key, Object value)
+    // FIXME also implement applyToObjectGP
+    public static Object applyToConsumerGP(Procedure proc, CallContext ctx)
+        throws Throwable {
+        GenericProc gproc = (GenericProc) proc;
+        MethodProc[] methods = gproc.methods;
+        int count = gproc.count;
+        if (count == 0)
+            return methods[0].getApplyToConsumerMethod().invokeExact((Procedure) methods[0], ctx);
+        int startState = ctx.getMode();
+        //System.err.println("applyToConsumerGP "+proc+" state:"+startState+"  c.proc:"+ctx.proc+" consumer:"+ctx.consumer);
+        int methodState = startState;
+        if (startState == CallContext.MATCH_THROW_ON_EXCEPTION)
+            methodState = CallContext.MATCH_CHECK;
+        for (int i = 0;  i < count;  i++) {
+            Procedure method = methods[i];
+            ctx.rewind(methodState);
+            Object r = method.getApplyToConsumerMethod().invokeExact(method, ctx);
+            if (r != ctx) {
+                //System.err.println("->applyToConsumerGP r:"+r+" state:"+Integer.toHexString(ctx.getMode())+" c.p:"+ctx.proc+" method:"+method+" app:"+java.lang.invoke.MethodHandles.lookup().revealDirect(method.getApplyToConsumerMethod())+" consumer:"+ctx.consumer+"::"+ctx.consumer.getClass().getName());
+                //ctx.consumer.dump();
+                return r;
+            }
+        }
+        ctx.rewind(startState);
+        ctx.matchError(NO_MATCH);
+        return ctx;
+    }
+
+ public void setProperty (Keyword key, Object value)
   {
     String name = key.getName();
     if (name == "name")
@@ -277,4 +314,13 @@ public class GenericProc extends MethodProc
 
     return result;
   }
+    public static final MethodHandle applyToConsumerGP;
+    static {
+        MethodHandles.Lookup lookup = MethodHandles.lookup();
+        try {
+            applyToConsumerGP = lookup.findStatic(GenericProc.class, "applyToConsumerGP", applyMethodType);
+        } catch (Exception ex) {
+            throw new RuntimeException(ex);
+        }
+    }
 }

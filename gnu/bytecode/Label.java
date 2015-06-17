@@ -103,7 +103,7 @@ public class Label {
   {
     addTypeChangeListeners(code);
     if (stackTypes != null && code.SP != stackTypes.length)
-      throw new InternalError();
+        throw new InternalError("bad type SP:"+code.SP+" st.l:"+stackTypes.length+" code:"+code.getMethod());
     setTypes(code.local_types,
              code.local_types == null ? 0 : code.local_types.length,
              code.stack_types,

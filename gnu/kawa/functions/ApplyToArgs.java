@@ -1,8 +1,12 @@
 package gnu.kawa.functions;
+
 import gnu.expr.Language;
 import gnu.lists.Strings;
 import gnu.mapping.*;
 import gnu.kawa.reflect.Invoke;
+/* #ifdef use:java.lang.invoke */
+import java.lang.invoke.*;
+/* #endif */
 import gnu.lists.*;
 import java.util.List;
 import gnu.text.Char;
@@ -13,6 +17,7 @@ import gnu.text.Char;
 
 public class ApplyToArgs extends ProcedureN
 {
+    /*
   public int match1 (Object arg1, CallContext ctx)
   {
     if (arg1 instanceof Procedure)
@@ -122,10 +127,13 @@ public class ApplyToArgs extends ProcedureN
 	throw MethodProc.matchFailAsException(code, proc, args);
       }
   }
+    */
 
   public ApplyToArgs (String name, Language language)
   {
     super(name);
+    applyToObjectMethod = applyToObjectA2A;
+    applyToConsumerMethod = applyToConsumerA2A;
     this.language = language;
     setProperty(Procedure.validateXApplyKey,
                 "gnu.kawa.functions.CompilationHelpers:validateApplyToArgs");
@@ -135,6 +143,7 @@ public class ApplyToArgs extends ProcedureN
 
     public Object applyN (Object[] args) throws Throwable {
         Object proc = Promise.force(args[0]);
+        //System.err.println("appToArgs.appN proc:"+proc+"::"+proc.getClass().getName());
         if (proc instanceof Procedure) {
             Object[] rargs = new Object[args.length-1];
             System.arraycopy(args, 1, rargs, 0, rargs.length);
@@ -191,5 +200,86 @@ public class ApplyToArgs extends ProcedureN
             return java.lang.reflect.Array.get(proc, ((Number) args[1]).intValue());
         }
         throw new WrongType(this, 0, proc, "procedure");
+    }
+
+    public static Object applyToConsumerA2A(Procedure proc, CallContext ctx) throws Throwable {
+        Object arg0 = Promise.force(ctx.getNextArg());
+        if (arg0 instanceof Procedure) {
+            proc = (Procedure) arg0;
+            ctx.shiftArgs(null, 1);
+            return proc.getApplyToConsumerMethod().invokeExact(proc, ctx);
+        }
+        Object r = applyRest(arg0, ctx);
+        if (r != ctx) {
+            ctx.consumer.writeObject(r);
+            r = null;
+        }
+        return r;
+    }
+    public static Object applyToObjectA2A(Procedure proc, CallContext ctx) throws Throwable {
+        Object arg0 = Promise.force(ctx.getNextArg());
+        if (arg0 instanceof Procedure) {
+            proc = (Procedure) arg0;
+            ctx.shiftArgs(null, 1);
+            return proc.getApplyToObjectMethod().invokeExact(proc, ctx);
+        }
+        return applyRest(arg0, ctx);
+    }
+    private static Object applyRest(Object arg0, CallContext ctx) throws Throwable {
+        if (arg0 instanceof gnu.bytecode.Type
+            || arg0 instanceof Class) {
+            Procedure proc = gnu.kawa.reflect.Invoke.make;
+            //ctx.shiftArgs(proc, 0);
+            return proc.getApplyToObjectMethod().invokeExact(proc, ctx);
+        }
+        if (arg0 instanceof java.util.List) {
+            Object arg1 = ctx.getNextArg();
+            if (! (arg1 instanceof Number))
+                ctx.matchError(MethodProc.NO_MATCH_BAD_TYPE|2);
+            if (ctx.checkDone() != 0)
+                return ctx;
+            int index = ((Number) Promise.force(arg1)).intValue();
+            return ((java.util.List) arg0).get(index);
+        }
+        Class pclass = arg0.getClass();
+        if (pclass.isArray()) {
+            Object arg1 = ctx.getNextArg();
+            if (! (arg1 instanceof Number))
+                ctx.matchError(MethodProc.NO_MATCH_BAD_TYPE|2);
+            if (ctx.checkDone() != 0)
+                return ctx;
+            int index = ((Number) Promise.force(arg1)).intValue();
+            return java.lang.reflect.Array.get(arg0, index);
+        }
+        if (arg0 instanceof gnu.lists.Array) {
+            Procedure proc = ArrayRef.arrayRef;
+            ctx.next = 0;    // OR: ctx.shiftArgs(proc, 0);
+            return proc.getApplyToObjectMethod().invokeExact(proc, ctx);
+        }
+        /*
+          What should happen if key has no associated value?
+          Throw an exception?  Return null?
+        if (arg0 instanceof java.util.Map) {
+            if (args.length != 2)
+                throw new WrongArguments(this, args.length); // FIXME
+            Object key = Promise.force(args[1]);
+            
+        }
+        */
+        //System.err.println("bad A2A arg0:"+arg0);
+        ctx.matchError(MethodProc.NO_MATCH_BAD_TYPE|1);
+        return ctx;
+    }
+
+    public static final MethodHandle applyToObjectA2A;
+    public static final MethodHandle applyToConsumerA2A;
+    static {
+        MethodHandles.Lookup lookup = MethodHandles.lookup();
+        try {
+            applyToObjectA2A = lookup.findStatic(ApplyToArgs.class, "applyToObjectA2A", applyMethodType);
+            applyToConsumerA2A = lookup.findStatic(ApplyToArgs.class, "applyToConsumerA2A", applyMethodType);
+        } catch (Exception ex) {
+            throw new RuntimeException(ex);
+        }
     }
 }

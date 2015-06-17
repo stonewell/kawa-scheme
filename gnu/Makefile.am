@@ -17,6 +17,7 @@ GNU_EXPR_JSOURCES = \
   expr/ClassInitializer.java \
   expr/Compilation.java \
   expr/CompiledModule.java \
+  expr/CompiledProc.java \
   expr/ConditionalTarget.java \
   expr/ConsumerTarget.java \
   expr/Declaration.java \
@@ -47,8 +48,6 @@ GNU_EXPR_JSOURCES = \
   expr/ModuleContext.java \
   expr/ModuleInfo.java \
   expr/ModuleManager.java \
-  expr/ModuleMethod.java \
-  expr/ModuleMethodWithContext.java \
   expr/ModuleSet.java \
   expr/ModuleExp.java \
   expr/NameLookup.java \
@@ -150,6 +149,9 @@ GNU_LISTS_JSOURCES = \
   lists/XConsumer.java
 
 GNU_MAPPING_JSOURCES = \
+  mapping/ArgList.java \
+  mapping/ArgListBuilder.java \
+  mapping/ArgListImpl.java \
   mapping/CallContext.java \
   mapping/ConstrainedLocation.java \
   mapping/DynamicLocation.java \
@@ -264,6 +266,7 @@ GNU_KAWA_UTIL_JSOURCES = \
   kawa/util/IntHashTable.java \
   kawa/util/HashNode.java \
   kawa/util/HashUtils.java \
+  kawa/util/HeapSort.java \
   kawa/util/RangeTable.java \
   kawa/util/RunTestScript.java \
   kawa/util/WeakHashNode.java \

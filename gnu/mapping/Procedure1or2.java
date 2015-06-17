@@ -1,23 +1,24 @@
 package gnu.mapping;
 
+/* #ifdef use:java.lang.invoke */
+import java.lang.invoke.*;
+/* #endif */
+
 /**
  * Abstract class for 1- or 2-argument Scheme procedures.
  * Extensions must provide apply1 and apply2.
  * @author	Per Bothner
  */
 
-public abstract class Procedure1or2 extends Procedure
-{
+public abstract class Procedure1or2 extends Procedure {
 
-  public Procedure1or2 ()
-  {
-    super();
-  }
+    public Procedure1or2() {
+        super(false, Procedure0or1.applyToObject);
+    }
 
-  public Procedure1or2 (String n)
-  {
-    super(n);
-  }
+    public Procedure1or2(String name) {
+        super(false, Procedure1or2.applyToObject, name);
+    }
 
   public int numArgs() { return 0x2001; }
 
@@ -49,4 +50,28 @@ public abstract class Procedure1or2 extends Procedure
     else
       throw new WrongArguments(this, args.length);
   }
+
+    public static Object applyToObject(Procedure proc, CallContext ctx)
+    throws Throwable {
+        Object arg0 = ctx.getNextArg();
+        if (! ctx.haveArg()) {
+            if (ctx.checkDone() == 0)
+                return proc.apply1(arg0);
+        } else {
+            Object arg1 = ctx.getNextArg();
+            if (ctx.checkDone() == 0)
+                return proc.apply2(arg0, arg1);
+        }
+        return ctx;
+    }
+
+    public static final MethodHandle applyToObject;
+    static {
+        try {
+            applyToObject = MethodHandles.lookup()
+                .findStatic(Procedure0or1.class, "applyToObject", applyMethodType);
+        } catch (Exception ex) {
+            throw new RuntimeException(ex);
+        }
+    }
 }

@@ -161,6 +161,7 @@ public class Lambda extends Syntax
 	Object savePos = tr.pushPositionOf(pair);
 	Object name = null;
 	Object defaultValue = defaultDefault;
+        Declaration suppliedDecl = null;
 	Pair typeSpecPair = null;
         Pair p;
 	if (tr.matches(pair_car, "::"))
@@ -241,6 +242,26 @@ public class Lambda extends Syntax
                         break;
 		      }
 		  }
+                if (p != null && mode != null)
+                {
+                   Object suppliedName = p.getCar();
+                   if (suppliedName instanceof Symbol) {
+                       suppliedDecl = new Declaration(suppliedName);
+                       Translator.setLine(suppliedDecl, p);
+                   }
+                   else
+                       tr.syntaxError("expected a supplied-parameter name");
+                    if (p.getCdr() instanceof Pair)
+		      p = (Pair) p.getCdr();
+		    else if (p.getCdr() == LList.Empty)
+		      p = null;
+		    else
+		      {
+			tr.syntaxError("improper list in specifier for parameter '"
+				       + name + "')");
+                        break;
+		      }
+                }
 		if (p != null)
 		  {
 		    if (typeSpecPair != null)
@@ -316,6 +337,11 @@ public class Lambda extends Syntax
         decl.setFlag(Declaration.IS_SINGLE_VALUE);
         if (! handlePatterns || mode != null)
             addParam(decl, templateScope, lexp, tr);
+        if (suppliedDecl != null) {
+             decl.setFlag(Declaration.IS_SUPPLIED_PARAMETER);
+             suppliedDecl.setFlag(Declaration.IS_SUPPLIED_PARAMETER);
+             addParam(suppliedDecl, templateScope, lexp, tr);
+        }
 	tr.popPositionOf(savePos);
       }
     if (bindings instanceof SyntaxForm)
@@ -361,7 +387,7 @@ public class Lambda extends Syntax
     if (rest_args > 0)
       lexp.max_args = -1;
     else   // Is this useful?
-      lexp.max_args = lexp.min_args + opt_args + 2 * key_args;
+      lexp.max_args = lexp.min_args + opt_args;
     lexp.opt_args = opt_args;
     if (keywords != null)
       lexp.keywords = keywords.toArray(new Keyword[keywords.size()]);

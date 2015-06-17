@@ -32,7 +32,7 @@
 
 (define-validate isEofValidateApply (exp required proc)
   ((exp:isSimple 1 1)
-   (exp:visitArgs visitor)
+   (exp:visitArgs (get-visitor))
    (let* ((e0 (exp:getArg 0))
           (t0 (e0:getType)))
      (cond ((or (eq? t0 character) (eq? t0 character-or-eof))

@@ -89,7 +89,7 @@ public class let extends Syntax {
                 Pair init = (Pair) binding_cdr;
                 binding_cdr = init.getCdr();
 
-                Expression initExp = tr.rewrite_car(init, null);
+                Expression initExp = tr.rewrite_car(init, false);
                 decl.setInitValue(initExp);
                 if (initExp != QuoteExp.undefined_exp)
                     decl.noteValueFromLet(let);

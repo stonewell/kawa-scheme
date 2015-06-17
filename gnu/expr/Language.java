@@ -1085,7 +1085,7 @@ public abstract class Language
         boolean isFinal = (fld.getModifiers() & Access.FINAL) != 0;
         if ((isImportedInstance = fname.endsWith("$instance")))
             fdname = fname;
-        else if (isFinal && ftype == Compilation.typeModuleMethod
+        else if (isFinal && ftype == Compilation.typeCompiledProc
                  && fvalue instanceof Named /* should always be true */)
             fdname = ((Named) fvalue).getSymbol();
         else {

@@ -209,6 +209,7 @@ public abstract class Values<E>
     }
 
     public static void writeValues(Object value, Consumer out) {
+        //System.err.println("writeValues -> "+(value==null?"null":(value+"::"+value.getClass().getName()))+" to "+out.getClass().getName());
         if (value instanceof Values) {
             ((Values) value).consume(out);
             /*

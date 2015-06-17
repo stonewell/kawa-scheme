@@ -88,7 +88,7 @@
     ((syntax-body->expression x)
      (kawa.lang.SyntaxForms:rewriteBody x))))
 
-(define-syntax %if-and-x
+(%define-syntax %if-and-x
  (lambda (x)
    (syntax-case x (? :: and)
     ((_ k then)

@@ -206,14 +206,21 @@ public class Invoke extends ProcedureN
         while (keywordStart < args.length
                && ! (args[keywordStart] instanceof Keyword))
           keywordStart++;
-
         Object result;
-        int err = MethodProc.NO_MATCH;
         if (keywordStart == args.length)
           {
-            err = proc.matchN(args, vars);
+            vars.setupApplyAll(null, args);
+            vars.rewind(CallContext.MATCH_CHECK);
+            //System.err.println("Invoke apply "+proc+"::"+proc.getClass().getName()+" app:"+java.lang.invoke.MethodHandles.lookup().revealDirect(proc.getApplyToObjectMethod()));
+            Object r = proc.getApplyToObjectMethod().invokeExact((Procedure) proc, vars);
+            //System.err.println("->Invoke apply "+proc+"::"+proc.getClass().getName()+" ->"+r);
+            if (r != vars)
+                return r;
+            /*
+            int err = proc.matchN(args, vars);
             if (err == 0)
               return vars.runUntilValue();
+            */
 
             MethodProc vproc = ClassMethods.apply(dtype, "valueOf",
                                                   '\0', language);
@@ -221,8 +228,8 @@ public class Invoke extends ProcedureN
               {
                 Object[] margs = new Object[nargs-1];
                 System.arraycopy(args, 1, margs, 0, nargs-1);
-                err = vproc.matchN(margs, vars);
-                if (err == 0)
+                int err2 = vproc.matchN(margs, vars);
+                if (err2 == 0)
                   return vars.runUntilValue();
               }
             result = proc.apply1(args[0]);
@@ -252,6 +259,7 @@ public class Invoke extends ProcedureN
           {
             MethodProc aproc = ClassMethods.apply(dtype, "add",
                                               '\0', language);
+            int err = MethodProc.NO_MATCH;
             if (aproc == null)
               throw MethodProc.matchFailAsException(err, proc, args);
             while (i < args.length)

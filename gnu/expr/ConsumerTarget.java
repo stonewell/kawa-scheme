@@ -17,6 +17,9 @@ public class ConsumerTarget extends Target
   boolean isContextTarget;
   Type type;
 
+    public final static ConsumerTarget contextInstance
+        = new ConsumerTarget(null);
+
   public ConsumerTarget(Variable consumer)
   {
     this.consumer = consumer;
@@ -134,9 +137,9 @@ public class ConsumerTarget extends Target
     Method method = null;
     Type methodArg = null;
     boolean islong = false;
-    char sig; 
+    char sig;
     Type ttype = getType();
-    if (! stackType.isVoid()) {
+    if (! stackType.isVoid() && this != contextInstance) {
         StackTarget.convert(comp, stackType, ttype);
         stackType = ttype;
     }
@@ -149,6 +152,15 @@ public class ConsumerTarget extends Target
             stackType == LangPrimType.unsignedIntType)) {
         stackType.emitCoerceToObject(code);
         stackType = Type.objectType;
+    }
+    if (consumerPushed < 0 && ! stackType.isVoid()) {
+        if (this == contextInstance) {
+            comp.loadCallContext();
+            code.emitGetField(Compilation.typeCallContext
+                              .getDeclaredField("consumer"));
+        }
+        else
+            code.emitLoad(consumer);
     }
     Type implType = stackType.getImplementationType();
     if (implType instanceof PrimType)
@@ -187,7 +199,8 @@ public class ConsumerTarget extends Target
             methodName = "writeBoolean";
             methodArg = Type.booleanType;
             break;
-	  case 'V':     return;
+	  case 'V':
+            return;
 	  }
       }
     else
@@ -202,28 +215,21 @@ public class ConsumerTarget extends Target
 	  {
 	    method = (Compilation.typeValues
 		      .getDeclaredMethod("writeValues", 2));
-	    code.emitLoad(consumer);
-            if (consumerPushed == 0) // ??? Seems wrong - Never used.
+            if (consumerPushed >= 0)
               code.emitSwap();
 	    code.emitInvokeStatic(method);
 	    return;
 	  }
       }
-    if (consumerPushed >= 0)
-      ;
-    else if (islong)
+    if (consumerPushed < 0)
       {
-	code.pushScope();
-	Variable temp = code.addLocal(implType);
-	code.emitStore(temp);
-	code.emitLoad(consumer);
-	code.emitLoad(temp);
-	code.popScope();
-      }
-    else
-      {
-	code.emitLoad(consumer);
-	code.emitSwap();
+       if (islong)
+          {
+            code.emitDupX();  // dup_x2
+            code.emitPop(1);
+          }
+        else
+          code.emitSwap();
       }
     if (method == null && methodName != null)
       {

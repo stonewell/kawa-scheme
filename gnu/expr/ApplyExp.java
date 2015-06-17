@@ -135,12 +135,13 @@ public class ApplyExp extends Expression
 
   public void apply (CallContext ctx) throws Throwable
   {
-    Object proc = func.eval(ctx);
+    Procedure proc = (Procedure) func.eval(ctx);
     int n = args.length;
     Object[] vals = new Object[n];
+    //System.err.println("App.apply "+this+" proc:"+proc+" n:"+n);
     for (int i = 0; i < n; i++)
       vals[i] = args[i].eval(ctx);
-    ((Procedure) proc).checkN(vals, ctx);
+    ctx.setupApplyAll(proc, vals);
   }
 
   private static void compileToArray(Expression[] args, int start, Compilation comp)
@@ -248,6 +249,7 @@ public class ApplyExp extends Expression
                 throw ex;
             } catch (Throwable ex) {
                 SourceMessages msg = comp.getMessages();
+                ex.printStackTrace();
                 msg.error('f',
                           "caught exception in inline-compiler for "
                           +quotedValue+" - "+ex, ex);
@@ -267,11 +269,14 @@ public class ApplyExp extends Expression
 
     int spliceCount = exp.spliceCount();
     int nonSpliceCount = args_length - spliceCount;
+    int nonSpliceNonKeyCount = nonSpliceCount - 2 * exp.numKeywordArgs;
         
     if (func_lambda != null)
       {
-	if ((func_lambda.max_args >= 0 && nonSpliceCount > func_lambda.max_args)
-	    || (nonSpliceCount < func_lambda.min_args) && spliceCount == 0)
+	if ((func_lambda.max_args >= 0
+             && nonSpliceNonKeyCount > func_lambda.max_args)
+	    || (nonSpliceNonKeyCount < func_lambda.min_args)
+            && spliceCount == 0)
 	  // This is supposed to get caught by InlineCalls.
 	  throw new Error ("internal error - wrong number of parameters for "
 			   + func_lambda);
@@ -399,28 +404,81 @@ public class ApplyExp extends Expression
 	&& ! comp.curLambda.getInlineOnly())
       {
 	ClassType typeContext = Compilation.typeCallContext;
+        comp.loadCallContext();
 	exp_func.compile(comp, new StackTarget(Compilation.typeProcedure));
 	// evaluate args to frame-locals vars;  // may recurse!
-	if (args_length <= 4 && exp.isSimple())
-	  {
-	    for (int i = 0; i < args_length; ++i)
-	      exp.args[i].compileWithPosition(comp, Target.pushObject);
-	    comp.loadCallContext();
-	    code.emitInvoke(Compilation.typeProcedure
-			    .getDeclaredMethod("check"+args_length,
-					       args_length+1));
-	  }
-	else
-	  {
-            if (exp.firstSpliceArg >= 0)
-                CompileArrays.createArray(Type.objectType, comp,
-                                          exp.args, 0, args_length);
-            else
-                compileToArray (exp.args, 0, comp);
-	    comp.loadCallContext();
-	    code.emitInvoke(Compilation.typeProcedure
-			    .getDeclaredMethod("checkN", 2));
-	  }
+
+            Scope scope = code.pushScope();
+            Variable[] vars = new Variable[args_length];
+            int initial = args_length <= 4 ? args_length : 4;
+            if (exp.numKeywordArgs > 0 && initial >= exp.firstKeywordArgIndex)
+                initial = exp.firstKeywordArgIndex-1;
+            if (exp.firstSpliceArg >= 0 && initial > exp.firstSpliceArg)
+                initial = exp.firstSpliceArg;
+            if (initial != args_length) {
+                for (int i = 0; i < args_length; ++i) {
+                    Expression arg = exp.args[i];
+                    Expression sarg = MakeSplice.argIfSplice(arg);
+                    if (sarg != null)
+                        arg = sarg;
+                    if (arg instanceof QuoteExp)
+                        continue;
+                    arg.compileWithPosition(comp, Target.pushObject);
+                    Variable var = scope.addVariable(code, Type.objectType, null);
+                    code.emitStore(var);
+                    vars[i] = var;
+                }
+            }
+            for (int i = 0; i < initial; ++i) {
+                Expression arg = exp.args[i];
+                if (vars[i] != null)
+                    code.emitLoad(vars[i]);
+                else
+                    arg.compileWithPosition(comp, Target.pushObject);
+            }
+            code.emitInvoke(Compilation.typeCallContext
+			    .getDeclaredMethod("setupApply",
+					       initial+1));
+            for (int i = initial;  i < args_length;  i++) {
+                Expression arg = exp.args[i];
+                char mode = '\0';
+                String key = null;
+                if (i >= exp.firstKeywordArgIndex-1
+                    && i < exp.firstKeywordArgIndex-1 + 2 * exp.numKeywordArgs) {
+                    // a keyword or keyword arg
+                    if (((i - exp.firstKeywordArgIndex) & 1) != 0)
+                        continue ; // keyword - handled next iteration
+                    // FIXME use ArgListImpl.setKeys when possible
+                    Object keyarg = exp.args[i-1].valueIfConstant();
+                    key = ((Keyword) keyarg).getName();
+                    mode = 'K';
+                } else {
+                    Expression sarg = MakeSplice.argIfSplice(arg);
+                    if (sarg != null) {
+                        mode = '@';
+                        arg = sarg;
+                    }
+                }
+                comp.loadCallContext();
+                if (key != null)
+                    code.emitPushString(key);
+                if (vars[i] != null)
+                    code.emitLoad(vars[i]);
+                else
+                    arg.compileWithPosition(comp, Target.pushObject);
+                if (mode == 'K') {
+                    code.emitInvoke(Compilation.typeCallContext
+                                    .getDeclaredMethod("addKey", 2));
+                } else if (mode == '@') {
+                    code.emitInvoke(Compilation.typeCallContext
+                                    .getDeclaredMethod("addSequence", 1));
+                } else {
+                    code.emitInvoke(Compilation.typeCallContext
+                                    .getDeclaredMethod("addArg", 1));
+                }
+            }
+            code.popScope();
+
 	if (exp.isTailCall())
 	  {
 	    code.emitReturn();
@@ -689,6 +747,12 @@ public class ApplyExp extends Expression
         }
         /* #ifdef use:java.lang.invoke */
         if (propval instanceof MethodHandle) {
+            /*
+            System.err.println("inlineCompile "+exp);
+            for (int i = 0; i < exp.getArgCount(); i++)
+                System.err.println("- #"+i+": "+exp.getArg(i));
+            System.err.println("propval: "+java.lang.invoke.MethodHandles.lookup().revealDirect((MethodHandle)propval));
+            */
             return (boolean) ((MethodHandle) propval).invokeExact(exp, comp, target, proc);
         }
         /* #else */

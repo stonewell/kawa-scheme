@@ -5,12 +5,21 @@ package gnu.mapping;
 import gnu.bytecode.Type;
 import gnu.bytecode.ArrayType;
 import gnu.expr.PrimProcedure;
+/* #ifdef use:java.lang.invoke */
+import java.lang.invoke.*;
+/* #endif */
 
 /** Similar to a CLOS method.
  * Can check if arguments "match" before committing to calling method. */
 
 public abstract class MethodProc extends ProcedureN
 {
+    public MethodProc() {
+        super(true, applyToConsumerDefaultMP);
+    }
+    public MethodProc(boolean resultGoesToConsumer, MethodHandle applyMethod) {
+        super(resultGoesToConsumer, applyMethod);
+    }
   /** The parameter types.
    * Usually either an Type[] or a String encoding. */
   protected Object argTypes;
@@ -93,6 +102,9 @@ public abstract class MethodProc extends ProcedureN
     return Type.objectType;
   }
 
+  /* Special code for matchState field to require exception on mismatch. */
+  public static final int THROW_ON_EXCEPTION = 0;
+
   /** Return code from match:  Unspecified failure. */
   public static final int NO_MATCH = -1;
 
@@ -111,6 +123,12 @@ public abstract class MethodProc extends ProcedureN
    * In that case the lower half is the 1-origin index of the first
    * argument that does not match. */
   public static final int NO_MATCH_BAD_TYPE = 0xfff40000;
+
+  /** Return code from match: Unused keyword argument.
+   * I.e. a keyword in the call doesn't match a keyword parameter.
+   * In that case the lower half is the 1-origin index of the first
+   * keyword argument that does not match. */
+  public static final int NO_MATCH_UNUSED_KEYWORD = 0xfff50000;
 
   /** Helper method to throw an exception if a <code>matchX</code>
    * method fails. */
@@ -196,5 +214,27 @@ public abstract class MethodProc extends ProcedureN
                 return false;
         }
         return true;
+    }
+
+    public static Object applyToConsumerDefaultMP(Procedure proc, CallContext ctx) throws Throwable {
+        Object[] args = ctx.getArgs();
+        int code = proc.matchN(args, ctx);
+        if (code != 0) {
+             if (ctx.matchState == CallContext.MATCH_THROW_ON_EXCEPTION)
+                 throw MethodProc.matchFailAsException(code, proc, args);
+             else
+                 return ctx;
+        }
+        proc.apply(ctx);
+        return null;
+    }
+    public static final MethodHandle applyToConsumerDefaultMP;
+    static {
+        MethodHandles.Lookup lookup = MethodHandles.lookup();
+        try {
+            applyToConsumerDefaultMP = lookup.findStatic(MethodProc.class, "applyToConsumerDefaultMP", applyMethodType);
+        } catch (Exception ex) {
+            throw new RuntimeException(ex);
+        }
     }
 }

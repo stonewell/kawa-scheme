@@ -24,46 +24,49 @@ public class ProcInitializer extends Initializer
       }
   }
 
-  /** Create and load a ModuleMethod for the given procedure. */
+  /** Create and load a CompiledProc for the given procedure. */
   public static void emitLoadModuleMethod(LambdaExp proc, Compilation comp)
   {
     Declaration pdecl = proc.nameDecl;
     Object pname = pdecl == null ? proc.getName() : pdecl.getSymbol();
-    ModuleMethod oldproc = null;
+    CompiledProc oldproc = null;
     if (comp.immediate && pname != null
         && pdecl != null && pdecl.context instanceof ModuleExp)
       {
         // In interactive mode allow dynamic rebinding of procedures.
-        // If there is an existing ModuleMethod binding, re-use it.
+        // If there is an existing CompiledProc binding, re-use it.
         Environment env = Environment.getCurrent();
         Symbol sym = pname instanceof Symbol ? (Symbol) pname
           : Symbol.make("", pname.toString().intern());
         Object property = comp.getLanguage().getEnvPropertyFor(proc.nameDecl);
         Object old = env.get(sym, property, null);
-        if (old instanceof ModuleMethod) {
+        if (old instanceof CompiledProc) {
                 String moduleName =
-                    ((ModuleMethod) old).module.getClass().getName();
+                    ((CompiledProc) old).getModuleClass().getName();
                 if (moduleName.startsWith(ModuleManager.interactiveClassPrefix)
                     || moduleName.equals(comp.moduleClass.getName()))
-                    oldproc = (ModuleMethod) old;
+                    oldproc = (CompiledProc) old;
             }
       }
     CodeAttr code = comp.getCode();
-    ClassType procClass = proc.usingCallContext()
-        ? Compilation.typeModuleMethodWithContext
-        : Compilation.typeModuleMethod;
+    ClassType procClass = Compilation.typeCompiledProc;
     Method initModuleMethod;
+    int appArgs = 4;
+    String name;
     if (oldproc == null)
       {
-        code.emitNew(procClass);
-        code.emitDup(1);
-        initModuleMethod = procClass.getDeclaredMethod("<init>", 4);
+        name = proc.usingCallContext() ? "makeResultToConsumer"
+              : "makeResultToObject";
       }
     else
       {
+        name = proc.usingCallContext() ? "initResultToConsumer"
+              : "initResultToObject";
         comp.compileConstant(oldproc, Target.pushValue(procClass));
-        initModuleMethod = Compilation.typeModuleMethod.getDeclaredMethod("init", 4);
+        code.emitDup();
+          //initModuleMethod = Compilation.typeModuleMethod.getDeclaredMethod("init", appArgs);
       }
+    initModuleMethod = procClass.getDeclaredMethod(name, appArgs);
     LambdaExp owning = proc.getNeedsClosureEnv() ? proc.getOwningLambda()
       : comp.getModule();
     if (owning instanceof ClassExp && owning.staticLinkField != null)
@@ -99,7 +102,7 @@ public class ProcInitializer extends Initializer
 	  }
 	code.emitLoad(comp.moduleInstanceVar);
       }
-    code.emitPushInt(proc.getSelectorValue(comp));
+    code.emitPushMethodHandle(proc.checkMethod);
     comp.compileConstant(pname, Target.pushObject);
     // If there are keyword arguments, we treat that as "unlimited" maxArgs,
     // so that ModuleBody.matchX methods call matchN.  A kludge, I guess.

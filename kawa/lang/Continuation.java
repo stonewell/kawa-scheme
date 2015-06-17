@@ -23,7 +23,7 @@ public class Continuation extends MethodProc
     if (invoked)
       throw new GenericError
 	("implementation restriction: continuation can only be used once");
-    throw new CalledContinuation (ctx.values, this, ctx);
+    throw new CalledContinuation (ctx.getRestArgsArray(), this, ctx);
   }
 
   public static void handleException$X (Throwable ex, Continuation cont,

@@ -1,5 +1,9 @@
 package gnu.mapping;
 
+/* #ifdef use:java.lang.invoke */
+import java.lang.invoke.*;
+/* #endif */
+
 /**
  * Abstract class for 3-argument Scheme procedures..
  * @author	Per Bothner
@@ -7,15 +11,13 @@ package gnu.mapping;
 
 public abstract class Procedure3 extends Procedure
 {
-  public Procedure3 ()
-  {
-    super();
-  }
+    public Procedure3() {
+        super(false, Procedure3.applyToObject);
+    }
 
-  public Procedure3(java.lang.String n)
-  {
-    super(n);
-  }
+    public Procedure3(String name) {
+        super(false, Procedure3.applyToObject, name);
+    }
 
   public int numArgs() { return 0x3003; }
 
@@ -47,4 +49,24 @@ public abstract class Procedure3 extends Procedure
       throw new WrongArguments(this, args.length);
     return apply3 (args[0], args[1], args[2]);
   }
+
+    public static Object applyToObject(Procedure proc, CallContext ctx)
+    throws Throwable {
+        Object arg0 = ctx.getNextArg();
+        Object arg1 = ctx.getNextArg();
+        Object arg2 = ctx.getNextArg();
+        if (ctx.checkDone() == 0)
+            return proc.apply3(arg0, arg1, arg2);
+        return ctx;
+    }
+
+    public static final MethodHandle applyToObject;
+    static {
+        try {
+            applyToObject = MethodHandles.lookup()
+                .findStatic(Procedure3.class, "applyToObject", applyMethodType);
+        } catch (Exception ex) {
+            throw new RuntimeException(ex);
+        }
+    }
 }

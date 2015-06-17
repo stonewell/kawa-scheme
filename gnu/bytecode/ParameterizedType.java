@@ -82,8 +82,14 @@ public class ParameterizedType extends ObjectType
 	return s;
     }
 
+    @Override
     public void emitCoerceFromObject (CodeAttr code) {
 	getRawType().emitCoerceFromObject(code);
+    }
+
+    @Override
+    public void emitIsInstance(CodeAttr code) {
+        code.emitInstanceof(getRawType());
     }
 
     @Override

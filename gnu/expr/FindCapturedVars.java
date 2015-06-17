@@ -210,7 +210,7 @@ public class FindCapturedVars extends ExpExpVisitor<Void>
 	// It's also necessary in the case of a LambdaExp if it shares
 	// a field with the declaration (see LambdaExp.allocFieldField),
 	// since assigning the nullExp can clobber the field after it has
-	// been initialized with a ModuleMethod.
+	// been initialized with a CompiledProc.
 	Expression[] exps = ((BeginExp) exp.body).exps;
 	int init_index = 0;
 	Declaration decl = exp.firstDecl();

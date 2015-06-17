@@ -1469,6 +1469,8 @@ public class CodeAttr extends Attribute implements AttrContainer
 
   public final void emitGetStatic(Field field)
   {
+      if ("instance".equals(field.getName()) && "gnu.kawa.functions.MakeSplice".equals(field.getType().getName()))
+          new Error("emitget "+field+" in "+getMethod()).printStackTrace();
     pushType(field.getType());
     emitFieldop (field, 178);  // getstatic
   }
@@ -1518,6 +1520,7 @@ public class CodeAttr extends Attribute implements AttrContainer
   {
     if (! reachableHere())
       return;
+    int initSP = SP;
     reserve(opcode == 185 ? 5 : 3);
     int arg_count = method.arg_types.length;
     boolean is_invokestatic = opcode == 184;
@@ -1690,9 +1693,6 @@ public class CodeAttr extends Attribute implements AttrContainer
 
   public final void emitGotoIfCompare2 (Label label, int logop)
   { 
-    if( logop < 153 || logop > 158 )
-      throw new Error ("emitGotoIfCompare2: logop must be one of ifeq...ifle");
-    
     Type type2 = popType().promote();
     Type type1 = popType().promote();
     reserve(4);

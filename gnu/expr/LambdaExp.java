@@ -7,8 +7,12 @@ import gnu.mapping.*;
 import gnu.lists.LList;
 import gnu.kawa.functions.Convert;
 import gnu.kawa.io.OutPort;
+import gnu.kawa.lispexpr.LangObjType;
 import java.util.*;
 import java.lang.annotation.ElementType;
+/* #ifdef use:java.lang.invoke */
+import java.lang.invoke.*;
+/* #endif */
 
 /**
  * Class used to implement Scheme lambda expressions.
@@ -22,7 +26,8 @@ public class LambdaExp extends ScopeExp {
      * Does not count implicit isThisParameter(). */
     public int min_args;
 
-    /** Maximum number of actual arguments;  -1 if variable. */
+    /** Maximum number of actual arguments;  -1 if variable.
+     * Does not count keyword arguments. */
     public int max_args;
 
     /** Number of optional arguments, not counting keyword arguments. */
@@ -369,8 +374,8 @@ public class LambdaExp extends ScopeExp {
         return min_args == max_args && max_args <= 4 && max_args > 0 ? max_args : 1;
     }
 
-    /** If non-zero, the selector field of the ModuleMethod for this. */
-    int selectorValue;
+    /* * If non-zero, the selector field of the ModuleMethod for this. * /
+    //int selectorValue;
 
     int getSelectorValue(Compilation comp) {
         int s = selectorValue;
@@ -381,6 +386,19 @@ public class LambdaExp extends ScopeExp {
         }
         return s;
     }
+    */
+
+    Method checkMethod;
+    /*
+    public Method getCheckMethod() {
+        Method m = checkMethod;
+        if (m == null) {
+            m = 
+            checkMethod = m;
+        }
+        return m;
+    }
+    */
 
     /** Methods used to implement this functions.
      * primMethods[0] is used if the argument count is min_args;
@@ -396,10 +414,13 @@ public class LambdaExp extends ScopeExp {
     public final Method getMethod(int nonSpliceCount, int spliceCount) {
         if (primMethods == null || (max_args >= 0 && nonSpliceCount > max_args))
             return null;
+        if (keywords != null || (opt_args > 0 && primMethods.length == 1))
+            return null;
         int index = nonSpliceCount - min_args;
         if (index < 0)
             return null; // Too few arguments.
         int length = primMethods.length;
+        //System.err.println("getMethod "+this+" ns#:"+nonSpliceCount+" s#:"+spliceCount+" len:"+length+" idnex:"+index);
         if (spliceCount > 0)
             return length == 1 ? primMethods[0] : null;
         return primMethods[index < length ? index : length - 1];
@@ -619,11 +640,8 @@ public class LambdaExp extends ScopeExp {
             comp.generateConstructor(this);
     }
 
-    public void generateApplyMethods(Compilation comp)
-    {
-        comp.generateMatchMethods(this);
-        comp.generateApplyMethodsWithContext(this);
-        comp.generateApplyMethodsWithoutContext(this);
+    public void generateApplyMethods(Compilation comp) {
+        //comp.generateCheckMethods(this);
     }
 
     Field allocFieldFor(Compilation comp) {
@@ -665,8 +683,8 @@ public class LambdaExp extends ScopeExp {
             if (! needsClosure)
                 fflags |= Access.STATIC;
         }
-        Type rtype = Compilation.typeModuleMethod;
-        Field field = frameType.addField (fname, rtype, fflags);
+        Field field =
+            frameType.addField(fname, Compilation.typeCompiledProc, fflags);
         if (nameDecl != null)
             nameDecl.field = field;
         return field;
@@ -686,12 +704,13 @@ public class LambdaExp extends ScopeExp {
                     break;
             }
             ClassType frameType = owner.getHeapFrameType();
-            if (! (frameType.getSuperclass().isSubtype(Compilation.typeModuleBody)))
+            if (! (frameType.getSuperclass().isSubtype(Compilation.typeCompiledProc)))
                 owner = comp.getModule();
         }
         if (owner.applyMethods == null)
             owner.applyMethods = new ArrayList<LambdaExp>();
         owner.applyMethods.add(this);
+        checkMethod = comp.generateCheckMethod(this, owner);
     }
 
     public Field compileSetField(Compilation comp) {
@@ -787,7 +806,7 @@ public class LambdaExp extends ScopeExp {
           */
         {
             LambdaExp outer = outerLambda();
-            rtype = Compilation.typeModuleMethod;
+            rtype = Compilation.typeCompiledProc;
             if ((flags & NO_FIELD) != 0
                 || comp.dumpingInitializers
                 || (comp.immediate && outer instanceof ModuleExp
@@ -863,6 +882,17 @@ public class LambdaExp extends ScopeExp {
         int key_args = keywords == null ? 0 : keywords.length;
         int numStubs =
             ((flags & DEFAULT_CAPTURES_ARG) != 0) ? 0 : opt_args;
+        if (numStubs > 0) {
+            // check for complications
+            if (key_args > 0) numStubs = 0; // For simplicity - FIXME?
+            for (Declaration decl = firstDecl();
+                 decl != null;  decl = decl.nextDecl()) {
+                if (decl.getFlag(Declaration.IS_SUPPLIED_PARAMETER|Declaration.SKIP_FOR_METHOD_PARAMETER|Declaration.PATTERN_NESTED)) {
+                    numStubs = 0;
+                    break;
+                }
+            }
+        }
         boolean varArgs = max_args < 0 || min_args + numStubs < max_args;
 
         Method[] methods = new Method[numStubs + 1];
@@ -1022,31 +1052,43 @@ public class LambdaExp extends ScopeExp {
         int nameBaseLength = nameBuf.length();
         for (int i = 0;  i <= numStubs;  i++) {
             nameBuf.setLength(nameBaseLength);
-            int plainArgs = min_args + i;
-            int numArgs = plainArgs;
-            if (i == numStubs && varArgs)
-                numArgs++;
-            Type[] atypes = new Type[extraArg + numArgs + ctxArg];
+            //int plainArgs = min_args + key_args + i;
+            //if (numStubs == 0)                plainArgs += opt_args;
+            //System.err.println("numStubs:"+numStubs+" key:"+key_args+" plain:"+plainArgs+" min:"+min_args+" max:"+max_args+" opt:"+opt_args);
+            ArrayList<Type> argTypes = new ArrayList<Type>();
+            //int numArgs = plainArgs;
+            //if (i == numStubs && varArgs)                numArgs++;
+            //Type[] atypes = new Type[extraArg + numArgs + ctxArg];
             if (extraArg > 0)
-                atypes[0] = closureEnvType;
+                //atypes[0] = closureEnvType;
+                argTypes.add(closureEnvType);
             Stack<String> encTypes = new Stack<String>();
             int encTypesSize = rtypeEnc == null /* || not interesting */ ? 0 : 1;
             encTypes.add(encTypesSize == 0 ? "" : rtypeEnc);
             Declaration var = firstDecl();
             if (var != null && var.isThisParameter())
                 var = var.nextDecl();
-            for (int itype = 0; itype < plainArgs; var = var.nextDecl()) {
-                atypes[extraArg + itype++] = var.getType().getImplementationType();
+            int argi = 0;
+            while (var != null
+                   && ! var.getFlag(Declaration.IS_REST_PARAMETER)) {
+                if (numStubs > 0 && argi >= min_args + i)
+                    break;
+                if (var.parameterForMethod())
+                    argTypes.add(var.getType().getImplementationType());
                 String encType = comp.getLanguage().encodeType(var.getType());
                 if (encType == null /* || not interesting */)
                     encType = "";
                 else
                     encTypesSize = encTypes.size()+1;
                 encTypes.add(encType);
+                if (var.getFlag(Declaration.IS_PARAMETER))
+                    argi++;
+                var = var.nextDecl();
             }
             if (ctxArg != 0)
-                atypes[atypes.length-1] = Compilation.typeCallContext;
-            if (plainArgs < numArgs) {
+                argTypes.add(Compilation.typeCallContext);
+            //System.err.println("3 var:"+varArgs+" lexp:"+this+" nkey:"+key_args);
+            if (var != null && var.getFlag(Declaration.IS_REST_PARAMETER)) {
                 Type lastType = var.getType();
                 String lastTypeName = lastType.getName();
                 if (ctype.getClassfileVersion() >= ClassType.JDK_1_5_VERSION
@@ -1060,7 +1102,7 @@ public class LambdaExp extends ScopeExp {
                 else
                     encTypesSize = encTypes.size()+1;
                 encTypes.add(encType);
-
+                /*
                 if (key_args > 0 || numStubs < opt_args
                     // We'd like to support the the #!rest parameter an arbitrary
                     // array type or implementation of java.util.List.  However,
@@ -1074,8 +1116,9 @@ public class LambdaExp extends ScopeExp {
                                              Compilation.objArrayType);
                     argsArray.setParameter(true);
                 }
+                */
                 firstArgsArrayArg = var;
-                atypes[atypes.length-(withContext ? 2 : 1)] = lastType;
+                argTypes.add(lastType);
             }
             if (withContext)
                 nameBuf.append("$X");
@@ -1086,6 +1129,7 @@ public class LambdaExp extends ScopeExp {
                        && (((ModuleExp) outer)
                            .getFlag(ModuleExp.SUPERTYPE_SPECIFIED))));
             name = nameBuf.toString();
+            Type[] atypes = argTypes.toArray(new Type[argTypes.size()]);
 
             // Rename the method if an existing method has the same
             // name and type in this class.
@@ -1112,7 +1156,7 @@ public class LambdaExp extends ScopeExp {
             }
 
             Method method = ctype.addMethod(name, atypes, rtype, mflags);
-
+            //System.err.println("method#"+i+": "+method);
             // Maybe emit kawa.SourceMethodType annotation.
             if (encTypesSize > 0
                 && ! (nameDecl != null
@@ -1291,7 +1335,7 @@ public class LambdaExp extends ScopeExp {
                 frameType = getCompiledClassType(comp);
             else  {
                 frameType = new ClassType(comp.generateClassName("frame"));
-                frameType.setSuper(comp.getModuleType());
+                frameType.setSuper(comp.getModuleType()); // FIXME - not needed?
                 comp.addClass(frameType);
             }
             heapFrame.setType(frameType);
@@ -1307,8 +1351,8 @@ public class LambdaExp extends ScopeExp {
             code.putLineNumber(getFileName(), line);
     }
 
-    static Method searchForKeywordMethod3;
-    static Method searchForKeywordMethod4;
+    static Method searchForKeywordMethod3; // FIXME remove
+    static Method searchForKeywordMethod4; // FIXME remove
 
     /** Rembembers stuff to do in <init> of this class. */
     Initializer initChain;
@@ -1455,7 +1499,7 @@ public class LambdaExp extends ScopeExp {
                         code.emitInvokeStatic(Compilation.makeListMethod);
                     }
                     stackType = Compilation.scmListType;
-                } else {
+                } else if (false) { // FIXME
                     // Keyword argument.
                     Keyword keyword = keywords[key_i++];
                     Expression defaultArg = param.getInitValue();
@@ -1618,7 +1662,7 @@ public class LambdaExp extends ScopeExp {
                 if (varArgs) {
                     Expression arg;
                     String lastTypeName = restArgType.getName();
-                    if ("gnu.lists.LList".equals(lastTypeName))
+                    if (restArgType == LangObjType.listType || "gnu.lists.LList".equals(lastTypeName))
                         arg = new QuoteExp(gnu.lists.LList.Empty);
                     else if ("java.lang.Object[]".equals(lastTypeName))
                         arg = new QuoteExp(Values.noArgs);
@@ -1782,12 +1826,15 @@ public class LambdaExp extends ScopeExp {
         int args_length = exp.args.length;
         int spliceCount = exp.spliceCount();
         int nonSpliceCount = args_length - spliceCount;
+        int nonSpliceNonKeyCount = nonSpliceCount - 2 * exp.numKeywordArgs;
         String msg = WrongArguments.checkArgCount(getName(),
                                                   spliceCount > 0 ? 0 : min_args,
                                                   max_args,
-                                                  nonSpliceCount);
-        if (msg != null)
+                                                  nonSpliceNonKeyCount);
+        if (msg != null) {
+            System.err.println("error-call "+this+" acount:"+nonSpliceCount);
             return visitor.noteError(msg);
+        }
         int conv = getCallConvention();
         Compilation comp = visitor.getCompilation();
         Method method;
@@ -1856,12 +1903,14 @@ public class LambdaExp extends ScopeExp {
         printLineColumn(out);
         out.startLogicalBlock("(", false, ")");
         Special prevMode = null;
-        int i = 0;
+        int i = -1;
         int key_args = keywords == null ? 0 : keywords.length;
         Declaration decl = firstDecl();
         if (decl != null && decl.isThisParameter())
-            i = -1;
+            i = -2;
         for (; decl != null;  decl = decl.nextDecl()) {
+            if (decl.getFlag(Declaration.IS_PARAMETER))
+                i++;
             Special mode;
             if (i < min_args
                 || (i == min_args && decl.getFlag(Declaration.PATTERN_NESTED)))
@@ -1881,14 +1930,15 @@ public class LambdaExp extends ScopeExp {
             Expression defaultArg = decl.getInitValue();
             if (defaultArg != null)
                 out.print('(');
+            if (decl.getFlag(Declaration.IS_SUPPLIED_PARAMETER)
+                && ! decl.getFlag(Declaration.IS_PARAMETER))
+                out.print("supplied:");
             decl.printInfo(out);
             if (defaultArg != null && defaultArg != QuoteExp.falseExp) {
                 out.print(' ');
                 defaultArg.print(out);
                 out.print(')');
             }
-            if (decl.getFlag(Declaration.IS_PARAMETER))
-                i++;
             prevMode = mode;
         }
         out.endLogicalBlock(")");
@@ -2038,6 +2088,7 @@ public class LambdaExp extends ScopeExp {
         public int numArgs() { return lambda.min_args | (lambda.max_args << 12); }
 
         public Closure(LambdaExp lexp, CallContext ctx) {
+            super(true, applyToConsumer);
             this.lambda = lexp;
 
             Object[][] oldFrames = ctx.evalFrames;
@@ -2052,37 +2103,24 @@ public class LambdaExp extends ScopeExp {
             setSymbol(lambda.getSymbol());
         }
 
-        public int match0(CallContext ctx) {
-            return matchN(new Object[] { }, ctx);
-        }
-
-        public int match1(Object arg1, CallContext ctx) {
-            return matchN(new Object[] { arg1 }, ctx);
-        }
-
-        public int match2(Object arg1, Object arg2, CallContext ctx) {
-            return matchN(new Object[] { arg1, arg2 }, ctx);
-        }
-
-        public int match3(Object arg1, Object arg2, Object arg3, CallContext ctx) {
-            return matchN(new Object[] { arg1, arg2, arg3 }, ctx);
-        }
-
-        public int match4(Object arg1, Object arg2, Object arg3, Object arg4,
-                          CallContext ctx) {
-            return matchN(new Object[] { arg1, arg2, arg3, arg4 }, ctx);
-        }
-
-        public int matchN(Object[] args, CallContext ctx) {
-            int num = numArgs();
-            int nargs = args.length;
+        public static Object applyToConsumer(Procedure proc, CallContext ctx)
+                throws Throwable {
+            Closure closure = (Closure) proc;
+            LambdaExp lambda = closure.lambda;
+            Object[] args = ctx.getArgs();
+            Object[][] evalFrames = closure.evalFrames;
+            int num = proc.numArgs();
+            int nargs = ctx.getArgCount();
             int min = num & 0xFFF;
-            if (nargs < min)
-                return MethodProc.NO_MATCH_TOO_FEW_ARGS|min;
+            if (nargs < min) {
+                ctx.matchError(MethodProc.NO_MATCH_TOO_FEW_ARGS|min);
+                return ctx;
+            }
             int max = num >> 12;
-            if (nargs > max && max >= 0)
-                return MethodProc.NO_MATCH_TOO_MANY_ARGS|max;
-
+            if (nargs > max && max >= 0) {
+                ctx.matchError(MethodProc.NO_MATCH_TOO_MANY_ARGS|max);
+                return ctx;
+            }
             Object[] evalFrame = new Object[lambda.frameSize];
             int key_args = lambda.keywords == null ? 0 : lambda.keywords.length;
             int opt_args = lambda.opt_args;
@@ -2116,7 +2154,8 @@ public class LambdaExp extends ScopeExp {
                                 try {
                                     el = elementType.coerceFromObject(args[i+j]);
                                 } catch (ClassCastException ex) {
-                                    return NO_MATCH_BAD_TYPE|(i+j);
+                                    ctx.matchError(NO_MATCH_BAD_TYPE|(i+j));
+                                    return ctx;
                                 }
                                 java.lang.reflect.Array.set(value, j, el);
                             }
@@ -2137,7 +2176,8 @@ public class LambdaExp extends ScopeExp {
                     try {
                         value = decl.type.coerceFromObject(value);
                     } catch (ClassCastException ex) {
-                        return NO_MATCH_BAD_TYPE|i;
+                        ctx.matchError(NO_MATCH_BAD_TYPE|i);
+                        return ctx;
                     }
                 }
                 if (decl.isIndirectBinding()) {
@@ -2147,16 +2187,12 @@ public class LambdaExp extends ScopeExp {
                 }
                 evalFrame[decl.evalIndex] = value;
             }
-            ctx.values = evalFrame;
-            ctx.where = 0;
-            ctx.next = 0;
-            ctx.proc = this;
-            return 0; // FIXME
-        }
 
-        public void apply(CallContext ctx) throws Throwable {
+            ctx.next = ctx.count;
+            if (ctx.checkDone() != 0)
+                return ctx;
+
             int level = ScopeExp.nesting(lambda);
-            Object[] evalFrame = ctx.values;
             Object[][] saveFrames = ctx.evalFrames;
 
             int numFrames = evalFrames == null ? 0 : evalFrames.length;
@@ -2190,6 +2226,7 @@ public class LambdaExp extends ScopeExp {
             } finally {
                 ctx.evalFrames = saveFrames;
             }
+            return ctx;
         }
 
         public Object getProperty(Object key, Object defaultValue) {
@@ -2199,4 +2236,15 @@ public class LambdaExp extends ScopeExp {
             return value;
         }
     }
+
+    public static final MethodHandle applyToConsumer;
+    static {
+        MethodHandles.Lookup lookup = MethodHandles.lookup();
+        try {
+            applyToConsumer = lookup.findStatic(Closure.class, "applyToConsumer", applyMethodType);
+        } catch (Exception ex) {
+            throw new RuntimeException(ex);
+        }
+    }
+
 }

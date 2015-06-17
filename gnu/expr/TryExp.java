@@ -59,8 +59,8 @@ public class TryExp extends Expression
             ClassType typeVal = (ClassType) decl.getTypeExp().eval(ctx);
             if (typeVal.isInstance(ex))
               {
-                ctx.value1 = ex;
-                clause.apply(ctx);
+                ctx.setupApply(clause, ex);
+                ctx.runUntilDone();
                 return;
               }
           }

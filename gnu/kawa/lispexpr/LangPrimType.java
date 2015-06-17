@@ -350,6 +350,18 @@ public class LangPrimType extends PrimType implements TypeValue {
         return super.isCompatibleWithValue(valueType);
     }
 
+    public static void emitTestIfNumber(Variable incoming, Declaration decl,
+                                        Type type, Compilation comp) {
+        CodeAttr code = comp.getCode();
+        Type.javalangNumberType.emitIsInstance(code);
+        code.emitIfIntNotZero();
+        if (decl != null) {
+            code.emitLoad(incoming);
+            type.emitCoerceFromObject(code);
+            decl.compileStore(comp);
+        }
+    }
+
     public void emitTestIf(Variable incoming, Declaration decl,
                            Compilation comp) {
         CodeAttr code = comp.getCode();
@@ -374,6 +386,18 @@ public class LangPrimType extends PrimType implements TypeValue {
         } else if (this == stringCursorType) {
             code.emitInvokeStatic(boxedStringCursorType
                                   .getDeclaredMethod("checkStringCursor", 1));
+        } else {
+            emitTestIfNumber(incoming, decl, getImplementationType(), comp);
+            /*
+            Type.javalangNumberType.emitIsInstance(code);
+            code.emitIfIntNotZero();
+            if (decl != null) {
+                code.emitLoad(incoming);
+                super.emitCoerceFromObject(code);
+                decl.compileStore(comp);
+            }
+            */
+            return;
         }
         if (decl != null) {
             code.emitDup();
