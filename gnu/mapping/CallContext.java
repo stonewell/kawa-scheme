@@ -7,6 +7,9 @@ import gnu.lists.*;
 import gnu.expr.Keyword; // FIXME - bad cross-package dependency
 import gnu.expr.Special;
 import gnu.kawa.util.HeapSort;
+/* #ifdef use:java.lang.invoke */
+import java.lang.invoke.*;
+/* #endif */
 
 /** A procedure activation stack (when compiled with explicit stacks). */
 
@@ -40,14 +43,12 @@ public class CallContext // implements Runnable
     return ctx;
   }
 
-    // Perhaps replace with:
-    // MethodHandle applyMethod;
-    private Procedure proc;  // used for runUntilDone trampoline
-    private Procedure mproc; // used for error reporting
+    private MethodHandle applyMethod; // used for runUntilDone trampoline
+    private Procedure proc; // mostly used for error reporting
 
     public final void setNextProcedure(Procedure proc) {
         this.proc = proc;
-        this.mproc = proc;
+        this.applyMethod = proc == null ? null : proc.applyToConsumerMethod;
     }
 
 
@@ -146,18 +147,18 @@ public class CallContext // implements Runnable
     // argsStatc < 0: error code - subsumes matchState
 
     public void matchError(int code) {
-        //new Error("matchError mp:"+mproc+" code:"+Integer.toHexString(code)+" st:"+Integer.toHexString(matchState)).printStackTrace();
+        //new Error("matchError mp:"+proc+" code:"+Integer.toHexString(code)+" st:"+Integer.toHexString(matchState)).printStackTrace();
         if (matchState == MATCH_THROW_ON_EXCEPTION) {
             int arg = (short) code;
             code &= 0xffff0000;
             if (code == MethodProc.NO_MATCH_TOO_FEW_ARGS
                 || code == MethodProc.NO_MATCH_TOO_MANY_ARGS) {
-                System.err.println("before WrongArgs proc:"+proc+" mproc:"+mproc+" nargs:"+getArgCount());
-                throw new WrongArguments(mproc, getArgCount());
+                System.err.println("before WrongArgs proc:"+proc+" proc:"+proc+" nargs:"+getArgCount());
+                throw new WrongArguments(proc, getArgCount());
             }
             if (code == MethodProc.NO_MATCH_UNUSED_KEYWORD)
                 throw new IllegalArgumentException(keywords != null && keywords.length > arg ? "unexpected keyword '"+keywords[arg]+"'" : "unexpected keyword");
-            throw new WrongType(mproc, arg, arg > 0 ? getArgAsObject(arg-1) : null);
+            throw new WrongType(proc, arg, arg > 0 ? getArgAsObject(arg-1) : null);
 	}
         if (matchState == MATCH_CHECK || matchState == MATCH_CHECK_ONLY)
             matchState = code;
@@ -524,13 +525,13 @@ public class CallContext // implements Runnable
     {
     for (;;)
       {
-	Procedure proc = this.proc;
-	if (proc == null)
+        MethodHandle handle = applyMethod;
+	if (handle == null)
 	      break;
-	this.proc = null;
+	this.applyMethod = null;
         next = 0;
         matchState = CallContext.MATCH_THROW_ON_EXCEPTION;
-        Object ignored = proc.applyToConsumerMethod.invokeExact(mproc, this);
+        Object ignored = handle.invokeExact(proc, this);
       }
   }
 
@@ -542,7 +543,7 @@ public class CallContext // implements Runnable
    * from the vstack and restores the state.
    */
     public final int startFromContext() {
-        //System.err.println("startFromContext mproc:"+mproc+" gapS:"+vstack.gapStart +" onSt:"+vstack.gapStartOnPush+" cons:"+consumer.getClass().getName()+" last:"+vstack.lastObject);
+        //System.err.println("startFromContext proc:"+proc+" gapS:"+vstack.gapStart +" onSt:"+vstack.gapStartOnPush+" cons:"+consumer.getClass().getName()+" last:"+vstack.lastObject);
         if (vstack.gapStart == vstack.gapStartOnPush
             && consumer == vstack) { // Simple efficient case.
             return -1;
@@ -560,7 +561,7 @@ public class CallContext // implements Runnable
      */
     public final Object getFromContext(int saved) throws Throwable {
         runUntilDone();
-        //System.err.println("getFromContext mproc:"+mproc+" gapS:"+vstack.gapStart +" onSt:"+vstack.gapStartOnPush+" last:"+vstack.lastObject);
+        //System.err.println("getFromContext proc:"+proc+" gapS:"+vstack.gapStart +" onSt:"+vstack.gapStartOnPush+" last:"+vstack.lastObject);
         Object result = ((ValueStack) consumer).getValue();
         cleanupFromContext(saved);
         return result;
@@ -586,7 +587,8 @@ public class CallContext // implements Runnable
         }
     }
 
-    /** Run until no more continuations, returning final result. */
+    /** Run until no more continuations, returning final result.
+     * Assume that the current applyHandle is from proc. */
     public final Object runUntilValue() throws Throwable {
         // Functionally equivalent to the following, but more efficient.
         // int saved = startFromContext();
@@ -596,10 +598,9 @@ public class CallContext // implements Runnable
         //     cleanupFromContext(saved);
         // throw ex;
         // }
-        if (proc != null && proc.applyToConsumerMethod == Procedure.applyToConsumerDefault) {
-            Procedure p = proc;
-            proc = null;
-            return p.applyToObjectMethod.invokeExact(p, this);
+        if (proc != null && applyMethod == Procedure.applyToConsumerDefault) {
+            applyMethod = null;
+            return proc.applyToObjectMethod.invokeExact(proc, this);
         }
 
         Consumer consumerSave = consumer;
