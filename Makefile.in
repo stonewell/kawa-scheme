@@ -1126,10 +1126,31 @@ distall:  distcheck dist-kawa-@VERSION@.jar kawa-doc-$(VERSION).tar.gz
 # kawa-@VERSION@-src.zip jemacs-@JEMACS_VERSION@.jar bytecode-@BYTECODE_VERSION@.jar
 
 check-ok-for-invoke:
+	cd testsuite && make OPTIONS=--full-tailcalls \
+	  check-scm check-r7rs check-polytype check-case
 	cd testsuite && \
-	make check-r7rs check-run-test-scripts check-num \
-	check-jmc check-use-slots check-sva31180 \
-	check-bridge check-life-grid check-larceny-tests check-numbers-clisp
+	  make check-num check-arr check-java-array \
+	  check-srfi-16 check-srfi-38 check-srfi-64 check-srfi-69 \
+	  check-srfi-101 check-srfi-108 check-srfi-109 \
+	  check-ppfile check-text check-xml \
+	  check-run-test-scripts \
+	  check-annotations1 check-annotations2 \
+	  check-binarytrees check-chameneosredux check-fannkuch \
+	  check-fannkuchredux check-fasta \
+	  check-knucleotide check-mandelbrot check-meteor check-nbody \
+	  check-nsieve check-pidigits check-regexdna check-revcomp \
+	  check-spectralnorm check-threadring
+	cd testsuite && make OPTIONS=--no-full-tailcalls \
+	  check-scm check-r7rs check-polytype check-case
+	cd testsuite && make \
+	  check-interpreted-cycle check-interpreted-cycleb check-interpreted-cyclebr \
+	  check-jmc check-use-slots check-load-require check-sva31180 \
+	  check-bridge check-life-grid check-larceny-tests check-numbers-clisp
+
+# TODO in check1: check-lazy check-lib check-format check-system check-regex
+# scribble.class check-moduleM 
+# TODO in check2: check-misc check-mac check-obj 
+# TODO in check:  check-no-inline $(SERVLET_TESTS) $(SAX2_TESTS) check-inlining
 
 # Tell versions [3.59,3.63) of GNU make to not export all variables.
 # Otherwise a system limit (for SysV at least) may be exceeded.

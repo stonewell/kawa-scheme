@@ -42,7 +42,7 @@ public class CallContext // implements Runnable
 
     // Perhaps replace with:
     // MethodHandle applyMethod;
-    public Procedure proc;  // used for runUntilDone trampoline
+    private Procedure proc;  // used for runUntilDone trampoline
     public Procedure mproc; // used for error reporting
 
     public void setNextProcedure(Procedure proc) {

@@ -1085,8 +1085,6 @@ public class LambdaExp extends ScopeExp {
                     argi++;
                 var = var.nextDecl();
             }
-            if (ctxArg != 0)
-                argTypes.add(Compilation.typeCallContext);
             //System.err.println("3 var:"+varArgs+" lexp:"+this+" nkey:"+key_args);
             if (var != null && var.getFlag(Declaration.IS_REST_PARAMETER)) {
                 Type lastType = var.getType();
@@ -1120,6 +1118,8 @@ public class LambdaExp extends ScopeExp {
                 firstArgsArrayArg = var;
                 argTypes.add(lastType);
             }
+            if (ctxArg != 0)
+                argTypes.add(Compilation.typeCallContext);
             if (withContext)
                 nameBuf.append("$X");
 
