@@ -142,16 +142,6 @@ public abstract class MethodProc extends ProcedureN
     return new WrongType(proc, arg, arg > 0 ? args[arg-1] : null);
   }
 
-    /*
-  public Object applyN(Object[] args) throws Throwable
-  {
-    checkArgCount(this, args.length);
-    CallContext ctx = CallContext.getInstance();
-    checkN(args, ctx);
-    return ctx.runUntilValue();
-  }
-    */
-
   /** Return the more specific of the arguments.
    * @return null if neither is more specific. */
   public static MethodProc mostSpecific(MethodProc proc1, MethodProc proc2)

@@ -147,12 +147,9 @@ public abstract class Procedure extends PropertySet
     }
 
     public Object apply2(Object arg1,Object arg2) throws Throwable {
-        //System.err.println("Proc.apply2 a1:"+arg1+" a2:"+arg2+" p:"+this);
         CallContext ctx = CallContext.getInstance();
         ctx.setupApply(this, arg1, arg2);
-        Object r = ctx.runUntilValue();
-        //System.err.println("-> Proc.apply2 p:"+this+" r:"+r);
-        return r;
+        return ctx.runUntilValue();
     }
 
     public Object apply3(Object arg1, Object arg2,

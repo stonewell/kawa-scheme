@@ -68,45 +68,6 @@ public class CompiledProc extends MethodProc {
         return this;
     }
 
-    // FIXME duplicates code from Procedure class
-    public Object apply0() throws Throwable {
-        CallContext ctx = CallContext.getInstance();
-        ctx.setupApply(this);
-        return ctx.runUntilValue();
-    }
-
-    public Object apply1(Object arg1) throws Throwable {
-        CallContext ctx = CallContext.getInstance();
-        ctx.setupApply(this, arg1);
-        return ctx.runUntilValue();
-    }
-
-    public Object apply2(Object arg1,Object arg2) throws Throwable {
-        CallContext ctx = CallContext.getInstance();
-        ctx.setupApply(this, arg1, arg2);
-        return ctx.runUntilValue();
-    }
-
-    public Object apply3(Object arg1, Object arg2,
-                         Object arg3) throws Throwable {
-        CallContext ctx = CallContext.getInstance();
-        ctx.setupApply(this, arg1, arg2, arg3);
-        return ctx.runUntilValue();
-    }
-
-    public Object apply4(Object arg1, Object arg2,
-                         Object arg3, Object arg4) throws Throwable {
-        CallContext ctx = CallContext.getInstance();
-        ctx.setupApply(this, arg1, arg2, arg3, arg4);
-        return ctx.runUntilValue();
-    }
-
-    public Object applyN(Object[] args) throws Throwable {
-        CallContext ctx = CallContext.getInstance();
-        ctx.setupApplyAll(this, args);
-        return ctx.runUntilValue();
-    }
-
     // FIXME missing functionality of ModuleMethod.resolveParameterTypes
 
     public int numArgs() { return numArgs; }

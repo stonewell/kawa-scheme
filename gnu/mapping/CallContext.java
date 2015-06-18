@@ -43,9 +43,9 @@ public class CallContext // implements Runnable
     // Perhaps replace with:
     // MethodHandle applyMethod;
     private Procedure proc;  // used for runUntilDone trampoline
-    public Procedure mproc; // used for error reporting
+    private Procedure mproc; // used for error reporting
 
-    public void setNextProcedure(Procedure proc) {
+    public final void setNextProcedure(Procedure proc) {
         this.proc = proc;
         this.mproc = proc;
     }
@@ -133,8 +133,7 @@ public class CallContext // implements Runnable
     public void shiftArgs(Procedure proc, int toDrop) {
         super.shiftArgs(toDrop);
         next = 0;
-        this.proc = proc;
-        this.mproc = proc;
+        setNextProcedure(proc);
     }
 
     public int getMode() { return matchState; }
@@ -431,24 +430,21 @@ public class CallContext // implements Runnable
     */
 
     public void setupApply(Procedure proc) {
-        this.proc = proc;
-        this.mproc = proc;
+        setNextProcedure(proc);
         super.setArgs();
         next = 0;
         matchState = MATCH_THROW_ON_EXCEPTION;
     }
 
     public void setupApply(Procedure proc, Object arg0) {
-        this.proc = proc;
-        this.mproc = proc;
+        setNextProcedure(proc);
         super.setArgs(arg0);
         next = 0;
         matchState = MATCH_THROW_ON_EXCEPTION;
     }
 
     public void setupApply(Procedure proc, Object arg0, Object arg1) {
-        this.proc = proc;
-        this.mproc = proc;
+        setNextProcedure(proc);
         super.setArgs(arg0, arg1);
         next = 0;
         matchState = MATCH_THROW_ON_EXCEPTION;
@@ -456,8 +452,7 @@ public class CallContext // implements Runnable
 
     public void setupApply(Procedure proc, Object arg0, Object arg1,
                             Object arg2) {
-        this.proc = proc;
-        this.mproc = proc;
+        setNextProcedure(proc);
         super.setArgs(arg0, arg1, arg2);
         next = 0;
         matchState = MATCH_THROW_ON_EXCEPTION;
@@ -465,16 +460,14 @@ public class CallContext // implements Runnable
 
     public void setupApply(Procedure proc, Object arg0, Object arg1,
                             Object arg2, Object arg3) {
-        this.proc = proc;
-        this.mproc = proc;
+        setNextProcedure(proc);
         super.setArgs(arg0, arg1, arg2, arg3);
         next = 0;
         matchState = MATCH_THROW_ON_EXCEPTION;
     }
 
     public void setupApplyAll(Procedure proc, Object[] args) {
-        this.proc = proc;
-        this.mproc = proc;
+        setNextProcedure(proc);
         super.setArgsAll(args);
         next = 0;
         matchState = MATCH_THROW_ON_EXCEPTION;
@@ -482,8 +475,7 @@ public class CallContext // implements Runnable
 
     public void setupApplyAll(Procedure proc, Object[] args,
                               int fromIndex, int toIndex) {
-        this.proc = proc;
-        this.mproc = proc;
+        setNextProcedure(proc);
         super.setArgsAll(args, fromIndex, toIndex);
         next = 0;
         matchState = MATCH_THROW_ON_EXCEPTION;
@@ -534,20 +526,8 @@ public class CallContext // implements Runnable
       {
 	Procedure proc = this.proc;
 	if (proc == null)
-	  {
-	    /* CPS:
-	    CallFrame fr = frame;
-	    if (fr == null)
 	      break;
-	    proc = fr.proc;
-	    frame = fr.previous;
-	    if (proc == null)
-	    */
-	      break;
-	  }
 	this.proc = null;
-        //System.err.println("in runUntilDone before apply of "+proc+" count:"+count+" next:"+next);
-	//proc.apply(this);
         next = 0;
         matchState = CallContext.MATCH_THROW_ON_EXCEPTION;
         Object ignored = proc.applyToConsumerMethod.invokeExact(mproc, this);
@@ -619,11 +599,7 @@ public class CallContext // implements Runnable
         if (proc != null && proc.applyToConsumerMethod == Procedure.applyToConsumerDefault) {
             Procedure p = proc;
             proc = null;
-            //Object rapp=java.lang.invoke.MethodHandles.lookup().revealDirect(p.applyToObjectMethod);
-            //System.err.println("runUntilV "+p+"::"+p.getClass().getName()+" mproc:"+mproc+" app:"+rapp+" count:"+count+(count>0?("arg0:"+values[0]):""));
-            Object r= p.applyToObjectMethod.invokeExact(p, this);
-            //System.err.println("ret runUntilV "+p+" ->r:"+r);
-            return r;
+            return p.applyToObjectMethod.invokeExact(p, this);
         }
 
         Consumer consumerSave = consumer;
