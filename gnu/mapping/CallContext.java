@@ -19,14 +19,7 @@ public class CallContext // implements Runnable
   public static void setInstance(CallContext ctx)
   {
     Thread thread = Thread.currentThread();
-    /* #ifdef JAVA2 */
     currentContext.set(ctx);
-    /* #else */
-    // if (thread instanceof Future)
-    //   ((Future) thread).closure.context = ctx;
-    // else
-    //   threadMap.put(thread, ctx);
-    /* #endif */
   }
 
   /** Get but don't create a CallContext for the current thread. */
@@ -51,6 +44,12 @@ public class CallContext // implements Runnable
     // MethodHandle applyMethod;
     public Procedure proc;  // used for runUntilDone trampoline
     public Procedure mproc; // used for error reporting
+
+    public void setNextProcedure(Procedure proc) {
+        this.proc = proc;
+        this.mproc = proc;
+    }
+
 
   /** The program location in the current procedure.
    * This a selector that only has meaning to the proc's Procedure.*/
@@ -481,6 +480,15 @@ public class CallContext // implements Runnable
         matchState = MATCH_THROW_ON_EXCEPTION;
     }
 
+    public void setupApplyAll(Procedure proc, Object[] args,
+                              int fromIndex, int toIndex) {
+        this.proc = proc;
+        this.mproc = proc;
+        super.setArgsAll(args, fromIndex, toIndex);
+        next = 0;
+        matchState = MATCH_THROW_ON_EXCEPTION;
+    }
+
     public void addArg(Object arg) {
         super.add(arg);
     }
@@ -539,7 +547,10 @@ public class CallContext // implements Runnable
 	  }
 	this.proc = null;
         //System.err.println("in runUntilDone before apply of "+proc+" count:"+count+" next:"+next);
-	proc.apply(this);
+	//proc.apply(this);
+        next = 0;
+        matchState = CallContext.MATCH_THROW_ON_EXCEPTION;
+        Object ignored = proc.applyToConsumerMethod.invokeExact(mproc, this);
       }
   }
 

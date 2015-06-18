@@ -1422,7 +1422,6 @@ public class Compilation implements SourceLocator
         int kin = 0;
         for (Declaration decl = lexp.firstDecl();
 	     decl != null; decl = decl.nextDecl()) {
-            System.err.println("p:"+decl+" kin:"+kin+"/"+nkeys+" is-p:"+decl.getFlag(Declaration.IS_PARAMETER)+" min:"+(lexp.min_args+lexp.opt_args));
             if (kin >= nkeys)
                 break;
             if (! decl.getFlag(Declaration.IS_PARAMETER))
@@ -1544,7 +1543,6 @@ public class Compilation implements SourceLocator
                     code.emitLoad(ctxVar);
                     code.emitReturn();
                     code.emitFi();
-                    System.err.println("call "+ lexp.primMethods[kin-lexp.min_args]+" kin:"+kin+" min:"+lexp.min_args+" opt:"+lexp.opt_args+" numM:"+ lexp.primMethods.length+" param:"+param);
                     generateCheckCall(lexp, code,
                                       lexp.primMethods[kin-lexp.min_args], argVariables);
                     code.emitFi();
@@ -1555,8 +1553,6 @@ public class Compilation implements SourceLocator
             } else if (kin >= lexp.min_args+lexp.opt_args) {
                 // keyword parameter
                 int kindex = kin - (lexp.min_args+lexp.opt_args);
-                if (keyDecls == null)
-                    System.err.println("null keyDecls for "+lexp+" min:"+lexp.min_args+" opt:"+lexp.opt_args+" kin:"+kin+" param:"+param+" is-rest:"+param.getFlag(Declaration.IS_REST_PARAMETER));
                 Declaration keyDecl = keyDecls[kindex];
                 if (keyDecl.isSimple()) {
                     var = keyDecl.var;

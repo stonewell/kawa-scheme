@@ -40,6 +40,7 @@ class NamedPart extends ProcedureN
     return 0xfffff000;
   }
 
+    /* FIXME
   public void apply (CallContext ctx) throws Throwable
   {
     apply(ctx.getArgs(), ctx);
@@ -62,6 +63,7 @@ class NamedPart extends ProcedureN
     else
       ctx.writeValue(this.applyN(args));
   }
+    */
 
   public Object applyN (Object[] args)
     throws Throwable

@@ -91,7 +91,7 @@ public class OrderedTuples extends FilterConsumer
   void emit (int index, CallContext ctx)  throws Throwable
   {
     Object[] args = (Object[]) tuples[index];
-    body.checkN(args, ctx);
+    ctx.setupApplyAll(body, args);
     ctx.runUntilDone();
   }
 

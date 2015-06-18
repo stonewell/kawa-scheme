@@ -20,6 +20,7 @@ public class CallWithValues extends Procedure2 {
                               LangObjType.coerceToProcedure(consumer));
     }
 
+    /*
     public void apply(CallContext ctx) throws Throwable {
         Procedure.checkArgCount(this, 2);
         Object[] args = ctx.getArgs();
@@ -30,6 +31,7 @@ public class CallWithValues extends Procedure2 {
         else
             consumer.check1(values, ctx);
     }
+    */
 }
 
 

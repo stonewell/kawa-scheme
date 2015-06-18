@@ -87,7 +87,7 @@ public abstract class ProcedureN extends Procedure
   }
     */
 
-  public abstract Object applyN (Object[] args) throws Throwable;
+    //public abstract Object applyN (Object[] args) throws Throwable;
 
     public static Object applyToObject(Procedure proc, CallContext ctx)
     throws Throwable {

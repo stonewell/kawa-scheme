@@ -14,7 +14,7 @@ import java.lang.invoke.*;
 
 public abstract class MethodProc extends ProcedureN
 {
-    public MethodProc() {
+    public MethodProc() { // FIXME - remove
         super(true, applyToConsumerDefaultMP);
     }
     public MethodProc(boolean resultGoesToConsumer, MethodHandle applyMethod) {
@@ -142,6 +142,7 @@ public abstract class MethodProc extends ProcedureN
     return new WrongType(proc, arg, arg > 0 ? args[arg-1] : null);
   }
 
+    /*
   public Object applyN(Object[] args) throws Throwable
   {
     checkArgCount(this, args.length);
@@ -149,6 +150,7 @@ public abstract class MethodProc extends ProcedureN
     checkN(args, ctx);
     return ctx.runUntilValue();
   }
+    */
 
   /** Return the more specific of the arguments.
    * @return null if neither is more specific. */
@@ -217,7 +219,10 @@ public abstract class MethodProc extends ProcedureN
     }
 
     public static Object applyToConsumerDefaultMP(Procedure proc, CallContext ctx) throws Throwable {
+        throw new Error("applyToConsumerDefaultMP for "+proc+"::"+proc.getClass().getName());
+        /*
         Object[] args = ctx.getArgs();
+        System.err.println("applyToConsumerDefaultMP for "+proc+"::"+proc.getClass().getName());
         int code = proc.matchN(args, ctx);
         if (code != 0) {
              if (ctx.matchState == CallContext.MATCH_THROW_ON_EXCEPTION)
@@ -225,8 +230,10 @@ public abstract class MethodProc extends ProcedureN
              else
                  return ctx;
         }
-        proc.apply(ctx);
+        //proc.apply(ctx);
+        Object ignored = proc.applyToConsumerMethod.invokeExact(proc, ctx);
         return null;
+        */
     }
     public static final MethodHandle applyToConsumerDefaultMP;
     static {

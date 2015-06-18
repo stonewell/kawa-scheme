@@ -128,7 +128,11 @@ public abstract class Procedure extends PropertySet
 	//throw MethodProc.matchFailAsException(code, this, args);
     }
 
-  public abstract Object applyN (Object[] args) throws Throwable;
+    public Object applyN (Object[] args) throws Throwable {
+        CallContext ctx = CallContext.getInstance();
+        ctx.setupApplyAll(this, args);
+        return ctx.runUntilValue();
+    }
 
     public Object apply0() throws Throwable {
         CallContext ctx = CallContext.getInstance();
@@ -200,174 +204,13 @@ public abstract class Procedure extends PropertySet
       throw new WrongArguments(proc, argCount);
   }
 
-  /* CPS: ??
-  public void apply1(Object arg, CallContext stack, CallFrame rlink, int rpc)
-  {
-    context.value = apply1(arg);
-    context.frame = rlink;
-    context.pc = rpc;
-  }
-  */
-
     int nesting = 0;
-
-  /** Call this Procedure using the explicit-CallContext-convention.
-   * The input arguments are (by default) in stack.args;
-   * the result is written to ctx.consumer. */
-
-  public void apply (CallContext ctx) throws Throwable
-  {
-        ctx.next = 0;
-        ctx.matchState = CallContext.MATCH_THROW_ON_EXCEPTION;
-        //if (++nesting > 10)
-        //    throw new Error("CYCLE! "+this+" ::"+getClass().getName());
-        try {
-            //System.err.println("Proc.apply before applyToConsumerMethod proc:"+this);
-        Object ignored = applyToConsumerMethod.invokeExact(this, ctx);
-        } catch (NullPointerException ex) {
-            System.err.println("Proc.apply NPE proc:"+this+"::"+this.getClass().getName()+" app:"+applyToConsumerMethod);
-            throw ex;
-        } finally {
-            nesting--;
-        }
-  }
 
   public static void apply (Procedure proc, CallContext ctx) throws Throwable
   {
         ctx.next = 0;
         ctx.matchState = CallContext.MATCH_THROW_ON_EXCEPTION;
         Object ignored = proc.applyToConsumerMethod.invokeExact(proc, ctx);
-  }
-
-    protected int matchX(CallContext ctx) {
-        ctx.matchState = CallContext.MATCH_CHECK_ONLY;
-        try {
-            Object r = applyToConsumerMethod.invokeExact(this, ctx);
-            ctx.next = 0;
-            int r2= r == ctx && ctx.matchState != CallContext.MATCH_CHECK_ONLY ? ctx.matchState : 0;
-            //System.err.println("matchX p:"+this+" -> r:"+r+" c.proc:"+ctx.proc+" state:"+Integer.toHexString(ctx.matchState)+" r2:"+r2);
-            return r2;
-        } catch (Throwable ex) {
-            ctx.next = 0;
-            return MethodProc.NO_MATCH;
-        }
-    }
-
-  /** Pass zero arguments.
-   * @return non-negative if the match succeeded, else negative.
-   */
-  public int match0 (CallContext ctx)
-  {
-        ctx.setupApply(this);
-        return matchX(ctx);
-  }
-
-  /** Pass one argument.
-   * @return non-negative if the match succeeded, else negative.
-   */
-  public int match1 (Object arg1, CallContext ctx)
-  {
-        ctx.setupApply(this, arg1);
-        return matchX(ctx);
-  }
-
-  /** Pass two arguments.
-   * @return non-negative if the match succeeded, else negative.
-   */
-  public int match2 (Object arg1, Object arg2, CallContext ctx)
-  {
-        ctx.setupApply(this, arg1, arg2);
-        return matchX(ctx);
-  }
-
-  /** Pass three arguments.
-   * @return non-negative if the match succeeded, else negative.
-   */
-    public int match3 (Object arg1, Object arg2, Object arg3, CallContext ctx)
-    {
-        ctx.setupApply(this, arg1, arg2, arg3);
-        return matchX(ctx);
-    }
-
-  /** Pass four arguments.
-   * @return non-negative if the match succeeded, else negative.
-   */
-  public int match4 (Object arg1, Object arg2, Object arg3, Object arg4,
-		     CallContext ctx)
-  {
-        ctx.setupApply(this, arg1, arg2, arg3, arg4);
-        return matchX(ctx);
-   }
-
-  public int matchN(Object[] args, CallContext ctx)
-  {
-        ctx.setupApplyAll(this, args);
-        return matchX(ctx);
-  }
-
-  /** Does match0, plus throws exception on argument mismatch. */
-  public void check0 (CallContext ctx)
-  {
-    int code = match0(ctx);
-    if (code != 0)
-      {
-	throw MethodProc.matchFailAsException(code, this, ProcedureN.noArgs);
-      }
-  }
-
-  /** Does match1, plus throws exception on argument mismatch. */
-  public void check1 (Object arg1, CallContext ctx)
-  {
-    int code = match1(arg1, ctx);
-    if (code != 0)
-      {
-	Object[] args = { arg1 };
-	throw MethodProc.matchFailAsException(code, this, args);
-      }
-  }
-
-  /** Does match, plus throws exception on argument mismatch. */
-  public void check2 (Object arg1, Object arg2, CallContext ctx)
-  {
-    int code = match2(arg1, arg2, ctx);
-    if (code != 0)
-      {
-	Object[] args = { arg1, arg2 };
-	throw MethodProc.matchFailAsException(code, this, args);
-      }
-  }
- 
-  /** Does match3, plus throws exception on argument mismatch. */
-  public void check3 (Object arg1, Object arg2, Object arg3, CallContext ctx)
-  {
-    int code = match3(arg1, arg2, arg3, ctx);
-    if (code != 0)
-      {
-	Object[] args = { arg1, arg2, arg3 };
-	throw MethodProc.matchFailAsException(code, this, args);
-      }
-  }
-
-  /** Does match4, plus throws exception on argument mismatch. */
-  public void check4 (Object arg1, Object arg2, Object arg3, Object arg4,
-		      CallContext ctx)
-  {
-    int code = match4(arg1, arg2, arg3, arg4, ctx);
-    if (code != 0)
-      {
-	Object[] args = { arg1, arg2, arg3, arg4 };
-	throw MethodProc.matchFailAsException(code, this, args);
-      }
-  }
-
-  /** Does matchN, plus throws exception on argument mismatch. */
-  public void checkN (Object[] args, CallContext ctx)
-  {
-    int code = matchN(args, ctx);
-    if (code != 0)
-      {
-	throw MethodProc.matchFailAsException(code, this, args);
-      }
   }
 
   public Procedure getSetter()
@@ -440,17 +283,19 @@ public abstract class Procedure extends PropertySet
     return sbuf.toString();
   }
 
-    public static final MethodType applyMethodType =
-        MethodType.methodType(Object.class, Procedure.class, CallContext.class); 
-    public static final MethodHandle applyToObjectDefault;
-    public static final MethodHandle applyToConsumerDefault;
-    static {
-        MethodHandles.Lookup lookup = MethodHandles.lookup();
+    public static MethodHandle lookupApplyHandle(Class clas, String mname) {
         try {
-            applyToObjectDefault = lookup.findStatic(Procedure.class, "applyToObjectDefault", applyMethodType);
-            applyToConsumerDefault = lookup.findStatic(Procedure.class, "applyToConsumerDefault", applyMethodType);
+            return MethodHandles.lookup()
+                .findStatic(clas, mname, applyMethodType);
         } catch (Exception ex) {
             throw new RuntimeException(ex);
         }
     }
+
+    public static final MethodType applyMethodType =
+        MethodType.methodType(Object.class, Procedure.class, CallContext.class); 
+    public static final MethodHandle applyToObjectDefault
+        = lookupApplyHandle(Procedure.class, "applyToObjectDefault");
+    public static final MethodHandle applyToConsumerDefault
+        = lookupApplyHandle(Procedure.class, "applyToConsumerDefault");
 }

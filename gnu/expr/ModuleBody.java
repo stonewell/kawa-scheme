@@ -10,14 +10,8 @@ import gnu.kawa.util.ExitCalled;
  * Class for the dummy top-level function of a module.
  */
 
-public abstract class ModuleBody extends Procedure0 implements RunnableModule
+public abstract class ModuleBody implements RunnableModule
 {
-  public void apply (CallContext ctx)  throws Throwable
-  {
-    if (ctx.pc == 0)
-      run(ctx);
-  }
-
   protected boolean runDone;
 
   public void run (CallContext ctx)  throws Throwable
@@ -76,13 +70,6 @@ public abstract class ModuleBody extends Procedure0 implements RunnableModule
       {
         WrappedException.rethrow(th);
       }
-  }
-
-  public Object apply0 () throws Throwable
-  {
-    CallContext ctx = CallContext.getInstance();
-    match0(ctx);
-    return ctx.runUntilValue();
   }
 
   private static boolean mainPrintValues;

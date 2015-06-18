@@ -90,49 +90,8 @@ public class GenericProc extends MethodProc
       }
   }
 
-  /* Possibly optimization.  Likewise for apply0, apply2, apply3, apply4.
-  public Object apply1 (Object arg1) throws Throwable
-  {
-    if (numArgs() != 0x1001)
-      {
-	Object[] args = { arg1 };
-	return applyN(args);
-      }
-    CallContext ctx = CallContext.getInstance();
-    for (int i = 0;  i < count;  i++)
-      {
-        MethodProc method = methods[i];
-        if (method.match1(arg1, ctx) == 0)
-	  return method.applyV(ctx);
-      }
-    throw new WrongType(this, WrongType.ARG_UNKNOWN, null);
-  }
-  */
-
-  public Object applyN(Object[] args) throws Throwable
-  {
-    if (count == 1)
-      return methods[0].applyN(args);
-    checkArgCount(this, args.length);
-    CallContext ctx = CallContext.getInstance();
-    for (int i = 0;  i < count;  i++)
-      {
-        MethodProc method = methods[i];
-	int m = method.matchN(args, ctx);
-        //System.err.println("GP nargs:"+args.length+" meth:"+method+"::"+method.getClass().getName()+" m:"+m+" c.proc:"+ctx.proc+"::"+ctx.proc.getClass().getName()+" c.count:"+ctx.count);
-        if (m == 0) {
-            ctx.rewind(CallContext.MATCH_THROW_ON_EXCEPTION);
-            Object r = ctx.runUntilValue();
-            //System.err.println("GP meth:"+method+" r:"+r);
-            return r;
-        }
-      }
-    throw new WrongType(this, WrongType.ARG_UNKNOWN, null);
-  }
-
     @Override
-    public int isApplicable(Type[] args, Type restType)
-  {
+    public int isApplicable(Type[] args, Type restType) {
     int best = -1;
     for (int i = count;  --i >= 0; )
       {
@@ -144,98 +103,6 @@ public class GenericProc extends MethodProc
           best = 0;
       }
     return best;
-  }
-
-  public int match0 (CallContext ctx)
-  {
-    if (count == 1)
-      return methods[0].match0(ctx);
-    for (int i = 0;  i < count;  i++)
-      {
-        MethodProc method = methods[i];
-	int code = method.match0(ctx);
-	if (code == 0)
-	  return 0;
-      }
-    ctx.proc = null;
-    return NO_MATCH;
-  }
-
-  public int match1 (Object arg1, CallContext ctx)
-  {
-    if (count == 1)
-      return methods[0].match1(arg1, ctx);
-    for (int i = 0;  i < count;  i++)
-      {
-        MethodProc method = methods[i];
-	int code = method.match1(arg1, ctx);
-	if (code == 0)
-	  return 0;
-      }
-    ctx.proc = null;
-    return NO_MATCH;
-  }
-
-  public int match2 (Object arg1, Object arg2, CallContext ctx)
-  {
-    if (count == 1)
-      return methods[0].match2(arg1, arg2, ctx);
-    for (int i = 0;  i < count;  i++)
-      {
-        MethodProc method = methods[i];
-	int code = method.match2(arg1, arg2, ctx);
-	if (code == 0)
-	  return 0;
-      }
-    ctx.proc = null;
-    return NO_MATCH;
-  }
-
-  public int match3 (Object arg1, Object arg2, Object arg3, CallContext ctx)
-  {
-    if (count == 1)
-      return methods[0].match3(arg1, arg2, arg3, ctx);
-    for (int i = 0;  i < count;  i++)
-      {
-        MethodProc method = methods[i];
-	int code = method.match3(arg1, arg2, arg3, ctx);
-	if (code == 0)
-	  return 0;
-      }
-    ctx.proc = null;
-    return NO_MATCH;
-  }
-
-  public int match4 (Object arg1, Object arg2, Object arg3, Object arg4,
-		     CallContext ctx)
-  {
-    if (count == 1)
-      return methods[0].match4(arg1, arg2, arg3, arg4, ctx);
-    for (int i = 0;  i < count;  i++)
-      {
-        MethodProc method = methods[i];
-	int code = method.match4(arg1, arg2, arg3, arg4, ctx);
-	if (code == 0)
-	  return 0;
-      }
-    ctx.proc = null;
-    return NO_MATCH;
-  }
-
-  public int matchN (Object[] args, CallContext ctx)
-  {
-    if (count == 1)
-      return methods[0].matchN(args, ctx);
-    for (int i = 0;  i < count;  i++)
-      {
-        MethodProc method = methods[i];
-	int code = method.matchN(args, ctx);
-	if (code == 0)
-	  return 0;
-      }
-    ctx.proc = null;
-    return NO_MATCH;
-
   }
 
     // FIXME also implement applyToObjectGP

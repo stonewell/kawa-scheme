@@ -1,5 +1,8 @@
 package kawa.lang;
 import gnu.mapping.*;
+/* #ifdef use:java.lang.invoke */
+import java.lang.invoke.*;
+/* #endif */
 
 /**
  * A Continuation "represents an entire (default) future for the computation.
@@ -16,8 +19,17 @@ public class Continuation extends MethodProc
 
   public Continuation (CallContext ctx)
   {
+      super(true, applyMethodCont);
   }
+    public static final MethodHandle applyMethodCont =
+        lookupApplyHandle(Continuation.class, "applyMethodCont");
 
+    public static Object applyMethodCont(Procedure proc, CallContext ctx) throws Throwable {
+        ((Continuation) proc).apply(ctx);
+        return null;
+    }
+
+    
   public void apply (CallContext ctx)
   {
     if (invoked)

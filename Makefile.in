@@ -1125,6 +1125,12 @@ distall:  distcheck dist-kawa-@VERSION@.jar kawa-doc-$(VERSION).tar.gz
 # Consider also:
 # kawa-@VERSION@-src.zip jemacs-@JEMACS_VERSION@.jar bytecode-@BYTECODE_VERSION@.jar
 
+check-ok-for-invoke:
+	cd testsuite && \
+	make check-r7rs check-run-test-scripts check-num \
+	check-jmc check-use-slots check-sva31180 \
+	check-bridge check-life-grid check-larceny-tests check-numbers-clisp
+
 # Tell versions [3.59,3.63) of GNU make to not export all variables.
 # Otherwise a system limit (for SysV at least) may be exceeded.
 .NOEXPORT:

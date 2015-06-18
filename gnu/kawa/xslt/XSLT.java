@@ -114,7 +114,7 @@ public class XSLT extends XQuery
 	    proc = TemplateTable.nullModeTable.find(name);
 	    if (proc != null)
 	      {
-		proc.check0(ctx);
+                ctx.setupApply(proc);
 		ctx.runUntilDone();
 	      }
 	    else
@@ -137,7 +137,7 @@ public class XSLT extends XQuery
 	    proc = TemplateTable.nullModeTable.find("@"+name);
             if (proc != null)
 	      {
-		proc.check0(ctx);
+                ctx.setupApply(proc);
 		ctx.runUntilDone();
                 break;
 	      }

@@ -76,6 +76,7 @@ public class Invoke extends ProcedureN
     throw new WrongType(thisProc, 0, arg, "class-specifier");
   }
 
+    /* FIXME
   public void apply (CallContext ctx) throws Throwable
   {
     Object[] args = ctx.getArgs();
@@ -100,6 +101,7 @@ public class Invoke extends ProcedureN
     else
       ctx.writeValue(this.applyN(args));
   }
+    */
 
   public Object applyN (Object[] args) throws Throwable
   {
@@ -226,11 +228,11 @@ public class Invoke extends ProcedureN
                                                   '\0', language);
             if (vproc != null)
               {
-                Object[] margs = new Object[nargs-1];
-                System.arraycopy(args, 1, margs, 0, nargs-1);
-                int err2 = vproc.matchN(margs, vars);
-                if (err2 == 0)
-                  return vars.runUntilValue();
+                vars.setupApplyAll(vproc, args, 1, args.length);
+                vars.rewind(CallContext.MATCH_CHECK);
+                r = vars.runUntilValue();
+                if (r != vars)
+                  return r;
               }
             result = proc.apply1(args[0]);
           }

@@ -142,6 +142,12 @@ class ArgListImpl implements ArgList, ArgListBuilder {
         System.arraycopy(args, 0, values, 0, args.length);
     }
 
+    public void setArgsAll(Object[] args, int fromIndex, int toIndex) {
+        int length = toIndex - fromIndex;
+        resetArgCount(length);
+        System.arraycopy(args, fromIndex, values, 0, length);
+    }
+
     public void add(Object arg) {
         int n = count;
         ensureSpace(n+1);

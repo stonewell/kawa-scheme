@@ -51,7 +51,7 @@ public class RelativeStep extends MethodProc implements Inlineable
       {
 	it = values.nextPos(it);
 	Object dot = values.getPosPrevious(it);
-	proc.check3(dot, IntNum.make(pos), countObj, ctx);
+	ctx.setupApply(proc, dot, IntNum.make(pos), countObj);
         Values.writeValues(ctx.runUntilValue(), filter);
       }
     filter.finish();

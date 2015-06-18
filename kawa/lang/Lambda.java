@@ -247,6 +247,7 @@ public class Lambda extends Syntax
                    Object suppliedName = p.getCar();
                    if (suppliedName instanceof Symbol) {
                        suppliedDecl = new Declaration(suppliedName);
+                       suppliedDecl.setType(Type.booleanType);
                        Translator.setLine(suppliedDecl, p);
                    }
                    else

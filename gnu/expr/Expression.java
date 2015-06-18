@@ -10,6 +10,9 @@ import gnu.kawa.io.CharArrayOutPort;
 import gnu.kawa.io.OutPort;
 import gnu.kawa.util.IdentityHashTable;
 import gnu.kawa.reflect.OccurrenceType;
+/* #ifdef use:java.lang.invoke */
+import java.lang.invoke.*;
+/* #endif */
 
 /**
  * Abstract class for syntactic forms that evaluate to a value.
@@ -17,9 +20,22 @@ import gnu.kawa.reflect.OccurrenceType;
  * @author	Per Bothner
  */
 
-public abstract class Expression extends Procedure0
+public abstract class Expression extends Procedure
   implements Printable, SourceLocator
 {
+    public Expression() {
+        super(true, applyMethodExpression);
+    }
+    public static final MethodHandle applyMethodExpression =
+        lookupApplyHandle(Expression.class, "applyMethodExpression");
+
+    public static Object applyMethodExpression(Procedure proc, CallContext ctx) throws Throwable {
+        if (ctx.checkDone() != 0)
+            return ctx;
+        ((Expression) proc).apply(ctx);
+        return null;
+    }
+
   public final Object eval (CallContext ctx) throws Throwable
   {
       ctx.setupApply(this);
@@ -52,19 +68,7 @@ public abstract class Expression extends Procedure0
 
   protected abstract boolean mustCompile ();
 
-  public final int match0 (CallContext ctx)
-  {
-    ctx.proc = this;
-    ctx.pc = 0;
-    return 0;
-  }
-
-  public final Object apply0 () throws Throwable
-  {
-    CallContext ctx = CallContext.getInstance();
-    check0(ctx);
-    return ctx.runUntilValue();
-  }
+  public int numArgs() { return 0; }
 
   /** Evaluate the expression.
    * This is named apply rather than eval so it is compatible with the

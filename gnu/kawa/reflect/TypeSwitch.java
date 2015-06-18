@@ -27,6 +27,7 @@ public class TypeSwitch extends MethodProc implements Inlineable {
 
     public int numArgs() { return 0xfffff002; }
 
+    /*
     public void apply(CallContext ctx) throws Throwable {
         Object[] args = ctx.getArgs();
         Object selector = args[0];
@@ -40,6 +41,7 @@ public class TypeSwitch extends MethodProc implements Inlineable {
         Procedure defaultProc = (Procedure) args[n];
         defaultProc.check1(selector, ctx);
     }
+    */
 
     public void compile(ApplyExp exp, Compilation comp, Target target) {
         Expression[] args = exp.getArgs();
