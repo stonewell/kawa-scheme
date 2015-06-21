@@ -265,7 +265,7 @@ public class OrdinaryLambda extends Lambda
       if (suppliedp != null) {
           decl.setFlag(Declaration.IS_SUPPLIED_PARAMETER);
           Declaration suppliedDecl = new Declaration(suppliedp);
-          suppliedDecl.setFlag(Declaration.IS_SUPPLIED_PARAMETER|Declaration.IS_PARAMETER);
+          suppliedDecl.setFlag(Declaration.IS_SUPPLIED_PARAMETER);
           suppliedDecl.setType(Type.booleanType);
           addParam(suppliedDecl, templateScope, lexp, tr);
       }

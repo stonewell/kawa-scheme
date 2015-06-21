@@ -1085,7 +1085,6 @@ public class LambdaExp extends ScopeExp {
                     argi++;
                 var = var.nextDecl();
             }
-            //System.err.println("3 var:"+varArgs+" lexp:"+this+" nkey:"+key_args);
             if (var != null && var.getFlag(Declaration.IS_REST_PARAMETER)) {
                 Type lastType = var.getType();
                 String lastTypeName = lastType.getName();
@@ -1909,9 +1908,11 @@ public class LambdaExp extends ScopeExp {
         if (decl != null && decl.isThisParameter())
             i = -2;
         for (; decl != null;  decl = decl.nextDecl()) {
-            if (decl.getFlag(Declaration.IS_PARAMETER))
+            if (decl != firstDecl())
+                out.writeSpaceFill();
+            Special mode = prevMode;
+            if (decl.getFlag(Declaration.IS_PARAMETER)) {
                 i++;
-            Special mode;
             if (i < min_args
                 || (i == min_args && decl.getFlag(Declaration.PATTERN_NESTED)))
                 mode = null;
@@ -1921,8 +1922,7 @@ public class LambdaExp extends ScopeExp {
                 mode = Special.rest;
             else
                 mode = Special.key;
-            if (decl != firstDecl())
-                out.writeSpaceFill();
+            }
             if (mode != prevMode) {
                 out.print(mode);
                 out.writeSpaceFill();
@@ -1935,7 +1935,7 @@ public class LambdaExp extends ScopeExp {
                 out.print("supplied:");
             decl.printInfo(out);
             if (defaultArg != null && defaultArg != QuoteExp.falseExp) {
-                out.print(' ');
+                out.print(" default: ");
                 defaultArg.print(out);
                 out.print(')');
             }

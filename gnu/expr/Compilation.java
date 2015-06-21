@@ -1389,7 +1389,7 @@ public class Compilation implements SourceLocator
         lexp.scope = scope;
         Declaration[] keyDecls = generateCheckKeywords(lexp);
         ArrayList<Variable> argVariables = new ArrayList<Variable>();
-	generateCheckArg(lexp.firstDecl(), lexp, 0, code, keyDecls, argVariables);
+	generateCheckArg(lexp.firstDecl(), lexp, 0, code, keyDecls, argVariables, null);
 	messages.swapSourceLocator(saveLoc1);
         this.method = saveMethod;
 	curLambda = saveLambda;
@@ -1431,7 +1431,6 @@ public class Compilation implements SourceLocator
                 if (key instanceof Keyword)
                     key = ((Keyword) key).getName();
                 Declaration keyDecl = new Declaration(key);
-                System.err.println("keyD:"+keyDecl+" key:"+key+" p:"+decl+" kin:"+kin);
                 keyDecl.base = decl;
                 keyDecl.evalIndex = kin;
                 keyDecls[kin++] = keyDecl;
@@ -1465,7 +1464,7 @@ public class Compilation implements SourceLocator
         return keyDecls;
     }
 
-    private void generateCheckArg(Declaration param, LambdaExp lexp, int kin, CodeAttr code, Declaration[] keyDecls, ArrayList<Variable> argVariables) {
+    private void generateCheckArg(Declaration param, LambdaExp lexp, int kin, CodeAttr code, Declaration[] keyDecls, ArrayList<Variable> argVariables, Variable suppliedParameterVar) {
 	Variable ctxVar = callContextVar;
         if (lexp.keywords != null
             && param != null && param.getFlag(Declaration.IS_REST_PARAMETER)) {
@@ -1485,12 +1484,21 @@ public class Compilation implements SourceLocator
         }
 	boolean recurseNeeded = true;
 	Type ptype = param.getType();
+
+        // Actual primMethod is already generated.
+        // Now we're re-using the parameter declaration to set them.
+        // So they should always be plain variables.
+        // FIXME: If the parameter is computed by an init expression,
+        // we have a problem - which we should handle by lambda lifting?
+        param.setSimple(true);
+
         //Scope scope = code.pushScope();
 	    //scopesToPop++;
 	    //lexp.scope = scope; // FIXME
         Variable var = null;
 	    Variable incoming = code.addLocal(Type.pointer_type);
 	    boolean convertNeeded = ptype != Type.objectType;
+            Scope scope = code.pushAutoPoppableScope();
             int knext = kin;
             if (param.getFlag(Declaration.PATTERN_NESTED)) {
                 Expression init = param.getInitValue();
@@ -1514,21 +1522,23 @@ public class Compilation implements SourceLocator
 		    // FIXME
 		    throw new Error("unsupported #!rest conversion in "+lexp+" param:"+param+" pt:"+ptype+" cl:"+curClass);
 		}
+            } else if (param.getFlag(Declaration.IS_SUPPLIED_PARAMETER)
+                       && ! param.getFlag(Declaration.IS_PARAMETER)) {
+                var = suppliedParameterVar;
+                //var.setName(param.getName())
+                convertNeeded = false;
 	    } else if (kin >=lexp.min_args && kin < lexp.min_args+lexp.opt_args) {
                 // Optional parameter
                 code.emitLoad(ctxVar);
                 code.emitInvoke(typeCallContext.getDeclaredMethod("haveArg", 0));
                 if (param.getFlag(Declaration.IS_SUPPLIED_PARAMETER)) {
-                    // FIXME
-                    /*
-                      code.emitDup();
-                      Variable suppliedarameterVar = ...;
-                      code.emitStore(suppliedParameterVar);
-                      LATER: argVariables.add(suppliedParameterVar);
-                    */
+                    code.emitDup();
+                    suppliedParameterVar =
+                        scope.addVariable(code, Type.booleanType, null);
+                    code.emitStore(suppliedParameterVar);
                 }
                 if (lexp.primMethods.length == 1) {
-                    code.emitIfIntEqZero();
+                    code.emitIfIntNotZero();
                     code.emitLoad(ctxVar);
                     code.emitInvoke(getNextArgMethod);
                     code.emitElse();
@@ -1546,21 +1556,33 @@ public class Compilation implements SourceLocator
                     generateCheckCall(lexp, code,
                                       lexp.primMethods[kin-lexp.min_args], argVariables);
                     code.emitFi();
-                    knext++;
                     code.emitLoad(ctxVar);
                     code.emitInvoke(getNextArgMethod);
                 }
+                knext++;
             } else if (kin >= lexp.min_args+lexp.opt_args) {
                 // keyword parameter
                 int kindex = kin - (lexp.min_args+lexp.opt_args);
                 Declaration keyDecl = keyDecls[kindex];
                 if (keyDecl.isSimple()) {
                     var = keyDecl.var;
+                    param.var = var;
                     if (convertNeeded)
                         code.emitLoad(keyDecl.var);
                 } else {
                     code.emitLoad(ctxVar);
                     code.emitLoad(keyDecl.var);
+                    if (param.getFlag(Declaration.IS_SUPPLIED_PARAMETER)) {
+                        code.emitDup();
+                        suppliedParameterVar =
+                            scope.addVariable(code, Type.booleanType, null);
+                        // {suppliedParameterVar} = {keyDecl.var} >= 0,
+                        // where the latter is equal to ({keyDecl.var}>>31)+1.
+                        code.emitPushInt(31);
+                        code.emitShr();
+                        code.emitStore(suppliedParameterVar);
+                        code.emitInc(suppliedParameterVar, (short) 1);
+                    }
                     code.emitIfIntGEqZero();
                     code.emitLoad(ctxVar);
                     code.emitLoad(keyDecl.var);
@@ -1570,6 +1592,7 @@ public class Compilation implements SourceLocator
                     defaultArg.compile(this, param.getType());
                     code.emitFi();
                 }
+                knext++;
             } else {
                 // Required parameter
                 knext++;
@@ -1579,7 +1602,6 @@ public class Compilation implements SourceLocator
 	    //param.allocateVariable(code, true);
             //boolean saveSimple = param.isSimple();
             //param.setSimple(true);
-            Scope scope = code.pushAutoPoppableScope();
             int line = param.getLineNumber();
             if (line > 0)
                 code.putLineNumber(param.getFileName(), line);
@@ -1587,6 +1609,8 @@ public class Compilation implements SourceLocator
             boolean alreadyStored = var != null;
             if (! alreadyStored)
                 var = scope.addVariable(code, itype, null/*vname*/);
+            param.var = var;
+            // FIXME: param.setSimple(true);
             if (param.parameterForMethod())
                 argVariables.add(var);
 	    if (! convertNeeded) {
@@ -1596,15 +1620,15 @@ public class Compilation implements SourceLocator
 	    else if (ptype instanceof TypeValue ||
                      ptype instanceof PrimType /*FIXME only if number */) {
 		code.emitStore(incoming);
-                Declaration tmpdecl = new Declaration(var);
-                if (ptype instanceof TypeValue)
-                    ((TypeValue) ptype).emitTestIf(incoming, tmpdecl, this);
+                if (ptype instanceof TypeValue) {
+                    ((TypeValue) ptype).emitTestIf(incoming, param, this);
+                }
                 else {
                     code.emitLoad(incoming);
-                    LangPrimType.emitTestIfNumber(incoming, tmpdecl,
+                    LangPrimType.emitTestIfNumber(incoming, param,
                                                   ptype, this);
                 }
-                generateCheckArg(param.nextDecl(), lexp, knext, code, keyDecls, argVariables);
+                generateCheckArg(param.nextDecl(), lexp, knext, code, keyDecls, argVariables, suppliedParameterVar);
                 recurseNeeded = false;
 		code.emitElse();
                 if (line > 0)
@@ -1634,12 +1658,9 @@ public class Compilation implements SourceLocator
 		}
                 ptype.emitCoerceFromObject(code);
                 code.emitStore(var);
-		//param.compileStore(this);
 	    }
 	if (recurseNeeded)
-	    generateCheckArg(param.nextDecl(), lexp, knext, code, keyDecls, argVariables);
-	//code.popScope();
-        //param.setSimple(saveSimple);
+	    generateCheckArg(param.nextDecl(), lexp, knext, code, keyDecls, argVariables, suppliedParameterVar);
     }
 
     private void generateCheckCall(LambdaExp lexp, CodeAttr code, Method primMethod, ArrayList<Variable> argVariables) {
@@ -1647,14 +1668,10 @@ public class Compilation implements SourceLocator
 	Variable ctxVar = callContextVar;
         for (Variable var : argVariables)
             code.emitLoad(var);
-        /*
-        for (Declaration var = lexp.firstDecl();
-	     var != endArg; var = var.nextDecl()) {
-            System.err.println("push "+var+" var:"+var.var);
-            code.emitLoad(var.var);
-	    //var.load(null, 0, this, Target.pushValue(var.getType()));
-	}
-        */
+        for (Declaration param = lexp.firstDecl();
+	     param != null; param = param.nextDecl()) {
+            param.var = null;
+        }
         if (primMethod == lexp.getMainMethod())
             code.popScope();
 	if (usingCallContext)

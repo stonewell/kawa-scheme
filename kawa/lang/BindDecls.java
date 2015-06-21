@@ -16,15 +16,15 @@ public class BindDecls {
 
     public boolean allowShadowing = false;
 
-    public boolean makeConstant = true;
+    public boolean makeConstant; // FIXME = true;
 
     static final Symbol underScoreSymbol = Symbol.valueOf("_");
 
-    public Declaration define(Symbol name, SyntaxForm nameSyntax,
+    public Declaration define(Symbol name, TemplateScope templateScope,
                               ScopeExp scope, Translator comp) {
         Declaration oldDecl = comp.lexical.lookup(name, false);
-        Declaration decl = comp.define(name, nameSyntax, scope);
-        if (! allowShadowing
+        Declaration decl = comp.define(name, templateScope, scope);
+        if (false && ! allowShadowing // FIXME
             && oldDecl != null && oldDecl.context != scope) {
             comp.error('w', decl, "new declaration '", "' shadows old declaration");
             comp.error('w', oldDecl, "(this is the previous declaration of '", "')");
@@ -40,6 +40,11 @@ public class BindDecls {
      */
     public Object[] parsePatternCar(Pair patList, int scanNesting,
                                     ScopeExp scope,
+                                    Translator comp) {
+        return parsePatternCar(patList, null, scanNesting, scope, comp);
+    }
+    public Object[] parsePatternCar(Pair patList, TemplateScope templateScope,
+                                    int scanNesting, ScopeExp scope,
                                     Translator comp) {
         Object next = patList.getCdr();
         Type type = null;
@@ -64,10 +69,10 @@ public class BindDecls {
         Object saveLoc = comp.pushPositionOf(patList);
 
         Object patval = pattern;
-        SyntaxForm nameSyntax = null;
-        if (patval instanceof SyntaxForm) {
-            nameSyntax = (SyntaxForm) patval;
-            patval = nameSyntax.getDatum();
+        while (patval instanceof SyntaxForm) {
+            SyntaxForm patSyntax = (SyntaxForm) patval;
+            templateScope = patSyntax.getScope();
+            patval = patSyntax.getDatum();
         }
         patval = comp.namespaceResolve(patval);
         Declaration decl = null;
@@ -75,7 +80,7 @@ public class BindDecls {
             if (patval == underScoreSymbol) {
                 decl = scope.addDeclaration((Object) null);
             } else {
-                decl = define((Symbol) patval, nameSyntax, scope, comp);
+                decl = define((Symbol) patval, templateScope, scope, comp);
                 Translator.setLine(decl, patList);
             }
             if (scope instanceof ModuleExp

@@ -40,10 +40,9 @@ public class let extends Syntax {
         BindDecls bindDecls =
             new BindDecls() {
                 @Override
-                public Declaration define(Symbol name, SyntaxForm nameSyntax,
+                public Declaration define(Symbol name,
+                                          TemplateScope templateScope,
                                           ScopeExp defs, Translator comp) {
-                   ScopeExp templateScope = nameSyntax == null ? null
-                       : nameSyntax.getScope();
                     Declaration decl = new Declaration(name);
                     Object old = dupenv.get(name, templateScope, null);
                     if (old != null)

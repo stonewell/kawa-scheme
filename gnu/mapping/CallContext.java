@@ -153,8 +153,9 @@ public class CallContext // implements Runnable
             code &= 0xffff0000;
             if (code == MethodProc.NO_MATCH_TOO_FEW_ARGS
                 || code == MethodProc.NO_MATCH_TOO_MANY_ARGS) {
-                System.err.println("before WrongArgs proc:"+proc+" proc:"+proc+" nargs:"+getArgCount());
-                throw new WrongArguments(proc, getArgCount());
+                WrongArguments wr = new WrongArguments(proc, getArgCount());
+                System.err.println("before WrongArgs proc:"+proc+" proc:"+proc+" nargs:"+getArgCount()+" wr.m:"+wr.getMessage()+" wr:"+wr);
+                throw wr;
             }
             if (code == MethodProc.NO_MATCH_UNUSED_KEYWORD)
                 throw new IllegalArgumentException(keywords != null && keywords.length > arg ? "unexpected keyword '"+keywords[arg]+"'" : "unexpected keyword");
