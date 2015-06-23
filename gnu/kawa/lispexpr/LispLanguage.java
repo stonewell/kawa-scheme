@@ -28,6 +28,8 @@ public abstract class LispLanguage extends Language
     public static final SimpleSymbol dots3_sym = Symbol.valueOf("...");
   static public final String splice_str = "$splice$";
   static public final Symbol splice_sym = Namespace.EmptyNamespace.getSymbol(splice_str);
+  static public final String splice_colon_str = "$splice-colon$";
+  static public final Symbol splice_colon_sym = Namespace.EmptyNamespace.getSymbol(splice_colon_str);
   /** Used for Kawa infix ':' operator. */
   static public final Symbol lookup_sym = Namespace.EmptyNamespace.getSymbol("$lookup$");
   // FUTURE: Used for: [ e1 e2 ... ]

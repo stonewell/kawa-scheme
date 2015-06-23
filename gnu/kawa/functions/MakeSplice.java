@@ -16,14 +16,26 @@ import java.util.List;
  */
 
 public class MakeSplice extends Procedure1 {
-    public static final MakeSplice instance = new MakeSplice();
+    private boolean keywordsAllowed;
+    public static final MakeSplice instance = new MakeSplice(false);
+    public static final MakeSplice keywordsAllowedInstance =
+        new MakeSplice(true);
 
     public static final QuoteExp quoteInstance = new QuoteExp(instance);
+    public static final QuoteExp quoteKeywordsAllowedInstance =
+        new QuoteExp(keywordsAllowedInstance);
+
+    MakeSplice(boolean keywordsAllowed) {
+        this.keywordsAllowed = keywordsAllowed;
+    } 
+
+    public boolean getKeywordsAllowed() { return keywordsAllowed; }
 
     public static Expression argIfSplice(Expression exp) {
         if (exp instanceof ApplyExp) {
             ApplyExp aexp = (ApplyExp) exp;
-            if (aexp.getFunction() == quoteInstance)
+            Expression afun = aexp.getFunction();
+            if (afun == quoteInstance || afun == quoteKeywordsAllowedInstance)
                 return aexp.getArg(0);
         }
         return null;

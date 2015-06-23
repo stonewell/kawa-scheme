@@ -30,11 +30,12 @@ public class ReaderQuote extends ReadTableEntry {
     /** If the next character is 'next' read an expression EXP
      * and return (magicSymbol2 EXP).
      * Otherwise, read EXP and return (magicSymbol EXP). */
-    public ReaderQuote(Object magicSymbol, char next, Object magicSymbol2) {
+    public ReaderQuote(Object magicSymbol, char next, Object magicSymbol2,
+                       int kind) {
         this.next = next;
         this.magicSymbol = magicSymbol;
         this.magicSymbol2 = magicSymbol2;
-        kind = ReadTable.TERMINATING_MACRO;
+        this.kind = kind;
     }
 
     public Object read (Lexer in, int ch, int count)

@@ -488,10 +488,15 @@ public class Translator extends Compilation
             if (firstSpliceArg < 0)
                 firstSpliceArg = i + (applyFunction != null ? 1 : 0);
         } else {
+            Object cdr_car_car;
             if (cdr_car instanceof Pair
-                && ((Pair) cdr_car).getCar() == LispLanguage.splice_sym) {
+                && ((cdr_car_car = ((Pair) cdr_car).getCar()) == LispLanguage.splice_sym
+                    || cdr_car_car == LispLanguage.splice_colon_sym)) {
                 arg = rewrite_car((Pair) ((Pair) cdr_car).getCdr(), false);
-                arg = new ApplyExp(MakeSplice.quoteInstance, arg);
+                QuoteExp splicer = cdr_car_car == LispLanguage.splice_sym
+                    ? MakeSplice.quoteInstance
+                    : MakeSplice.quoteKeywordsAllowedInstance;
+                arg = new ApplyExp(splicer, arg);
                 if (firstSpliceArg < 0)
                     firstSpliceArg = i + (applyFunction != null ? 1 : 0);
             }

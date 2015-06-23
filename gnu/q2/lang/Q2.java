@@ -117,6 +117,7 @@ public class Q2 extends Scheme
     rt.setFinalColonIsKeyword(true);
     rt.postfixLookupOperator = ':';
     rt.set('@', new ReaderQuote(LispLanguage.splice_sym,
+                                ':', LispLanguage.splice_colon_sym,
                                 ReadTable.NON_TERMINATING_MACRO));
     return rt;
   }
