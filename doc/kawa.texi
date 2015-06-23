@@ -6937,7 +6937,7 @@ and Kawa allows you to declare the type of the parameter.
 @display
 @stxdef{lambda-expression} @stxlit{(lambda} @stxref{formals} @arbno{@stxref{option-pair}} @stxref{opt-return-type} @stxref{body}@stxlit{)}
 @stxdef{return-type} @stxref{type}
-@stxdef{opt-return-type} [[@stxlit{::}] @stxref{type}]
+@stxdef{opt-return-type} [@stxlit{::} @stxref{type}]
 @end display
 where
 @display
@@ -6952,13 +6952,17 @@ You can of course also use the extended format in a @ref{Definitions,@code{defin
     @stxref{req-opt-args} (@stxref{rest-key-args} | @stxlit{.} @stxref{rest-arg})
 @end display
 @display
-@stxdef{req-opt-args} @stxref{req-arg} ... [@stxlit{#!optional} @stxref{opt-arg} ...]
+@stxdef{req-opt-args} @stxref{required-arg} ... [@stxlit{#!optional} @stxref{optional-arg} ...]
 @stxdef{rest-key-args} [@stxlit{#!rest} @stxref{rest-arg}] [@stxlit{#!key} @stxref{key-arg} ...]
-@stxdef{req-arg}  @var{variable} [@stxlit{::} @var{type}] | @stxlit{(}@var{variable} [[@stxlit{::}] @var{type}] @stxlit{)}
-@stxdef{opt-arg} @stxref{arg-with-default}
+@stxdef{pattern} @var{variable} | TODO
+@stxdef{required-arg} @stxref{pattern} [@stxlit{::} @stxref{type}]
+  | @stxlit{(} @stxref{pattern} @stxlit{::} @stxref{type} @stxlit{)}
+@stxdef{optional-arg} @var{variable} [@stxlit{::} @stxref{type}]
+  | @stxlit{(} @stxref{pattern} [@stxlit{::} @stxref{type}] [@var{initializer} [@stxref{supplied-var}]]@stxlit{)}
+@stxdef{supplied-var} @var{variable}
 @stxdef{key-arg} @stxref{arg-with-default}
 @stxdef{arg-with-default} @var{variable} [@stxlit{::} @var{type}]
-    | @stxlit{(} @var{variable} [@stxlit{::} @var{type} [@var{initializer}] | @var{initializer} [[@stxlit{::}] @var{type}]] @stxlit{)}
+    | @stxlit{(} @var{variable} [@stxlit{::} @var{type} [@var{initializer}] | @var{initializer} [@stxlit{::} @var{type}]] @stxlit{)}
 @stxdef{rest-arg} @var{variable}
 @end display
 
@@ -6967,16 +6971,23 @@ actual arguments are processed from left to right as follows:
 
 @itemize
 @item
-The @var{req-arg}s are bound to actual arguments starting with the
-first actual argument.  It shall be an error if there are fewer actual
+The @var{required-arg}s are matched against actual (pre-keyword) arguments
+starting with the
+first actual argument.  It shall be an error if there are fewer pre-keyword
 arguments then there are @var{req-arg}s.
 @item
-Next the @var{opt-arg}s are bound to remaining actual arguemnts.
-If there are fewer remaining actual arguments than there are
-@var{opt-arg}s, then the remaining @var{variable}s are bound
-to the corresponding @var{initializer}, if one was specified, and
-otherwise to @code{#f}.  The @var{initializer} is evaluated in an
+Next the @var{optional-arg}s are bound to remaining pre-keyword arguments.
+If there are fewer remaining pre-keyword arguments than there are
+@var{optional-arg}s, then the remaining @var{variable}s are bound
+to the corresponding @var{initializer}.
+If no @var{initializer} was specified, it defaults to @code{#f}.
+(TODO: If a @var{type} is specified the default for @var{initializer}
+is the default value of the @var{type}.)
+The @var{initializer} is evaluated in an
 environment in which all the previous formal parameters have been bound.
+If a @var{supplied-var} is specified, it is has type boolean,
+and is set to true if there was an actual corresponding argument,
+and false if the initializer was evaluated.
 @item
 If there is a @var{rest-arg}, it is bound to a list of all the
 remaining actual arguments.  These remaining actual arguments are also
