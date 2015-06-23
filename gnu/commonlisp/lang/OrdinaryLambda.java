@@ -74,6 +74,7 @@ public class OrdinaryLambda extends Lambda
   public void rewriteFormals (LambdaExp lexp, Object formals, Translator tr,
                               TemplateScope templateScopeRest)
   {
+    tr.pushScope(lexp);
     if (lexp.getSymbol() == null)
     {
       String filename = lexp.getFileName();
@@ -233,7 +234,7 @@ public class OrdinaryLambda extends Lambda
         //          tr.syntaxError("malformed lambda list `" + p + "`");
         //        }
       }
-      Declaration decl = new Declaration(name);
+      Declaration decl = addParam((Symbol) name, templateScope, lexp, tr);
       decl.setFlag(Declaration.IS_PARAMETER);
       //if (suppliedp != null || keyname != null) {
 
@@ -261,13 +262,13 @@ public class OrdinaryLambda extends Lambda
           decl.setFlag(Declaration.IS_REST_PARAMETER);
       }
       decl.setFlag(Declaration.IS_SINGLE_VALUE);
-      addParam(decl, templateScope, lexp, tr);
       if (suppliedp != null) {
           decl.setFlag(Declaration.IS_SUPPLIED_PARAMETER);
-          Declaration suppliedDecl = new Declaration(suppliedp);
+          // FIXME suppliedp is not guaranteed to be a Symbol.
+          Declaration suppliedDecl = addParam((Symbol) suppliedp,
+                                              templateScope, lexp, tr);
           suppliedDecl.setFlag(Declaration.IS_SUPPLIED_PARAMETER);
           suppliedDecl.setType(Type.booleanType);
-          addParam(suppliedDecl, templateScope, lexp, tr);
       }
       tr.popPositionOf(savePos);
     }
@@ -288,11 +289,11 @@ public class OrdinaryLambda extends Lambda
       else
       {
         rest_args = 1;
-        Declaration decl = new Declaration(bindings);
+        Declaration decl = addParam((Symbol) bindings,
+                                    templateScopeRest, lexp, tr);
         decl.setType(LangObjType.listType);
         decl.setFlag(Declaration.IS_SINGLE_VALUE);
         decl.noteValueUnknown();
-        addParam(decl, templateScopeRest, lexp, tr);
       }
     }
     else if (bindings != LList.Empty)

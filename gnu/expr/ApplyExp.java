@@ -399,9 +399,10 @@ public class ApplyExp extends Expression
 	return;
       }
 
-    if (comp.curLambda.isHandlingTailCalls()
-	&& (exp.isTailCall() || target instanceof ConsumerTarget)
-	&& ! comp.curLambda.getInlineOnly())
+    if ((comp.curLambda.isHandlingTailCalls()
+         && ! comp.curLambda.getInlineOnly()
+         && (exp.isTailCall() || target instanceof ConsumerTarget))
+        || exp.firstSpliceArg >= 0)
       {
 	ClassType typeContext = Compilation.typeCallContext;
         comp.loadCallContext();
@@ -479,10 +480,16 @@ public class ApplyExp extends Expression
             }
             code.popScope();
 
-	if (exp.isTailCall())
+        if (exp.isTailCall() && comp.curLambda.isHandlingTailCalls())
 	  {
 	    code.emitReturn();
 	  }
+        else if (! (target instanceof ConsumerTarget))
+          {
+	    comp.loadCallContext();
+	    code.emitInvoke(typeContext.getDeclaredMethod("runUntilValue", 0));
+            target.compileFromStack(comp, Type.pointer_type);
+          }
 	else if (((ConsumerTarget) target).isContextTarget())
 	  {
 	    comp.loadCallContext();
@@ -496,18 +503,6 @@ public class ApplyExp extends Expression
 	  }
 	return;
       }
-
-        if (exp.firstSpliceArg >= 0) {
-            Expression[] args = exp.getArgs();
-            exp_func.compile(comp, Target.pushObject);
-            CompileArrays.createArray(Type.objectType, comp,
-                                      args, 0, args.length);
-            code.emitInvoke(Compilation.typeProcedure
-                            .getDeclaredMethod("applyN", 1));
-            target.compileFromStack(comp, Type.pointer_type);
-            return;
-        }
-
     if (!tail_recurse)
       exp_func.compile (comp, new StackTarget(Compilation.typeProcedure));
 

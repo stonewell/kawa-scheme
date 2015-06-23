@@ -152,6 +152,8 @@ GNU_MAPPING_JSOURCES = \
   mapping/ArgList.java \
   mapping/ArgListBuilder.java \
   mapping/ArgListImpl.java \
+  mapping/ArgListPair.java \
+  mapping/ArgListVector.java \
   mapping/CallContext.java \
   mapping/ConstrainedLocation.java \
   mapping/DynamicLocation.java \

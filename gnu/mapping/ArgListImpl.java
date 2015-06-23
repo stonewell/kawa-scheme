@@ -66,7 +66,7 @@ class ArgListImpl implements ArgList, ArgListBuilder {
         this.sortedKeywords = args.sortedKeywords;
     }
 
-    public int size() { return count; }
+    public int numArguments() { return count; }
 
     void resetArgCount(int size) {
         if (count > values.length) throw new Error("bad count:"+count+" vlen:"+values.length);
@@ -87,8 +87,11 @@ class ArgListImpl implements ArgList, ArgListBuilder {
     }
 
     void ensureSpace(int size) {
-        if (values.length < size) {
-            int nsize = size > 32 ? size : 2 * size;
+        int osize = values.length;
+        if (osize < size) {
+            int nsize = osize <= 16 ? 32 : osize + (osize >> 1);
+            if (nsize < size)
+                nsize = size;
             Object[] v = new Object[nsize];
             System.arraycopy(values, 0, v, 0, count);
             values = v;
@@ -96,8 +99,13 @@ class ArgListImpl implements ArgList, ArgListBuilder {
     }
 
     public void shiftArgs(int toDrop) {
-        // FIXME adjust keywords
         count -= toDrop;
+        firstKeyword -= toDrop;
+        if (firstKeyword < 0)
+            if (numKeywords == 0)
+                firstKeyword = 0;
+            else
+                throw new Error("bad shiftArgs with keyword");
         System.arraycopy(values, toDrop, values, 0, count);
     }
 
@@ -165,13 +173,13 @@ class ArgListImpl implements ArgList, ArgListBuilder {
     }
 
     public void addAll(ArgList args) {
-        int sz = args.size();
-        if (args instanceof ArgListImpl) {
-            ensureSpace(count+sz);
-            // FIXME optimize
-        }
+        int sz = args.numArguments();
         int k0 = args.firstKeyword();
         int nk = args.numKeywords();
+        ensureSpace(count+sz);
+        if (args instanceof ArgListImpl) {
+            // FIXME optimize
+        }
         for (int i = 0; i < sz; i++) {
             Object a = args.getArgAsObject(i);
             if (i >= k0 && i < k0+nk)
@@ -198,8 +206,8 @@ class ArgListImpl implements ArgList, ArgListBuilder {
     public void addKey(String keyword, Object arg) {
         if (numKeywords == 0)
             firstKeyword = count;
-        else if (firstKeyword + firstKeyword != count)
-            throw new RuntimeException("keyword argument out of order");
+        else if (firstKeyword + numKeywords != count)
+            throw new RuntimeException("keyword arguments must be continuous");
         add(arg);
         if (keywords == null) {
             keywords = new String[16];

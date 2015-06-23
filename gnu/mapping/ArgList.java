@@ -4,7 +4,7 @@ public interface ArgList {
     /** Number of actual arguments.
      * Each (keyword,argument)-pair counts as one (not two).
      */
-    public int size();
+    public int numArguments();
 
     public Object getArgAsObject(int i);
 

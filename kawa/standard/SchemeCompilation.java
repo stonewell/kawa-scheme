@@ -52,19 +52,13 @@ public class SchemeCompilation extends Translator
     return ((Scheme) getLanguage()).appendBodyValues();
   }
 
-  public static final kawa.repl repl;
-
   public static final Lambda lambda = new kawa.lang.Lambda();
-  public static final Lambda mlambda = new kawa.lang.Lambda();
-  static { mlambda.handlePatterns = true;
-    mlambda.setKeywords(Special.optional, Special.rest, Special.key);
+  public static final Lambda mlambda = lambda;
+  static {
+      lambda.setKeywords(Special.optional, Special.rest, Special.key);
   }
 
-  static
-  {
-    repl = new kawa.repl(Scheme.instance);
-    lambda.setKeywords(Special.optional, Special.rest, Special.key); 
-  }
+    public static final kawa.repl repl = new kawa.repl(Scheme.instance);
 
     /** If a symbol is lexically unbound, look for a default binding.
      * Recognizes {@code typename?} as a type predicate,

@@ -1069,23 +1069,10 @@ public class LambdaExp extends ScopeExp {
             if (var != null && var.isThisParameter())
                 var = var.nextDecl();
             int argi = 0;
-            while (var != null
-                   && ! var.getFlag(Declaration.IS_REST_PARAMETER)) {
+            while (var != null) {
                 if (numStubs > 0 && argi >= min_args + i)
                     break;
-                if (var.parameterForMethod())
-                    argTypes.add(var.getType().getImplementationType());
-                String encType = comp.getLanguage().encodeType(var.getType());
-                if (encType == null /* || not interesting */)
-                    encType = "";
-                else
-                    encTypesSize = encTypes.size()+1;
-                encTypes.add(encType);
-                if (var.getFlag(Declaration.IS_PARAMETER))
-                    argi++;
-                var = var.nextDecl();
-            }
-            if (var != null && var.getFlag(Declaration.IS_REST_PARAMETER)) {
+                if (var.getFlag(Declaration.IS_REST_PARAMETER)) {
                 Type lastType = var.getType();
                 String lastTypeName = lastType.getName();
                 if (ctype.getClassfileVersion() >= ClassType.JDK_1_5_VERSION
@@ -1093,12 +1080,6 @@ public class LambdaExp extends ScopeExp {
                     mflags |= Access.VARARGS;
                 else 
                     nameBuf.append("$V");
-                String encType = comp.getLanguage().encodeType(var.getType());
-                if (encType == null /* || not interesting */)
-                    encType = "";
-                else
-                    encTypesSize = encTypes.size()+1;
-                encTypes.add(encType);
                 /*
                 if (key_args > 0 || numStubs < opt_args
                     // We'd like to support the the #!rest parameter an arbitrary
@@ -1115,7 +1096,20 @@ public class LambdaExp extends ScopeExp {
                 }
                 */
                 firstArgsArrayArg = var;
-                argTypes.add(lastType);
+                //argTypes.add(lastType);
+            }
+            
+                if (var.parameterForMethod())
+                    argTypes.add(var.getType().getImplementationType());
+                String encType = comp.getLanguage().encodeType(var.getType());
+                if (encType == null /* || not interesting */)
+                    encType = "";
+                else
+                    encTypesSize = encTypes.size()+1;
+                encTypes.add(encType);
+                if (var.getFlag(Declaration.IS_PARAMETER))
+                    argi++;
+                var = var.nextDecl();
             }
             if (ctxArg != 0)
                 argTypes.add(Compilation.typeCallContext);
@@ -1350,9 +1344,6 @@ public class LambdaExp extends ScopeExp {
             code.putLineNumber(getFileName(), line);
     }
 
-    static Method searchForKeywordMethod3; // FIXME remove
-    static Method searchForKeywordMethod4; // FIXME remove
-
     /** Rembembers stuff to do in <init> of this class. */
     Initializer initChain;
 
@@ -1498,61 +1489,6 @@ public class LambdaExp extends ScopeExp {
                         code.emitInvokeStatic(Compilation.makeListMethod);
                     }
                     stackType = Compilation.scmListType;
-                } else if (false) { // FIXME
-                    // Keyword argument.
-                    Keyword keyword = keywords[key_i++];
-                    Expression defaultArg = param.getInitValue();
-                    if (! ignorable || ! (defaultArg instanceof QuoteExp)) {
-                        code.emitLoad(argsArray);
-                        code.emitPushInt(min_args + opt_args - plainArgs);
-                        comp.compileConstant(keyword);
-                        Type boxedParamType = paramType instanceof PrimType
-                            ? ((PrimType) paramType).boxedType()
-                            : paramType;
-
-                        // We can generate better code if the defaultArg expression
-                        // has no side effects.  For simplicity and safety, we just
-                        // special case literals, which handles most cases.
-                        if (defaultArg instanceof QuoteExp) {
-                            if (searchForKeywordMethod4 == null) {
-                                Type[] argts = new Type[4];
-                                argts[0] = Compilation.objArrayType;
-                                argts[1] = Type.intType;
-                                argts[2] = Type.objectType;
-                                argts[3] = Type.objectType;
-                                searchForKeywordMethod4
-                                    = Compilation.scmKeywordType.addMethod
-                                    ("searchForKeyword",  argts,
-                                     Type.objectType, Access.PUBLIC|Access.STATIC);
-                            }
-                            defaultArg.compile(comp, boxedParamType);
-                            code.emitInvokeStatic(searchForKeywordMethod4);
-                        } else {
-                            if (searchForKeywordMethod3 == null) {
-                                Type[] argts = new Type[3];
-                                argts[0] = Compilation.objArrayType;
-                                argts[1] = Type.intType;
-                                argts[2] = Type.objectType;
-                                searchForKeywordMethod3
-                                    = Compilation.scmKeywordType.addMethod
-                                    ("searchForKeyword",  argts,
-                                     Type.objectType, Access.PUBLIC|Access.STATIC);
-                            }
-                            code.emitInvokeStatic(searchForKeywordMethod3);
-                            if (! ignorable)
-                                code.emitDup(1);
-                            comp.compileConstant(Special.dfault);
-                            code.emitIfEq();
-                            if (ignorable)
-                                defaultArg.compile(comp, Target.Ignore);
-                            else {
-                                code.emitPop(1);
-                                defaultArg.compile(comp, boxedParamType);
-                                paramType.emitCoerceToObject(code);
-                            }
-                            code.emitFi();
-                        }
-                    }
                 }
                 if (ignorable)
                     continue;

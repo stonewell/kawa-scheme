@@ -626,7 +626,8 @@ public class Declaration
      * supplied-parameter later in the parameter list.
      */
     public static final long IS_SUPPLIED_PARAMETER = 0x40000000000l;
-    public static final long DONT_COPY = 0x80000000000l;
+    public static final long KEYWORDS_OK = 0x80000000000l;
+    public static final long DONT_COPY = 0x100000000000l;
 
     protected long flags = IS_SIMPLE;
 

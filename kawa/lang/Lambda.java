@@ -14,9 +14,6 @@ import java.util.ArrayList;
 
 public class Lambda extends Syntax
 {
-
-  public boolean handlePatterns = true;
-
   public Object optionalKeyword;
   public Object restKeyword;
   public Object keyKeyword;
@@ -160,7 +157,7 @@ public class Lambda extends Syntax
 	Object savePos = tr.pushPositionOf(pair);
 	Object name = null;
 	Object defaultValue = defaultDefault;
-        Declaration suppliedDecl = null;
+        Pair suppliedPair = null;
 	Pair typeSpecPair = null;
         Pair p;
 	if (tr.matches(pair_car, "::"))
@@ -175,7 +172,7 @@ public class Lambda extends Syntax
                  && (Translator.listLength(pair_car) != 3
                      || ! tr.matches(((Pair) ((Pair) pair_car).getCdr()).getCar(), "::"))))
         {
-            Object[] r = BindDecls.instance.parsePatternCar(pair, templateScope, 0, lexp, tr);
+            Object[] r = parsePatternCar(pair, templateScope, lexp, tr);
             next = r[0];
             decl = (Declaration) r[1];
             if (decl == null)
@@ -184,7 +181,7 @@ public class Lambda extends Syntax
         }
 	else if (pair_car instanceof Pair)
         {
-            Object[] r = BindDecls.instance.parsePatternCar((Pair) pair_car, templateScope, 0, lexp, tr);
+            Object[] r = parsePatternCar((Pair) pair_car, templateScope, lexp, tr);
             Object xrest = r[0];
             if (xrest instanceof Pair && mode != null) {
                 p = (Pair) xrest;
@@ -193,11 +190,8 @@ public class Lambda extends Syntax
             }
             if (xrest instanceof Pair && mode != null) {
                 p = (Pair) xrest;
-                Object suppliedName = p.getCar();
-                if (suppliedName instanceof Symbol) {
-                    suppliedDecl = new Declaration(suppliedName);
-                    suppliedDecl.setType(Type.booleanType);
-                    Translator.setLine(suppliedDecl, p);
+                if (p.getCar() instanceof Symbol) {
+                    suppliedPair = p;
                 }
                 else
                     tr.syntaxError("expected a supplied-parameter name");
@@ -241,14 +235,19 @@ public class Lambda extends Syntax
         if (mode == restKeyword)
 	  {
 	    decl.setFlag(Declaration.IS_REST_PARAMETER);
-	    if (! decl.getFlag(Declaration.TYPE_SPECIFIED))
-	      decl.setType(LangObjType.listType);
+            decl.setFlag(Declaration.KEYWORDS_OK);
+            if (! decl.getFlag(Declaration.TYPE_SPECIFIED))
+                decl.setType(LangObjType.listType);
 	  }
         decl.setFlag(Declaration.IS_SINGLE_VALUE);
-        if (suppliedDecl != null) {
+        if (suppliedPair != null) {
+            Declaration suppliedDecl = addParam((Symbol) suppliedPair.getCar(),
+                                                templateScope/*FIXME*/,
+                                                lexp, tr);
              decl.setFlag(Declaration.IS_SUPPLIED_PARAMETER);
              suppliedDecl.setFlag(Declaration.IS_SUPPLIED_PARAMETER);
-             addParam(suppliedDecl, templateScope, lexp, tr); // FIXME
+             suppliedDecl.setType(Type.booleanType);
+             Translator.setLine(suppliedDecl, suppliedPair);
         }
 	tr.popPositionOf(savePos);
       }
@@ -268,13 +267,13 @@ public class Lambda extends Syntax
         else
           {
             rest_args = 1;
-            Declaration decl = new Declaration(bindings);
+            Declaration decl = addParam((Symbol) bindings,
+                                        templateScopeRest, lexp, tr);
             decl.setType(LangObjType.listType);
             decl.setFlag(Declaration.IS_SINGLE_VALUE
                          |Declaration.IS_PARAMETER
                          |Declaration.IS_REST_PARAMETER);
             decl.noteValueUnknown();
-            addParam(decl, templateScopeRest, lexp, tr);
           }
       }
     else if (bindings != LList.Empty)
@@ -301,16 +300,10 @@ public class Lambda extends Syntax
       lexp.keywords = keywords.toArray(new Keyword[keywords.size()]);
   }
 
-  protected void addParam (Declaration decl, ScopeExp templateScope,
-                           LambdaExp lexp, Translator tr)
-  {
-    if (templateScope != null)
-      decl = tr.makeRenamedAlias(decl, templateScope);
-    lexp.addDeclaration(decl);
-    if (templateScope != null)
-      decl.context = templateScope;
-    tr.push(decl);
-  }
+    protected Declaration addParam(Symbol name, TemplateScope templateScope,
+                                   LambdaExp lexp, Translator tr) {
+        return bindParser.define(name, templateScope, lexp, tr);
+    }
 
   public Object rewriteAttrs(LambdaExp lexp, Object body, Translator tr)
   {
@@ -646,4 +639,16 @@ public class Lambda extends Syntax
           }
       }
   }
+
+    static BindDecls bindParser = new  BindDecls();
+    static {
+        bindParser.allowShadowing = true;
+        bindParser.makeConstant = false;
+    }
+
+    public Object[] parsePatternCar(Pair patList, TemplateScope templateScope,
+                                    LambdaExp lexp, Translator comp) {
+        return bindParser.parsePatternCar(patList, templateScope, 0,
+                                          lexp, comp);
+    }
 }

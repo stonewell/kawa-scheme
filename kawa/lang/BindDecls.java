@@ -16,7 +16,7 @@ public class BindDecls {
 
     public boolean allowShadowing = false;
 
-    public boolean makeConstant; // FIXME = true;
+    public boolean makeConstant = true;
 
     static final Symbol underScoreSymbol = Symbol.valueOf("_");
 
@@ -24,8 +24,10 @@ public class BindDecls {
                               ScopeExp scope, Translator comp) {
         Declaration oldDecl = comp.lexical.lookup(name, false);
         Declaration decl = comp.define(name, templateScope, scope);
-        if (false && ! allowShadowing // FIXME
-            && oldDecl != null && oldDecl.context != scope) {
+        if (! allowShadowing
+            && oldDecl != null
+            && oldDecl.context != scope
+            && ! (oldDecl.context instanceof ModuleExp)) {
             comp.error('w', decl, "new declaration '", "' shadows old declaration");
             comp.error('w', oldDecl, "(this is the previous declaration of '", "')");
         }

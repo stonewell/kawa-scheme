@@ -1492,9 +1492,6 @@ public class Compilation implements SourceLocator
         // we have a problem - which we should handle by lambda lifting?
         param.setSimple(true);
 
-        //Scope scope = code.pushScope();
-	    //scopesToPop++;
-	    //lexp.scope = scope; // FIXME
         Variable var = null;
 	    Variable incoming = code.addLocal(Type.pointer_type);
 	    boolean convertNeeded = ptype != Type.objectType;
@@ -1516,7 +1513,10 @@ public class Compilation implements SourceLocator
 		    code.emitLoad(ctxVar);
 		    //code.emitDup(); //
 		    //code.emitPushInt(singleArgs);
-		    code.emitInvokeVirtual(typeCallContext.getDeclaredMethod("getRestArgsList", 0));
+                    //String mname = "peekRestArgsList";// if followed by #!key?
+                    String mname = true /* FIXME*/ ? "getRestArgsList"
+                        : "getRestPlainList";
+		    code.emitInvokeVirtual(typeCallContext.getDeclaredMethod(mname, 0));
 		    convertNeeded = false; // FIXME - may need convert if list[T]
 		} else {
 		    // FIXME

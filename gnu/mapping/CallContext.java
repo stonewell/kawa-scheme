@@ -154,7 +154,7 @@ public class CallContext // implements Runnable
             if (code == MethodProc.NO_MATCH_TOO_FEW_ARGS
                 || code == MethodProc.NO_MATCH_TOO_MANY_ARGS) {
                 WrongArguments wr = new WrongArguments(proc, getArgCount());
-                System.err.println("before WrongArgs proc:"+proc+" proc:"+proc+" nargs:"+getArgCount()+" wr.m:"+wr.getMessage()+" wr:"+wr);
+                System.err.println("before WrongArgs proc:"+proc+" proc:"+proc+" nargs:"+getArgCount()+" wr.m:"+wr.getMessage()+" wr:"+wr+" next:"+next+" count:"+count);
                 throw wr;
             }
             if (code == MethodProc.NO_MATCH_UNUSED_KEYWORD)
@@ -192,11 +192,6 @@ public class CallContext // implements Runnable
     }
 
     public int checkDone() { // Or: doneWithArgs
-        int r= xcheckDone();
-        //System.err.println("checkDone->"+r);
-        return r;
-    }
-    public int xcheckDone() { // Or: doneWithArgs
         if (numKeywords > 0)
             checkKeywordsDone();
         if (next != count) {
@@ -283,15 +278,28 @@ public class CallContext // implements Runnable
     return args;
   }
 
-    public final LList getRestArgsList() {
+    public final LList peekRestArgsList() {
+        return getRestArgsList(next);
+    }
+
+     public final LList getRestArgsList() {
         LList lst = getRestArgsList(next);
         next = count;
         return lst;
     }
-  /** Get remaining arguments as a list.
-   * Used for Scheme and Lisp rest args. */
-  public final LList getRestArgsList (int next)
-  {
+
+    /** Get remaining arguments as a list.
+     * Used for Scheme and Lisp rest args. */
+    public final LList getRestArgsList(int next) {
+        if (numKeywords == 0)
+            return getRestPlainList(next);
+        else
+            return ArgListPair.valueOf(getRestArgsVector(next));
+    }
+
+    public final LList getRestPlainList(int next) {
+        if (false) // FIXME
+            matchError(MethodProc.NO_MATCH_UNEXPECTED_KEYWORD|firstKeyword);
     LList nil = LList.Empty;
     LList list = nil;
     Pair last = null;
@@ -306,6 +314,28 @@ public class CallContext // implements Runnable
       }
     return list;
   }
+
+    /** Get remaining arguments are an ArgListVector.
+     * @param The number of required and options argumemts
+     *  that should be skipped.  We assume keywords have not been processed.
+     */
+    public ArgListVector getRestArgsVector(int next) {
+        int size = numKeywords + count - next;
+        Object[] args = new Object[size];
+        if (numKeywords == 0) {
+            System.arraycopy(values, next, args, 0, size);
+        } else {
+            int j = firstKeyword-next;
+            System.arraycopy(values, next, args, 0, j);
+            for (int i = 0;  i < numKeywords; i++) {
+                args[j++] = Keyword.valueOf(keywords[i]);
+                args[j++] = values[firstKeyword+i];
+            }
+            System.arraycopy(values, firstKeyword+numKeywords,
+                             args, j, size-j);
+        }
+        return new ArgListVector(args, firstKeyword-next, numKeywords);
+    }
 
   /** Note that we are done with the input arguments.
    * Throw WrongArguments if there are unprocessed arguments.
