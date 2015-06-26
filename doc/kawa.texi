@@ -107,16 +107,16 @@
 @end ifinfo
 @ifnotinfo
 @macro vari{THING}
-@var{\THING\}@math{_1}
+@var{\THING\}@sub{1}
 @end macro
 @macro varii{THING}
-@var{\THING\}@math{_2}
+@var{\THING\}@sub{2}
 @end macro
 @macro variii{THING}
-@var{\THING\}@math{_3}
+@var{\THING\}@sub{3}
 @end macro
 @macro variv{THING}
-@var{\THING\}@math{_4}
+@var{\THING\}@sub{4}
 @end macro
 @end ifnotinfo
 
@@ -418,9 +418,6 @@ This includes must ``obvious'' cases of calls to the
 current function named using @code{define} or @code{letrec},
 and many cases of mutual tail-recursion (including
 state-machines using @code{letrec}).
-
-The @code{equal?} predicate does not handle infinite (self-referential)
-data structures.  (Checking for cycles is difficult to implement efficiently.)
 
 By default, symbols are case sensitive.
 
@@ -1066,24 +1063,22 @@ to re-evaluate the initializing expression.  It is reasonable
 to do so if and only if the expression is modified, which
 again requires a textual comparison.
 
-@subsection Unsigned primitive number types
+@subsection Decimal arithmetic and repeated decimals
 
-Implement unsigned arithmetic types @code{ulong}, @code{uint}, @code{ushort},
-and @code{ubyte}.  These should be primitive types that are represented
-using the corresponding signed types, similar to how the @code{character}
-type is represented using @code{int}.  Also implement corresponding
-``boxed'' types as sibling types of @code{gnu.math,IntNum}.
-Implement arithmetic, comparisons,
-and conversions both at run-time, and optimized when the types are known
-at compile-time.
-(In the latter case there should be no object allocation.)
-Use same promotion rules
-@uref{https://msdn.microsoft.com/en-us/library/09ka8bxx.aspx,as @code{C#}},
-except that combining @code{long} and @code{uint} should
-arguably be @code{long}.
-@ref{Uniform vectors,Uniform vector} operations
-(such as @code{u16vector-ref}) should be optimized to return the
-primitive values (such as @code{ushort}).
+Exact decimal arithmetic is a variation of exact rational arithmetic,
+but may more user-friendly.  In particular printing using
+decimals is generally nicer than fractions.
+It is also sometimes useful to specify an explicit scale,
+so we can distinguish 0.2 from 0.20.
+We can use the Java @code{BigDecimal} class, but run into problems
+with division - for example @code{(/ 1.0 3.0)}.
+We should implement a subclass of @code{RatNum} that generalizes
+@code{BigDecimal} to also handle repeating decimals.
+We need a lexical syntax for repeating decimals.
+Possible ideas: @code{0._81_} or @code{0.#81}.
+If a Scheme number literal is specied as exact and has either
+a decimal point or an exponent (for example @code{#e1.25}), then it should
+read as an exact decimal, not a fraction.
 
 @subsection Optional strict typing along with an explicit @code{dynamic} type
 
@@ -7098,6 +7093,7 @@ Kawa converts between Scheme number types
 and Java number types as appropriate.
 
 @menu
+* Numerical types::
 * Arithmetic operations::
 * Numerical input and output::
 * Quaternions::
@@ -7105,6 +7101,238 @@ and Java number types as appropriate.
 * Logical Number Operations::
 * Performance of numeric operations::
 @end menu
+
+@node Numerical types
+@section Numerical types
+
+Mathematically, numbers are arranged into a tower of subtypes
+in which each level is a subset of the level before it:
+number; complex number; real number; rational number; integer.
+
+For example, @code{3} is an integer. Therefore @code{3} is also a rational,
+a real, and a complex number. The same is true of the
+Scheme numbers that model 3. For Scheme numbers, these
+types are defined by the predicates @code{number?}, @code{complex?},
+@code{real?}, @code{rational?}, and @code{integer?}.
+
+There is no simple relationship between a number’s type
+and its representation inside a computer. Although most
+implementations of Scheme will offer at least two different
+representations of 3, these different representations denote
+the same integer.
+
+Scheme’s numerical operations treat numbers as abstract
+data, as independent of their representation as possible.
+Although an implementation of Scheme may use multiple
+internal representations of numbers, this ought not to be
+apparent to a casual programmer writing simple programs.
+
+@deffn Type number
+The type of Scheme numbers.
+@end deffn
+
+@deffn Type quantity
+The type of quantities optionally with units.
+This is a sub-type of @code{number}.
+@end deffn
+
+@deffn Type complex
+The type of complex numbers.
+This is a sub-type of @code{quantity}.
+@end deffn
+
+@deffn Type real
+The type of real numbers.
+This is a sub-type of @code{complex}.
+@end deffn
+
+@deffn Type rational
+The type of exact rational numbers.
+This is a sub-type of @code{real}.
+@end deffn
+
+@deffn Type integer
+The type of exact Scheme integers.
+This is a sub-type of @code{rational}.
+@end deffn
+
+Kawa allows working with expressions of ``primitive'' types,
+which are supported by the JVM without object allocation,
+and using builtin arithmetic.  Using these types may be much
+faster, assuming if compiler is able to infer
+that the variable or expression has primitive type.
+
+@deffn Type long
+@deffnx Type int
+@deffnx Type short
+@deffnx Type byte
+These are fixed-sized primitive signed exact integer types,
+of respectively 64, 32, 18, and 8 bits.
+If a value of one of these types needs to be converted to an
+object, the standard classes @code{java.lang.Long}, @code{java.lang.Integer},
+@code{java.lang.Short}, or @code{java.lang.Byte}, respectively, are used.
+@end deffn
+
+@deffn Type ulong
+@deffnx Type uint
+@deffnx Type ushort
+@deffnx Type ubyte
+These are fixed-sized primitive unsigned exact integer types,
+of respectively 64, 32, 18, and 8 bits.
+These are presented at runtime using the corresponding
+signed types (@code{long}, @code{int}, @code{short}, or @code{byte}).
+However, for arithmetic the Kawa compiler generates code to perform the
+``mathematically correct'' result, truncated to an unsigned result
+rather than signed.
+If a value of one of these types needs to be converted to an
+object, the classes @code{gnu.math.ULong}, @code{gnu.math.UInt},
+@code{gnu.math.UShort}, or  @code{gnu.math.UByte} is used.
+@end deffn
+
+@deffn Type double
+@deffnx Type float
+These are fixed-size primitive in-exact floating-point real types,
+using the standard 64-bit or 32-bit IEEE representation.
+If a value of one of these types needs to be converted to an
+object, the standard classes @code{java.lang.Double},
+or @code{java.lang.Float} is used.
+@end deffn
+
+@subsection Exactness
+@cindex exactness
+It is useful to distinguish between numbers that are represented
+exactly and those that might not be. For example,
+indexes into data structures must be known exactly, as
+must some polynomial coefficients in a symbolic algebra
+system. On the other hand, the results of measurements
+are inherently inexact, and irrational numbers may be approximated
+by rational and therefore inexact approximations.
+In order to catch uses of inexact numbers where exact numbers
+are required, Scheme explicitly distinguishes
+exact from inexact numbers. This distinction is orthogonal
+to the dimension of type.
+
+@cindex exact complex number
+@cindex inexact complex number
+A Scheme number is @dfn{exact} if it was written as an exact
+constant or was derived from exact numbers using only exact operations.
+A number is @dfn{inexact} if it was written as
+an inexact constant, if it was derived using inexact ingredients,
+or if it was derived using inexact operations. Thus
+inexactness is a contagious property of a number.
+In particular, an @dfn{exact complex number} has an exact real part
+and an exact imaginary part; all other complex numbers
+are @dfn{inexact complex numbers}.
+
+If two implementations produce exact results for a computation
+that did not involve inexact intermediate results, the
+two ultimate results will be mathematically equal. This
+is generally not true of computations involving inexact
+numbers since approximate methods such as floating-point
+arithmetic may be used, but it is the duty of the implementation
+to make the result as close as practical to the
+mathematically ideal result.
+
+Rational operations such as @code{+} should always produce exact
+results when given exact arguments. If the operation
+is unable to produce an exact result, then it may either
+report the violation of an implementation restriction or it
+may silently coerce its result to an inexact value.
+
+Except for @code{exact}, the operations described in this section
+must generally return inexact results when given any inexact arguments.
+An operation may, however, return an
+exact result if it can prove that the value of the result is
+unaffected by the inexactness of its arguments. For example,
+multiplication of any number by an exact zero may
+produce an exact zero result, even if the other argument is inexact.
+
+Specifically, the expression @code{(* 0 +inf.0)} may return @code{0},
+or @code{+nan.0}, or report that inexact numbers are not supported,
+or report that non-rational real numbers are not supported,
+or fail silently or noisily in other implementation-specific ways.
+
+The procedures listed below will always return exact integer
+results provided all their arguments are exact integers
+and the mathematically expected results are representable
+as exact integers within the implementation:
+@code{-},
+@code{*},
+@code{+},
+@code{abs},
+@code{ceiling},
+@code{denominator},
+@code{exact-integer-sqrt},
+@code{expt},
+@code{floor},
+@code{floor/},
+@code{floor-quotient},
+@code{floor-remainder},
+@code{gcd},
+@code{lcm},
+@code{max},
+@code{min},
+@code{modulo},
+@code{numerator},
+@code{quotient},
+@code{rationalize},
+@code{remainder},
+@code{square},
+@code{truncate},
+@code{truncate/},
+@code{truncate-quotient},
+@code{truncate-remainder}.
+
+@subsection Numerical promotion and conversion
+
+When combining two values of different numeric types,
+the values are converted to the first line in the following
+that subsumes (follows) both types.  The computation is done using
+values of that types, and so is the result.
+For example adding a @code{long} and @code{float} converts the former
+to the latter, yielding a @code{float}.
+
+Note that @code{short}, @code{byte}, @code{ushort}, @code{ubyte}
+are converted to @code{int} regardless, even in the case of
+a single-operand operation, such as unary negation.
+Another exception is trancendental functions (such as @code{cos}),
+where integer operands are converted to @code{double}.
+
+@itemize
+@item
+@code{int} subsumes @code{short}, @code{byte}, @code{ushort}, @code{ubyte}.
+@item
+@code{uint}
+@item
+@code{long}
+@item
+@code{ulong}
+@item
+@code{java.lang.BigInteger}
+@item
+@code{integer} (i.e. @code{gnu.math.IntNum})
+@item
+@code{rational} (i.e. @code{gnu.math.RatNum})
+@item
+@code{float}
+@item
+@code{double}
+@item
+@code{gnu.math.FloNum}
+@item
+@code{real} (i.e. @code{gnu.math.RealNum})
+@item
+@code{number}
+@item
+@code{complex}
+@item
+@code{quantity}
+@end itemize
+
+When comparing a primitive signed integer value with a primitive unsigned
+integer (for example @code{<} applied to a @code{int} and a @code{ulong})
+the mathemically correct result is computed, as it converting both
+operands to @code{integer}.
 
 @node Arithmetic operations
 @section Arithmetic operations
@@ -7619,6 +7847,20 @@ an exact argument.
 (sqrt +inf.0)               @result{}  +inf.0
 (sqrt -inf.0)               @result{}  +inf.0i
 @end example
+
+Note that if the argument is a primitive number (such as @code{double}) or an
+instance of the corresponding boxed class (such as @code{java.lang.Double})
+then we use the real-number version of @code{sqrt}:
+@example
+(sqrt (->double -5))        @result{}  NaN
+@end example
+That is we get different result for @code{java.lang.Double}
+and @code{gnu.math.DFloNum}, even for arguments that are numerically equal
+in the sense of @code{=}.
+This so that the compiler can use the @code{java.lang.Math.sqrt}
+method without object allocation when the argument is a @code{double}
+(and because we want @code{double} and @code{java.lang.Double} to behave
+consistently).
 @end deffn
 
 @deffn Procedure exact-integer-sqrt @var{k}
@@ -8458,7 +8700,14 @@ The @var{amount} must be non-negative
 The @code{bitwise-arithmetic-shift-left} procedure returns the same
 result as @code{bitwise-arithmetic-shift},
 and @code{(bitwise-arithmetic-shift-right @var{i} @var{amount})} returns the
-same result as @code{(bitwise-arithmetic-shift @var{i} (- @var{amount}))};
+same result as @code{(bitwise-arithmetic-shift @var{i} (- @var{amount}))}.
+
+If @var{i} is a primitive integer type,
+then @var{amount} must be less than the number of bits in the
+promoted type of @var{i} (32 or 64).
+If the type is unsigned, an unsigned (logic) shift is
+done for @code{bitwise-arithmetic-shift-right},
+rather than a signed (arithmetic) shift.
 @end deffn
 
 @deffn Procedure bitwise-rotate-bit-field n start end count
@@ -9312,6 +9561,151 @@ the argument instead of a newly allocated string.
 (string-normalize-nfc "\x65;\x301;")    @result{} "\xE9;"
 @end example
 @end deffn
+
+@subsection Strings as sequences
+
+@subsubsection Indexing a string
+
+Using function-call syntax with strings is convenient
+and efficient.  However, it has some ``gotchas''.
+
+We will use the following example string:
+@example
+(! str1 "Smile \x1f603;!")
+@end example
+or if you're brave:
+@example
+(! str1 "Smile 😃!")
+@end example
+
+This is @code{"Smile "} followed by an emoticon (``smiling face with
+open mouth'') followed by @code{"!"}.
+The emoticon has scalar value @code{\x1f603} - it is not
+in the 16-bit Basic Multilanguage Plan,
+and so it must be encoded by a surrogate pair
+(@code{#\xd83d} followed by @code{#\xde03}).
+
+The number of scalar values (@code{character}s) is 8,
+while the number of 16-bits code units (@code{char}s) is 9.
+The @code{java.lang.CharSequence#length} method
+counts @code{char}s; the @code{length} function calls that method;
+the @code{string-length} procedure counts @code{character}s.  Thus:
+
+@example
+(length str1)          @result{} 9
+(str1:length)          @result{} 9
+(string-length str1)   @result{} 8
+@end example
+
+Counting @code{char}s is a constant-time operation (since it
+is stored in the data structure), while counting @code{character}s
+takes time propertional to the length of the string,
+since it has subtract one for each surrogate pair.
+
+Similarly we can can index the string in 3 ways:
+
+@example
+(str1 1)              @result{} #\m :: character
+(str1:charAt 1)       @result{} #\m :: char
+(string-ref str1 1)   @result{} #\m :: character
+@end example
+
+Note using the function-call syntax returns a @code{character}.
+
+Things become interesting when we reach the emoticon:
+
+@example
+(str1 6)              @result{} #\😃 :: character
+(str1:charAt 6)       @result{} #\d83d :: char
+(string-ref str1 6)   @result{} #\😃 :: character
+@end example
+
+Both @code{string-ref} and the function-call syntax return the
+real character, while the @code{charAt} methods returns a partial character.
+However, @code{string-ref} needs to linearly count from the
+start of the string, while the function-call syntax can do a constant-time
+lookup.  It does this by calling @code{(str1:charAt 6)} first.
+If that returns a leading-surrogate character, it checks that the
+next character (i.e. @code{(str1:charAt 7)}) is a trailing-surrogate character,
+and if so combines the two.  (If there is no next character or it is not
+a trailing-surrogate, then indexing just returns the leading-surrogate
+partial character.)
+
+In other words @code{(string-ref s i)} returns the @code{i}'th
+@code{character}, while @code{(s i)} return the @code{character}
+at the @code{i}'th index.
+
+If the character at the @code{i}'th index is a surrogate pair,
+then @code{(s (+ i 1))} returns a special pseudo-character
+named @code{#\ignorable-char}.  This pseudo-character should
+generally be ignored.  (It is automatically ignored by
+Kawa functions including @code{write-char}, @code{string-append!},
+and the @code{string} constructor.)
+
+@example
+(str1 7)              @result{} #\ignorable-char :: character
+(str1 8)              @result{} #\! :: character
+(str1:charAt 7)       @result{} #\de03 :: char
+(str1:charAt 8)       @result{} #\! :: char
+(string-ref str1 7)   @result{} #\! :: character
+(string-ref str1 8)   @result{} @i{throws} StringIndexOutOfBoundsException
+@end example
+
+Following are two possible implementations
+of a single-string version of @code{string-for-each}.
+The @code{string-for-each-1} version is simple,
+obvious, and traditional - but the execution time is
+quadratic in the string length.
+The @code{string-for-each-2} version requires filtering
+out any @code{#\ignorable-char}, but the execution time
+is only linear.
+
+@example
+(define (string-for-each-1 proc s::string)
+  (! slen (string-length s))
+  (do ((i ::int 0 (+ i 1))) ((= i slen))
+    (proc (string-ref s i))))
+
+(define (string-for-each-2 proc s::string)
+  (! slen (length s))
+  (do ((i ::int 0 (+ i 1))) ((= i slen))
+    (let ((ch (s i)))
+      (if (not (char=? ch #\ignorable-char))
+          (proc ch)))))
+@end example
+
+@subsubsection Indexing with a sequence
+
+You can index a string with a list of integer indexes,
+most commonly a range:
+@example
+(@var{str} [@var{i} ...])
+@end example
+is basically the same as:
+@example
+(string (@var{str}:charAt @var{i}) ...)
+@end example
+This is usually the same as the following:
+@example
+(string (@var{str} @var{i}) ...)
+@end example
+(The exception is if you select only part of a surrogate pair.)
+
+Generally when working with strings it is best to
+work with substrings rather than individual characters:
+@example
+(@var{str} [@var{start} <: @var{end}])
+@end example
+This is equivalent to invoking the @code{CharSequence:subSequence} method:
+@example
+(@var{str}:subSequence @var{start} @var{end})
+@end example
+This is much more efficient than the @code{substring} procedure,
+since the latter has to convert @code{character} indexes
+to @code{char} offsets.
+
+@c not implemented yet
+@c @subsubsection Assigning to a subsequence
 
 @subsection String Cursor API
 
@@ -10242,6 +10636,30 @@ Again, you can use the function call syntax:
 (set! (vec1 2) 'x)
 vec1 @result{} #(5 9 x 8)
 @end example
+
+@deffn Procedure length seq
+Returns the number of elements of the @var{seq}.
+
+@example
+(length '(a b c))             @result{}  3
+(length '(a (b) (c d e)))     @result{}  3
+(length '())                  @result{}  0
+(length [3 4 [] 12])          @result{}  4
+(length (vector))             @result{}  0
+(length (int[] 7 6))          @result{}  2
+@end example
+
+The length of a string is the number of 16-bit code units,
+not the number the code points.
+That is the result of the @code{java.lang.CharSequence#length}
+method, not the @code{string-length} procedure.
+@example
+(length "Hello")              @result{}  5
+(define str1 "Hello \x1f603;!")
+(length str1)                 @result{}  9
+(string-length str1)          @result{}  8
+@end example
+@end deffn
 
 @node Lists
 @section Lists
@@ -13619,7 +14037,7 @@ that map to primitive Java types or java classes.
 
 These types are predefined with the following names.
 
-Instead if plain @code{@var{typename}} you can also use
+Instead of plain @code{@var{typename}} you can also use
 the syntax @code{<@var{typename}>} with angle brackets,
 but that syntax is no longer recommended, because it doesn't
 ``fit'' as well with some ways type names are used.
@@ -13631,37 +14049,18 @@ Note that the value of these variables are instances
 of @code{gnu.bytecode.Type},
 not (as you might at first expect) @code{java.lang.Class}.
 
+The numeric types (@code{number}, @code{quantity},
+@code{complex}, @code{real}, @code{rational}, @code{integer},
+@code{long}, @code{int}, @code{short}, @code{byte}
+@code{ulong}, @code{uint}, @code{ushort}, @code{ubyte},
+@code{double}, @code{float})
+are discussed in @ref{Numerical types}.
+
+The types @code{character} and @code{char}
+are discussed in @ref{Characters}.
+
 @defvar Object
 An arbitrary Scheme value - and hence an arbitrary Java object.
-@end defvar
-
-@defvar number
-The type of Scheme numbers.
-@end defvar
-
-@defvar quantity
-The type of quantities optionally with units.
-This is a sub-type of @code{number}.
-@end defvar
-
-@defvar complex
-The type of complex numbers.
-This is a sub-type of @code{quantity}.
-@end defvar
-
-@defvar real
-The type of real numbers.
-This is a sub-type of @code{complex}.
-@end defvar
-
-@defvar rational
-The type of exact rationl numbers.
-This is a sub-type of @code{real}.
-@end defvar
-
-@defvar integer
-The type of exact Scheme integers.
-This is a sub-type of @code{rational}.
 @end defvar
 
 @defvar symbol
@@ -14870,7 +15269,7 @@ is equivalent to:
                 (B1 B2) (D1 D2)))
 @end example
 The names @code{A}, @code{B1}, @code{C}, and @code{D1} must
-existing in the library @code{(kawa example)}.  The bindings are
+exist in the library @code{(kawa example)}.  The bindings are
 accessible using the names @code{A}, @code{B2}, @code{C}, and @code{D2}.
 
 @item 

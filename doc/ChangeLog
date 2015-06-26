@@ -1,3 +1,17 @@
+2015-06-24  Per Bothner  <per@bothner.com>
+
+	* kawa.texi (String): New subsubsection 'Strings as sequences'.
+	(Sequences): Document 'length' function.
+
+2015-06-23  Per Bothner  <per@bothner.com>
+
+	* kawa.texi: Update/expand numerical types and conversions.
+
+	* kawa.texi (Ideas and tasks): Add idea about
+	Decimal arithmetic and repeated decimals.
+	(Numeric types): Merge section about 'Exactness' from R7RS.
+	* kawa.texi: Other minor fixes.
+
 2015-04-25  Per Bothner  <per@bothner.com>
 
 	* kawa.texi (Options): Document that -D can now be handled by Kawa.

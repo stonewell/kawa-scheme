@@ -1,3 +1,17 @@
+2015-06-24  William D Clinger <will@ccs.neu.edu>
+            Per Bothner  <per@bothner.com>
+
+	* larceny-tests/tests/scheme/process-context.sld: Larceny test.
+	* larceny-tests/run/process-context.sps: Larceny test runner.
+	* Makefile.am: New rules to run process-context tests.
+
+2015-06-23  Per Bothner  <per@bothner.com>
+
+	* inlining-test.scm: Add a test using 'dynamic'.
+	* inlining.expected: Update accordingly.
+	* obj-test (force-eval): Use 'dynamic' rather than 'apply',
+	since we plan to optimize 'apply'.
+
 2015-06-15  Per Bothner  <per@bothner.com>
 
 	* Makefile.am: Add files to EXTRA_DIST do 'make distcheck' works.
