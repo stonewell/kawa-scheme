@@ -12,7 +12,7 @@ import java.lang.invoke.*;
  * @author  Per Bothner
  */
 
-public abstract class Procedure extends PropertySet
+public class Procedure extends PropertySet
 {
     /** A static method with signature ??apply(Procedure,CallContext)
      */
@@ -60,11 +60,6 @@ public abstract class Procedure extends PropertySet
     return value == null ? null : value.toString();
   }
 
-    /*
-    public final Object applyToConsumer(Procedure proc, CallContext ctx) throws Throwable {
-        return applyToConsumerMethod.invokeExact(proc, ctx);
-    }
-    */
     public final MethodHandle getApplyToConsumerMethod() {
         return applyToConsumerMethod;
     }
@@ -73,9 +68,8 @@ public abstract class Procedure extends PropertySet
     }
 
     public static Object applyToConsumerDefault(Procedure proc, CallContext ctx) throws Throwable {
-        //System.err.println("Proc.applyToConsumerDefault proc:"+proc+" ctx.count:"+ctx.count+" ctx.next:"+ctx.next+" state:"+Integer.toHexString(ctx.matchState));
+        ctx.proc = proc;
         Object r = proc.applyToObjectMethod.invokeExact(proc, ctx);
-        //System.err.println("Proc.applyToConsumerDefault proc:"+proc+" r:"+r);
         if (r != ctx) {
             ctx.consumer.writeObject(r);
             r = null;
@@ -128,6 +122,13 @@ public abstract class Procedure extends PropertySet
 	//throw MethodProc.matchFailAsException(code, this, args);
     }
 
+    public Object applyL(ArgList args) throws Throwable {
+        CallContext ctx = CallContext.getInstance();
+        ctx.setupApply(this);
+        ctx.addAll(args);
+        return ctx.runUntilValue();
+    }
+
     public Object applyN (Object[] args) throws Throwable {
         CallContext ctx = CallContext.getInstance();
         ctx.setupApplyAll(this, args);
@@ -171,7 +172,7 @@ public abstract class Procedure extends PropertySet
 
   /** Maximum number of arguments allowed, or -1 for unlimited.
    * (May also return -1 if there are keyword arguments, for implementation
-   * reasons.) */
+   * reasons - FIXME.) */
   public final int maxArgs() { return maxArgs(numArgs()); }
 
   /** Return {@code minArgs()|(maxArgs<<12)}.
@@ -200,8 +201,6 @@ public abstract class Procedure extends PropertySet
 	|| (num >= 0 && argCount > maxArgs(num)))
       throw new WrongArguments(proc, argCount);
   }
-
-    int nesting = 0;
 
   public static void apply (Procedure proc, CallContext ctx) throws Throwable
   {

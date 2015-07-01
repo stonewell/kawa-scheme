@@ -5,7 +5,9 @@ package gnu.expr;
 
 import gnu.bytecode.*;
 import gnu.mapping.*;
+import gnu.kawa.functions.MakeList;
 import gnu.kawa.functions.MakeSplice;
+import gnu.kawa.lispexpr.LangObjType;
 import gnu.kawa.reflect.CompileArrays;
 import gnu.kawa.io.OutPort;
 import gnu.text.SourceMessages;
@@ -144,16 +146,22 @@ public class ApplyExp extends Expression
     ctx.setupApplyAll(proc, vals);
   }
 
-  private static void compileToArray(Expression[] args, int start, Compilation comp)
+  private static void compileToArray(Expression[] args, int start, Declaration restParam, Compilation comp)
   {
+    Type restType = restParam.getType();
+    if (restType == LangObjType.listType
+        || restType == Compilation.scmListType) {
+        MakeList.compile(args, start, comp);
+        return;
+    }
     CodeAttr code = comp.getCode();
     int argslength = args.length;
     int nargs = argslength - start;
     if (nargs == 0)
       {
 	code.emitGetStatic(Compilation.noArgsField);
-	return;
       }
+    else {
     code.emitPushInt(nargs);
     code.emitNewArray(Type.pointer_type);
     for (int i = start; i < argslength; ++i)
@@ -185,6 +193,7 @@ public class ApplyExp extends Expression
 	  }
 	code.emitArrayStore(Type.pointer_type);
       }
+    }
   }
 
   public void compile (Compilation comp, Target target)
@@ -402,7 +411,8 @@ public class ApplyExp extends Expression
     if ((comp.curLambda.isHandlingTailCalls()
          && ! comp.curLambda.getInlineOnly()
          && (exp.isTailCall() || target instanceof ConsumerTarget))
-        || exp.firstSpliceArg >= 0)
+        || exp.firstSpliceArg >= 0 || exp.numKeywordArgs > 0
+        || (! tail_recurse &&  args_length > 4))
       {
 	ClassType typeContext = Compilation.typeCallContext;
         comp.loadCallContext();
@@ -506,23 +516,16 @@ public class ApplyExp extends Expression
     if (!tail_recurse)
       exp_func.compile (comp, new StackTarget(Compilation.typeProcedure));
 
-    boolean toArray
-      = (tail_recurse ? func_lambda.max_args < 0
-         : args_length > 4);
+    boolean toArray = tail_recurse && func_lambda.max_args < 0;
     int[] incValues = null; // Increments if we can use iinc.
     if (tail_recurse)
       {
         int fixed = func_lambda.min_args;
         incValues = new int[fixed];
-        pushArgs(func_lambda, exp.args, fixed, incValues, comp);
+        Declaration rest = pushArgs(func_lambda, exp.args, fixed, incValues, comp);
         if (toArray)
-          compileToArray(exp.args, fixed, comp);
+            compileToArray(exp.args, fixed, rest, comp);
         method = null;
-      }
-    else if (toArray)
-      {
-        compileToArray(exp.args, 0, comp);
-	method = Compilation.applyNmethod;
       }
     else
       {
@@ -617,7 +620,7 @@ public class ApplyExp extends Expression
   }
 
   /** Only used for inline- and tail-calls. */
-  private static void pushArgs (LambdaExp lexp,
+  private static Declaration pushArgs (LambdaExp lexp,
                                 Expression[] args, int args_length,
                                 int[] incValues, Compilation comp)
   {
@@ -635,6 +638,7 @@ public class ApplyExp extends Expression
                                   StackTarget.getInstance(param.getType()));
         param = param.nextDecl();
       }
+    return param;
   }
 
   static void popParams (CodeAttr code, LambdaExp lexp,

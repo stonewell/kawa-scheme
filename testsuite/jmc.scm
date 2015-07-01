@@ -58,7 +58,7 @@
 
 (define result
  (as Integer
-     (*:invoke (*:getMethod helloWorldClass "add" argTypes)
+     (*:invoke (*:getMethod helloWorldClass "add" @argTypes)
                #!null
-               (Object[] (Integer 1) (Integer 2)))))
+               @(Object[] (Integer 1) (Integer 2)))))
 (format #t "Result of HelloWorld.add(1,2) is ~s~%" result)

@@ -17,6 +17,9 @@ import gnu.lists.Blob;
 import gnu.lists.Sequences;
 import gnu.lists.U8Vector;
 import java.util.*;
+/* #ifdef use:java.lang.invoke */
+import java.lang.invoke.*;
+/* #endif */
 
 /** A wrapper around a class type.
  * A LangObjType is implemented using some class type,
@@ -56,6 +59,8 @@ public class LangObjType extends SpecialObjectType implements TypeValue
   private static final int PROMISE_TYPE_CODE = 28;
   private static final int SEQUENCE_TYPE_CODE = 29;
   private static final int DYNAMIC_TYPE_CODE = 30;
+  private static final int ARGLIST_TYPE_CODE = 31;
+  private static final int ARGVECTOR_TYPE_CODE = 32;
 
   public static final LangObjType pathType =
     new LangObjType("path", "gnu.kawa.io.Path",
@@ -175,6 +180,14 @@ public class LangObjType extends SpecialObjectType implements TypeValue
     public static final LangObjType dynamicType =
     new LangObjType("dynamic", "java.lang.Object",
                     DYNAMIC_TYPE_CODE);
+
+    public static final LangObjType argListType =
+    new LangObjType("arglist", "gnu.lists.LList",
+                    ARGLIST_TYPE_CODE);
+
+    public static final LangObjType argVectorType =
+    new LangObjType("argvector", "gnu.mapping.ArgListVector",
+                    ARGVECTOR_TYPE_CODE);
 
     LangObjType(String name, String implClass, int typeCode) {
         super(name, ClassType.make(implClass));
@@ -813,13 +826,21 @@ public class LangObjType extends SpecialObjectType implements TypeValue
         return new PrimProcedure("java.util.regex.Pattern", "compile", 1);
       case DYNAMIC_TYPE_CODE:
           return MakeDynamic.instance;
+      case ARGLIST_TYPE_CODE:
+          return makeArgList;
+      case ARGVECTOR_TYPE_CODE:
+          return makeArgVector;
       default:
         return null;
       }
   }
 
     public String encodeType(Language language) {
-        if (this == sequenceType) return "sequence";
+        switch (typeCode) {
+        case SEQUENCE_TYPE_CODE: return "sequence";
+        case ARGLIST_TYPE_CODE: return "arglist";
+        case ARGVECTOR_TYPE_CODE: return "argvector";
+        }
         return null;
     }
 
@@ -913,5 +934,20 @@ public class LangObjType extends SpecialObjectType implements TypeValue
             return new ApplyExp(addProc, new ReferenceExp(target),
                                 child);
         }
+    }
+
+    public static final Procedure makeArgList;
+    public static final Procedure makeArgVector;
+    static {
+        MethodHandle handle = Procedure.lookupApplyHandle(LangObjType.class,
+                                                          "applyToObjArgList");
+        makeArgList = new Procedure(false, handle, "arglist");
+        makeArgVector = new Procedure(false, handle, "argvector");
+    }
+
+    public static Object applyToObjArgList(Procedure proc, CallContext ctx) throws Throwable {
+        ArgListVector args = ctx.getRestArgsVector();
+        return proc == makeArgVector ? args
+            : ArgListPair.valueOf(args);
     }
 }

@@ -240,7 +240,8 @@ public abstract class LispLanguage extends Language
             types.put("dynamic", LangObjType.dynamicType);
             types.put("Object", Type.objectType);
             types.put("String", Type.toStringType);
-
+            types.put("arglist", LangObjType.argListType);
+            types.put("argvector", LangObjType.argVectorType);
             types.put("object", Type.objectType);
             types.put("number", LangObjType.numericType);
             types.put("quantity", ClassType.make("gnu.math.Quantity"));

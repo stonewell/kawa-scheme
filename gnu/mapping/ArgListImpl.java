@@ -1,5 +1,6 @@
 package gnu.mapping;
 
+import gnu.lists.Pair;
 import java.util.List;
 
 class ArgListImpl implements ArgList, ArgListBuilder {
@@ -15,7 +16,7 @@ class ArgListImpl implements ArgList, ArgListBuilder {
     public long lvalue2;
     */
     protected Object[] values = new Object[8];
-    public/*FIXME*/ int count;
+    protected int count;
 
     public void printArgs() {
         System.err.print("args count:"+count);
@@ -96,6 +97,13 @@ class ArgListImpl implements ArgList, ArgListBuilder {
             System.arraycopy(values, 0, v, 0, count);
             values = v;
         }
+    }
+
+    public Object popLast() {
+        if (count == 0
+            || (numKeywords > 0 && firstKeyword+numKeywords >= count))
+            ; // ERROR FIXME
+        return values[--count];
     }
 
     public void shiftArgs(int toDrop) {
@@ -192,6 +200,21 @@ class ArgListImpl implements ArgList, ArgListBuilder {
     public void addSequence(Object args) {
         // FIXME optimize
         addAll(gnu.lists.Sequences.coerceToSequence(args));
+    }
+    public void addArgList(Object args) {
+        for (;;) {
+            if (args instanceof ArgList) {
+                addAll((ArgList) args);
+                break;
+            } else if (args instanceof Pair) {
+                Pair pair = (Pair) args;
+                add(pair.getCar());
+                args = pair.getCdr();
+            } else {
+                addSequence(args);
+                break;
+            }
+        }
     }
     public void addAll(List<?> args) {
         int sz = args.size();

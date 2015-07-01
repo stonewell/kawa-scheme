@@ -46,13 +46,6 @@ public abstract class ProcedureN extends Procedure
         return ctx;
     }
 
-    public static final MethodHandle applyToObject;
-    static {
-        try {
-            applyToObject = MethodHandles.lookup()
-                .findStatic(ProcedureN.class, "applyToObject", applyMethodType);
-        } catch (Exception ex) {
-            throw new RuntimeException(ex);
-        }
-    }
+    public static final MethodHandle applyToObject =
+        lookupApplyHandle(ProcedureN.class, "applyToObject");
 }

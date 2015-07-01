@@ -8,6 +8,9 @@ import gnu.expr.*;
 import gnu.xml.*;
 import gnu.lists.*;
 import java.util.List;
+/* #ifdef use:java.lang.invoke */
+import java.lang.invoke.*;
+/* #endif */
 
 public abstract class NodeConstructor extends MethodProc
 implements Inlineable
@@ -207,6 +210,18 @@ implements Inlineable
             ((Consumable) arg).consume(out);
         else
             Values.writeValues(arg, out);
+    }
+
+    public static Object applyToConsumer(Procedure proc, CallContext ctx) throws Throwable {
+        ((NodeConstructor) proc).apply(ctx);
+        return null;
+    }
+
+    public abstract void apply(CallContext ctx) throws Throwable;
+    static MethodHandle handle = Procedure.lookupApplyHandle(NodeConstructor.class,
+                                                              "applyToConsumer");
+    public NodeConstructor() {
+        super(true, handle);
     }
 
   static final ClassType typeXMLFilter

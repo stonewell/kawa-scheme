@@ -4,11 +4,14 @@ import gnu.expr.*;
 import gnu.bytecode.*;
 import gnu.lists.ConstVector;
 import gnu.lists.FString;
-import java.lang.reflect.Array;
 import gnu.kawa.lispexpr.ClassNamespace; // FIXME
 import gnu.kawa.lispexpr.LangObjType;
+import java.lang.reflect.Array;
+/* #ifdef use:java.lang.invoke */
+import java.lang.invoke.*;
+/* #endif */
 
-public class Invoke extends ProcedureN
+public class Invoke extends Procedure
 {
   /** The kind on invoke operation.
    *  'N' - make (new).
@@ -27,6 +30,9 @@ public class Invoke extends ProcedureN
 
   Language language;
 
+    static final MethodHandle applyToObject =
+        lookupApplyHandle(Invoke.class, "applyToObject");
+
   public static final Invoke invoke = new Invoke("invoke", '*');
   public static final Invoke invokeStatic = new Invoke("invoke-static", 'S');
   public static final Invoke invokeSpecial = new Invoke("invoke-special", 'P');
@@ -39,7 +45,7 @@ public class Invoke extends ProcedureN
 
   public Invoke(String name, char kind, Language language)
   {
-    super(name);
+    super(false, Invoke.applyToObject, name);
     this.kind = kind;
     this.language = language;
     setProperty(Procedure.validateXApplyKey,
@@ -103,16 +109,20 @@ public class Invoke extends ProcedureN
   }
     */
 
-  public Object applyN (Object[] args) throws Throwable
-  {
+    public static Object applyToObject(Procedure proc, CallContext ctx)
+    throws Throwable {
+        Invoke invoke = (Invoke) proc;
+        char kind = invoke.kind;
+        Language language = invoke.language;
+
     if (kind == 'P')
-      throw new RuntimeException(getName() 
+      throw new RuntimeException(invoke.getName() 
                                  + ": invoke-special not allowed at run time");
     
-    int nargs = args.length;
-    Procedure.checkArgCount(this, nargs);
-    Object arg0 = args[0];
-    ObjectType dtype = (kind != 'V' && kind != '*' ? typeFrom(arg0, this)
+    int nargs = ctx.numArguments();
+    Procedure.checkArgCount(invoke, nargs);
+    Object arg0 = ctx.getArgAsObject(0);
+    ObjectType dtype = (kind != 'V' && kind != '*' ? typeFrom(arg0, invoke)
                        : (ObjectType) Type.make(arg0.getClass()));
     Object mname;
     if (kind == 'N')
@@ -123,10 +133,7 @@ public class Invoke extends ProcedureN
             Procedure constructor = ((TypeValue) dtype).getConstructor();
             if (constructor != null)
               {
-                nargs--;
-                Object[] xargs = new Object[nargs];
-                System.arraycopy(args, 1, xargs, 0, nargs);
-                return constructor.applyN(xargs);
+                return constructor.applyL(ArgListVector.drop(ctx, 1));
               }
           }
 	if (dtype instanceof PairClassType)
@@ -137,12 +144,12 @@ public class Invoke extends ProcedureN
         if (dtype instanceof ArrayType
             || dtype == LangObjType.constVectorType)
           {
-            int len;
-            len = args.length-1;
+            int len = ctx.numArguments()-1;
             String name;
             int length;
             int i;
             boolean lengthSpecified;
+            /* FIXME
             if (len >= 2 && args[1] instanceof Keyword
                 && ("length".equals(name = ((Keyword) args[1]).getName())
                     || "size".equals(name)))
@@ -152,6 +159,7 @@ public class Invoke extends ProcedureN
                 lengthSpecified = true;
               }
             else
+            */
               {
                 length = len;
                 i = 1;
@@ -165,19 +173,18 @@ public class Invoke extends ProcedureN
             int index = 0;
             for (; i <= len;  i++)
               {
-                Object arg = args[i];
-                if (lengthSpecified && arg instanceof Keyword && i < len)
+                Object arg = ctx.getArgAsObject(i);
+                String kname;
+                if (lengthSpecified && (kname = ctx.getKeyword(i)) != null)
                   {
-                    String kname = ((Keyword) arg).getName();
                     try
                       {
-                        index =  Integer.parseInt(kname);
+                        index = Integer.parseInt(kname);
                       }
                     catch (Exception ex)
                       {
                         throw new RuntimeException("non-integer keyword '"+kname+"' in array constructor");
                       }
-                    arg = args[++i];
                   }
                 Array.set(arr, index, elementType.coerceFromObject(arg));
                 index++;
@@ -189,83 +196,72 @@ public class Invoke extends ProcedureN
       }
     else
       {
-        mname = args[1];
+        mname = ctx.getArgAsObject(1);
       }
-    MethodProc proc = lookupMethods((ObjectType) dtype, mname);
+    MethodProc mproc = invoke.lookupMethods((ObjectType) dtype, mname);
     if (kind != 'N')
       {
-        Object[] margs = new Object[nargs-(kind == 'S' || kind == 's' ? 2 : 1)];
-        int i = 0;
+        ArgListVector margs = ArgListVector.drop(ctx, 2);
         if (kind == 'V' || kind == '*')
-          margs[i++] = args[0];
-        System.arraycopy(args, 2, margs, i, nargs - 2);
-        return proc.applyN(margs);
+            margs = ArgListVector.prepend(margs, ctx.getArgAsObject(0));
+        return mproc.applyL(margs);
       }
     else
       {
-        CallContext vars = CallContext.getInstance();
-        int keywordStart = 0;
-        while (keywordStart < args.length
-               && ! (args[keywordStart] instanceof Keyword))
-          keywordStart++;
         Object result;
-        if (keywordStart == args.length)
+        ArgListVector args = ArgListVector.drop(ctx, 0);
+        int keywordStart = ctx.firstKeyword();
+        if (ctx.numKeywords() == 0)
           {
-            vars.setupApplyAll(null, args);
-            vars.rewind(CallContext.MATCH_CHECK);
-            //System.err.println("Invoke apply "+proc+"::"+proc.getClass().getName()+" app:"+java.lang.invoke.MethodHandles.lookup().revealDirect(proc.getApplyToObjectMethod()));
-            Object r = proc.getApplyToObjectMethod().invokeExact((Procedure) proc, vars);
-            //System.err.println("->Invoke apply "+proc+"::"+proc.getClass().getName()+" ->"+r);
-            if (r != vars)
+            ctx.rewind(CallContext.MATCH_CHECK);
+            Object r = mproc.getApplyToObjectMethod().invokeExact((Procedure) mproc, ctx);
+            if (r != ctx)
                 return r;
             /*
-            int err = proc.matchN(args, vars);
+            int err = proc.matchN(args, ctx);
             if (err == 0)
-              return vars.runUntilValue();
+              return ctx.runUntilValue();
             */
 
             MethodProc vproc = ClassMethods.apply(dtype, "valueOf",
                                                   '\0', language);
             if (vproc != null)
               {
-                vars.setupApplyAll(vproc, args, 1, args.length);
-                vars.rewind(CallContext.MATCH_CHECK);
-                r = vars.runUntilValue();
-                if (r != vars)
+                ctx.setupApply(null);
+                ctx.addAll((ArgList) ArgListVector.drop(args, 1));
+                ctx.rewind(CallContext.MATCH_CHECK);
+                r = ctx.runUntilValue();
+                if (r != ctx)
                   return r;
               }
-            result = proc.apply1(args[0]);
+            result = mproc.apply1(args.getArgAsObject(0));
           }
         else
           {
             Object[] cargs = new Object[keywordStart];
-            System.arraycopy(args, 0, cargs, 0, keywordStart);
-            result = proc.applyN(cargs);
+            for (int i = 0;  i < keywordStart; i++)
+                cargs[i] = args.getArgAsObject(i);
+            result = mproc.applyN(cargs);
           }
 
-        int i = keywordStart;
+        int numKeys = args.numKeywords();
         // Look for (keyword,value)-pairs.
-        for (; i + 1 < args.length;  i += 2)
+        for (int i = 0;  i < numKeys;  i++)
           {
-            Object arg = args[i];
-            if (! (arg instanceof Keyword))
-              break;
-            Keyword key = (Keyword) arg;
-            arg = args[i+1];
+            Object arg = args.getArgAsObject(keywordStart+i);
+            Keyword key = Keyword.make(args.getKeyword(keywordStart+i));
             SlotSet.apply(false, result, key.getName(), arg);
           }
-
-        if (keywordStart == args.length)
-          i = 1;
-        if (i != args.length)
+        int i = numKeys == 0 ? 1 : keywordStart+numKeys;
+        if (i != nargs)
           {
             MethodProc aproc = ClassMethods.apply(dtype, "add",
                                               '\0', language);
             int err = MethodProc.NO_MATCH;
             if (aproc == null)
-              throw MethodProc.matchFailAsException(err, proc, args);
-            while (i < args.length)
-              aproc.apply2(result, args[i++]);
+                throw MethodProc.matchFailAsException(err, proc, args);
+            while (i < nargs)
+                aproc.apply2(result, args.getArgAsObject(i++));
           }
 
         return result;

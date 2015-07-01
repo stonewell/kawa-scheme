@@ -234,8 +234,9 @@ public class Lambda extends Syntax
 	  }
         if (mode == restKeyword)
 	  {
-	    decl.setFlag(Declaration.IS_REST_PARAMETER);
+            decl.setFlag(Declaration.IS_REST_PARAMETER);
             decl.setFlag(Declaration.KEYWORDS_OK);
+            lexp.setFlag(LambdaExp.ALLOW_OTHER_KEYWORDS);
             if (! decl.getFlag(Declaration.TYPE_SPECIFIED))
                 decl.setType(LangObjType.listType);
 	  }

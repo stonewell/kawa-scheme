@@ -5,7 +5,7 @@
   (list y z))
 ;; Diagnostic: uninit1.scm:3:13: variable 'z' may be uninitialized here
 (define (f2 x)
-  (define x (apply (lambda () (* 2 y))))
+  (define x (apply (lambda () (* 2 y)) '()))
   (define y 10)
   (list x y))
 ;; Diagnostic: uninit1.scm:8:36: variable 'y' may be uninitialized here

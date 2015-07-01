@@ -43,8 +43,15 @@ public class CallContext // implements Runnable
     return ctx;
   }
 
-    private MethodHandle applyMethod; // used for runUntilDone trampoline
-    private Procedure proc; // mostly used for error reporting
+    public/*private*/ MethodHandle applyMethod; // used for runUntilDone trampoline
+    // FIXME is this redundant, given the Procedure parameter to the apply
+    // methods?  We probably don't need both.
+    public /*private*/ Procedure proc; // mostly used for error reporting
+
+    public final void setNextProcedure(Procedure proc, MethodHandle apply) {
+        this.proc = proc;
+        this.applyMethod = apply;
+    }
 
     public final void setNextProcedure(Procedure proc) {
         this.proc = proc;
@@ -128,12 +135,17 @@ public class CallContext // implements Runnable
 
     public void rewind(int mode) {
         matchState = mode;
+        rewind();
+    }
+
+    public void rewind() {
         next = 0;
+        nextKeyword = 0;
     }
 
     public void shiftArgs(Procedure proc, int toDrop) {
         super.shiftArgs(toDrop);
-        next = 0;
+        rewind();
         setNextProcedure(proc);
     }
 
@@ -154,11 +166,36 @@ public class CallContext // implements Runnable
             if (code == MethodProc.NO_MATCH_TOO_FEW_ARGS
                 || code == MethodProc.NO_MATCH_TOO_MANY_ARGS) {
                 WrongArguments wr = new WrongArguments(proc, getArgCount());
-                System.err.println("before WrongArgs proc:"+proc+" proc:"+proc+" nargs:"+getArgCount()+" wr.m:"+wr.getMessage()+" wr:"+wr+" next:"+next+" count:"+count);
+                System.err.println("before WrongArgs code:"+Integer.toHexString(code)+" proc:"+proc+(proc==null?"":(" max:"+proc.maxArgs()))+" nargs:"+getArgCount()+" wr.m:"+wr.getMessage()+" wr:"+wr+" next:"+next+" count:"+count+" firstK:"+firstKeyword+" nextK:"+nextKeyword);
                 throw wr;
             }
-            if (code == MethodProc.NO_MATCH_UNUSED_KEYWORD)
-                throw new IllegalArgumentException(keywords != null && keywords.length > arg ? "unexpected keyword '"+keywords[arg]+"'" : "unexpected keyword");
+            if (code == MethodProc.NO_MATCH_UNUSED_KEYWORD) {
+                StringBuilder mbuf = new StringBuilder();
+                String pname = proc == null ? null : proc.getName();
+                if (pname == null)
+                    mbuf.append("call has ");
+                else {
+                    mbuf.append("call to ");
+                    mbuf.append(pname);
+                    mbuf.append(" has ");
+                }
+                if (keywords == null || numKeywords <= arg) {
+                    
+                    mbuf.append("unexpected keyword");
+                }
+                else {
+                    if (sortedKeywords != null && nextKeyword > 0
+                        && arg == sortedKeywords[nextKeyword]
+                        && keywords[arg] == keywords[sortedKeywords[nextKeyword-1]])
+                        //if (arg+1 < numKeywords && keywords[arg] == keywords[arg+1])
+                        mbuf.append("duplicated keyword '");
+                    else
+                        mbuf.append("unexpected keyword '");
+                    mbuf.append(keywords[arg]);
+                    mbuf.append('\'');
+                }
+                throw new IllegalArgumentException(mbuf.toString());
+            }
             throw new WrongType(proc, arg, arg > 0 ? getArgAsObject(arg-1) : null);
 	}
         if (matchState == MATCH_CHECK || matchState == MATCH_CHECK_ONLY)
@@ -167,7 +204,7 @@ public class CallContext // implements Runnable
 
     public boolean haveArg() {
         // If using argState: return argState > 0;
-        return next < count; // && matchState == 0;
+        return next < count && (next != firstKeyword || numKeywords == 0); // && matchState == 0;
     }
 
     public int checkOptionalDone() { // Or: doneWithArgs
@@ -180,11 +217,13 @@ public class CallContext // implements Runnable
     }
 
     public void checkKeywordsDone() {
+        if (next == count)
+            return;
         if (next != firstKeyword)
             matchError(MethodProc.NO_MATCH_TOO_MANY_ARGS|next);
-        if (nextKeyword < numKeywords) {
+        if (nextKeyword < numKeywords
+            && sortedKeywords != null /*??? FIXME*/) {
             short keywordIndex = sortedKeywords[nextKeyword];
-            System.err.println("bad checkKeywordsDone next:"+next+" nextKey:"+nextKeyword+" numK:"+numKeywords);
             matchError(MethodProc.NO_MATCH_UNUSED_KEYWORD|keywordIndex);
             nextKeyword = numKeywords;
         }
@@ -236,32 +275,17 @@ public class CallContext // implements Runnable
         }
     }
 
-  public int getNextIntArg()
-  {
-    if (next >= count)
-      throw new WrongArguments(null, count);
-    Object arg = getArgAsObject(next++);
-    return ((Number) arg).intValue();
-  }
-
   /** Get the next incoming argument.
    * Return defaultValue if there are no more arguments.
    */
   public Object getNextArg(Object defaultValue)
   {
-    if (next >= count)
+      if (! haveArg())
       return defaultValue;
     return getArgAsObject(next++);
   }
 
-  public int getNextIntArg(int defaultValue)
-  {
-    if (next >= count)
-      return defaultValue;
-    return ((Number) getArgAsObject(next++)).intValue();
-  }
-
-    public final Object[] getRestArgsArray() {
+   public final Object[] getRestArgsArray() {
         Object[] arr = getRestArgsArray(next);
         next = count;
         return arr;
@@ -269,10 +293,17 @@ public class CallContext // implements Runnable
   /** Get remaining arguments as an array. */
   public final Object[] getRestArgsArray (int next)
   {
-    Object[] args = new Object[count - next];
+    int numKeys = numKeywords();
+    int skipKeys = next - firstKeyword();
+    if (skipKeys > 0)
+        numKeys -= skipKeys;
+    Object[] args = new Object[count - next + numKeys];
     int i = 0;
     while (next < count)
       {
+        String key = getKeyword(next);
+        if (key != null)
+            args[i++] = Keyword.make(key);
 	args[i++] = getArgAsObject(next++);
       }
     return args;
@@ -282,9 +313,17 @@ public class CallContext // implements Runnable
         return getRestArgsList(next);
     }
 
-     public final LList getRestArgsList() {
+    public final ArgListVector getRestArgsVector() {
+        ArgListVector args = getRestArgsVector(next);
+        next = count;
+        nextKeyword = numKeywords;
+        return args;
+    }
+
+    public final LList getRestArgsList() {
         LList lst = getRestArgsList(next);
         next = count;
+        nextKeyword = numKeywords;
         return lst;
     }
 
@@ -299,7 +338,7 @@ public class CallContext // implements Runnable
 
     public final LList getRestPlainList(int next) {
         if (false) // FIXME
-            matchError(MethodProc.NO_MATCH_UNEXPECTED_KEYWORD|firstKeyword);
+            matchError(MethodProc.NO_MATCH_UNUSED_KEYWORD|firstKeyword);
     LList nil = LList.Empty;
     LList list = nil;
     Pair last = null;
@@ -328,7 +367,7 @@ public class CallContext // implements Runnable
             int j = firstKeyword-next;
             System.arraycopy(values, next, args, 0, j);
             for (int i = 0;  i < numKeywords; i++) {
-                args[j++] = Keyword.valueOf(keywords[i]);
+                args[j++] = Keyword.make(keywords[i]);
                 args[j++] = values[firstKeyword+i];
             }
             System.arraycopy(values, firstKeyword+numKeywords,
@@ -402,7 +441,8 @@ public class CallContext // implements Runnable
             a[j] = t;
         }
         protected int compare(short[] a, int i, int j, String[] keywords) {
-            return keywords[a[i]].compareTo(keywords[a[j]]);
+            int cmp = keywords[a[i]].compareTo(keywords[a[j]]);
+            return cmp != 0 ? cmp : i > j ? 1 : i < j ? -1 : 0;
         }
     }
     static final KeywordSorter keywordSorter = new KeywordSorter();
@@ -416,7 +456,14 @@ public class CallContext // implements Runnable
      * @return {@code dfault} if no matching keyword argument,
      *   or the corresponding keyword value.
      */
+
     public int nextKeyword(String keyword) {
+        return nextKeywordIndex(keyword, false);
+    }
+    public int nextKeywordAllowOthers(String keyword) {
+        return nextKeywordIndex(keyword, true);
+    }
+    public int nextKeywordIndex(String keyword, boolean allowOthers) {
         int klen = numKeywords;
         if (klen == 0)
             return -1;
@@ -429,26 +476,26 @@ public class CallContext // implements Runnable
                 return -1;
             }
             short keywordIndex = sortedKeywords[i];
-            //String argkey = (String) values[firstKeyword+keywordIndex];
             String argkey = keywords[keywordIndex];
             // Assumes keyword strings are interned.
             if (argkey==keyword) {
                 nextKeyword = i+1;
                 return firstKeyword+keywordIndex;
             }
-            int cmp = argkey.compareTo(keyword);
-            if (cmp < 0) { // argkey < keyword
-                // unused keyword argument
-                matchError(MethodProc.NO_MATCH_UNUSED_KEYWORD|keywordIndex);
-            }
-            else { // argkey > keyword
-                nextKeyword = i;
-                return -1;
-            }
+            if (allowOthers && argkey.compareTo(keyword) < 0)
+                continue;
+            // argkey > keyword
+            nextKeyword = i;
+            return -1;
         }
     }
     public Object nextKeyword(String keyword, Object dfault) {
-        int index = nextKeyword(keyword);
+        int index = nextKeywordIndex(keyword, false);
+        return index >= 0 ? values[index] : dfault;
+    }
+
+    public Object nextKeywordAllowOthers(String keyword, Object dfault) {
+        int index = nextKeywordIndex(keyword, true);
         return index >= 0 ? values[index] : dfault;
     }
 
@@ -464,53 +511,46 @@ public class CallContext // implements Runnable
     public void setupApply(Procedure proc) {
         setNextProcedure(proc);
         super.setArgs();
-        next = 0;
-        matchState = MATCH_THROW_ON_EXCEPTION;
+        rewind(MATCH_THROW_ON_EXCEPTION);
     }
 
     public void setupApply(Procedure proc, Object arg0) {
         setNextProcedure(proc);
         super.setArgs(arg0);
-        next = 0;
-        matchState = MATCH_THROW_ON_EXCEPTION;
+        rewind(MATCH_THROW_ON_EXCEPTION);
     }
 
     public void setupApply(Procedure proc, Object arg0, Object arg1) {
         setNextProcedure(proc);
         super.setArgs(arg0, arg1);
-        next = 0;
-        matchState = MATCH_THROW_ON_EXCEPTION;
+        rewind(MATCH_THROW_ON_EXCEPTION);
     }
 
     public void setupApply(Procedure proc, Object arg0, Object arg1,
                             Object arg2) {
         setNextProcedure(proc);
         super.setArgs(arg0, arg1, arg2);
-        next = 0;
-        matchState = MATCH_THROW_ON_EXCEPTION;
+        rewind(MATCH_THROW_ON_EXCEPTION);
     }
 
     public void setupApply(Procedure proc, Object arg0, Object arg1,
                             Object arg2, Object arg3) {
         setNextProcedure(proc);
         super.setArgs(arg0, arg1, arg2, arg3);
-        next = 0;
-        matchState = MATCH_THROW_ON_EXCEPTION;
+        rewind(MATCH_THROW_ON_EXCEPTION);
     }
 
     public void setupApplyAll(Procedure proc, Object[] args) {
         setNextProcedure(proc);
         super.setArgsAll(args);
-        next = 0;
-        matchState = MATCH_THROW_ON_EXCEPTION;
+        rewind(MATCH_THROW_ON_EXCEPTION);
     }
 
     public void setupApplyAll(Procedure proc, Object[] args,
                               int fromIndex, int toIndex) {
         setNextProcedure(proc);
         super.setArgsAll(args, fromIndex, toIndex);
-        next = 0;
-        matchState = MATCH_THROW_ON_EXCEPTION;
+        rewind(MATCH_THROW_ON_EXCEPTION);
     }
 
     public void addArg(Object arg) {
@@ -560,8 +600,7 @@ public class CallContext // implements Runnable
 	if (handle == null)
 	      break;
 	this.applyMethod = null;
-        next = 0;
-        matchState = CallContext.MATCH_THROW_ON_EXCEPTION;
+        rewind(MATCH_THROW_ON_EXCEPTION);
         Object ignored = handle.invokeExact(proc, this);
       }
   }
@@ -643,6 +682,7 @@ public class CallContext // implements Runnable
         int gapStartOnPushSave = vst.gapStartOnPush;
         vstack.gapStartOnPush = vst.gapStart;
         int oindexSave = vst.oindex;
+        Object r;
         try {
             runUntilDone();
             return vst.getValue();

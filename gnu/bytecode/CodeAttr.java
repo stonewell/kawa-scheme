@@ -1469,8 +1469,6 @@ public class CodeAttr extends Attribute implements AttrContainer
 
   public final void emitGetStatic(Field field)
   {
-      if ("instance".equals(field.getName()) && "gnu.kawa.functions.MakeSplice".equals(field.getType().getName()))
-          new Error("emitget "+field+" in "+getMethod()).printStackTrace();
     pushType(field.getType());
     emitFieldop (field, 178);  // getstatic
   }

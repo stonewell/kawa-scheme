@@ -913,6 +913,8 @@ public class Scheme extends LispLanguage {
       defAliasStFld("path", "gnu.kawa.lispexpr.LangObjType", "pathType");
       defAliasStFld("filepath", "gnu.kawa.lispexpr.LangObjType", "filepathType");
       defAliasStFld("URI", "gnu.kawa.lispexpr.LangObjType", "URIType");
+      defAliasStFld("arglist", "gnu.kawa.lispexpr.LangObjType", "argListType");
+      defAliasStFld("argvector", "gnu.kawa.lispexpr.LangObjType", "argVectorType");
       defProcStFld("resolve-uri", "kawa.lib.files");
 
       defAliasStFld("sequence", "gnu.kawa.lispexpr.LangObjType", "sequenceType");

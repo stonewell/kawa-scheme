@@ -360,8 +360,8 @@ distall:  distcheck dist-kawa-@VERSION@.jar kawa-doc-$(VERSION).tar.gz
 # kawa-@VERSION@-src.zip jemacs-@JEMACS_VERSION@.jar bytecode-@BYTECODE_VERSION@.jar
 
 check-ok-for-invoke:
-	cd testsuite && make OPTIONS=--full-tailcalls \
-	  check-scm check-r7rs check-polytype check-case
+	cd testsuite && make OPTIONS=--no-full-tailcalls \
+	  check-scm check-r7rs check-misc check-polytype check-case
 	cd testsuite && \
 	  make check-num check-arr check-java-array \
 	  check-srfi-16 check-srfi-38 check-srfi-64 check-srfi-69 \
@@ -374,8 +374,8 @@ check-ok-for-invoke:
 	  check-knucleotide check-mandelbrot check-meteor check-nbody \
 	  check-nsieve check-pidigits check-regexdna check-revcomp \
 	  check-spectralnorm check-threadring
-	cd testsuite && make OPTIONS=--no-full-tailcalls \
-	  check-scm check-r7rs check-polytype check-case
+	cd testsuite && make OPTIONS=--full-tailcalls \
+	  check-scm check-r7rs check-misc check-polytype check-case
 	cd testsuite && make \
 	  check-interpreted-cycle check-interpreted-cycleb check-interpreted-cyclebr \
 	  check-jmc check-use-slots check-load-require check-sva31180 \

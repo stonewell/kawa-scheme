@@ -36,11 +36,6 @@ public class LambdaExp extends ScopeExp {
     /** Set of visible top-level LambdaExps that need apply methods. */
     ArrayList<LambdaExp> applyMethods;
 
-    //  public int plainArgs;
-    Variable argsArray;
-    // First argument that goes into argsArray.
-    private Declaration firstArgsArrayArg;
-
     public Keyword[] keywords;
 
     /** A list of Declarations, chained using Declaration's nextCapturedVar.
@@ -174,8 +169,9 @@ public class LambdaExp extends ScopeExp {
      * Needed if PrimProcedure.getMethodFor shold be able to find it.
      */
     public static final int PUBLIC_METHOD = 0x4000;
+    public static final int ALLOW_OTHER_KEYWORDS = 0x8000;
 
-    protected static final int NEXT_AVAIL_FLAG = 0x8000;
+    protected static final int NEXT_AVAIL_FLAG = 0x10000;
 
     /** True iff this lambda is only "called" inline. */
     public final boolean getInlineOnly() { return (flags & INLINE_ONLY) != 0; }
@@ -880,17 +876,17 @@ public class LambdaExp extends ScopeExp {
         LambdaExp outer = outerLambda();
 
         int key_args = keywords == null ? 0 : keywords.length;
+        boolean simpleMatch = true;
         int numStubs =
             ((flags & DEFAULT_CAPTURES_ARG) != 0) ? 0 : opt_args;
-        if (numStubs > 0) {
-            // check for complications
-            if (key_args > 0) numStubs = 0; // For simplicity - FIXME?
-            for (Declaration decl = firstDecl();
-                 decl != null;  decl = decl.nextDecl()) {
-                if (decl.getFlag(Declaration.IS_SUPPLIED_PARAMETER|Declaration.SKIP_FOR_METHOD_PARAMETER|Declaration.PATTERN_NESTED)) {
-                    numStubs = 0;
-                    break;
-                }
+        // check for complications
+        if (key_args > 0) { simpleMatch = false; numStubs = 0; } // For simplicity - FIXME?
+        for (Declaration decl = firstDecl();
+             decl != null;  decl = decl.nextDecl()) {
+            if (decl.getFlag(Declaration.IS_SUPPLIED_PARAMETER|Declaration.SKIP_FOR_METHOD_PARAMETER|Declaration.PATTERN_NESTED)) {
+                numStubs = 0;
+                simpleMatch = false;
+                break;
             }
         }
         boolean varArgs = max_args < 0 || min_args + numStubs < max_args;
@@ -1052,15 +1048,8 @@ public class LambdaExp extends ScopeExp {
         int nameBaseLength = nameBuf.length();
         for (int i = 0;  i <= numStubs;  i++) {
             nameBuf.setLength(nameBaseLength);
-            //int plainArgs = min_args + key_args + i;
-            //if (numStubs == 0)                plainArgs += opt_args;
-            //System.err.println("numStubs:"+numStubs+" key:"+key_args+" plain:"+plainArgs+" min:"+min_args+" max:"+max_args+" opt:"+opt_args);
             ArrayList<Type> argTypes = new ArrayList<Type>();
-            //int numArgs = plainArgs;
-            //if (i == numStubs && varArgs)                numArgs++;
-            //Type[] atypes = new Type[extraArg + numArgs + ctxArg];
             if (extraArg > 0)
-                //atypes[0] = closureEnvType;
                 argTypes.add(closureEnvType);
             Stack<String> encTypes = new Stack<String>();
             int encTypesSize = rtypeEnc == null /* || not interesting */ ? 0 : 1;
@@ -1075,29 +1064,15 @@ public class LambdaExp extends ScopeExp {
                 if (var.getFlag(Declaration.IS_REST_PARAMETER)) {
                 Type lastType = var.getType();
                 String lastTypeName = lastType.getName();
-                if (ctype.getClassfileVersion() >= ClassType.JDK_1_5_VERSION
+                if (! simpleMatch)
+                    ; // nameBuf.append("$P");
+                else if (ctype.getClassfileVersion() >= ClassType.JDK_1_5_VERSION
                     && lastType instanceof ArrayType)
                     mflags |= Access.VARARGS;
                 else 
                     nameBuf.append("$V");
-                /*
-                if (key_args > 0 || numStubs < opt_args
-                    // We'd like to support the the #!rest parameter an arbitrary
-                    // array type or implementation of java.util.List.  However,
-                    // we currently only support gnu.lists.LList plus array types.
-                    // For array types we prefer to use the Java5 VARARGS feature;
-                    // for gnu.lists.LList we use the old $V mechanism.
-                    || ! ("gnu.lists.LList".equals(lastTypeName)
-                          || lastType instanceof ArrayType)) {
-                    lastType = Compilation.objArrayType;
-                    argsArray = new Variable("argsArray",
-                                             Compilation.objArrayType);
-                    argsArray.setParameter(true);
-                }
-                */
-                firstArgsArrayArg = var;
                 //argTypes.add(lastType);
-            }
+                }
             
                 if (var.parameterForMethod())
                     argTypes.add(var.getType().getImplementationType());
@@ -1121,6 +1096,8 @@ public class LambdaExp extends ScopeExp {
                    || (outer instanceof ModuleExp
                        && (((ModuleExp) outer)
                            .getFlag(ModuleExp.SUPERTYPE_SPECIFIED))));
+            if (! simpleMatch)
+                nameBuf.append("$P");
             name = nameBuf.toString();
             Type[] atypes = argTypes.toArray(new Type[argTypes.size()]);
 
@@ -1226,14 +1203,9 @@ public class LambdaExp extends ScopeExp {
 
         Declaration decl = firstDecl();
         for (;;) {
-            if (decl == firstArgsArrayArg && argsArray != null) {
-                getVarScope().addVariable(argsArray);
-            }
             if (! getInlineOnly()
                 && getCallConvention() >= Compilation.CALL_WITH_CONSUMER
-                && (firstArgsArrayArg == null ? decl == null
-                    : argsArray != null ? decl == firstArgsArrayArg
-                    : decl == firstArgsArrayArg.nextDecl())) {
+                && decl == null) {
                 Variable var =
                     getVarScope().addVariable(null,
                                               Compilation.typeCallContext,
@@ -1417,12 +1389,6 @@ public class LambdaExp extends ScopeExp {
             }
         }
 
-        Variable argsArray = this.argsArray;
-        if (min_args == max_args
-            && primMethods == null
-            && getCallConvention () < Compilation.CALL_WITH_CONSUMER)
-            argsArray = null;
-
         // For each non-artificial parameter, copy it from its incoming
         // location (a local variable register, or the argsArray) into
         // its home location, if they are different.
@@ -1433,30 +1399,19 @@ public class LambdaExp extends ScopeExp {
         int key_args = keywords == null ? 0 : keywords.length;
         if (this instanceof ModuleExp)
             return;
-        // If plainArgs>=0, it is the number of arguments *not* in argsArray.
-        int plainArgs = -1;
         int defaultStart = 0;
         Method mainMethod = getMainMethod();
         Variable callContextSave = comp.callContextVar;
+        comp.callContextVar
+            = (getCallConvention() < Compilation.CALL_WITH_CONSUMER ? null
+               : getVarScope().lookup("$ctx"));
 
         for (;  param != null; param = param.nextDecl(), i++) {
-            comp.callContextVar
-                = (getCallConvention() < Compilation.CALL_WITH_CONSUMER ? null
-                   : getVarScope().lookup("$ctx"));
-            if (param == firstArgsArrayArg && argsArray != null)  {
-                if (primMethods != null) {
-                    plainArgs = i;
-                    defaultStart = plainArgs - min_args;
-                } else {
-                    plainArgs = 0;
-                    defaultStart = 0;
-                }
-            }
             boolean ignorable = param.ignorable();
-            if (plainArgs >= 0 || ! param.isSimple()
+            if (! param.isSimple()
                 || param.isIndirectBinding()) {
                 Type paramType = param.getType();
-                Type stackType = plainArgs >= 0 ? Type.objectType : paramType;
+                Type stackType = paramType;
                 // If the parameter is captured by an inferior lambda,
                 // then the incoming parameter needs to be copied into its
                 // slot in the heapFrame.  Thus we emit an aaload instruction.
@@ -1465,47 +1420,8 @@ public class LambdaExp extends ScopeExp {
                 if (!param.isSimple () && ! ignorable)
                     param.loadOwningObject(null, comp);
                 // This part of the code pushes the incoming argument.
-                if (plainArgs < 0) {
-                    // Simple case:  Use Incoming register.
-                    if (! ignorable)
+                if (! ignorable)
                         code.emitLoad(param.getVariable());
-                } else if (i < min_args) {
-                    // This is a required parameter, in argsArray[i].
-                    if (! ignorable) {
-                        code.emitLoad(argsArray);
-                        code.emitPushInt(i);
-                        code.emitArrayLoad(Type.objectType);
-                    }
-                }  else if (i < min_args + opt_args) {
-                    // An optional parameter
-                    Expression defaultArg = param.getInitValue();
-                    if (! ignorable || ! (defaultArg instanceof QuoteExp)) {
-                        code.emitPushInt(i - plainArgs);
-                        code.emitLoad(argsArray);
-                        code.emitArrayLength();
-                        code.emitIfIntLt();
-                        if (! ignorable) {
-                            code.emitLoad(argsArray);
-                            code.emitPushInt(i - plainArgs);
-                            code.emitArrayLoad();
-                        }
-                        code.emitElse();
-                        if (ignorable)
-                            defaultArg.compile(comp, Target.Ignore);
-                        else
-                            defaultArg.compile(comp, paramType);
-                        code.emitFi();
-                    }
-                } else if (max_args < 0 && i == min_args + opt_args) {
-                    // This is the "rest" parameter (i.e. following a "."):
-                    // Convert argsArray[i .. ] to a list.
-                    if (! ignorable) {
-                        code.emitLoad(argsArray);
-                        code.emitPushInt(i - plainArgs);
-                        code.emitInvokeStatic(Compilation.makeListMethod);
-                    }
-                    stackType = Compilation.scmListType;
-                }
                 if (ignorable)
                     continue;
                 // Now finish copying the incoming argument into its
@@ -2140,7 +2056,7 @@ public class LambdaExp extends ScopeExp {
                 evalFrame[decl.evalIndex] = value;
             }
 
-            ctx.next = ctx.count;
+            ctx.next = ctx.numArguments();
             if (ctx.checkDone() != 0)
                 return ctx;
 

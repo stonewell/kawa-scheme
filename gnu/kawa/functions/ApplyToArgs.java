@@ -31,7 +31,6 @@ public class ApplyToArgs extends ProcedureN
 
     public Object applyN (Object[] args) throws Throwable {
         Object proc = Promise.force(args[0]);
-        //System.err.println("appToArgs.appN proc:"+proc+"::"+proc.getClass().getName());
         if (proc instanceof Procedure) {
             Object[] rargs = new Object[args.length-1];
             System.arraycopy(args, 1, rargs, 0, rargs.length);
@@ -117,7 +116,8 @@ public class ApplyToArgs extends ProcedureN
         if (arg0 instanceof gnu.bytecode.Type
             || arg0 instanceof Class) {
             Procedure proc = gnu.kawa.reflect.Invoke.make;
-            //ctx.shiftArgs(proc, 0);
+            ctx.rewind();
+            ctx.setNextProcedure(proc, null);
             return proc.getApplyToObjectMethod().invokeExact(proc, ctx);
         }
         if (arg0 instanceof java.util.List) {
@@ -154,20 +154,12 @@ public class ApplyToArgs extends ProcedureN
             
         }
         */
-        //System.err.println("bad A2A arg0:"+arg0);
         ctx.matchError(MethodProc.NO_MATCH_BAD_TYPE|1);
         return ctx;
     }
 
-    public static final MethodHandle applyToObjectA2A;
-    public static final MethodHandle applyToConsumerA2A;
-    static {
-        MethodHandles.Lookup lookup = MethodHandles.lookup();
-        try {
-            applyToObjectA2A = lookup.findStatic(ApplyToArgs.class, "applyToObjectA2A", applyMethodType);
-            applyToConsumerA2A = lookup.findStatic(ApplyToArgs.class, "applyToConsumerA2A", applyMethodType);
-        } catch (Exception ex) {
-            throw new RuntimeException(ex);
-        }
-    }
+    public static final MethodHandle applyToObjectA2A =
+        Procedure.lookupApplyHandle(ApplyToArgs.class, "applyToObjectA2A");
+    public static final MethodHandle applyToConsumerA2A =
+        Procedure.lookupApplyHandle(ApplyToArgs.class, "applyToConsumerA2A");
 }

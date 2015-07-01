@@ -50,11 +50,11 @@ public class CompilationHelpers
                     if (decl != null)
                         pval = decl.getValue();
                 }
-                if (pval != null && pval.getClass() == LambdaExp.class
-                    && exp.firstSpliceArg < 0 /* for now */) {
+                if (pval != null && pval.getClass() == LambdaExp.class) {
                     Expression[] rargs = new Expression[nargs];
                     System.arraycopy(args, 1, rargs, 0, nargs);
                     exp.setFuncArgs(proc, rargs);
+                    exp.adjustSplice(exp, -1);
                     return visitor.visit(exp, required);
                 }
                 proc = visitor.visit(proc, InlineCalls.typeForCalledFunction(proc));

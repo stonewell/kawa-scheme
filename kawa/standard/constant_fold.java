@@ -60,9 +60,9 @@ public class constant_fold extends Syntax
       }
     catch (Throwable ex)
       {
-	exp = tr.syntaxError("caught exception in constant-fold:");
-	tr.syntaxError(ex.toString());
-	return exp;
+	String msg = "caught exception in constant-fold: "+ex;
+	tr.getMessages().error('e', msg, ex);
+	return new ErrorExp(msg);
       }
   }
 }

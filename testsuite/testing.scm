@@ -119,7 +119,7 @@
 ;; want to use '+ in the test function below.  The clean (future) solution
 ;; would be to put this file inside a module.  FIXME.
 
-(define (test expect fun . args)
+(define (test expect fun #!rest args)
   ((lambda (res)
      (cond ((equal? expect res)
 	    (if fail-expected

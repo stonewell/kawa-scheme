@@ -130,18 +130,16 @@ public abstract class MethodProc extends ProcedureN
    * keyword argument that does not match. */
   public static final int NO_MATCH_UNUSED_KEYWORD = 0xfff50000;
 
-    public static final int NO_MATCH_UNEXPECTED_KEYWORD = 0xfff60000;
-
   /** Helper method to throw an exception if a <code>matchX</code>
    * method fails. */
   public static RuntimeException
-  matchFailAsException(int code, Procedure proc, Object[] args)
+  matchFailAsException(int code, Procedure proc, ArgList args)
   {
     int arg = (short) code;
     code &= 0xffff0000;
     if (code != NO_MATCH_BAD_TYPE)
-      return new WrongArguments(proc, args.length);
-    return new WrongType(proc, arg, arg > 0 ? args[arg-1] : null);
+      return new WrongArguments(proc, args.numArguments());
+    return new WrongType(proc, arg, arg > 0 ? args.getArgAsObject(arg-1) : null);
   }
 
   /** Return the more specific of the arguments.
