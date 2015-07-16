@@ -194,7 +194,7 @@ public class ModuleInfo {
                     && (! ftype.isSubtype(Compilation.typeLocation)
                         || ftype.isSubtype(Compilation.typeFieldLocation))) {
                     if ((flags & Access.STATIC) == 0 && instance == null)
-                        instance = getInstance();
+                        instance = getRunInstance();
                     Object fvalue = rclass.getField(fld.getName()).get(instance);
                     fdecl = language.declFromField(mod, fvalue, fld);
                     fdecl.noteValue(new QuoteExp(fvalue));
@@ -260,7 +260,11 @@ public class ModuleInfo {
 
     public Object getRunInstance() {
         Object inst = getInstance();
-        if (inst instanceof Runnable)
+        if (inst instanceof RunnableModule) {
+            RunnableModule rmod = (RunnableModule) inst;
+                if (! rmod.checkRunDone(true))
+                    ModuleBody.run(rmod, CallContext.getInstance().consumer);
+        } else if (inst instanceof Runnable)
             ((Runnable) inst).run();
         return inst;
     }

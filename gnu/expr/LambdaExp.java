@@ -277,7 +277,9 @@ public class LambdaExp extends ScopeExp {
      * @return One of the CALL_WITH_xxx values in Compilation. */
     public int getCallConvention() { return callConvention; }
     public void setCallConvention(Compilation comp) {
-        if (isClassMethod())
+        if (isClassMethod()
+            || (this instanceof ModuleExp
+                && ((ModuleExp) this).staticInitRun()))
             callConvention = Compilation.CALL_WITH_RETURN;
         else {
             int defaultConvention = comp.currentCallConvention();
@@ -416,7 +418,6 @@ public class LambdaExp extends ScopeExp {
         if (index < 0)
             return null; // Too few arguments.
         int length = primMethods.length;
-        //System.err.println("getMethod "+this+" ns#:"+nonSpliceCount+" s#:"+spliceCount+" len:"+length+" idnex:"+index);
         if (spliceCount > 0)
             return length == 1 ? primMethods[0] : null;
         return primMethods[index < length ? index : length - 1];
@@ -657,7 +658,7 @@ public class LambdaExp extends ScopeExp {
                 fname = Declaration.PRIVATE_PREFIX + fname;
             if (nameDecl.getFlag(Declaration.STATIC_SPECIFIED)) {
                 fflags |= Access.STATIC;
-                // If there is no moduleInstanceVar, then the field gets
+                // A static field in a non-static module is
                 // initialized in <init>, not <clinit>,
                 // which is bad for a "static final" field.
                 if (! ((ModuleExp) nameDecl.context).isStatic())

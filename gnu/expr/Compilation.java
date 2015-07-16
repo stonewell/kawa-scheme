@@ -47,7 +47,7 @@ public class Compilation implements SourceLocator
   public ModuleExp mainLambda;
   public Variable thisDecl;
 
-  /** Contains "$instance" if the module is static; otherwise null. */
+  /** Contains "$class" if the module is static; otherwise null. */
   Variable moduleInstanceVar;
 
   /** A code, one of the following constants, indicating how far along
@@ -86,17 +86,9 @@ public class Compilation implements SourceLocator
     public void setPedantic(boolean value) { pedantic = value; }
 
   /** Used to access the "main" instance.
-   * This is used for two different purposes, which may be confusing:
-   * <ul>
-   * <li>
-   * If we're compiling a static module, then {@code moduleInstanceMainField}
+   * If we're compiling a static module (FIXME: and not init-run), then {@code moduleInstanceMainField}
    * is a field in {@code mainClass} named {@code "$instance"} that
-   * points to the single instance of the module.</li>
-   * <li>
-   * If {@code moduleClass!=mainClass} (typically because we've specified
-   * {@code module-extends}) <em>and</em> the module is non-static then
-   * {@code moduleInstanceMainField} is a field in {@code moduleClass}
-   * named {@code "$main"} that points back to {@code mainClass}.</li></ul>
+   * points to the single instance of the module.
    */
   Field moduleInstanceMainField;
 
@@ -1184,7 +1176,8 @@ public class Compilation implements SourceLocator
       }
     if (makeRunnable())
       type.addInterface(typeRunnable);
-    type.addInterface(typeRunnableModule);
+    if (! module.staticInitRun())
+      type.addInterface(typeRunnableModule);
     type.setSuper(sup);
 
     module.compiledType = type;
@@ -1389,8 +1382,6 @@ public class Compilation implements SourceLocator
                 code.emitCheckcast(primMethod.getDeclaringClass()); // FIXME
             else
                 code.emitCheckcast(lexp.closureEnv.getType());
-	    //if (curClass == moduleClass && mainClass != moduleClass)
-            //	code.emitGetField(moduleInstanceMainField);
 	}
         Scope scope = code.pushScope();
         lexp.scope = scope;
@@ -1939,51 +1930,41 @@ public class Compilation implements SourceLocator
       }
 
     ClassType neededSuper = getModuleType();
-    //if (mainClass.getSuperclass().isSubtype(neededSuper)
-    //    && ! module.getFlag(ModuleExp.USE_DEFINED_CLASS))
-      moduleClass = mainClass;
-    /*
-    else
-      {
-	moduleClass = new ClassType(generateClassName("frame"));
-	moduleClass.setSuper(neededSuper);
-	addClass(moduleClass);
-	generateConstructor(moduleClass, null);
-      }
-    */
+    moduleClass = mainClass;
 
     curClass = module.compiledType;
-    int arg_count;
     LambdaExp saveLambda = curLambda;
     curLambda = module;
-    Type[] arg_types;
-    if (module.isHandlingTailCalls()) // Is this ever false?
-      {
-	arg_count = 1;
-	arg_types = new Type[1];
-	arg_types[0] = typeCallContext;
-      }
-    else if (module.min_args != module.max_args || module.min_args > 4)
-      { // Likely dead code.
-	arg_count = 1;
-	arg_types = new Type[1];
-	arg_types[0] = new ArrayType (typeObject);
-      }
-    else
-      { // Likely dead code.
-	arg_count = module.min_args;
-	arg_types = new Type[arg_count];
-	for (int i = arg_count;  --i >= 0; )
-	  arg_types[i] = typeObject;
-      }
 
     CodeAttr code;
     Variable heapFrame = module.heapFrame;
     boolean staticModule = module.isStatic();
-    Method apply_method;
+
+    if (curClass.getSuperclass() != typeModuleBody) {
+        Field runDoneField = curClass.addField("$runDone$", Type.booleanType,
+                             Access.PROTECTED);
+        Method runDoneMethod =
+            curClass.addMethod ("checkRunDone", new Type[] { Type.booleanType },
+                                Type.booleanType, Access.PUBLIC);
+        method = runDoneMethod;
+        code = method.startCode();
+        code.emitLoad(code.getArg(0));
+        code.emitGetField(runDoneField);
+        code.emitLoad(code.getArg(0));
+        code.emitLoad(code.getArg(1));
+        code.emitPutField(runDoneField);
+        code.emitReturn();
+    }
     
-    apply_method = curClass.addMethod ("run", arg_types, Type.voidType,
-				       Access.PUBLIC+Access.FINAL);
+    Method apply_method;
+    if (module.staticInitRun()) {
+        apply_method = curClass.addMethod("$runBody$", Type.typeArray0, Type.voidType,
+				       Access.PUBLIC+Access.STATIC);
+    } else {
+        Type[] arg_types = { typeCallContext };
+        apply_method = curClass.addMethod ("run", arg_types, Type.voidType,
+                                           Access.PUBLIC+Access.FINAL);
+    }
     method = apply_method;
     // For each parameter, assign it to its proper slot.
     // If a parameter !isSimple(), we cannot assign it to a local slot,
@@ -2026,7 +2007,6 @@ public class Compilation implements SourceLocator
     Label afterLiterals = null;
     Method initMethod = null;
 
-    if (curClass == mainClass) // redundant - never false.
       {
 	Method save_method = method;
         Variable callContextSave = callContextVar;
@@ -2040,7 +2020,7 @@ public class Compilation implements SourceLocator
         afterLiterals = new Label(code);
         code.fixupChain(afterLiterals, startLiterals);
 
-	if (staticModule)
+	if (staticModule && ! module.staticInitRun())
 	  {
             if (! module.getFlag(ModuleExp.USE_DEFINED_CLASS))
               generateConstructor(module);
@@ -2068,57 +2048,11 @@ public class Compilation implements SourceLocator
           }
 
 	if (module.staticInitRun())
-	  {
-	    code.emitGetStatic(moduleInstanceMainField);
-	    code.emitInvoke(typeModuleBody.getDeclaredMethod("runToVoid", 1));
-	  }
+            code.emitInvoke(apply_method);
+
 	code.emitReturn();
 
-	if (moduleClass != mainClass && ! staticModule
-            && curClass.getSuperclass().getDeclaredMethod("run", 0) == null)
-	  {
-	    // Compare the run methods in ModuleBody.
-	    method = curClass.addMethod("run", Access.PUBLIC,
-					Type.typeArray0, Type.voidType);
-	    code = method.startCode();
-	    Variable ctxVar = code.addLocal(typeCallContext);
-	    Variable saveVar = code.addLocal(typeConsumer);
-	    Variable exceptionVar = code.addLocal(Type.javalangThrowableType);
-	    // ctx = CallContext.getInstance();
-	    code.emitInvokeStatic(getCallContextInstanceMethod);
-	    code.emitStore(ctxVar);
-	    Field consumerFld = typeCallContext.getDeclaredField("consumer");
-	    // save = ctx.consumer;
-	    code.emitLoad(ctxVar);
-	    code.emitGetField(consumerFld);
-	    code.emitStore(saveVar);
-	    // ctx.consumer = VoidConsumer.instance:
-	    code.emitLoad(ctxVar);
-	    code.emitGetStatic(voidConsumerInstanceField);
-	    code.emitPutField(consumerFld);
-	    // try {
-	    code.emitTryStart(false, Type.voidType);
-	    // this.apply(ctx):
-	    code.emitPushThis();
-	    code.emitLoad(ctxVar);
-	    code.emitInvokeVirtual(save_method);
-	    // exception = null
-	    code.emitPushNull();
-	    code.emitStore(exceptionVar);
-	    // } catch (Throwable th) { exception = th; }
-	    code.emitCatchStart(exceptionVar);
-	    code.emitCatchEnd();
-	    code.emitTryCatchEnd();
-	    // MooduleBody.runCleanup(ctx, ex, save);
-	    code.emitLoad(ctxVar);
-	    code.emitLoad(exceptionVar);
-	    code.emitLoad(saveVar);
-	    code.emitInvokeStatic(typeModuleBody
-				  .getDeclaredMethod("runCleanup", 3));
-	    code.emitReturn();
-	  }
-
-	method = save_method;
+        method = save_method;
         callContextVar = callContextSave;
       }
 

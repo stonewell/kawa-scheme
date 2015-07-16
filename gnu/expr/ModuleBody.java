@@ -14,6 +14,12 @@ public abstract class ModuleBody implements RunnableModule
 {
   protected boolean runDone;
 
+    public boolean checkRunDone(boolean value) {
+        boolean tmp = runDone;
+        runDone = value;
+        return tmp;
+    }
+
   public void run (CallContext ctx)  throws Throwable
   {
   }
@@ -26,7 +32,7 @@ public abstract class ModuleBody implements RunnableModule
           return;
         runDone = true;
       }
-    run (VoidConsumer.instance);
+    run(this, VoidConsumer.instance);
   }
 
     public static void runToVoid (RunnableModule mod)

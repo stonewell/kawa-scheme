@@ -284,20 +284,12 @@ public class ModuleExp extends LambdaExp
                 if (inst instanceof Class)
                     inst = ModuleContext.getContext()
                         .findInstance((Class) inst);
-
-                if (inst instanceof Runnable) {
-                    if (inst instanceof ModuleBody) {
-                        ModuleBody mb = (ModuleBody) inst;
-                        if (! mb.runDone) {
-                            mb.runDone = true;
-                            mb.run(ctx);
-                        }
-                    }
-                    else
-                        ((Runnable) inst).run();
-                } else if (inst instanceof RunnableModule)
-                    ModuleBody.runToVoid((RunnableModule) inst);
-
+                if (inst instanceof RunnableModule) {
+                    RunnableModule rmod = (RunnableModule) inst;
+                    if (! rmod.checkRunDone(true))
+                        rmod.run(ctx);
+                } else if (inst instanceof Runnable)
+                     ((Runnable) inst).run();
                 if (mexp == null)
                     gnu.kawa.reflect.ClassMemberLocation.defineAll(inst, language, env);
                 else {

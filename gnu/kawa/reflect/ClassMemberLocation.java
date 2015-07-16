@@ -216,7 +216,13 @@ public abstract class ClassMemberLocation<T> extends Location<T>
   public static void defineAll (Object instance, Language language, Environment env)
     throws IllegalAccessException
   {
-    Class clas = instance.getClass();
+    Class clas;
+    if (instance instanceof Class) {
+        clas = (Class) instance;
+        instance = null;
+    } else {
+        clas = instance.getClass();
+    }
     java.lang.reflect.Field[] fields = clas.getFields();
     for (int i = fields.length;  --i >= 0; )
       {

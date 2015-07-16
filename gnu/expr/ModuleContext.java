@@ -41,8 +41,8 @@ public class ModuleContext
 
   private ClassToInstanceMap table = new ClassToInstanceMap();
 
-  /** If there is no instance of the argument's class, allocated one. */
-  public synchronized Object findInstance (ModuleInfo info)
+  /** If there is no instance of the argument's class, allocate one. */
+  public synchronized Object findInstance(ModuleInfo info)
   {
     Class clas;
     try
@@ -62,32 +62,26 @@ public class ModuleContext
     return table.get(clas);
   }
 
-  public synchronized Object findInstance (Class clas)
-  {
-    Object inst = table.get(clas);
-    if (inst == null)
-      {
-        try
-          {
-            try
-              {
-                inst = clas.getDeclaredField("$instance").get(null);
-              }
-            catch (NoSuchFieldException ex)
-              {
-                // Not a static module - create a new instance.
-                inst = clas.newInstance();
-              }
-          }
-        catch (Exception ex)
-          {
-            throw new WrappedException
-              ("exception while initializing module " + clas.getName(), ex);
-          }
-        setInstance(inst);
-      }
-    return inst;
-  }
+    public Object findInstance(Class clas) {
+        synchronized (this) {
+            Object inst = table.get(clas);
+            if (inst == null) {
+                try {
+                    try {
+                        inst = clas.getDeclaredField("$instance").get(null);
+                    } catch (NoSuchFieldException ex) {
+                        // Not a static module - create a new instance.
+                        inst = clas.newInstance();
+                    }
+                } catch (Exception ex) {
+                    throw new WrappedException
+                        ("exception while initializing module " + clas.getName(), ex);
+                }
+                setInstance(inst);
+            }
+            return inst;
+        }
+    }
 
   public synchronized void setInstance (Object instance)
   {

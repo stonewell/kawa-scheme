@@ -459,10 +459,7 @@ public abstract class Language
       }
     try
       {
-	Object inst = clas.newInstance ();
-	ClassMemberLocation.defineAll(inst, this, Environment.getCurrent());
-	if (inst instanceof ModuleBody)
-	  ((ModuleBody)inst).run();
+	ClassMemberLocation.defineAll(clas, this, Environment.getCurrent());
       }
     catch (Exception ex)
       {

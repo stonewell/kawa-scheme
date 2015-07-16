@@ -535,7 +535,10 @@ public class FindCapturedVars extends ExpExpVisitor<Void>
       {
         // This is an extension used by define_syntax.
         // FIXME - not really right, but works in simple cases.
-        getCurrentLambda ().setImportsLexVars();
+        ScopeExp context = exp.getContextScope();
+        if (! (context instanceof ModuleExp
+               && ((ModuleExp) context).isStatic()))
+            getCurrentLambda().setImportsLexVars();
         return exp;
       }
     else

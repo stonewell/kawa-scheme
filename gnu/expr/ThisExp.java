@@ -72,7 +72,11 @@ public class ThisExp extends ReferenceExp
       {
         // This is an extension used by define_syntax.
         CodeAttr code = comp.getCode();
-        if (comp.method.getStaticFlag())
+        ScopeExp context = getContextScope();
+        if (context instanceof ModuleExp
+            && ((ModuleExp) context).isStatic())
+            comp.loadClassRef(((LambdaExp) context).getCompiledClassType(comp));
+        else if (comp.method.getStaticFlag())
           code.emitGetStatic(comp.moduleInstanceMainField);
         else
           code.emitPushThis();

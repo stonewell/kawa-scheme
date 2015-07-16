@@ -34,6 +34,8 @@ public class Macro extends Syntax implements Printable, Externalizable
       {
         if (instance instanceof ModuleExp) // possibly if immediate.
           capturedScope = (ModuleExp) instance;
+        else if (instance instanceof Class)
+          capturedScope = ModuleManager.findWithClass((Class) instance).getModuleExp();
         else if (instance != null)
           capturedScope = ModuleInfo.findFromInstance(instance).getModuleExp();
       }

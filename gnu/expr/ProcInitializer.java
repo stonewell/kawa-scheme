@@ -73,8 +73,7 @@ public class ProcInitializer extends Initializer
       code.emitLoad(code.getCurrentScope().getVariable(1));
     else if (! (owning instanceof ModuleExp))
         owning.loadHeapFrame(comp);
-    else if (comp.moduleClass == comp.mainClass
-             && ! comp.method.getStaticFlag())
+    else if (! comp.method.getStaticFlag())
         code.emitPushThis();
     else
       {
@@ -82,22 +81,9 @@ public class ProcInitializer extends Initializer
 	  {
 	    comp.moduleInstanceVar
 	      = code.locals.current_scope.addVariable(code,
-						      comp.moduleClass,
-						      "$instance");
-	    if (comp.moduleClass != comp.mainClass && ! comp.isStatic())
-	      {
-                code.emitNew(comp.moduleClass);
-                code.emitDup(comp.moduleClass);
-                code.emitInvokeSpecial(comp.moduleClass.constructor);
-                if (comp.moduleInstanceMainField == null)
-                    comp.moduleInstanceMainField = 
-                        comp.moduleClass.addField("$main", comp.mainClass, 0);
-		code.emitDup(comp.moduleClass);
-		code.emitPushThis();
-		code.emitPutField(comp.moduleInstanceMainField);
-	      }
-            else
-              code.emitGetStatic(comp.moduleInstanceMainField);
+						      Type.javalangClassType,
+						      "$class");
+            comp.loadClassRef(comp.moduleClass);
 	    code.emitStore(comp.moduleInstanceVar);
 	  }
 	code.emitLoad(comp.moduleInstanceVar);
