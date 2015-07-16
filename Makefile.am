@@ -361,12 +361,12 @@ distall:  distcheck dist-kawa-@VERSION@.jar kawa-doc-$(VERSION).tar.gz
 
 check-ok-for-invoke:
 	cd testsuite && make OPTIONS=--no-full-tailcalls \
-	  check-scm check-r7rs check-misc check-polytype check-case
+	  check-scm check-r7rs check-misc check-obj check-polytype check-case
 	cd testsuite && \
 	  make check-num check-arr check-java-array \
 	  check-srfi-16 check-srfi-38 check-srfi-64 check-srfi-69 \
 	  check-srfi-101 check-srfi-108 check-srfi-109 \
-	  check-ppfile check-text check-xml \
+	  check-format check-ppfile check-text check-regex check-xml \
 	  check-run-test-scripts \
 	  check-annotations1 check-annotations2 \
 	  check-binarytrees check-chameneosredux check-fannkuch \
@@ -375,13 +375,13 @@ check-ok-for-invoke:
 	  check-nsieve check-pidigits check-regexdna check-revcomp \
 	  check-spectralnorm check-threadring
 	cd testsuite && make OPTIONS=--full-tailcalls \
-	  check-scm check-r7rs check-misc check-polytype check-case
+	  check-scm check-r7rs check-misc check-obj check-polytype check-case
 	cd testsuite && make \
 	  check-interpreted-cycle check-interpreted-cycleb check-interpreted-cyclebr \
 	  check-jmc check-use-slots check-load-require check-sva31180 \
 	  check-bridge check-life-grid check-larceny-tests check-numbers-clisp
 
-# TODO in check1: check-lazy check-lib check-format check-system check-regex
+# TODO in check1: check-lazy check-lib check-system
 # scribble.class check-moduleM 
-# TODO in check2: check-misc check-mac check-obj 
+# TODO in check2: check-misc check-mac
 # TODO in check:  check-no-inline $(SERVLET_TESTS) $(SAX2_TESTS) check-inlining
