@@ -198,7 +198,6 @@ public class PrimProcedure extends MethodProc {
             return ctx;
         }
         int paramCount = argTypes.length;
-        Type elementType = null;
         Object restArray = null;
         int extraCount = (takesTarget() || isConstructor()) ? 1 : 0;
         boolean takesContext = takesContext();
@@ -206,12 +205,11 @@ public class PrimProcedure extends MethodProc {
         if (takesContext)
             rargs[--paramCount] = ctx;
         Object extraArg;
+        Type elementType = null;
         if (takesVarArgs) {
             Type restType = argTypes[paramCount-1];
             if (restType == Compilation.scmListType || restType == LangObjType.listType) {
-                // FIXME
-                rargs[paramCount-1] = ctx.getRestArgsList(fixArgs);
-                nargs = fixArgs;
+                nargs = fixArgs+1;
                 elementType = Type.objectType;
             } else {
                 ArrayType restArrayType = (ArrayType) restType;
@@ -234,21 +232,22 @@ public class PrimProcedure extends MethodProc {
             extraArg = null;
         for (int i = extraCount;  i < nargs; i++) {
             // Why is extraArg used twice if isConstructor()
-            Object arg = i==0&&isConstructor() ? extraArg : ctx.getNextArg();
+            Object arg = i==0&&isConstructor() ? extraArg
+                : i==fixArgs && restArray == null ? ctx.getRestArgsList()
+                : ctx.getNextArg();
             Type type = i < fixArgs ? argTypes[i-extraCount]
                 : elementType == null ? null : elementType;
             if (type != Type.objectType) {
                 try {
                     arg = type.coerceFromObject(arg);
                 } catch (ClassCastException ex) {
-                    //ex.printStackTrace();
                     ctx.matchError(NO_MATCH_BAD_TYPE|(i+1));
                     return ctx;
                 }
             }
-            if (i < fixArgs)
+            if (i < fixArgs || restArray == null) { // I.e. using a LList
                 rargs[i-extraCount] = arg;
-            else if (restArray != null) { // I.e. using array rather than LList.
+            } else { // using array rather than LList.
                 if (type instanceof PrimType)
                     arg = ((PrimType) type).convertToRaw(arg);
                 Array.set(restArray, i - fixArgs, arg);
