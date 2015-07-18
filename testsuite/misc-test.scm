@@ -1,4 +1,4 @@
-(test-init "Miscellaneous" 217)
+(test-init "Miscellaneous" 219)
 
 ;;; DSSSL spec example 11
 (test '(3 4 5 6) (lambda x x) 3 4 5 6)
@@ -8,7 +8,7 @@
 	(list x y z 'i: i 'j: j))
       3 4 5 i: 6 i: 7)
 
-(test #f 'default-argument-scope-1 "non-working default argumet capture")
+(test #f 'default-argument-scope-1 "non-working default argument capture")
 #|
 ;; Test for optional argument handling.
 ;; (Savannah bug #10613 was a bug in name scoping of default arguments.)
@@ -38,7 +38,7 @@
  test-opt-args 'a1 'b1 'c1 'd1)
 |#
 
-(test #f 'default-argument-scope-2 "non-working default argumet capture")
+(test #f 'default-argument-scope-2 "non-working default argument capture")
 #|
 (test '(200 . 100)
       (lambda (x #!optional (y (* 2 x)) (p (lambda () (cons y x))))
@@ -1017,3 +1017,13 @@
 ;; Savannah bug report #39944 "Possible bug with omitted keyword arguments"
 (define (f-39944 #!key (y -1) (z -2)) z)
 (test 42 'savannah-39944 (f-39944 z: 42))
+
+(let ()
+  (! [[a b] [c d] e] '((3 4) (5 6) (7 9)))
+  (test "a:3 b:4 c:5 d:6 e:(7 9)"
+        format #f "a:~w b:~w c:~w d:~w e:~w" a b c d e)
+  (! [xs ...] [6 5 4])
+  (test 15 'sum-each (+ xs ...))
+  ;;(! [[as bs] ...] [[11 12] [21 22] [31 32]])
+  ;;(test "xx" 'list-each (list bs ... as ... (+ as ...)))
+)

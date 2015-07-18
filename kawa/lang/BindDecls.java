@@ -34,6 +34,23 @@ public class BindDecls {
         return decl;
     }
 
+    public Object parsePatternNext(Pair patList, Translator comp) {
+        Object next = patList.getCdr();
+        if (next instanceof Pair) {
+            Pair nextPair = (Pair) next;
+            if (comp.matches(nextPair.getCar(), "::")) {
+                Object nextCdr = nextPair.getCdr();
+                if (nextCdr instanceof Pair) {
+                    next = ((Pair) nextCdr).getCdr();
+                }
+                else { // Error
+                    next = nextCdr;
+                }
+            }
+        }
+        return next;
+    }
+
     /** Parse a declaration or more generally a pattern.
      * The actual pattern is an initial sublist (using just the initial
      * car) of the patList.
@@ -43,9 +60,10 @@ public class BindDecls {
     public Object[] parsePatternCar(Pair patList, int scanNesting,
                                     ScopeExp scope,
                                     Translator comp) {
-        return parsePatternCar(patList, null, scanNesting, scope, comp);
+        return parsePatternCar(patList, null, null, scanNesting, scope, comp);
     }
-    public Object[] parsePatternCar(Pair patList, TemplateScope templateScope,
+    public Object[] parsePatternCar(Pair patList, Expression init,
+                                    TemplateScope templateScope,
                                     int scanNesting, ScopeExp scope,
                                     Translator comp) {
         Object next = patList.getCdr();
@@ -85,6 +103,8 @@ public class BindDecls {
                 decl = define((Symbol) patval, templateScope, scope, comp);
                 Translator.setLine(decl, patList);
             }
+            if (init != null)
+                setInitializer(decl, init, scope, comp);
             if (scope instanceof ModuleExp
                 && (patval == underScoreSymbol
                     || ! scope.getFlag(ModuleExp.INTERACTIVE)))
@@ -98,6 +118,8 @@ public class BindDecls {
             Object patcar = patpair.getCar();
             if (patcar == LispLanguage.bracket_list_sym) {
                 decl = scope.addDeclaration((Object) null);
+                if (init != null)
+                    setInitializer(decl, init, scope, comp);
                 if (type != null)
                     ; // FIXME
                 decl.setPrivate(true);
@@ -113,11 +135,12 @@ public class BindDecls {
         }
         else
             comp.error('e', "unrecognized pattern "+pattern);
-        if (decl != null)
+        if (decl != null) {
             decl.setScanNesting(scanNesting);
-        if (type != null && decl != null) {
-            decl.setType(type);
-            decl.setFlag(Declaration.TYPE_SPECIFIED);
+            if (type != null) {
+                decl.setType(type);
+                decl.setFlag(Declaration.TYPE_SPECIFIED);
+            }
         }
         comp.popPositionOf(saveLoc);
         return new Object[]{next,decl};
@@ -147,6 +170,7 @@ public class BindDecls {
             patpair = (Pair) cdr;
             boolean sawEllipsis = false;
             int curScanNesting = scanNesting;
+            cdr = parsePatternNext(patpair, comp);
             if (patpair.getCdr() instanceof Pair) {
                 Object nextCar = ((Pair) patpair.getCdr()).getCar();
                 Object ellipsis = SyntaxRule.dots3Symbol;
@@ -156,16 +180,12 @@ public class BindDecls {
                     if (ellipsisCount > 0)
                         comp.error('e', "multiple '...' in pattern");
                     ellipsisCount++;
+                    cdr = ((Pair) patpair.getCdr()).getCdr();
                 }
             }
-            Object[] r = parsePatternCar(patpair, curScanNesting,
-                                         scope, comp);
-            cdr = sawEllipsis ?  ((Pair) patpair.getCdr()).getCdr() : r[0];
-            Declaration d = (Declaration) r[1];
-            d.setScanNesting(curScanNesting);
-            d.setFlag(Declaration.PATTERN_NESTED);
             Expression init;
             if (sawEllipsis) {
+                // FIXME restCount mishandles 'ID :: TYPE', for example.
                 int restCount = Translator.listLength(cdr);
                 Method dropMethod = ClassType.make("gnu.lists.Sequences")
                     .getDeclaredMethod("drop", restCount==0 ? 2 : 3);
@@ -183,7 +203,12 @@ public class BindDecls {
                         new ReferenceExp(decl),
                         new QuoteExp(count, Type.intType) });
             }
-            setInitializer(d, init, scope, comp);
+            Object[] r = parsePatternCar(patpair, init, null, curScanNesting,
+                                         scope, comp);
+            //r[0] is ingnored, instead we use parsePatternNext
+            Declaration d = (Declaration) r[1];
+            d.setScanNesting(curScanNesting);
+            d.setFlag(Declaration.PATTERN_NESTED);
         }
         Type type = new SeqSizeType(count-ellipsisCount, ellipsisCount==0,
                                     "java.util.List");

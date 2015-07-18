@@ -649,7 +649,7 @@ public class Lambda extends Syntax
 
     public Object[] parsePatternCar(Pair patList, TemplateScope templateScope,
                                     LambdaExp lexp, Translator comp) {
-        return bindParser.parsePatternCar(patList, templateScope, 0,
+        return bindParser.parsePatternCar(patList, null, templateScope, 0,
                                           lexp, comp);
     }
 }
