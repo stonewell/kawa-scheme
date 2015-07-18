@@ -81,6 +81,9 @@ public class SeqSizeType extends LangObjType {
     public int isCompatibleWithValue(Type valueType) {
         return Type.isCompatibleWithValue(this, valueType);
     }
+
+    @Override
+    public boolean isInterface() { return false; }
    
     @Override
     public int compare(Type other) {
