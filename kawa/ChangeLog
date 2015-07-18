@@ -1,3 +1,17 @@
+2015-07-17  Per Bothner  <per@bothner.com>
+
+	* lang/BindDecls.java (setInitializer): Use LetExp.IS_BODY_SCOPE.
+	* lang/Translator.java (rewrite_body): Set IS_BODY_SCOPE.
+
+2015-07-15  Per Bothner  <per@bothner.com>
+
+	* standard/module_static.java: Complain if using 'init-run
+	and --main was specified.
+
+2015-07-12  Per Bothner  <per@bothner.com>
+
+	* lang/SyntaxPattern.java (translate): Treat Keywords as literals.
+
 2015-06-24  Per Bothner  <per@bothner.com>
 
 	* standard/object.java: Simplify chaining of methods by
