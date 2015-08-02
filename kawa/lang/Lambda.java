@@ -177,6 +177,12 @@ public class Lambda extends Syntax
             decl = (Declaration) r[1];
             if (decl == null)
                 decl = new Declaration("<error>");
+            if (decl.getFlag(Declaration.IS_REST_PARAMETER)) {
+                lexp.min_args--;
+                if (rest_args >= 0)
+                    tr.syntaxError("multiple rest arguments in parameter list");
+                rest_args = 1;
+            }
             name = decl == null ? null : decl.getSymbol();
         }
 	else if (pair_car instanceof Pair)
@@ -275,6 +281,9 @@ public class Lambda extends Syntax
                          |Declaration.IS_PARAMETER
                          |Declaration.IS_REST_PARAMETER);
             decl.noteValueUnknown();
+            // For compatibility
+            decl.setFlag(Declaration.KEYWORDS_OK);
+            lexp.setFlag(LambdaExp.ALLOW_OTHER_KEYWORDS);
           }
       }
     else if (bindings != LList.Empty)

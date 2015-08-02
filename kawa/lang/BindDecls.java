@@ -7,6 +7,7 @@ import java.util.Vector;
 import gnu.mapping.Environment;
 import gnu.mapping.Symbol;
 import gnu.kawa.lispexpr.SeqSizeType;
+import gnu.kawa.lispexpr.LangObjType;
 import gnu.kawa.lispexpr.LispLanguage;
 
 /** Methods for parsing patterns. */
@@ -125,12 +126,39 @@ public class BindDecls {
                 decl.setPrivate(true);
                 decl.setFlag(Declaration.IS_CONSTANT);
                 decl.setFlag(Declaration.IS_SINGLE_VALUE);
+                // FIXME pass templateScope?
                 parseBracketListPattern(patpair, scanNesting, scope, decl, comp);
             }
             /*else if (patcar == LispLanguage.bracket_quote_sym)
               ....
             */
-            else
+            else if (patcar == LispLanguage.splice_sym
+                     || patcar == LispLanguage.splice_colon_sym) {
+                Object patcdr = patpair.getCdr();
+                if (Translator.listLength(patcdr) != 1)
+                    comp.syntaxError("bad syntax for splice pattern cdr:"+patcdr);
+                else {
+                    Object[] r = parsePatternCar((Pair) patcdr, null,
+                                                 templateScope,
+                                                 scanNesting, scope, comp);
+                    decl = (Declaration) r[1];
+                    decl.setFlag(Declaration.IS_REST_PARAMETER);
+                    boolean keywordsOk =
+                        patcar == LispLanguage.splice_colon_sym;
+                    if (keywordsOk) {
+                        decl.setFlag(Declaration.KEYWORDS_OK);
+                        if (scope instanceof LambdaExp)
+                            scope.setFlag(LambdaExp.ALLOW_OTHER_KEYWORDS);
+                    }
+                    if (! decl.getFlag(Declaration.TYPE_SPECIFIED)) {
+                        // FIXME these may not be the optimal default types.
+                        // Maybe it should be ArgListVector if keywordsOk.
+                        // Maybe ConstVector or ArrayList otherwise.
+                        decl.setType(keywordsOk ? LangObjType.listType
+                                     : ArrayType.make(Type.objectType));
+                    }
+                }
+            } else
                 comp.syntaxError("unrecognized pattern operator "+patcar);
         }
         else

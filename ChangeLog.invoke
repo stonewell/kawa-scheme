@@ -1,0 +1,20 @@
+For kawa/ChangeLog:
+
+2015-08-02  Per Bothner  <per@bothner.com>
+
+	Allow '@PATTERN' and '@:PATTERN" in parameter lists.
+	* lang/BindDecls.java (parsePatternCar): Handle slice patterns.
+	* lang/Lambda.java (rewriteFormals): Handle the above pattern as a
+	rest parameter.
+
+For gnu/mapping/ChangeLog:
+
+2015-08-02  Per Bothner  <per@bothner.com>
+
+	* CallContext.java (getRestPlainArray): New method.
+	(checkKeywordsDone, getRestArgsArray): Some tweaking.
+
+For gnu/expr/ChangeLog:
+
+	* Compilation.java (generateCheckArg): Don't allow keywords
+	to match '@ARG'-style rest parameter.

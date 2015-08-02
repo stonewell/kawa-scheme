@@ -219,11 +219,9 @@ public class CallContext // implements Runnable
     public void checkKeywordsDone() {
         if (next == count)
             return;
-        if (next != firstKeyword)
-            matchError(MethodProc.NO_MATCH_TOO_MANY_ARGS|next);
-        if (nextKeyword < numKeywords
-            && sortedKeywords != null /*??? FIXME*/) {
-            short keywordIndex = sortedKeywords[nextKeyword];
+        if (nextKeyword < numKeywords) {
+            short keywordIndex = sortedKeywords == null ? 0
+                : sortedKeywords[nextKeyword];
             matchError(MethodProc.NO_MATCH_UNUSED_KEYWORD|keywordIndex);
             nextKeyword = numKeywords;
         }
@@ -285,7 +283,22 @@ public class CallContext // implements Runnable
     return getArgAsObject(next++);
   }
 
-   public final Object[] getRestArgsArray() {
+    public final Object[] getRestPlainArray() {
+        int numKeys = numKeywords();
+        int firstKey = firstKeyword();
+        if (next >= firstKey+numKeys || numKeys == 0)
+            return getRestArgsArray();
+        if (next <= firstKey) {
+            Object[] args = new Object[firstKey-next];
+            int i = 0;
+            while (next < firstKey)
+                args[i++] = getArgAsObject(next++);
+            return args;
+        }
+        return new Object[0];
+    }
+
+    public final Object[] getRestArgsArray() {
         Object[] arr = getRestArgsArray(next);
         next = count;
         return arr;
@@ -295,7 +308,7 @@ public class CallContext // implements Runnable
   {
     int numKeys = numKeywords();
     int skipKeys = next - firstKeyword();
-    if (skipKeys > 0)
+    if (skipKeys > 0 && skipKeys < numKeys)
         numKeys -= skipKeys;
     Object[] args = new Object[count - next + numKeys];
     int i = 0;

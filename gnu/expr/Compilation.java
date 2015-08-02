@@ -1508,7 +1508,7 @@ public class Compilation implements SourceLocator
 		int singleArgs = lexp.min_args; // FIXME
                 Type lastArgType = ptype.getRawType();
 		if (lastArgType instanceof ArrayType) {
-		    varArgsToArray(lexp, singleArgs, null/*counter*/, ptype, ctxVar);
+		    varArgsToArray(lexp, singleArgs, null/*counter*/, ptype, ctxVar, param.getFlag(Declaration.KEYWORDS_OK));
 		    convertNeeded = false;
 		} else if (ptype == LangObjType.argVectorType
                            || ptype == LangObjType.argListType) {
@@ -1714,7 +1714,7 @@ public class Compilation implements SourceLocator
    */
   private void varArgsToArray (LambdaExp source, int singleArgs,
                                Variable counter, Type lastArgType,
-                               Variable ctxVar)
+                               Variable ctxVar, boolean keywordsOk)
   {
     CodeAttr code = getCode();
     Type elType = ((ArrayType) lastArgType).getComponentType();
@@ -1723,7 +1723,8 @@ public class Compilation implements SourceLocator
       {
         code.emitLoad(ctxVar);
         //code.emitPushInt(singleArgs);
-        code.emitInvokeVirtual(typeCallContext.getDeclaredMethod("getRestArgsArray", 0));
+        String mname = keywordsOk ? "getRestArgsArray" : "getRestPlainArray";
+        code.emitInvokeVirtual(typeCallContext.getDeclaredMethod(mname, 0));
       }
     else
       {
