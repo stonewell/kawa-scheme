@@ -16,7 +16,7 @@ public class Scan extends Syntax {
             return tr.syntaxError("'scan' requires a single argument");
         Translator.ScanContext savedScanContext = tr.getScanContext();
         if (savedScanContext == null)
-            tr.error('e', "'scan' not in a '...'- context");
+            return tr.syntaxError("'scan' not in a '...'- context");
         try {
             tr.setScanContext(null);
             Expression scanExp = tr.rewrite_car((Pair) obj, false);

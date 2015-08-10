@@ -1,5 +1,9 @@
 For kawa/ChangeLog:
 
+2015-08-10  Per Bothner  <per@bothner.com>
+
+	* standard/Scan.java (rewrite): Return on error.
+
 2015-08-02  Per Bothner  <per@bothner.com>
 
 	Allow '@PATTERN' and '@:PATTERN" in parameter lists.
