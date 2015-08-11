@@ -1,7 +1,7 @@
-2015-08-02  Per Bothner  <per@bothner.com>
+2015-07-22  Per Bothner  <per@bothner.com>
 
-	* Compilation.java (generateCheckArg): Don't allow keywords
-	for '@ARG'-style rest parameter.
+	* ConsumerTarget.java (compileFromStack): Better handling of
+	unsigned integer types.
 
 2015-07-17  Per Bothner  <per@bothner.com>
 
