@@ -121,7 +121,7 @@ public class ApplyToArgs extends ProcedureN
             return proc.getApplyToObjectMethod().invokeExact(proc, ctx);
         }
         if (arg0 instanceof java.util.List) {
-            Object arg1 = ctx.getNextArg();
+            Object arg1 = Promise.force(ctx.getNextArg());
             if (! (arg1 instanceof Number))
                 ctx.matchError(MethodProc.NO_MATCH_BAD_TYPE|2);
             if (ctx.checkDone() != 0)

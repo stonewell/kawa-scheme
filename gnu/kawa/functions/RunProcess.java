@@ -21,25 +21,33 @@ import java.util.Map;
 /* #ifdef JAVA7 */
 import java.lang.ProcessBuilder.Redirect;
 /* #endif */
+/* #ifdef use:java.lang.invoke */
+import java.lang.invoke.*;
+/* #endif */
 
 /** The Kawa run-process command builds and runs a Process.
  */
 
-public class RunProcess extends MethodProc {
+public class RunProcess extends ProcedureN {
 
+    public static final MethodHandle applyToConsumerRP =
+        Procedure.lookupApplyHandle(RunProcess.class, "applyToConsumerRP");
     public static final RunProcess instance = new RunProcess("run-process");
 
     public RunProcess(String name) {
         setName(name);
+        applyToConsumerMethod = applyToConsumerRP;
         setProperty(Procedure.validateApplyKey,
                     "gnu.kawa.functions.CompileProcess:validateApplyRunProcess");
     }
 
-    public void apply (CallContext ctx) throws Throwable {
+    public static Object applyToConsumerRP(Procedure proc, CallContext ctx)
+            throws Throwable {
         doit(ctx.getArgs(), ctx.consumer);
+        return null;
     }
 
-    protected void error(String message) {
+    protected static void error(String message) {
         throw new RuntimeException("run-process: "+message);
     }
 
@@ -48,7 +56,7 @@ public class RunProcess extends MethodProc {
     public static final SimpleSymbol currentSymbol = Symbol.valueOf("current");
     public static final SimpleSymbol outSymbol = Symbol.valueOf("out");
 
-    public void doit(Object[] args, Consumer consumer) throws Throwable {
+    public static void doit(Object[] args, Consumer consumer) throws Throwable {
         ProcessBuilder builder = new ProcessBuilder();
         int nargs = args.length;
         boolean useShell = false;
@@ -351,7 +359,7 @@ public class RunProcess extends MethodProc {
         }
     }
 
-    public boolean isDisplayConsumer(Consumer out) {
+    public static boolean isDisplayConsumer(Consumer out) {
         if (out instanceof OutPort) {
             OutPort outp = (OutPort) out;
             if (outp.objectFormat instanceof DisplayFormat) {
@@ -366,7 +374,7 @@ public class RunProcess extends MethodProc {
      * @param useShell true if result will be further tokenized by a shell.
      *   (In this case we're basically just handling substiution marks.)
      */
-    public void tokenize(String str, boolean useShell, List<String> arr) {
+    public static void tokenize(String str, boolean useShell, List<String> arr) {
         // The buffer for building the current command-line argument.
         StringBuffer sbuf = new StringBuffer(100);
         // The default is state==-1.
@@ -540,7 +548,7 @@ public class RunProcess extends MethodProc {
             // FIXME should be able to override Charset
             // FIXME can perhaps optimize for CharSeq by using writeTo.
             return new ByteArrayInputStream(((CharSequence) val).toString().getBytes());
-        throw new ClassCastException("invalid input");
+        throw new ClassCastException("invalid input "+val.getClass().getName());
     }
 
     /** Copy bytes from InputStream to OutputStream using separate Thread.
@@ -570,7 +578,7 @@ public class RunProcess extends MethodProc {
      * Continue copying until EOF or exception.
      * At end, the InputStream is closed, but the Writer is not.
      */
-    void copyWriterInThread(final InputStream in,
+    static void copyWriterInThread(final InputStream in,
                             final Writer out, boolean closeOut) throws IOException {
         if (out instanceof BinaryOutPort) {
             BinaryOutPort bout = (BinaryOutPort) out;

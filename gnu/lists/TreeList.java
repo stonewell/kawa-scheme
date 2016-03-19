@@ -37,7 +37,7 @@ public class TreeList extends AbstractSequence<Object>
 
   public TreeList()
   {
-    resizeObjects();
+    reserveObjects(20);
     gapEnd = 200;
     data = new char[gapEnd];
   }
@@ -71,7 +71,7 @@ public class TreeList extends AbstractSequence<Object>
       }
     objects = null;
     oindex = 0;
-    resizeObjects();
+    reserveObjects(0);
   }
 
   // The data array contains an encoding of values, as follows:
@@ -344,31 +344,32 @@ public class TreeList extends AbstractSequence<Object>
       }
   }
 
-  public final void resizeObjects()
-  {
-    int oldLength;
-    int newLength;
-    Object[] tmp;
-    if (objects == null)
-      {
-	oldLength = 0;
-	newLength = 100;
-	tmp = new Object[newLength];
-      }
-    else
-      {
-	oldLength = objects.length;
-	newLength = 2 * oldLength;
-	tmp = new Object[newLength];
-	System.arraycopy(objects, 0, tmp, 0, oldLength);
-      }
-    objects = tmp;
-  }
+    public final void reserveObjects(int needed) {
+        int newLength;
+        Object[] tmp;
+        if (objects == null) {
+            newLength = needed > 100 ? needed : 100;
+            tmp = new Object[newLength];
+        } else {
+            int oldLength = objects.length;
+            if (oldLength < oindex + needed
+                    || oldLength > 2 * (oindex + needed) + 100) {
+                int grow = oldLength >> 1;
+                if (needed > grow)
+                    grow = needed;
+                newLength = oldLength + grow;
+                tmp = new Object[newLength];
+                System.arraycopy(objects, 0, tmp, 0, oindex);
+            } else
+                  tmp = objects;
+        }
+        objects = tmp;
+    }
 
   public int find (Object arg1)
   {
     if (oindex == objects.length)
-      resizeObjects();
+      reserveObjects(1);
     objects[oindex] = arg1;
     return oindex++;
   }
@@ -711,18 +712,20 @@ public class TreeList extends AbstractSequence<Object>
     data[gapStart++] = (char) (BYTE_PREFIX + (v & 0xFF));
   }
 
-  public void writeInt(int v)
-  {
-    ensureSpace(3);
-    if (v >= MIN_INT_SHORT && v <= MAX_INT_SHORT)
-      data[gapStart++] = (char) (INT_SHORT_ZERO + v);
-    else
-      {
-	data[gapStart++] = INT_FOLLOWS;
-	setIntN(gapStart, v);
-	gapStart += 2;
-      }
-  }
+    public void writeInt(int v) {
+        if (v >= MIN_INT_SHORT && v <= MAX_INT_SHORT) {
+            ensureSpace(1);
+            data[gapStart++] = (char) (INT_SHORT_ZERO + v);
+        } else
+            writeIntForce32(v);
+    }
+    public void writeIntForce32(int v) {
+        ensureSpace(3);
+        int pos = gapStart;
+	data[pos++] = INT_FOLLOWS;
+	setIntN(pos, v);
+	gapStart = pos + 2;
+    }
 
   public void writeLong(long v)
   {

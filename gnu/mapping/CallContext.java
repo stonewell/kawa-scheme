@@ -59,10 +59,6 @@ public class CallContext // implements Runnable
     }
 
 
-  /** The program location in the current procedure.
-   * This a selector that only has meaning to the proc's Procedure.*/
-  public int pc;
-
   /* CPS:
   CallFrame frame;
   */
@@ -81,22 +77,6 @@ public class CallContext // implements Runnable
   /** Index of next argument.
    * This is used by methods like getNextArg, used by callees. */
   public int next;
-
-    //public ArgList arguments = new ArgList();
-
-  /** Encoding of where the arguments are.
-   * Each argument uses 4 bits.
-   * Arguments beyond 8 are implicitly ARG_IN_VALUES_ARRAY.
-   * DEPRECATED
-   */
-  public int where;
-  public final static int ARG_IN_VALUES_ARRAY = 0;
-  public final static int ARG_IN_VALUE1 = 1;
-  public final static int ARG_IN_VALUE2 = 2;
-  public final static int ARG_IN_VALUE3 = 3;
-  public final static int ARG_IN_VALUE4 = 4;
-  public final static int ARG_IN_IVALUE1 = 5;
-  public final static int ARG_IN_IVALUE2 = 6;
 
   public Object getArgAsObject(int i)
   {
@@ -685,7 +665,6 @@ public class CallContext // implements Runnable
             applyMethod = null;
             return proc.applyToObjectMethod.invokeExact(proc, this);
         }
-
         Consumer consumerSave = consumer;
         ValueStack vst = vstack;
         consumer = vst;
@@ -732,6 +711,14 @@ public class CallContext // implements Runnable
 
   /** Current stack of evaluation frames for interpreter. */
   public Object[][] evalFrames;
+
+    int consumerOnPushArgState;
+    public final void pushArgState() {
+        vstack.pushArgState(this);
+    }
+    public final void popArgState() {
+        vstack.popArgState(this);
+    }
 }
 
 /* CPS:

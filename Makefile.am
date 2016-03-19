@@ -423,11 +423,11 @@ check-ok-for-invoke:
 	cd testsuite && make OPTIONS=--no-full-tailcalls \
 	  check-scm check-r7rs check-misc check-obj check-polytype check-case
 	cd testsuite && \
-	  make check-num check-arr check-java-array \
+	  make check-num check-arr check-java-array check-lazy \
 	  check-srfi-16 check-srfi-38 check-srfi-64 check-srfi-69 \
 	  check-srfi-101 check-srfi-108 check-srfi-109 \
 	  check-format check-ppfile check-text check-regex check-xml \
-	  check-run-test-scripts \
+	  scribble.class check-run-test-scripts check-moduleM \
 	  check-annotations1 check-annotations2 \
 	  check-binarytrees check-chameneosredux check-fannkuch \
 	  check-fannkuchredux check-fasta \
@@ -441,7 +441,6 @@ check-ok-for-invoke:
 	  check-jmc check-use-slots check-load-require check-sva31180 \
 	  check-bridge check-life-grid check-larceny-tests check-numbers-clisp
 
-# TODO in check1: check-lazy check-lib check-system
-# scribble.class check-moduleM 
+# TODO in check1: check-lib check-system
 # TODO in check2: check-misc check-mac
 # TODO in check:  check-no-inline $(SERVLET_TESTS) $(SAX2_TESTS) check-inlining

@@ -1387,7 +1387,10 @@ public class Compilation implements SourceLocator
         lexp.scope = scope;
         Declaration[] keyDecls = generateCheckKeywords(lexp);
         ArrayList<Variable> argVariables = new ArrayList<Variable>();
-	generateCheckArg(lexp.firstDecl(), lexp, 0, code, keyDecls, argVariables, null);
+	Declaration param = lexp.firstDecl();
+        if (param != null && param.isThisParameter())
+            param = param.nextDecl();
+        generateCheckArg(param, lexp, 0, code, keyDecls, argVariables, null);
 	messages.swapSourceLocator(saveLoc1);
         this.method = saveMethod;
 	curLambda = saveLambda;
@@ -1574,9 +1577,10 @@ public class Compilation implements SourceLocator
                 int kindex = kin - (lexp.min_args+lexp.opt_args);
                 Declaration keyDecl = keyDecls[kindex];
                 if (keyDecl.isSimple()) {
-                    incoming = keyDecl.var;
                     if (convertNeeded)
                         code.emitLoad(keyDecl.var);
+                    else
+                        incoming = keyDecl.var;
                 } else {
                     code.emitLoad(ctxVar);
                     code.emitLoad(keyDecl.var);
@@ -1626,10 +1630,12 @@ public class Compilation implements SourceLocator
 	    }
 	    else if (ptype instanceof TypeValue ||
                      ptype instanceof PrimType /*FIXME only if number */) {
-                if (incoming == null) {
-                    incoming = code.addLocal(Type.pointer_type);
-                    code.emitStore(incoming);
-                }
+                // what if incoming!=null && convertNeeded
+                if (incoming != null)
+                    throw new InternalError();
+		StackTarget.forceLazyIfNeeded(this, Type.objectType, ptype);
+                incoming = code.addLocal(Type.pointer_type);
+                code.emitStore(incoming);
                 if (ptype instanceof TypeValue) {
                     ((TypeValue) ptype).emitTestIf(incoming, param, this);
                 }
