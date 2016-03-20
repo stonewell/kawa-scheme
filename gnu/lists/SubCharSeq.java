@@ -4,6 +4,8 @@ import gnu.text.Char;
 import java.io.*;
 import java.util.*;
 
+/** A substring view of a CharSequence. */
+
 public class SubCharSeq extends AbstractSequence<Char>
     implements CharSeq, RandomAccess, Externalizable
 {

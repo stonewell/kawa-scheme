@@ -49,6 +49,8 @@ public class ImportFromLibrary extends Syntax
         { "28", "basic-format-strings", BUILTIN },
         { "29", "localization", MISSING },
         { "31", "rec", MISSING },
+        { "35", "conditions", "gnu.kawa.slib.conditions" },
+        { "37", "args-fold", "gnu.kawa.slib.srfi37" },
         { "38", "with-shared-structure", MISSING },
         { "39", "parameters", BUILTIN },
         // Note the default for (srfi :41) should be "streams".  We put that last,
@@ -99,7 +101,7 @@ public class ImportFromLibrary extends Syntax
 
     public static String checkSrfi(String lname, Translator tr) {
         if (lname.startsWith("srfi.")) {
-            String demangled = Compilation.demangleName(lname.substring(5));
+            String demangled = Compilation.demangleSymbolic(lname.substring(5));
             int dot = demangled.indexOf('.');
             String srfiName;
             StringBuilder badNameBuffer = null;
@@ -157,6 +159,13 @@ public class ImportFromLibrary extends Syntax
     }
 
     void scanImportSet(Object imports, ScopeExp defs, Translator tr, require.DeclSetMapper mapper) {
+        if (imports instanceof SimpleSymbol) {
+            String sname = imports.toString();
+            handleImport(sname, null,
+                         Compilation.mangleQualifiedName(sname),
+                         defs, tr, mapper);
+            return;
+        }
         int specLength = Translator.listLength(imports);
         if (specLength <= 0) {
             Object save1 = tr.pushPositionOf(imports);
@@ -218,7 +227,9 @@ public class ImportFromLibrary extends Syntax
                         Class clas = ObjectType.getContextClass(cname);
                         decls.put(dname, tr.makeQuoteExp(clas));
                     } catch (ClassNotFoundException ex) {
+                        Object savePos = tr.pushPositionOf(cdrPair);
                         tr.error('e', "no class found named "+cname);
+                        tr.popPositionOf(savePos);
                     }
                 }
                 rest = cdrPair.getCdr();
@@ -227,7 +238,7 @@ public class ImportFromLibrary extends Syntax
                 decls = mapper.map(decls, tr);
             for (Map.Entry<Symbol,Expression> entry : decls.entrySet()) {
                 Symbol aname = entry.getKey();
-                Declaration decl = tr.define(aname, (TemplateScope) null, defs);
+                Declaration decl = tr.define(aname, defs);
                 decl.setAlias(true);
                 decl.setFlag(Declaration.IS_CONSTANT|Declaration.EARLY_INIT);
                 SetExp sexp = new SetExp(decl, entry.getValue());
@@ -238,9 +249,7 @@ public class ImportFromLibrary extends Syntax
             }
             return;
         }
-        if (specLength >= 2 && kind != '\0'
-            // A keyword such as 'only must be followed by an <import set>.
-            && cdrPair.getCar() instanceof LList) {
+        if (specLength >= 2 && kind != '\0') {
             ImportSetMapper nmapper
                 = new ImportSetMapper(kind, cdrPair.getCdr(), specLength-2);
             nmapper.chain = mapper;
@@ -272,7 +281,7 @@ public class ImportFromLibrary extends Syntax
                 if (sbuf.length() > 0)
                     sbuf.append('/');
                 String part = car.toString();
-                cbuf.append(Compilation.mangleNameIfNeeded(part));
+                cbuf.append(Compilation.mangleClassName(part));
                 sbuf.append(part);
             }
             libref = cdr;
@@ -335,8 +344,8 @@ public class ImportFromLibrary extends Syntax
         String currentClassName = curinfo.getClassName();
 
         // Is the current module a file - as opposed to (say) a tty?
-        boolean currentIsFile = currentSource instanceof FilePath
-            && ((FilePath) currentSource).toFileRaw().isFile();
+        boolean currentIsFile = currentSource != null
+            && currentSource.isPlainFile();
         Path currentRoot = currentIsFile ? currentSource.getDirectory()
             : Path.currentPath();
         if (currentIsFile
@@ -415,8 +424,10 @@ public class ImportFromLibrary extends Syntax
                     pbuf.append(implicitSource.substring(prefixLength));
                     pbuf.append(pathElement.substring(star+1));
                 } else {
-                    pbuf.append(pathElement);
-                    pbuf.append('/');
+                    if (! ".".equals(pathElement)) {
+                        pbuf.append(pathElement);
+                        pbuf.append('/');
+                    }
                     if (explicitSource != null)
                         pbuf.append(explicitSource);
                     else {
@@ -429,13 +440,13 @@ public class ImportFromLibrary extends Syntax
                 }
                 pathStr = pbuf.toString();
             }
-            Path path = currentRoot.resolve(pathStr);
+            Path path = currentRoot.resolve(pathStr).getCanonical();
             // Might be more efficient to first check the ModuleManager,
             // before asking the file-system.  FIXME
             long lastModifiedTime = path.getLastModified();
             if (lastModifiedTime != 0) {
                 if (minfo != null) {
-                    String pstring = path.getCanonical().toString();
+                    String pstring = path.toString();
                     Path infoPath = minfo.getSourceAbsPath();
                     if (infoPath == null
                         || ! (pstring.equals(infoPath.toString()))) {

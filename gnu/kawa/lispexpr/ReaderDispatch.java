@@ -44,6 +44,7 @@ public class ReaderDispatch extends ReadTableEntry
     ReaderDispatch tab = new ReaderDispatch(nonTerminating);
     ReaderDispatchMisc entry = ReaderDispatchMisc.getInstance();
     tab.set(':', entry);
+    tab.set('A', entry);
     tab.set('B', entry);
     tab.set('D', entry);
     tab.set('E', entry);
@@ -55,7 +56,6 @@ public class ReaderDispatch extends ReadTableEntry
     tab.set('T', entry); 
     tab.set('U', entry);
     tab.set('X', entry);
-    tab.set('|', entry);
     tab.set(';', entry);
     tab.set('!', entry);
     tab.set('\\', entry);
@@ -64,6 +64,7 @@ public class ReaderDispatch extends ReadTableEntry
     /* #ifdef use:java.util.regex */
     tab.set('/', entry);
     /* #endif */
+    tab.set('|', ReaderNestedComment.getLispInstance());
     tab.set('\'', new ReaderQuote(rtable.makeSymbol("function")));
     tab.set('(', new ReaderVector(')'));
     /* #ifdef enable:XML */
@@ -75,22 +76,12 @@ public class ReaderDispatch extends ReadTableEntry
   public Object read (Lexer in, int ch, int count, int sharingIndex)
     throws java.io.IOException, SyntaxException
   {
-    count = -1;
-    for (;;)
-      {
-	ch = in.read();
-	if (ch < 0)
-	  in.eofError("unexpected EOF after "+ (char) ch);
-	if (ch > 0x10000)
-	  break;
-	int digit = Character.digit((char) ch, 10);
-	if (digit < 0)
-	  {
-	    ch = Character.toUpperCase((char) ch);
-	    break;
-	  }
-	count = count < 0 ? digit : count * 10 + digit;
-      }
+    count = in.readIntDigits();
+    ch = in.read();
+    if (ch < 0)
+        in.eofError("unexpected EOF after "+ (char) ch);
+    if (ch < 0x10000)
+        ch = Character.toUpperCase((char) ch);
     ReadTableEntry entry = (ReadTableEntry) table.lookup(ch, null);
     if (entry == null)
       {

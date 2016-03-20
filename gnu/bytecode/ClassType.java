@@ -1128,6 +1128,18 @@ public class ClassType extends ObjectType
     return result;
   }
 
+    public <T extends java.lang.annotation.Annotation>
+    T getAnnotation(Class<T> clas) {
+        T ann = RuntimeAnnotationsAttr.getAnnotation(this, clas);
+        if (ann != null)
+            return ann;
+        if ((flags & EXISTING_CLASS) != 0 && getReflectClass() != null) {
+            Class<?> c = getReflectClass();
+            return c.getAnnotation(clas);
+        }
+        return null;
+    }
+
   /** Do various fixups after generating code but before we can write it out.
    * This includes assigning constant pool indexes where needed,
    * finalizing labels, etc. */
@@ -1394,12 +1406,7 @@ public class ClassType extends ObjectType
         }
         int comp = compare(valueType);
         if (comp >= 0) {
-            if (valueType instanceof ClassType
-                || valueType instanceof ParameterizedType
-                || valueType instanceof TypeVariable)
-                return 2;
-            else
-                return 1;
+            return valueType instanceof ObjectType ? 2 : 1;
         } else
             return comp == -3 ? -1 : 0;
     }

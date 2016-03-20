@@ -15,6 +15,7 @@ GNU_EXPR_JSOURCES = \
   expr/CheckedTarget.java \
   expr/ClassExp.java \
   expr/ClassInitializer.java \
+  expr/CommandCompleter.java \
   expr/Compilation.java \
   expr/CompiledModule.java \
   expr/CompiledProc.java \
@@ -83,13 +84,16 @@ GNU_LISTS_JSOURCES = \
   lists/AbstractFormat.java \
   lists/AbstractSequence.java \
   lists/Array.java \
+  lists/Arrays.java \
   lists/AttributePredicate.java \
+  lists/AVector.java \
   lists/BitVector.java \
   lists/Blob.java \
   lists/ByteVector.java \
   lists/CharBuffer.java \
   lists/CharSeq.java \
   lists/CharVector.java \
+  lists/ComposedArray.java \
   lists/ConstVector.java \
   lists/Consumer.java \
   lists/ConsumerWriter.java \
@@ -103,14 +107,13 @@ GNU_LISTS_JSOURCES = \
   lists/F32Vector.java \
   lists/F64Vector.java \
   lists/FilterConsumer.java \
+  lists/FlattenedArray.java \
   lists/FString.java \
   lists/FVector.java \
-  lists/GapManager.java \
   lists/GeneralArray.java \
   lists/GeneralArray1.java \
   lists/ItemPredicate.java \
   lists/ImmutablePair.java \
-  lists/IndirectIndexable.java \
   lists/IndirectIndexedSeq.java \
   lists/IntSequence.java \
   lists/IntVector.java \
@@ -139,6 +142,7 @@ GNU_LISTS_JSOURCES = \
   lists/SubSequence.java \
   lists/StableManager.java \
   lists/Strings.java \
+  lists/TransformedArray.java \
   lists/TreeList.java \
   lists/TreePosition.java \
   lists/U8Vector.java \
@@ -238,6 +242,7 @@ GNU_KAWA_IO_JSOURCES = \
   kawa/io/CharArrayInPort.java \
   kawa/io/CharArrayOutPort.java \
   kawa/io/CheckConsole.java \
+  kawa/io/DomTermErrorStream.java \
   kawa/io/FilePath.java \
   kawa/io/InPort.java \
   kawa/io/LogWriter.java \
@@ -313,6 +318,7 @@ GNU_KAWA_FUNCTIONS_JSOURCES = \
   kawa/functions/Arithmetic.java \
   kawa/functions/ArithOp.java \
   kawa/functions/Arrays.java \
+  kawa/functions/ArrayPrint.java \
   kawa/functions/ArrayRef.java \
   kawa/functions/ArraySet.java \
   kawa/functions/BitwiseOp.java \
@@ -386,6 +392,7 @@ GNU_KAWA_LISPEXPR_JSOURCES = \
   kawa/lispexpr/ReaderIgnoreRestOfLine.java \
   kawa/lispexpr/ReaderMacro.java \
   kawa/lispexpr/ReaderMisc.java \
+  kawa/lispexpr/ReaderNestedComment.java \
   kawa/lispexpr/ReaderParens.java \
   kawa/lispexpr/ReaderQuote.java \
   kawa/lispexpr/ReaderString.java \
@@ -411,6 +418,7 @@ GNU_KAWA_MODELS_JSOURCES = \
   kawa/models/Paintable.java \
   kawa/models/Row.java \
   kawa/models/Spacer.java \
+  kawa/models/SVGUtils.java \
   kawa/models/Text.java \
   kawa/models/Viewable.java \
   kawa/models/WeakListener.java \
@@ -539,6 +547,7 @@ EXTRA_DIST = \
   expr/package.html \
   mapping/package.html \
   lists/package.html \
+  lists/PrimVector.template \
   text/package.html \
   kawa/reflect/package.html \
   $(GNU_KAWA_ANT_JSOURCES)
@@ -563,6 +572,9 @@ java_sources += $(GNU_KAWA_SWINGVIEWS_JSOURCES)
 endif
 if WITH_SWT
 java_sources += $(GNU_KAWA_SWTVIEWS_JSOURCES)
+endif
+if WITH_JLINE2
+java_sources += kawa/io/JLine2InPort.java
 endif
 if ENABLE_XML
 java_sources += $(GNU_XML_JSOURCES) $(GNU_KAWA_XML_JSOURCES)

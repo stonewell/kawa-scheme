@@ -1,3 +1,142 @@
+2016-03-14  Per Bothner  <per@bothner.com>
+
+	Fix Savannah bug #47412 "Can't use define in the constructor of a
+	subclass".
+	* ClassExp.java (compileMember): Change logic for compiling
+	super/this constructors in their place in the Expresson structure.
+	This handles constructors in LetExpr creates for <body> blocks.
+	(compileCallInitMethods): New helper method.
+	* LambdaExp.java (getBodyFirstExpression): Handle LetExp.
+	(compileBody): Set and restore currentScope.
+	* ApplyExp.java (IS_SUPER_INIT): New flag.
+	(compile): Compile "$finit$" calls if IS_SUPER_INIT.
+	* Expression.java (compileButFirst): Remove no-longer-used method.
+
+2016-02-24  Per Bothner  <per@bothner.com>
+
+	Add support for command-line completion.
+	* CommandCompleter.java: New class.
+	* NameLookup.java (getCompletingSymbols): New method.
+
+2016-02-12  Per Bothner  <per@bothner.com>
+
+	* ApplyExp.java (finishTrampoline): Factor out "runUntilDone"
+	and related handling into separate method.
+	* PrimProcedure.java (compileInvoke): Use finishTrampoline.
+	This fixes a bug with runUntilDone not being called.
+
+2016-02-11  Per Bothner  <per@bothner.com>
+
+	* StackTarget.java: Better handling of Lazy values.
+
+	* StackTarget.java (emitCoerceFromObject): Add extra cast if
+	needed for OccurrenceType.
+
+2016-02-02  Per Bothner  <per@bothner.com>
+
+	* KawaConvert.java (isTrue): A Lazy value has to be forced.
+	* ConditionalTarget.java (compileFromStack): Check if value might
+	be Lazy.
+
+2016-01-31  Per Bothner  <per@bothner.com>
+
+	* Compilation.java (process): Defer setting ERROR_SEEN, since some
+	useful error and warning messages may happen in later states.
+
+2016-01-30  Per Bothner  <per@bothner.com>
+
+	* QuoteExp.java (emptyExp): New static.
+	* LambdaExp.java: Use it.
+
+2016-01-27  Per Bothner  <per@bothner.com>
+
+	* ReferenceExp.java (apply): Fix eval when context is MouleExp.
+
+	* ClassExp.java: Check for null - which can happen on error.
+	* InlineCalls.java: Likewise.
+
+2015-11-27  Per Bothner  <per@bothner.com>
+
+	* LambdaExp.java (allocMethod): Slightly improved message on
+	internal error.
+
+2015-10-24  Per Bothner  <per@bothner.com>
+
+	* Compilation.java (typeLocationProc): New static field.
+
+2015-10-13  Per Bothner  <per@bothner.com>
+
+	Clearer definition of "interactive mode".  Better re-definition support.
+	* Compilation.java (isInteractive): New method.
+	* Declaration.java (makeField): If interactive, make indirect
+	regardless of whether type is specified.
+	* ModuleInfo.java (oldClass): New field.
+	(getOldModuleClass): New access method.
+	(checkCurrent): Save moduleClass in oldClass before nulling former.
+	* ProcInitializer.java (emitLoadModuleMethod): Look for old
+	Procedure in both old module class as well as intercative environment.
+
+	* Language.java (mangleName): Allow any-case letter after '-'.
+
+2015-10-12  Per Bothner  <per@bothner.com>
+
+	* Declaration.java (load): Do better coercion if loading from
+	indirect-binding - specifically handle primitive types.
+
+2015-10-07  Per Bothner  <per@bothner.com>
+
+	* AbstractScriptEngineFactory.java (BindingsLocation.get):
+	Fix in the obvious way Savannah bug #45679 "Mention offending symbol
+	name when throwing UnboundLocationException".
+
+2015-10-05  Per Bothner  <per@bothner.com>
+
+	* ModuleInfo.java (checkCurrent): If moduleClass is null, it
+	may be because it was been compiled and written - but not loaded.
+	So don't automatically assume it's not current.
+
+2015-10-04  Per Bothner  <per@bothner.com>
+
+	* ModuleInfo.java (setupModuleExp): Only use current value as
+	literal if field is final.
+
+2015-09-30  Per Bothner  <per@bothner.com>
+
+	* Compilation.java (mangleSymbolic): Fix thinko.
+	* ModuleManager.java (interactiveClassPrefix, evalClassPrefix):
+	Change to values that don't get mangled by mangleSymbolic.
+
+2015-09-30  Per Bothner  <per@bothner.com>
+
+	Change to mangle class and package name in "Symbolic Freedom" style.
+	See https://blogs.oracle.com/jrose/entry/symbolic_freedom_in_the_vm
+	Note this is currently *only* used for class and package names.
+	* Compilation.java (mangleSymbolic, demangleSymbolic): New methods.
+	(mangleClassName, mangleQualifiedName): Change to use new methods.
+	(generateClassName): Use mangleClassName.
+	* ClassExp.java: Use mangleClassName.
+
+2015-09-29  Per Bothner  <per@bothner.com>
+
+	* Declaration.java (load): Add cast if loading from Location.
+	* ReferenceExp.java (calculateType): More precise result if fluid.
+
+2015-09-28  Per Bothner  <per@bothner.com>
+
+	* Declaration.java (makeField): Better field type if indirect-binding.
+
+2015-09-20  Per Bothner  <per@bothner.com>
+
+	* Declaration.java (SYNCHRONIZED_ACCESS, STRICTFP_ACCESS): New flags.
+	(METHOD_ACCESS_FLAGS): Include new flags.
+
+2015-09-17  Per Bothner  <per@bothner.com>
+
+	Fix bug in class name mangling; modularize.
+	* Compilation.java (mangleClassName, mangleQualifiedName): New methods.
+	* ModuleExp.java (classFor):  Avoid mangling module name - only
+	mangle class name, using mangleQualifiedName.
+
 2015-07-22  Per Bothner  <per@bothner.com>
 
 	* ConsumerTarget.java (compileFromStack): Better handling of

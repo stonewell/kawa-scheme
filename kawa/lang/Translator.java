@@ -686,6 +686,26 @@ public class Translator extends Compilation
       pushForm(rewrite(exp, false));
   }
 
+    public int getCompletions(Environment env,
+                              String nameStart, Object property,
+                              String namespaceUri,
+                              List<String> matches) {
+        LocationEnumeration e = env.enumerateAllLocations();
+        int count = 0;
+        while (e.hasMoreElements()) {
+            Location loc = e.nextLocation();
+            Symbol sym = loc.getKeySymbol();
+            String local = sym == null ? null : sym.getLocalPart();
+            if (local != null && local.startsWith(nameStart)
+                && property == loc.getKeyProperty()
+                && namespaceUri == sym.getNamespaceURI()) {
+                count++;
+                matches.add(local);
+            }
+        }
+        return count;
+    }
+
     public Object namespaceResolve(Object name) {
         Object prefix = null;
         Expression part2 = null;
@@ -755,6 +775,25 @@ public class Translator extends Compilation
             return rewrite_pair((Pair) exp, function);
         else if (exp instanceof Symbol && ! selfEvaluatingSymbol(exp)) {
             Symbol s = (Symbol) exp;
+
+            // Check if we're handling a completion request.
+            int complete = s.getLocalName()
+                .indexOf(CommandCompleter.COMPLETE_REQUEST);
+            boolean separate = getLanguage().hasSeparateFunctionNamespace();
+            if (complete >= 0) {
+                List<String> candidates = new ArrayList<String>();
+                String prefix = s.toString().substring(0, complete);
+                Object property = function && separate ? EnvironmentKey.FUNCTION
+                    : null;
+                int symspace = function ? Language.FUNCTION_NAMESPACE
+                    : Language.VALUE_NAMESPACE;
+                getCompletions(env, prefix, property, s.getNamespaceURI(),
+                               candidates);
+                lexical.getCompletingSymbols(prefix, symspace,
+                                             candidates);
+                throw new CommandCompleter(complete, candidates);
+            }
+
             if (s.hasUnknownNamespace()) {
                 String loc = s.getLocalPart();
                 return rewrite_lookup(rewrite(Symbol.valueOf(s.getPrefix()), false),
@@ -833,7 +872,6 @@ public class Translator extends Compilation
                 nameToLookup = exp;
             }
             Symbol symbol = (Symbol) exp;
-            boolean separate = getLanguage().hasSeparateFunctionNamespace();
             if (decl != null) {
                 if (current_scope instanceof TemplateScope && decl.needsContext())
                     cdecl = ((TemplateScope) current_scope).macroContext;
@@ -1048,7 +1086,7 @@ public class Translator extends Compilation
             if (i < len && state > 1) {
                 DFloNum num = new DFloNum(name.substring(0, i));
                 boolean div = false;
-                Vector vec = new Vector();
+                ArrayList vec = new ArrayList();
                 for (; i < len;) {
                     char ch = name.charAt(i++);
                     if (ch == '*') {
@@ -1077,7 +1115,7 @@ public class Translator extends Compilation
                         }
                         ch = name.charAt(i++);
                     }
-                    vec.addElement(name.substring(unitStart, unitEnd));
+                    vec.add(name.substring(unitStart, unitEnd));
                     boolean expRequired = false;
                     if (ch == '^') {
                         expRequired = true;
@@ -1119,16 +1157,16 @@ public class Translator extends Compilation
                     }
                     if (neg)
                         exp = -exp;
-                    vec.addElement(IntNum.make(exp));
+                    vec.add(IntNum.make(exp));
                 }
                 if (i == len) {
                     int nunits = vec.size() >> 1;
                     Expression[] units = new Expression[nunits];
                     for (i = 0; i < nunits; i++) {
-                        String uname = (String) vec.elementAt(2 * i);
+                        String uname = (String) vec.get(2 * i);
                         Symbol usym = LispLanguage.unitNamespace.getSymbol(uname.intern());
                         Expression uref = tr.rewrite(usym);
-                        IntNum uexp = (IntNum) vec.elementAt(2 * i + 1);
+                        IntNum uexp = (IntNum) vec.get(2 * i + 1);
                         if (uexp.longValue() != 1)
                             uref = new ApplyExp(expt.expt,
                                                 new Expression[] {
@@ -1373,7 +1411,7 @@ public class Translator extends Compilation
 	     else
 	       error('e',
 		 "invalid type spec");
-	     type = Type.pointer_type;
+             type = Type.errorType;
 	   }
         if (decl != null)
           decl.setType(texp, type);
@@ -1606,7 +1644,7 @@ public class Translator extends Compilation
             Object savePos = pushPositionOf(pair);
 	    scanForm(pair.getCar(), defs);
             popPositionOf(savePos);
-            if (getState() == Compilation.PROLOG_PARSED)
+            if (getState() == Compilation.PROLOG_PARSED && pendingForm != null)
               {
                 // We've seen a require form during the initial pass when
                 // we're looking module names.  Defer the require and any
@@ -1648,7 +1686,7 @@ public class Translator extends Compilation
   }
 
   /**
-   * Re-write a Scheme <body> in S-expression format into internal form.
+   * Re-write a Scheme 'body' in S-expression format into internal form.
    */
 
   public Expression rewrite_body (Object exp)
@@ -1738,7 +1776,7 @@ public class Translator extends Compilation
 
   public boolean appendBodyValues () { return false; }
 
-  /** Combine a <body> consisting of a list of expression. */
+  /** Combine a 'body' consisting of a list of expression. */
   public Expression makeBody(Expression[] exps)
   {
     if (appendBodyValues())
@@ -1748,7 +1786,7 @@ public class Translator extends Compilation
   }
 
   /** Storage used by noteAccess and processAccesses. */
-  Vector notedAccess;
+  ArrayList notedAccess;
 
   /** Note that we reference name in a given scope.
    * This may be called when defining a macro, at scan-time,
@@ -1756,9 +1794,9 @@ public class Translator extends Compilation
   public void noteAccess (Object name, ScopeExp scope)
   {
     if (notedAccess == null)
-      notedAccess = new Vector();
-    notedAccess.addElement(name);
-    notedAccess.addElement(scope);
+      notedAccess = new ArrayList();
+    notedAccess.add(name);
+    notedAccess.add(scope);
   }
 
   /** Check references recorded by noteAccess.
@@ -1773,8 +1811,8 @@ public class Translator extends Compilation
     ScopeExp saveScope = current_scope;
     for (int i = 0;  i < sz;  i += 2)
       {
-	Object name = notedAccess.elementAt(i);
-	ScopeExp scope = (ScopeExp) notedAccess.elementAt(i+1);
+	Object name = notedAccess.get(i);
+	ScopeExp scope = (ScopeExp) notedAccess.get(i+1);
 	if (current_scope != scope)
           {
             // I.e. first time do equivalent of setPushCurrentScope
@@ -1876,8 +1914,6 @@ public class Translator extends Compilation
       }
     pendingImports = null;
 
-    processAccesses();
-
     setModule(mexp);
     Compilation save_comp = Compilation.setSaveCurrent(this);
     try
@@ -1885,6 +1921,9 @@ public class Translator extends Compilation
         Pair firstForm = formStack.getHead();
         rewriteBody((LList) formStack.popTail(firstForm));
 	mexp.body = makeBody(firstForm, mexp);
+
+        processAccesses();
+
         // In immediate mode need to preserve Declaration for current "session".
         if (! immediate)
 	  lexical.pop(mexp);
@@ -1936,17 +1975,17 @@ public class Translator extends Compilation
   }
 
   /** Push an alias for a declaration in a scope.
-   * If the name of <code>decl</code> came from a syntax template
-   * whose immediate scope is <code>templateScope</code>,
+   * If the name of {@code decl}> came from a syntax template
+   * whose immediate scope is {@code templateScope},
    * then the same syntax template may contain local variable references
-   * that are also in the same <code>templateScope</code>.
+   * that are also in the same {@code templateScope}.
    * Such variable references will <em>not</em> look in the current
-   * "physical" scope, where we just created <code>decl</code>, but
-   * will instead search the "lexical" <code>templateScope</scope>.
-   * So that such references can resolve to <code>decl</code>, we
-   * create an alias in <code>templateScope</code> that points
-   * to <code>decl</code>.  We record that we did this in the
-   * <code>renamedAliasStack</code>, so we can remove the alias later.
+   * "physical" scope, where we just created {@code decl}, but
+   * will instead search the "lexical" {@code templateScope}.
+   * So that such references can resolve to {@code decl}, we
+   * create an alias in {@code templateScope} that points
+   * to {@code decl}.  We record that we did this in the
+   * {@code renamedAliasStack}, so we can remove the alias later.
    */
   public void pushRenamedAlias (Declaration alias)
   {
@@ -1982,6 +2021,10 @@ public class Translator extends Compilation
 	  templateScope.addDeclaration(old);
       }
   }
+
+    public Declaration define(Object name, ScopeExp defs) {
+        return define(name, (TemplateScope) null, defs);
+    }
 
     public Declaration define(Object name, SyntaxForm nameSyntax,
                               ScopeExp defs) {

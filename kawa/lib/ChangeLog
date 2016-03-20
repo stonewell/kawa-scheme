@@ -1,3 +1,35 @@
+2016-03-10  Per Bothner  <per@bothner.com>
+
+	* arrays.scm: A bunch of new array procedures.
+
+2016-02-11  Per Bothner  <per@bothner.com>
+
+	* compile_misc.scm (valuesCompile): Optimize 2-argument 'values' call
+	to use the Values2 class.
+
+2016-01-31  Per Bothner  <per@bothner.com>
+
+	* arrays.scm (format-array): New procedure.
+
+2016-01-27  Per Bothner  <per@bothner.com>
+
+	* kawa/base.scm (require, import): Add exported definitions.
+
+2015-10-24  Per Bothner  <per@bothner.com>
+
+	Better type inference for Scheme 'parameter' reads.
+	* syntax.scm (define-alias-parameter): Add type parameter.
+	* ports.scm: Minor style update.
+
+2015-10-07  Per Bothner  <per@bothner.com>
+
+	* kawa/base.scm: Add $bracket-apply$ and $bracket-list$.
+	This fixes Savannah bug #46116 "Add $bracket-apply$ to (kawa base)".
+
+2015-09-01  Per Bothner  <per@bothner.com>
+
+	* Makefile.am (EXTRA_CLEAN): Also clean */*/*.class.
+
 2015-07-31  Per Bothner  <per@bothner.com>
 
 	* bytevectors.scm (bytevector-copy): Update for U8Vector changes.

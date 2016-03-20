@@ -27,6 +27,9 @@ public class Range<E> extends AbstractSequence<E> implements Sequence<E> {
     }
    
     @Override
+    public E getRaw(int index) { return get(index); }
+
+    @Override
     public int size() { return size; }
 
     boolean isUnbounded() { return size == -1; }
@@ -35,9 +38,6 @@ public class Range<E> extends AbstractSequence<E> implements Sequence<E> {
         implements IntSequence, Externalizable {
         int istart;
         int istep;
-
-        /** Magic value used by IndirectIndexable objects. */
-        public static final IntRange cantWriteMarker = new IntRange(0, 1);
 
         public IntRange(int start, int step, int size) {
             super(start, step, size);
@@ -54,20 +54,51 @@ public class Range<E> extends AbstractSequence<E> implements Sequence<E> {
         public int getStartInt() { return istart; }
         public int getStepInt() { return istep; }
 
-        public int intAt(int index) {
+        public int getInt(int index) {
             if (index >= size && size >= 0)
-                throw new IndexOutOfBoundsException();
+                throw new IndexOutOfBoundsException("index:"+index+" size:"+size);
             return istart + istep * index;
+        }
+
+        public IntRange subListFromRange(int rstart, int rstep, int rsize) {
+            int nstart = istart + rstart * istep;
+            int nstep = istep * rstep;
+            if (isUnbounded() && rsize == -1)
+                return new IntRange(nstart, nstep);
+            int nsize;
+            if (isUnbounded())
+                nsize = rsize;
+            else {
+                nsize = (size-rstart+rstep-1) / rstep;
+                if (rsize != -1) {
+                    if (rsize > nsize)
+                        throw new IndexOutOfBoundsException();
+                    nsize = rsize;
+                }
+            }
+            return new IntRange(nstart, nstep, nsize);
+        }
+
+        public IntRange subList(int fromIx, int toIx) {
+            return subListFromRange(fromIx, 1, toIx - fromIx);
         }
 
         @Override
         public Integer getStart() { return getStartInt(); }
 
         @Override
-        public Integer get(int index) { return intAt(index); }
+        public Integer get(int index) { return getInt(index); }
+
+        @Override
+        public Integer getRaw(int index) { return getInt(index); }
+
+        @Override
+        public int getIntRaw(int index) { return getInt(index); }
+
+        public int getElementKind() { return INT_S32_VALUE; }
 
         public void writeExternal(ObjectOutput out) throws IOException {
-            out.writeInt(this == cantWriteMarker ? -2 : size);
+            out.writeInt(size);
             out.writeInt(istart);
             out.writeInt(istep);
         }
@@ -77,10 +108,6 @@ public class Range<E> extends AbstractSequence<E> implements Sequence<E> {
             size = in.readInt();
             istart = in.readInt();
             istep = in.readInt();
-        }
-
-        public Object readResolve() throws ObjectStreamException {
-            return size == -2 ? cantWriteMarker: this;
         }
     };
 
@@ -97,7 +124,14 @@ public class Range<E> extends AbstractSequence<E> implements Sequence<E> {
         return "#<range start:"+getStart()+" step:"+getStep()+" size:"+size+">";
     }
 
+    public static final IntRange zeroAndUp = new IntRange(0, 1);
+
     public static Range<?> valueOfUnbounded(Object start) {
+        IntNum iistart = IntNum.asIntNumOrNull(start);
+        if (iistart != null && iistart.inIntRange()) {
+             int istart = iistart.intValue();
+             return new IntRange(istart, 1);
+        }
         return new Range<Object>(start, IntNum.one(), -1);
     }
 

@@ -274,19 +274,9 @@ public class Shell
                     continue;
                 }
 
-		// Skip whitespace, in case (read-char) or similar is called:
-		int ch;
-		for (;;)
-		  {
-		    ch = inp.read();
-		    if (ch < 0 || ch == '\r' || ch == '\n')
-		      break;
-		    if (ch != ' ' && ch != '\t')
-		      {
-			inp.unread();
-			break;
-		      }
-		  }
+                int ch = inp.peek();
+                if (ch == '\n')
+                    inp.skip();
 
 		if (! ModuleExp.evalModule(env, ctx, comp, url, perr))
 		  throw new SyntaxException(messages);
@@ -353,6 +343,7 @@ public class Shell
             ex.printStackTrace(perr);
           }
       }
+    perr.flush();
   }
 
   public final static CompiledModule checkCompiledZip (InputStream fs, Path path, Environment env, Language language)
@@ -378,9 +369,9 @@ public class Shell
       {
 	if (env != orig_env)
 	  Environment.setCurrent(env);
-        if (! (path instanceof FilePath))
+        File zfile = path.toFile();
+        if (zfile == null)
           throw new RuntimeException ("load: "+name+" - not a file path");
-	File zfile = ((FilePath) path).toFile();
 	if (!zfile.exists ())
 	  throw new RuntimeException ("load: "+name+" - not found");
 	if (!zfile.canRead ())

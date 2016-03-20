@@ -1,3 +1,63 @@
+2016-02-24  Per Bothner  <per@bothner.com>
+
+	* LispLanguage.java (parse): Save entire command if in interactive
+	mode, in case we get a completion request.
+	* ReadTable.java: Treat COMPLETE_REQUEST as a letter.
+	* ReaderParens.java (readList): If we're in tentative mode,
+	on end-of-file append special value rather than throw fatal error.
+
+2016-02-11  Per Bothner  <per@bothner.com>
+
+	* LangObjType.java (isCompatibleWithValue): Check if types identical.
+
+2016-02-02  Per Bothner  <per@bothner.com>
+
+	Support more flexible nested comment syntax.
+	* LispReader.java (readNestedComment): Add explicit character end pair
+	parameters rather than requiring to be the start pair reversed.
+	* ReaderNestedComment.java: New class - extends ReadTableEntry,
+	* ReaderDispatch.java: Use ReaderNestedComment instance.
+	* ReaderDispatchMisc.java: Remove nested comment handling from here.
+	* ReaderExtendedLiteral.java: Update accordingly.
+
+2016-01-31  Per Bothner  <per@bothner.com>
+
+	* ReaderDispatchMisc.java (read): Fix handling of #F.
+	For example #1F32@0:10... would read '@' as part of the token.
+
+2016-01-26  Per Bothner  <per@bothner.com>
+
+	* LispLanguage.java (parse): In a REPL it works better if we parse
+	forms until end-of-line.
+
+	* LispReader.java (readValuesAndAppend): Fix off-by-one error
+	in column number.
+
+2016-01-16  Per Bothner  <per@bothner.com>
+
+	Support for #A array reader syntax with Guile extensions.
+	* LispReader.java (readGeneralArray): New method.
+	(dimensionsFromNested, fromNested): New helper methods.
+	(readSimpleVector [2 methods], convertListToArray):
+	Remove methods specifically for uniform vectors.
+	* ReaderDispatch.java: Add entry for "#A".
+	* ReaderDispatchMisc.java: Handle #A.
+	Change uniform verctors syntax (#U8, #S8, etc) to use readGeneralArray.
+
+2016-01-11  Per Bothner  <per@bothner.com>
+
+	* ReaderDispatch.java (read): Use new Lexer.readIntDigits.
+	* ReaderDispatchMisc.java: Better error message for #MAXr.
+
+2015-10-12  Per Bothner  <per@bothner.com>
+
+	* LangPrimType.java (emitCoerceFromObject): Handle stringCursorType.
+
+2015-08-16  Per Bothner  <per@bothner.com>
+
+	* LangObjType.java (emitConvertFromPrimitive):  Fix how we
+	convert unsigned int to IntNum.
+
 2015-07-31  Per Bothner  <per@bothner.com>
 
 	* LispReader.java  (parseNumber): Handle generalized FString.

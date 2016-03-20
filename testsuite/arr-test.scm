@@ -1,4 +1,5 @@
-(test-begin "arrays" 169)
+;; -*- coding: utf-8 -*-
+(test-begin "arrays" 204)
 
 ;;; array test
 ;;; 2001 Jussi Piitulainen
@@ -344,13 +345,13 @@
       (test-equal 12 (array-start arr-s 0))
       (test-equal 12 (array-end arr-s 0))
       (test-equal 12 (array-start arr-s 1))
-      (test-equal 12 (array-end arr-s 1) 12))
+      (test-equal 12 (array-end arr-s 1)))
     (let ((arr-s (make-array shs)))
       (test-equal 2 (array-rank arr-s))
       (test-equal 12 (array-start arr-s 0))
       (test-equal 12 (array-end arr-s 0))
       (test-equal 12 (array-start arr-s 1))
-      (test-equal 12 (array-end arr-s 1) 12))))
+      (test-equal 12 (array-end arr-s 1)))))
 
 ;; sharing with sharing subshape
 (let ((super (array (shape 4 7 4 7)
@@ -424,5 +425,128 @@
 	    (array-ref
 	     (share-array four-dee-array (shape 1 2) (make-simple-affine 4 1))
 	     1))
+
+;;; Kawa-specific tests
+
+(let* ((arr (make-array (shape 0 2 1 5) @[100 <: 108]))
+       (a1 (array-index-ref arr 1 [2 <: 5]))
+       (a2 (array-index-share arr 1 [2 <=: 4]))
+       (v1 (array->vector arr))
+       (v2 (array-flatten arr)))
+  (test-equal 8 (array-size arr))
+  (test-equal #(105 106 107) (vector @a1))
+  (test-equal #(105 106 107) a2)
+  (test-equal #(100 101 102 103 104 105 106 107) v1)
+  (test-equal #(100 101 102 103 104 105 106 107) v2)
+  (set! (arr 1 3) 206)
+  (test-equal #(105 106 107) a1)
+  (test-equal #(105 206 107) a2)
+  (test-error (set! (a1 0) 99))
+  (test-equal 107 (arr 1 4))
+  (set! (a2 2) 207)
+  (test-equal #(100 101 102 103 104 105 206 207) v1)
+  (test-equal #(100 101 102 103 104 105 106 107) v2)
+  (test-equal #(105 106 107) a1)
+  (test-equal #(105 206 207) a2)
+  (test-equal 207 (arr 1 4))
+)
+;; Similar but use plain array (rather than range) for selection
+(let* ((arr (make-array (shape 0 2 1 5) @[100 <: 108]))
+       (a1 (array-index-ref arr 1 [2 3 4]))
+       (a2 (array-index-share arr 1 [2 3 4])))
+  (test-equal #(105 106 107) a1)
+  (test-equal #(105 106 107) a2)
+  (set! (arr 1 3) 206)
+  (test-equal #(105 106 107) a1)
+  (test-equal #(105 206 107) a2)
+  (test-error (set! (a1 0) 99))
+  (test-equal 107 (arr 1 4))
+  (set! (a2 2) 207)
+  (test-equal #(105 106 107) a1)
+  (test-equal #(105 206 207) a2)
+  (test-equal 207 (arr 1 4))
+  (array-fill! a2 42)
+  (test-equal #(100 101 102 103 104 42 42 42)
+   (array-flatten arr)))
+
+(test-equal #2a:2@1:3((9 8 7) (10 9 8))
+            (build-array [2 [1 <: 4]]
+                         (lambda (ind)
+                           (let ((x (ind 0)) (y (ind 1)))
+                             (+ 10 x (- y))))))
+
+(test-equal &{&-
+#2a@10:2:3
+║10│ 9│8║
+╟──┼──┼─╢
+║11│10│9║
+╚══╧══╧═╝
+} (format-array
+   (build-array [[10 <: 12] 3]
+                (lambda (ind)
+                  (let ((x (ind 0)) (y (ind 1)))
+                    (- x y))))))
+
+(test-equal &{&-
+╔#2a:2:3╗
+║12│3│ 4║
+╟──┼─┼──╢
+║ 5│9│11║
+╚══╧═╧══╝
+} (format-array #2a((12 3 4) (5 9 11))))
+
+(test-equal &{&-
+╔#2a:2:4╤═══╗
+║ab│c│d │e  ║
+╟──┼─┼──┼───╢
+║f │g│hi│jkl║
+╚══╧═╧══╧═══╝
+} (format-array #2a((ab c d e) (f g hi jkl))))
+
+(test-equal &{&-
+╔#2s8:2:3═══╗
+║012│003│004║
+╟───┼───┼───╢
+║005│-09│011║
+╚═══╧═══╧═══╝
+} (format-array #2S8((12 3 4) (5 -9 11)) "~3,'0d"))
+
+(test-equal &{&-
+╔#3a:2:2:3╗
+║ab│c  │d ║
+╟──┼───┼──╢
+║e │f  │gh║
+╠══╪═══╪══╣
+║i │j  │k ║
+╟──┼───┼──╢
+║lm│nop│q ║
+╚══╧═══╧══╝
+} (format-array #3a(((ab c d) (e f gh)) ((i j k) (lm nop q)))))
+
+(test-equal &{&-
+╔#2a:2:3═══╤═════════╗
+║  334│4545│#2f32:1:2║
+║     │    │║5.0│6.0║║
+║     │    │╚═══╧═══╝║
+╟─────┼────┼─────────╢
+║78987│abc │#2a══╗   ║
+║     │defg│║1│ 2║   ║
+║     │hi  │╟─┼──╢   ║
+║     │    │║3│14║   ║
+║     │    │╚═╧══╝   ║
+╚═════╧════╧═════════╝
+} (format-array
+   #2a((334 4545 #2f32((5 6))) (78987 "abc\ndefg\nhi" #2A((1 2) (3 14))))))
+
+(test-equal "#0a -02" (format-array #0a -2 "~3,'0d"))
+
+(test-equal "#2a@1:3:0 ()"
+            (format-array #2a@1:3:0()))
+
+(test-equal "#2a@1:2:3((a -9 c) (d 153 ef))"
+            (format "~a" #2a@1:2:3((a -9 "c") (d 153 "ef"))))
+
+(test-equal &{#2a@1:2:3((a -9 "c") (d 153 "ef"))}
+            (format "~w" #2a@1:2:3((a -9 "c") (d 153 "ef"))))
 
 (test-end)

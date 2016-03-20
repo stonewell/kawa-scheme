@@ -43,6 +43,8 @@ public class Include extends Syntax {
                          boolean ignoreCase) {
         LList result = LList.Empty;
         Pair lastPair = null;
+        if (tr.getState() == Compilation.PROLOG_PARSING)
+            tr.setState(Compilation.PROLOG_PARSED);
         while (rest instanceof Pair) {
             Pair pair = (Pair) rest;
             Object paircar = pair.getCar();
@@ -67,9 +69,7 @@ public class Include extends Syntax {
                 Path pathElement;
                 if (searchElement.length() > 0 && searchElement.charAt(0) == '|') {
                     pathElement = tr.getMinfo().getSourceAbsPath();
-                    boolean currentIsFile = pathElement instanceof FilePath
-                        && ((FilePath) pathElement).toFileRaw().isFile();
-                    if (! currentIsFile)
+                    if (pathElement == null || ! pathElement.isPlainFile())
                         pathElement = Path.currentPath();
                     if (searchElement.length() > 1)
                         pathElement = pathElement.resolve(searchElement.toString()

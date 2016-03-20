@@ -2,8 +2,8 @@
 
 SUFFIXES = .java .class .scm .el .lisp
 
-KAWALIB = ../kawa-$(VERSION).jar
-KAWARTLIB = ../kawart-$(VERSION).jar
+KAWALIB = ../lib/kawa-$(VERSION).jar
+KAWARTLIB = ../lib/kawart-$(VERSION).jar
 KAWA = ../bin/kawa.sh
 CPJAVA = CLASSPATH="..$(CLASSPATH_SEPARATOR)@conf_classpath@.$(CLASSPATH_SEPARATOR)$$CLASSPATH" $(JAVA)
 CPKAWA = CLASSPATH="@conf_classpath@.$(CLASSPATH_SEPARATOR)$$CLASSPATH" $(KAWA)
@@ -45,7 +45,7 @@ check-no-inline:
 
 check1:  check-num check-arr check-java-array check-lazy check-lib \
   check-srfi-16 check-srfi-38 check-srfi-64 check-srfi-69 \
-  check-srfi-101 check-srfi-108 check-srfi-109 \
+  check-srfi-101 check-srfi-108 check-srfi-109 check-resolve-uri \
   check-format check-ppfile check-system check-text check-regex check-xml \
   scribble.class check-run-test-scripts check-moduleM \
   check-annotations1 check-annotations2\
@@ -113,6 +113,9 @@ check-srfi-108:
 
 check-srfi-109:
 	$(KAWA) $(OPTIONS) "$(srcdir)/srfi-109-test.scm"
+
+check-resolve-uri:
+	$(KAWA) $(OPTIONS) "$(srcdir)/resolve-uri.scm"
 
 check-system:
 	$(KAWA) $(OPTIONS) -e '(set! port-char-encoding "UTF-8")' -f "$(srcdir)/system-test.scm"
@@ -583,7 +586,7 @@ inlining.log: InliningTest.class cycle1.class cycle2.class \
 	$(LIST_CODE_SIZE) map1.class genericMapFormat genericVmapFormat \
 	  listMapFormat stringMapFormat charArrayMapFormat vector1VmapFormat \
 	  vector2VmapFormat >>inlining.log
-	$(LIST_CODE_SIZE) values2.class test1 test2 >>inlining.log
+	$(LIST_CODE_SIZE) values2.class test1 test2 test3 >>inlining.log
 
 check-inlining: inlining.log $(srcdir)/inlining.expected
 	@if $(DIFF) $(srcdir)/inlining.expected inlining.log; \
@@ -727,24 +730,28 @@ SCRIPTS_TO_RUN = case-warnings.scm uninit1.scm \
   overload1.scm overload2.scm match1.scm symbol1.scm values1.scm values2.scm \
   command1.scm command2.scm command3.scm exit1.scm exit2.scm lib-cycle.scm \
   lib-square.scm lib-squaref.scm lib-impsrc1.scm lib-impsrc2.scm lib-dup.scm \
-  lib-colon1.scm lib-colon2.scm lib-export.scm lib-receive.scm \
-  macros1.scm macros2.scm exception1.scm exception2.scm  \
+  lib-colon1.scm lib-colon2.scm lib-export.scm lib-receive.scm lib-bracket.scm \
+  lib-tailcalls.scm \
+  macros1.scm macros2.scm macros3.scm exception1.scm exception2.scm  \
   sva34005.scm sva35362.scm sva36039.scm sva36413.scm sva36556.scm \
   sva36853.scm sva36863.scm sva36917.scm sva37684.scm sva38026.scm \
   sva39060.scm sva39150.scm sva39945.scm sva39940.scm sva39947.scm \
   sva40077.scm sva40494.scm sva40649.scm sva40729.scm sva40814.scm \
   sva42377.scm sva42382.scm sva42689.scm sva42722.scm sva43131.scm \
-  sva43750.scm
+  sva43750.scm sva47412.scm
 # Files needed for SCRIPTS_TO_RUN
 AUX_FOR_SCRIPTS_TO_RUN = aux-libs.scm
+
+MISC_TESTS_WITH_SRFI64 = \
+  srfi-16-test.scm srfi-38-test.scm srfi-64-test.scm srfi-69-test.scm \
+  srfi-101-test.scm srfi-108-test.scm srfi-109-test.scm resolve-uri.scm 
 
 EXTRA_DIST = testing.scm test-utils.scm \
   test.scm case-test.scm num-test.scm numeric-tests.scm quaternion-test.scm \
   mac-test.scm mac1.scm r7rs-tests.scm clisp-number-tests.scm \
   classes1.scm classes2.scm SimpleB.java obj-test.scm arr-test.scm \
-  lib-test.scm bridge.scm srfi-16-test.scm srfi-38-test.scm \
-  srfi-64-test.scm srfi-69-test.scm srfi-101-test.scm \
-  srfi-108-test.scm srfi-109-test.scm system-test.scm xml-test.scm \
+  lib-test.scm bridge.scm \
+  $(MISC_TESTS_WITH_SRFI64) system-test.scm xml-test.scm \
   text-test.scm regex-test.scm java-array-test.scm lazy-test.scm \
   jmc.scm jmc.expected sva31180.scm use-slots.scm ASupport.scm Base.java \
   MyFunc.java MyModule.java MyDate.java MyTimestamp.java \

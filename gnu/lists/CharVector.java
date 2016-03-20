@@ -21,22 +21,22 @@ public class CharVector extends AbstractCharVector<Character>
         data = values;
     }
 
-    public CharVector(char[] data, IntSequence indexes) {
-        this.data = data;
-        this.indexes = indexes;
-    }
-
-    public final Character getBuffer(int index) {
+    public final Character getRaw(int index) {
         return data[index];
     }
 
     @Override
-    public final void setBuffer(int index, Character value) {
+    public final void setRaw(int index, Character value) {
         data[index] = value.charValue();
     }
 
     public boolean equals(Object obj) {
         return obj instanceof CharVector && equals(this, (CharVector) obj);
+    }
+
+   @Override
+    protected CharVector newInstance(int newLength) {
+        return new CharVector(newLength < 0 ? data : new char[newLength]);
     }
 
     public int getElementKind() { return CHAR_VALUE; }

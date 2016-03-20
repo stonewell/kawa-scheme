@@ -5,9 +5,12 @@ import gnu.expr.Language;
 import gnu.mapping.Procedure;
 import gnu.kawa.reflect.Invoke;
 import gnu.kawa.lispexpr.LangPrimType;
+import gnu.lists.AbstractSequence;
 import gnu.lists.Array;
+import gnu.lists.ComposedArray;
 import gnu.lists.FString;
 import gnu.lists.Range;
+import gnu.lists.Sequence;
 import gnu.lists.Sequences;
 import gnu.lists.SimpleVector;
 
@@ -124,8 +127,12 @@ public class Setter extends Procedure1 implements HasSetter {
                                       Sequences.coerceToSequence(value));
             } else {
                 if (elementType != null)
-                    value = elementType.coerceFromObject(value);
-                list.set(((Number) index).intValue(), value);
+                    value = elementType.coerceToObject(value);
+                int ind = ((Number) index).intValue();
+                if (list instanceof Sequence)
+                    ((Sequence) list).set(ind, value);
+                else
+                    list.set(ind, value);
             }
             return Values.empty;
         }
@@ -140,11 +147,13 @@ public class Setter extends Procedure1 implements HasSetter {
 
         public Object applyN(Object[] args) {
             int dim = args.length-1;
-            int[] indexes = new int[dim];
-            for (int i = dim;  --i >= 0; ) {
-                indexes[i] = ((Number) args[i]).intValue();
-            }
-            array.set(indexes, args[dim]);
+            Array lhs = (Array)
+                ComposedArray.generalIndex(array, true, 0, dim, args);
+            Object value = args[dim];
+            if (lhs.rank() == 0 && ! (value instanceof Array))
+                lhs.set(AbstractSequence.noInts, value);
+            else
+                gnu.lists.Arrays.copy(lhs, (Array) value);
             return Values.empty;
         }
     }

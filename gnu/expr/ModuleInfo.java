@@ -9,7 +9,6 @@ import java.util.*;
 import gnu.kawa.util.AbstractWeakHashTable;
 
 public class ModuleInfo {
-
     /** Name of class that implements module.
      * Must be non-null unless we're currently compiling the module,
      * in which case sourcePath and comp must both be non-null.
@@ -17,6 +16,7 @@ public class ModuleInfo {
     protected String className;
 
     Class moduleClass;
+    private Class oldClass;
 
     static ClassToInfoMap mapClassToInfo = new ClassToInfoMap();
 
@@ -62,14 +62,19 @@ public class ModuleInfo {
     int numDependencies;
 
     /** Location of source for module, if known.
-     * This is an absolute URI, absolute filename,
+     * This can be any of an absolute URI, absolute filename,
      * or filename relative to current working directory.
      * Null if source not known; in that case className must be non-null.
      * Avoid using, since "relative to current working directory"
      * is unreliable if the working directory can change.
      */
     public String sourcePath;
+
+    /** Absolute and canonicalized location of source for module, if known.
+     */
     Path sourceAbsPath;
+    /** Absolute and canonicalized location of source for module, if known.
+     */
     String sourceAbsPathname;
 
     public long lastCheckedTime;
@@ -156,6 +161,7 @@ public class ModuleInfo {
                     if (fld == null
                         || decl.isIndirectBinding()
                         || (fld.getFlags() & Access.STATIC) == 0
+                        || (fld.getFlags() & Access.FINAL) == 0
                         || decl.getValueRaw() instanceof QuoteExp)
                         continue;
                     try {
@@ -228,6 +234,10 @@ public class ModuleInfo {
 
     public Class getModuleClassRaw() {
         return moduleClass;
+    }
+
+    public Class getOldModuleClass() {
+        return oldClass;
     }
 
     public void setModuleClass(Class clas) {
@@ -338,8 +348,9 @@ public class ModuleInfo {
     public boolean checkCurrent(ModuleManager manager, long now) {
         if (sourceAbsPath == null)
             return true;
-        if (lastCheckedTime + manager.lastModifiedCacheTime >= now)
-            return moduleClass != null;
+        if (lastCheckedTime + manager.lastModifiedCacheTime >= now
+            && moduleClass != null)
+            return true;
         long lastModifiedTime = sourceAbsPath.getLastModified();
         long oldModifiedTime = this.lastModifiedTime;
         this.lastModifiedTime = lastModifiedTime;
@@ -374,6 +385,7 @@ public class ModuleInfo {
             }
         }
         if (lastModifiedTime > oldModifiedTime) {
+            oldClass = moduleClass;
             moduleClass = null;
             return false;
         }

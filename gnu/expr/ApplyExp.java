@@ -30,6 +30,7 @@ public class ApplyExp extends Expression
   public static final int TAILCALL = NEXT_AVAIL_FLAG;
   public static final int INLINE_IF_CONSTANT = NEXT_AVAIL_FLAG << 1;
   public static final int MAY_CONTAIN_BACK_JUMP = NEXT_AVAIL_FLAG << 2;
+  public static final int IS_SUPER_INIT = NEXT_AVAIL_FLAG << 3;
 
   /** Containing LambdaExp. */
   LambdaExp context;
@@ -83,7 +84,7 @@ public class ApplyExp extends Expression
 
     /** Copy over splice and keyword start indexes.
      * @param src orginal ApplyExp (may be the same as this)
-     * @param amount to adjust indexes by
+     * @param delta amount to adjust indexes by
      */
     public void adjustSplice(ApplyExp src, int delta) {
         if (src.firstSpliceArg >= 0)
@@ -199,6 +200,10 @@ public class ApplyExp extends Expression
   public void compile (Compilation comp, Target target)
   {
     compile(this, comp, target, true);
+    if (getFlag(IS_SUPER_INIT)) {
+        ((ClassExp) comp.currentScope().currentLambda().getOuter())
+            .compileCallInitMethods(comp);
+    }
   }
 
   public static void compile (ApplyExp exp, Compilation comp, Target target)
@@ -414,7 +419,6 @@ public class ApplyExp extends Expression
         || exp.firstSpliceArg >= 0 || exp.numKeywordArgs > 0
         || (! tail_recurse &&  args_length > 4))
       {
-	ClassType typeContext = Compilation.typeCallContext;
         comp.loadCallContext();
 	exp_func.compile(comp, new StackTarget(Compilation.typeProcedure));
 	// evaluate args to frame-locals vars;  // may recurse!
@@ -490,28 +494,8 @@ public class ApplyExp extends Expression
             }
             code.popScope();
 
-        if (exp.isTailCall() && comp.curLambda.isHandlingTailCalls())
-	  {
-	    code.emitReturn();
-	  }
-        else if (! (target instanceof ConsumerTarget))
-          {
-	    comp.loadCallContext();
-	    code.emitInvoke(typeContext.getDeclaredMethod("runUntilValue", 0));
-            target.compileFromStack(comp, Type.pointer_type);
-          }
-	else if (((ConsumerTarget) target).isContextTarget())
-	  {
-	    comp.loadCallContext();
-	    code.emitInvoke(typeContext.getDeclaredMethod("runUntilDone", 0));
-	  }
-	else
-	  {
-	    comp.loadCallContext();
-	    code.emitLoad(((ConsumerTarget) target).getConsumerVariable());
-	    code.emitInvoke(typeContext.getDeclaredMethod("runUntilValue", 1));
-	  }
-	return;
+        finishTrampoline(exp.isTailCall(), target, comp);
+ 	return;
       }
     if (!tail_recurse)
       exp_func.compile (comp, new StackTarget(Compilation.typeProcedure));
@@ -567,6 +551,27 @@ public class ApplyExp extends Expression
     code.emitInvokeVirtual(method);
     target.compileFromStack(comp, Type.pointer_type);
   }
+
+    static void finishTrampoline(boolean isTailCall, Target target, Compilation comp) {
+        CodeAttr code = comp.getCode();
+        ClassType typeContext = Compilation.typeCallContext;
+        if (isTailCall && comp.curLambda.isHandlingTailCalls()) {
+            code.emitReturn();
+        } else if (! (target instanceof ConsumerTarget
+                      || target instanceof IgnoreTarget)) {
+            comp.loadCallContext();
+            code.emitInvoke(typeContext.getDeclaredMethod("runUntilValue", 0));
+            target.compileFromStack(comp, Type.pointer_type);
+        } else if (target instanceof IgnoreTarget
+                   || ((ConsumerTarget) target).isContextTarget()) {
+            comp.loadCallContext();
+            code.emitInvoke(typeContext.getDeclaredMethod("runUntilDone", 0));
+        } else {
+            comp.loadCallContext();
+            code.emitLoad(((ConsumerTarget) target).getConsumerVariable());
+            code.emitInvoke(typeContext.getDeclaredMethod("runUntilValue", 1));
+        }
+    }
 
   public Expression deepCopy (gnu.kawa.util.IdentityHashTable mapper)
   {

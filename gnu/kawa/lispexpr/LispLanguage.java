@@ -8,6 +8,7 @@ import gnu.lists.*;
 import gnu.bytecode.*;
 import gnu.mapping.EnvironmentKey;
 import gnu.kawa.io.InPort;
+import gnu.kawa.io.TtyInPort;
 import gnu.kawa.reflect.StaticFieldLocation;
 import gnu.text.Lexer;
 import gnu.text.SourceMessages;
@@ -78,6 +79,9 @@ public abstract class LispLanguage extends Language
     ModuleExp mexp = tr.getModule();
     LispReader reader = (LispReader) lexer;
     Compilation saveComp = Compilation.setSaveCurrent(tr);
+    InPort in = reader == null ? null : reader.getPort();
+    if (in instanceof TtyInPort)
+        ((TtyInPort) in).resetAndKeep();
     try
       {
         if (tr.pendingForm != null)
@@ -96,28 +100,24 @@ public abstract class LispLanguage extends Language
                   return false;  // FIXME
                 break;
               }
-            if (lexer.peek() == ')')
-              {
-                lexer.skip();
-                lexer.fatal("An unexpected close paren was read.");
-              }
+            int ch;
+            do { ch = lexer.read(); }
+            while (ch == ' ' || ch == '\t'|| ch == '\r');
+            if (ch == ')')
+              lexer.fatal("An unexpected close paren was read.");
+            lexer.unread(ch);
             tr.scanForm(sexp, mexp);
             if ((options & PARSE_ONE_LINE) != 0)
               {
-                if (tr.getMessages().seenErrors())
-                  {
-                    // Skip to end of line.
-                    for (;;)
-                      {
-                        int ch = reader.peek();
-                        if (ch < 0 || ch == '\r' || ch == '\n')
-                          break;
-                        reader.skip();
-                      }
-                  }
-                break;
+                // In a REPL we want to read all the forms until EOL.
+                // One reason is in case an expression reads from stdin,
+                // in which case we want to separate that.
+                // Another reason to be consistent when a UI gives
+                // a multi-line block.
+                if (ch < 0 || ch == '\n' || ! lexer.isInteractive())
+                  break;
               }
-            if ((options & PARSE_PROLOG) != 0
+            else if ((options & PARSE_PROLOG) != 0
                 && tr.getState() >= Compilation.PROLOG_PARSED)
               {
                 return true;
@@ -131,6 +131,8 @@ public abstract class LispLanguage extends Language
       }
     finally
       {
+        if (in instanceof TtyInPort)
+          ((TtyInPort) in).setKeepAll(false);
         Compilation.restoreCurrent(saveComp);
       }
     return true;

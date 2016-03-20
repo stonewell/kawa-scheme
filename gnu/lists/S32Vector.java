@@ -32,17 +32,6 @@ public  class S32Vector extends IntVector<Integer>
         this.data = data;
     }
 
-    /*
-    public S32Vector(Sequence seq) {
-        data = new int[seq.size()];
-        addAll(seq);
-    }
-    */
-
-    public S32Vector(int[] data, IntSequence indexes) {
-        this.data = data;
-        this.indexes = indexes;
-    }
 
     /** Makes a copy of (part of) the argument array. */
     public S32Vector(int[] values, int offset, int length) {
@@ -50,23 +39,26 @@ public  class S32Vector extends IntVector<Integer>
         System.arraycopy(values, offset, data, 0, length);
     }
 
-    public final long longAtBuffer(int index) {
+    public final long getLongRaw(int index) {
         return (long) data[index];
     }
 
     public final Integer get(int index) {
-        if (indexes != null)
-            index = indexes.intAt(index);
-        return Integer.valueOf(data[index]);
+        return Integer.valueOf(data[effectiveIndex(index)]);
     }
 
-    public final Integer getBuffer(int index) {
+    public final Integer getRaw(int index) {
         return Integer.valueOf(data[index]);
     }
 
     @Override
-    public final void setBuffer(int index, Integer value) {
+    public final void setRaw(int index, Integer value) {
         data[index] = value.intValue();
+    }
+
+    @Override
+    protected S32Vector newInstance(int newLength) {
+        return new S32Vector(newLength < 0 ? data : new int[newLength]);
     }
 
     public int getElementKind() { return INT_S32_VALUE; }

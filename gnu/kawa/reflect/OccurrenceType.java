@@ -19,6 +19,7 @@ public class OccurrenceType extends Type
   int maxOccurs;
 
   public Type getBase () { return base; }
+  protected void setBase(Type base) { this.base = base; }
   public int minOccurs() { return minOccurs; }
   public int maxOccurs() { return maxOccurs; }
 
@@ -84,6 +85,32 @@ public class OccurrenceType extends Type
     */
     return -2;
   }
+
+    /*
+    public void emitCoerceFromObject(CodeAttr code) {
+        emit: [
+               Object tmp = pop();
+               copy = null;
+               int i = 0;
+               for (v = each value in tmp) {
+                   Object v = getvalue();
+                   vt = ]base.emitCoerceFromObject[(v);
+                   if (v != vt && copy == null)
+                       copy = copy_previous_values(tmp, i);
+                   }
+                   if (copy != null)
+                       copy.add(vt);
+                   i++;
+               }
+               check(i >= minOccurs && (maxOccurs == -1 || i <= maxOccurs));
+               return copy == null ? tmp : copy;
+               ]
+        Type raw = getRawType();
+        if (raw != Type.objectType)
+            code.emitCheckCast(raw);
+    }
+    */
+
 
   public Object coerceFromObject (Object obj)
   {

@@ -1,3 +1,93 @@
+2016-03-18  Per Bothner  <per@bothner.com>
+
+	* Path.java (coerceToPathOrNull): Fix check for absolute filename
+	on Windows.
+
+2016-02-24  Per Bothner  <per@bothner.com>
+
+	* InPort.java (KEEP_ALL): New flag.
+	(setKeepAll, resetAndKeep): New methods.
+	(reserve): Handle KEEP_ALL.
+	* JLine2InPort.java: Add completion support.
+
+2016-02-24  Per Bothner  <per@bothner.com>
+
+	Remove unneeded imports of gnu.text.
+
+2016-02-14  Per Bothner  <per@bothner.com>
+
+	Add support for JLine2 as a readline alternative.
+	* JLine2InPort.java: New class - extends TtyInPort.
+	* TtyInPort.java (make): New factory method.
+	(afterFill, wrapPromptForDomTerm): New helper methods.
+	* InPort.java: Use new TtyInPort.make factory method/
+
+2016-02-09  Per Bothner  <per@bothner.com>
+
+	* CheckConsole.java: Re-factor so we can re-evaluate domterm status
+	after setHaveConsole - i.e. if DOMTERM env var and --console option.
+
+2016-01-30  Per Bothner  <per@bothner.com>
+
+	* OutPort.java (isPrettyPrinting, atLineStart): New methods.
+	(freshLine): Use atLineStart.
+	* PrettyWriter.java (atLineStart): New method.
+	* BinaryOutPort.java (getColumnNumber): Remove. 
+
+2016-01-09  Per Bothner  <per@bothner.com>
+
+	* CheckConsole.java: Change previous DomTerm handling: We don't want
+	to assume we're connected to a DomTerm terminal just because the
+	DOMTERM environment variable is set, since we might be in a pipe.
+
+2015-12-17  Per Bothner  <per@bothner.com>
+
+	* CheckConsole.java (haveConsole): If running under DomTerm,
+	ignore --no-console flag.
+
+2015-12-16  Per Bothner  <per@bothner.com>
+
+	Add support for DomTerm.
+	* CheckConsole.java (getDomTermVersionInfo, forDomTerm):
+	New static methods.
+	* TtyInPort.java (inDomTerm): New flag.
+	(setInDomTerm): Set flag.
+	(emitPrompt): Add DomTerm delimiters around prompt.
+	* InPort.java: Maybe set dom-term flag on systemInPort.
+	* DomTermErrorStream.java (setSystemErr): New static method.
+
+2015-11-27  Per Bothner  <per@bothner.com>
+
+	* DomTermErrorStream.java: New class - extends PrintStream.
+
+2015-10-24  Per Bothner  <per@bothner.com>
+
+	* InPort.java (inLocation): Add type parameters.
+	* OutPort.java (outLocation, errLocation): Likewise.
+
+2015-10-12  Per Bothner  <per@bothner.com>
+
+	* InPort.java (stringPathname, evalPathname): New constants.
+	* CharArrayInPort.java (stringPath): Use stringPathname.
+
+	* Path.java (valueOf): A string starting with a '/' is a FilePath.
+
+2015-10-10  Per Bothner  <per@bothner.com>
+
+	Changes in Path/URI handling, with corrected RFC-3986 'resolve'.
+	* URIPath.java (resolve): Rewrite, implementing the RFC-3986
+	resolution algorithm, rather than using java.net.URI.resolve, which
+	follows the obsolete RFC-2396.  Biggest difference is that resolve("")
+	is now basically a no-op. Use resolve(".") to get directory.
+	(resolveToUri): Helper method.
+	(toFile): New method.
+	* URLPath.java (resolve): Use resolveToUri.
+	* Path.java (toFile, isPlainFile): New methods.
+	(valueOf): Create URIPath rather than FilePath if relative.
+	(getLast): Fix thinko.
+	* FilePath.java (resolve): No-op if argument is "".
+	(toURL): Update accordingly.
+
 2015-07-31  Per Bothner  <per@bothner.com>
 
 	* CharArrayInPort.java: Add support for reading from

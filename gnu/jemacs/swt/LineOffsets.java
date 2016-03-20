@@ -38,12 +38,12 @@ import gnu.lists.U32Vector;
  * Assume that lineOffset is an instance of LineOffsets, held by swtCharBuffer an instance of 
  * SwtCharBuffer. 
  * <p>
- * Then a value of <code>o</code> at index <code>i</code> in lineOffsets.base
+ * Then a value of {@code o} at index {@code i} in lineOffsets.base
  * means that the line with line number
- * <code>n = (i < lOff.gapStart ? i : i + lOff.gapEnd - lOff.gapStart)</code>  
+ * {@code n = (i < lOff.gapStart ? i : i + lOff.gapEnd - lOff.gapStart)}
  * <p>
  * starts at text position 
- * <code>p = (o < swtCB.gapStart ? o : o + swtCB.gapEnd - swtCB.gapStart)</code>
+ * {@code p = (o < swtCB.gapStart ? o : o + swtCB.gapEnd - swtCB.gapStart)}
  * <p>
  * @author Christian Surlykke
  *         12-07-2004
@@ -67,18 +67,18 @@ public class LineOffsets extends U32Vector
 
   private int getOffset(int index)
   {
-    return intAt(index);
+    return getInt(index);
   }
 
   public void insertLine(int index, int offSet)
   {
-    addSpace(index, 1)
+    addSpace(index, 1);
     setIntAt(index, offSet);
   }
 
   public int index2offset(int index) 
   {
-    return offsets.intAt(index); 
+    return offsets.getInt(index); 
   }
   
   /**
@@ -90,7 +90,7 @@ public class LineOffsets extends U32Vector
     // Adhoc optimization: Very often this class will be asked for the line index belonging to the point
     // where insertion happens, i.e. at the start of the gap. 
     // We try this before the full search so that we may return in O(1) time in this case.
-    int gapStart = getGapManager().getGapStart();
+    int gapStart = getGapStart();
     try 
     {
       if (index2offset(gapStart - 1) <= offset && index2offset(gapStart) > offset)
@@ -170,7 +170,7 @@ public class LineOffsets extends U32Vector
   public String toString()
   {
     StringBuffer sbuf = new StringBuffer();
-    int gapStart = getGapManager().getGapStart();
+    int gapStart = getGapStart();
     sbuf.append("Lines: {" + size() + ", " + gapStart);
     sbuf.append(" [");
     for (int i = 0; i < size(); i++) 
@@ -179,7 +179,7 @@ public class LineOffsets extends U32Vector
       {
         sbuf.append("|");
       }
-      sbuf.append(offsets.intAt(i));
+      sbuf.append(offsets.getInt(i));
       
       if (i < size() - 1) 
       {
@@ -233,7 +233,7 @@ public class LineOffsets extends U32Vector
     int index1 = offset2index(startOffset);
     int index2 = index1;
     int sz = size();
-    while (index2 < sz && intAt(index2) <= endOffset)
+    while (index2 < sz && getInt(index2) <= endOffset)
         index2++;
     delete(index1, index2);
   }

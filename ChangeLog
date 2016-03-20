@@ -1,3 +1,56 @@
+2016-03-12  Per Bothner  <per@bothner.com>
+
+	Enable "binary distributions" using jawa.sh and jline2.
+	* Makefile.am (kawa-$(VERSION).zip): New rule.
+	The jat files are now in the lib subdirectory.
+	* config.classpath: New variable run_classpath does not include jline.
+	* configure.ac (run_classpath): New variable.
+
+2016-02-14  Per Bothner  <per@bothner.com>
+
+	Add support for JLine2 as a readline alternative.
+	* configure.ac" New --with-jline2 flag.
+	(WITH_JLINE2_ARG. WITH_JLINE2): New argument and conditional.
+	* config.classpath: Adjust classpath based on --with-jline2 flag.
+	* Makefile.am (dist-kawa-@VERSION@.jar): Build jline2 support,
+	without requiring it.
+
+2016-01-26  Per Bothner  <per@bothner.com>
+
+	* configure.ac: Fix case when --with-java-source is defaulted.
+
+2015-12-21  Per Bothner  <per@bothner.com>
+
+	* configure.ac: Handle mapping from JAVA_SOURCE to PreProcess
+	token at configure time, rather than make time.
+	* Makefile.am: Simplify Prepocess handling.
+	(JAVA_PREPROCESS_OPTIONS): New variable - selector to PreProcess.
+	(selected-java-source): Compare JAVA_PREPROCESS_OPTIONS rather
+	than solely JAVA_SOURCE.
+
+	* configure.ac: Move some logic to new file ...
+	* config.classpath: ... so it can be shared with bin/configure.ac.
+
+2015-10-28  Per Bothner  <per@bothner.com>
+
+	* configure.in (AC_INIT): Set version to 2.1.1.
+	* bin/configure.in (AC_INIT): Likewise.
+	* build.xml (version.release): Likewise.
+
+2015-10-26  Per Bothner  <per@bothner.com>
+
+	* configure.in (AC_INIT): Set version to 2.1.
+	* bin/configure.in (AC_INIT): Likewise.
+	* build.xml (version.release): Likewise.
+
+2015-09-20  Per Bothner  <per@bothner.com>
+
+	* configure.ac: Fix to avoid bogus calls to chmod.
+
+2015-08-10  Jamison Hope  <jrh@theptrgroup.com>
+
+	* build.xml (lib-scm-classes): Add rnrs/arithmetic/bitwise.scm.
+
 2015-07-31  Per Bothner  <per@bothner.com>
 
 	* Makefile.am: Many subclasses of gnu.lists.SimpleVector are now

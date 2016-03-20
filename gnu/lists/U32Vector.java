@@ -32,17 +32,6 @@ public  class U32Vector extends IntVector<UInt>
         this.data = data;
     }
 
-    /*
-    public U32Vector(Sequence seq) {
-        data = new int[seq.size()];
-        addAll(seq);
-    }
-    */
-
-    public U32Vector(int[] data, IntSequence indexes) {
-        this.data = data;
-        this.indexes = indexes;
-    }
 
     /** Makes a copy of (part of) the argument array. */
     public U32Vector(int[] values, int offset, int length) {
@@ -50,23 +39,26 @@ public  class U32Vector extends IntVector<UInt>
         System.arraycopy(values, offset, data, 0, length);
     }
 
-    public final long longAtBuffer(int index) {
+    public final long getLongRaw(int index) {
         return (long) data[index] & 0xffffffffL;
     }
 
     public final UInt get(int index) {
-        if (indexes != null)
-            index = indexes.intAt(index);
-        return UInt.valueOf(data[index]);
+        return UInt.valueOf(data[effectiveIndex(index)]);
     }
 
-    public final UInt getBuffer(int index) {
+    public final UInt getRaw(int index) {
         return UInt.valueOf(data[index]);
     }
 
     @Override
-    public final void setBuffer(int index, UInt value) {
+    public final void setRaw(int index, UInt value) {
         data[index] = value.intValue();
+    }
+
+    @Override
+    protected U32Vector newInstance(int newLength) {
+        return new U32Vector(newLength < 0 ? data : new int[newLength]);
     }
 
     public int getElementKind() { return INT_U32_VALUE; }
@@ -79,7 +71,7 @@ public  class U32Vector extends IntVector<UInt>
         int i = nextIndex(iposStart);
         int end = nextIndex(iposEnd);
         for (;  i < end;  i++)
-            Sequences.writeUInt(intAt(i), out);
+            Sequences.writeUInt(getInt(i), out);
     }
 
     public int compareTo(Object obj) {

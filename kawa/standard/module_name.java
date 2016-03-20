@@ -53,7 +53,7 @@ public class module_name extends Syntax {
             if (index >= 0)
                 tr.classPrefix = name.substring(0, index+1);
             else
-                className = tr.classPrefix + Compilation.mangleName(name);
+                className = tr.classPrefix + Compilation.mangleClassName(name);
             ModuleExp module = tr.getModule();
             if (tr.mainClass == null)
                 tr.mainClass = new gnu.bytecode.ClassType(className);
@@ -64,6 +64,8 @@ public class module_name extends Syntax {
                 else if (! oldName.equals(className))
                     tr.syntaxError("inconsistent module-name - old name: "+oldName);
             }
+            if (tr.getState() > Compilation.PROLOG_PARSING)
+                tr.error('e', "too late to set module-name");
             module.setType(tr.mainClass);
             module.setName(name);
 
@@ -81,7 +83,7 @@ public class module_name extends Syntax {
             first = false;
             Object car = parg.getCar();
             if (car != null)
-                sbuf.append(Compilation.mangleNameIfNeeded(car.toString()));
+                sbuf.append(Compilation.mangleClassName(car.toString()));
             list = parg.getCdr();
             if (list == LList.Empty)
                 break;

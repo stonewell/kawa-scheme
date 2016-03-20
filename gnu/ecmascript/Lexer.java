@@ -93,7 +93,7 @@ public class Lexer extends gnu.text.Lexer
     if (c >= 0)
       i--;   // Reset to position before current char c.
     port.pos = i;
-    long ival = Lexer.readDigitsInBuffer(port, radix);
+    long ival = Lexer.readDigitsInBuffer(port, 0, radix);
     boolean digit_seen = port.pos > i;
     if (digit_seen && port.pos < port.limit)
       {
@@ -307,9 +307,9 @@ public class Lexer extends gnu.text.Lexer
     * Returns the next token.
     * Returns: <dl>
     * <dt>end-of-file<dd>Sequence.eofValue
-    * <dt>end-of-line>dd>eolToken
+    * <dt>end-of-line<dd>eolToken
     * <dt>reserved word<dd> ???
-    * <dt>identifier><dd>a java.lang.String
+    * <dt>identifier<dd>a java.lang.String
     * <dt>punctuator<dd> ???
     * </dl>
     * Literals are returned a QuoteExp objects,  Specifically:

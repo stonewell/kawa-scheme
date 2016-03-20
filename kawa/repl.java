@@ -13,6 +13,7 @@ import gnu.bytecode.ClassType;
 import gnu.kawa.servlet.HttpRequestContext;
 import gnu.kawa.io.CharArrayInPort;
 import gnu.kawa.io.CheckConsole;
+import gnu.kawa.io.DomTermErrorStream;
 import gnu.kawa.io.InPort;
 import gnu.kawa.io.OutPort;
 import gnu.kawa.io.Path;
@@ -251,7 +252,10 @@ public class repl extends Procedure0or1 {
     public int processArgs(String[] args, int iArg, int maxArg,
                            boolean argsOnly) {
         boolean something_done = false;
+        boolean checkedDomTerm = false;
         int returnDelta = 0;
+        if (iArg == maxArg || ! "--connect".equals(args[iArg]))
+            checkDomTerm();
         for ( ;  iArg < maxArg;  )  {
             String arg = args[iArg++];
             if (arg.equals ("-c") || arg.equals ("-e")) {
@@ -462,6 +466,7 @@ public class repl extends Procedure0or1 {
                     System.setIn(sin);
                     System.setOut(pout);
                     System.setErr(pout);
+                    checkDomTerm();
                 } catch (java.io.IOException ex) {
                     ex.printStackTrace(System.err);
                     throw new Error(ex.toString());
@@ -602,7 +607,7 @@ public class repl extends Procedure0or1 {
                 System.out.print("Kawa ");
                 System.out.print(Version.getVersion());
                 System.out.println();
-                System.out.println("Copyright (C) 2015 Per Bothner");
+                System.out.println("Copyright (C) 2016 Per Bothner");
                 something_done = true;
             } else if (arg.startsWith("-D")) {
                 int eq = arg.indexOf('=');
@@ -719,7 +724,7 @@ public class repl extends Procedure0or1 {
                 }
             
                 ModuleInfo minfo = manager.findWithSourcePath(arg);
-    
+
                 if (compilationTopname != null) {
                     String cname
                         = Compilation.mangleNameIfNeeded(compilationTopname);
@@ -798,6 +803,18 @@ public class repl extends Procedure0or1 {
             }
             ModuleBody.exitDecrement();
             ExitCalled.pop();
+        }
+    }
+
+    private static boolean checkedDomTerm;
+    public static void checkDomTerm() {
+        if (checkedDomTerm)
+            return;
+        checkedDomTerm = true;
+        String dversion = CheckConsole.getDomTermVersionInfo();
+        if (dversion != null) {
+            if (dversion.indexOf("err-handled;") < 0)
+                DomTermErrorStream.setSystemErr();
         }
     }
 

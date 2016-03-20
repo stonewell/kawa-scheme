@@ -455,6 +455,8 @@ public abstract class Type
     }
 
     public static int isCompatibleWithValue(Type targetType, Type valueType) {
+        if (targetType == valueType)
+            return 2;
         int comp = targetType.compare(valueType);
         return comp >= 0 ? 1 : comp == -3 ? -1 : 0;
     }
@@ -557,7 +559,8 @@ public abstract class Type
 
     /** Convert an object to a value of this Type.
      * The result is actually of the implementation type, boxed as appropriate,
-     * so it is suitable for standard reflective operations.
+     * so it is suitable for standard reflective operations,
+     * like the arguments to Field#set or Method#invoke.
      * Throw a ClassCastException when this is not possible.
      */
     public abstract Object coerceFromObject (Object obj);
@@ -688,13 +691,13 @@ public abstract class Type
     public static final ObjectType nullType
     //= new ObjectType("(type of null)");
     = new SpecialObjectType("(type of null)", objectType);
-    public static final ObjectType errorType = new ObjectType("(error type)");
+    public static final ObjectType errorType
+        = new SpecialObjectType("<error-type>", javalangObjectType);
 
     static public ClassType javalangStringType = ClassType.make("java.lang.String");
     /* The String type. but coercion is handled by toString. */
     public static final ObjectType toStringType
         = new SpecialObjectType("String", javalangStringType);
-    //= new ClassType("java.lang.String");
 
   /** @deprecated */
   public static final ClassType pointer_type = javalangObjectType;

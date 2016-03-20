@@ -6,6 +6,7 @@ import gnu.bytecode.Type;
 import gnu.kawa.lispexpr.LangObjType;
 import gnu.kawa.lispexpr.LispLanguage;
 import java.util.ArrayList;
+import kawa.standard.object;
 
 /**
  * The Syntax transformer that re-writes the lambda builtin.
@@ -317,9 +318,8 @@ public class Lambda extends Syntax
 
   public Object rewriteAttrs(LambdaExp lexp, Object body, Translator tr)
   {
-    String accessFlagName = null;
     String allocationFlagName = null;
-    int accessFlag = 0;
+    long accessFlag = 0;
     int allocationFlag = 0;
     SyntaxForm syntax0 = null;
     for (;;)
@@ -370,40 +370,10 @@ public class Lambda extends Syntax
 	  }
 	else if (attrName == kawa.standard.object.accessKeyword)
 	  {
-	    Expression attrExpr = tr.rewrite_car(pair2, syntax1);
-	    if (! (attrExpr instanceof QuoteExp)
-		|| ! ((attrValue = ((QuoteExp) attrExpr).getValue()) instanceof SimpleSymbol
-                      /* #ifdef use:java.lang.CharSequence */
-		      || attrValue instanceof CharSequence
-                      /* #else */
-		      // || attrValue instanceof String
-                      // || attrValue instanceof CharSeq
-                      /* #endif */
-                      ))
-	      tr.error('e', "access: value not a constant symbol or string");
-	    else if (lexp.nameDecl == null)
-	      tr.error('e', "access: not allowed for anonymous function");
-	    else
-	      {
-		String value = attrValue.toString();
-		if ("private".equals(value))
-		  accessFlag = Declaration.PRIVATE_ACCESS;
-		else if ("protected".equals(value))
-		  accessFlag = Declaration.PROTECTED_ACCESS;
-		else if ("public".equals(value))
-		  accessFlag = Declaration.PUBLIC_ACCESS;
-		else if ("package".equals(value))
-		  accessFlag = Declaration.PACKAGE_ACCESS;
-		else
-		  tr.error('e', "unknown access specifier");
-		if (accessFlagName != null && value != null)
-		  {
-		    tr.error('e', "duplicate access specifiers - "
-			     + accessFlagName + " and "
-			     + value);
-		  }
-		accessFlagName = value;
-	      }
+            accessFlag = object.addAccessFlags(pair2.getCar(),
+                                               accessFlag,
+                                               Declaration.METHOD_ACCESS_FLAGS,
+                                               "method", tr);
 	  }
 	else if (attrName == kawa.standard.object.allocationKeyword)
 	  {
@@ -570,6 +540,7 @@ public class Lambda extends Syntax
     Expression[] exps;
     int len;
     Object val;
+    try { // FIXME re-indent
     if (tform != null)
       {
         Expression texp = tr.rewrite_car((Pair) tform[0],
@@ -600,10 +571,12 @@ public class Lambda extends Syntax
       }
     else
       lexp.setCoercedReturnType(rtype);
+    } finally {
     tr.pop(lexp);
     lexp.countDecls();
     tr.popRenamedAlias(numRenamedAlias);
     lexp.countDecls();
+    }
     if (tr.curMethodLambda == lexp)
       tr.curMethodLambda = null;
   }

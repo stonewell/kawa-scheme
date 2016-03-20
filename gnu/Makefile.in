@@ -89,14 +89,16 @@ build_triplet = @build@
 host_triplet = @host@
 @WITH_SWING_TRUE@am__append_1 = $(GNU_KAWA_SWINGVIEWS_JSOURCES)
 @WITH_SWT_TRUE@am__append_2 = $(GNU_KAWA_SWTVIEWS_JSOURCES)
-@ENABLE_XML_TRUE@am__append_3 = $(GNU_XML_JSOURCES) $(GNU_KAWA_XML_JSOURCES)
-@ENABLE_XML_TRUE@@WITH_SAX2_TRUE@am__append_4 = $(GNU_KAWA_SAX_JSOURCES)
-@ENABLE_ECHO2_TRUE@am__append_5 = $(GNU_KAWA_ECHO2_JSOURCES)
-@ENABLE_XQUERY_TRUE@am__append_6 = $(GNU_KAWA_XSLT_JSOURCES)
-@WITH_JAVAX_SCRIPT_TRUE@am__append_7 = $(JAVAX_SCRIPT_EXTRA)
+@WITH_JLINE2_TRUE@am__append_3 = kawa/io/JLine2InPort.java
+@ENABLE_XML_TRUE@am__append_4 = $(GNU_XML_JSOURCES) $(GNU_KAWA_XML_JSOURCES)
+@ENABLE_XML_TRUE@@WITH_SAX2_TRUE@am__append_5 = $(GNU_KAWA_SAX_JSOURCES)
+@ENABLE_ECHO2_TRUE@am__append_6 = $(GNU_KAWA_ECHO2_JSOURCES)
+@ENABLE_XQUERY_TRUE@am__append_7 = $(GNU_KAWA_XSLT_JSOURCES)
+@WITH_JAVAX_SCRIPT_TRUE@am__append_8 = $(JAVAX_SCRIPT_EXTRA)
 subdir = gnu
 ACLOCAL_M4 = $(top_srcdir)/aclocal.m4
-am__aclocal_m4_deps = $(top_srcdir)/configure.ac
+am__aclocal_m4_deps = $(top_srcdir)/config.classpath \
+	$(top_srcdir)/configure.ac
 am__configure_deps = $(am__aclocal_m4_deps) $(CONFIGURE_DEPENDENCIES) \
 	$(ACLOCAL_M4)
 DIST_COMMON = $(srcdir)/Makefile.am $(am__DIST_COMMON)
@@ -149,6 +151,7 @@ JAVA = @JAVA@
 JAVAC = @JAVAC@
 JAVACFLAGS = @JAVACFLAGS@
 JAVA_SOURCE = @JAVA_SOURCE@
+JAVA_SOURCE_SELECTOR = @JAVA_SOURCE_SELECTOR@
 JEMACS_VERSION = @JEMACS_VERSION@
 KAWA_SHELL = @KAWA_SHELL@
 LIBOBJS = @LIBOBJS@
@@ -173,6 +176,8 @@ STRIP = @STRIP@
 TOP_BUILDDIR = @TOP_BUILDDIR@
 VERSION = @VERSION@
 WITH_JAVAFX_ARG = @WITH_JAVAFX_ARG@
+WITH_JFREESVG_ARG = @WITH_JFREESVG_ARG@
+WITH_JLINE2_ARG = @WITH_JLINE2_ARG@
 WITH_SERVLET_ARG = @WITH_SERVLET_ARG@
 XQTS_PATH = @XQTS_PATH@
 abs_builddir = @abs_builddir@
@@ -217,6 +222,7 @@ pdfdir = @pdfdir@
 prefix = @prefix@
 program_transform_name = @program_transform_name@
 psdir = @psdir@
+run_classpath = @run_classpath@
 sbindir = @sbindir@
 sharedstatedir = @sharedstatedir@
 srcdir = @srcdir@
@@ -254,6 +260,7 @@ GNU_EXPR_JSOURCES = \
   expr/CheckedTarget.java \
   expr/ClassExp.java \
   expr/ClassInitializer.java \
+  expr/CommandCompleter.java \
   expr/Compilation.java \
   expr/CompiledModule.java \
   expr/CompiledProc.java \
@@ -322,13 +329,16 @@ GNU_LISTS_JSOURCES = \
   lists/AbstractFormat.java \
   lists/AbstractSequence.java \
   lists/Array.java \
+  lists/Arrays.java \
   lists/AttributePredicate.java \
+  lists/AVector.java \
   lists/BitVector.java \
   lists/Blob.java \
   lists/ByteVector.java \
   lists/CharBuffer.java \
   lists/CharSeq.java \
   lists/CharVector.java \
+  lists/ComposedArray.java \
   lists/ConstVector.java \
   lists/Consumer.java \
   lists/ConsumerWriter.java \
@@ -342,14 +352,13 @@ GNU_LISTS_JSOURCES = \
   lists/F32Vector.java \
   lists/F64Vector.java \
   lists/FilterConsumer.java \
+  lists/FlattenedArray.java \
   lists/FString.java \
   lists/FVector.java \
-  lists/GapManager.java \
   lists/GeneralArray.java \
   lists/GeneralArray1.java \
   lists/ItemPredicate.java \
   lists/ImmutablePair.java \
-  lists/IndirectIndexable.java \
   lists/IndirectIndexedSeq.java \
   lists/IntSequence.java \
   lists/IntVector.java \
@@ -378,6 +387,7 @@ GNU_LISTS_JSOURCES = \
   lists/SubSequence.java \
   lists/StableManager.java \
   lists/Strings.java \
+  lists/TransformedArray.java \
   lists/TreeList.java \
   lists/TreePosition.java \
   lists/U8Vector.java \
@@ -477,6 +487,7 @@ GNU_KAWA_IO_JSOURCES = \
   kawa/io/CharArrayInPort.java \
   kawa/io/CharArrayOutPort.java \
   kawa/io/CheckConsole.java \
+  kawa/io/DomTermErrorStream.java \
   kawa/io/FilePath.java \
   kawa/io/InPort.java \
   kawa/io/LogWriter.java \
@@ -552,6 +563,7 @@ GNU_KAWA_FUNCTIONS_JSOURCES = \
   kawa/functions/Arithmetic.java \
   kawa/functions/ArithOp.java \
   kawa/functions/Arrays.java \
+  kawa/functions/ArrayPrint.java \
   kawa/functions/ArrayRef.java \
   kawa/functions/ArraySet.java \
   kawa/functions/BitwiseOp.java \
@@ -623,6 +635,7 @@ GNU_KAWA_LISPEXPR_JSOURCES = \
   kawa/lispexpr/ReaderIgnoreRestOfLine.java \
   kawa/lispexpr/ReaderMacro.java \
   kawa/lispexpr/ReaderMisc.java \
+  kawa/lispexpr/ReaderNestedComment.java \
   kawa/lispexpr/ReaderParens.java \
   kawa/lispexpr/ReaderQuote.java \
   kawa/lispexpr/ReaderString.java \
@@ -648,6 +661,7 @@ GNU_KAWA_MODELS_JSOURCES = \
   kawa/models/Paintable.java \
   kawa/models/Row.java \
   kawa/models/Spacer.java \
+  kawa/models/SVGUtils.java \
   kawa/models/Text.java \
   kawa/models/Viewable.java \
   kawa/models/WeakListener.java \
@@ -777,6 +791,7 @@ EXTRA_DIST = \
   expr/package.html \
   mapping/package.html \
   lists/package.html \
+  lists/PrimVector.template \
   text/package.html \
   kawa/reflect/package.html \
   $(GNU_KAWA_ANT_JSOURCES)
@@ -790,7 +805,7 @@ java_sources = $(GNU_LISTS_JSOURCES) $(GNU_TEXT_JSOURCES) \
 	$(GNU_KAWA_LISPEXPR_JSOURCES) $(GNU_KAWA_MODELS_JSOURCES) \
 	$(GNU_ECMASCRIPT_JSOURCES) $(am__append_1) $(am__append_2) \
 	$(am__append_3) $(am__append_4) $(am__append_5) \
-	$(am__append_6) $(am__append_7)
+	$(am__append_6) $(am__append_7) $(am__append_8)
 STANDARD_NAMED_CHARS_URL = http://www.w3.org/2003/entities/2007/w3centities-f.ent
 all: all-am
 

@@ -1,3 +1,18 @@
+2016-02-24  Per Bothner  <per@bothner.com>
+
+	* Lexer.java (tentative): New boolean.
+	(isTentative, setTentative): New methods.
+
+2016-01-11  Per Bothner  <per@bothner.com>
+
+	* Lexer.java (readDigitsInBuffer): Fix overflow check.
+	Tweak interface to be more flexible.
+	(readDigits, readIntDigits): New convenience methods.
+
+2015-10-12  Per Bothner  <per@bothner.com>
+
+	* StringCursor.java (getValue): New method.
+
 2015-06-24  Per Bothner  <per@bothner.com>
 
 	* Char.java (toScmReadableString): Fix logic error.

@@ -32,6 +32,8 @@ public interface Sequence<E>
   /** See java.util.List. */
   public E get (int index);
 
+    public int getInt(int arg1);
+
   /** See java.util.List. */
   public E set (int index, E value);
 

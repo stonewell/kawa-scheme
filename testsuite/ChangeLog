@@ -1,3 +1,74 @@
+2016-03-14  Per Bothner  <per@bothner.com>
+
+	* sva47412.scm: New test for Savannah bug #47412
+	"Can't use define in the constructor of a subclass".
+
+2016-02-12  OKUMURA Yuki <mjt@cltn.org>
+	    Per Bothner  <per@bothner.com>
+
+	* lib-tailcalls.scm: New testcalls with library and --full-tailcalls.
+	* Makefile.am: Update accordingly.
+
+2016-02-11  Per Bothner  <per@bothner.com>
+	    OKUMURA Yuki <mjt@cltn.org>
+
+	* values2.java: New test-case,
+
+2016-02-11  Per Bothner  <per@bothner.com>
+
+	* inlining.expected: Update for 2-operand values optimiization.
+
+2016-01-31  Per Bothner  <per@bothner.com>
+
+	* arr-test.scm: Add tests for format-array and more.
+
+2016-01-27  Per Bothner  <per@bothner.com>
+
+	* errors4.scm: Remove unintended extra error.
+
+2015-10-12  Per Bothner  <per@bothner.com>
+
+	* resolve-uri.scm: Tweaks, based on changed handling of Path.valueOf.
+
+2015-10-10  Per Bothner  <per@bothner.com>
+
+	* resolve-uri.scm: New tests from RFC-3986.
+	* Makefile.am: Update accordingly.
+
+2015-10-07  Per Bothner  <per@bothner.com>
+
+	* lib-bracket.scm: New test, for Savannah bug #46116
+	"Add $bracket-apply$ to (kawa base)".
+	* Makefile.am: Update accordingly.
+
+2015-10-04  Per Bothner  <per@bothner.com>
+	    Taylan Ulrich Bayırlı/Kammer <taylanbayirli@gmail.com>
+
+	* arr-test.scm: Fix edit errors.
+
+2015-09-28  Per Bothner  <per@bothner.com>
+
+	* macros3.scm: New test for macro forward reference.
+	* Makefile.am: Update accordingly.
+
+2015-09-01  Per Bothner  <per@bothner.com>
+
+	* r7rs-tests.scm: Note conditional failure for Java-7,
+	with Unicode 6, where Kawa and Java-8 use Unicode 6.2.
+	* lib-test.scm: Likewise.
+	Also use 'dynamic' to avoid some warnings.
+
+2015-08-18  Per Bothner  <per@bothner.com>
+
+	* text-test.scm: Add more tests for string indexing.
+	* misc-test.scm: Update expected output.
+
+2015-08-16  Per Bothner  <per@bothner.com>
+
+	* text-test.scm: Test simple set! of indexed string.
+
+	* num-test.scm: Added more tests for uint.
+
 2015-06-24  William D Clinger <will@ccs.neu.edu>
             Per Bothner  <per@bothner.com>
 
@@ -13,7 +84,7 @@
 	since we plan to optimize 'apply'.
 
 2015-06-15  Per Bothner  <per@bothner.com>
-
+st
 	* Makefile.am: Add files to EXTRA_DIST do 'make distcheck' works.
 	(check-larceny-simple1): Make use of srcdir.
 

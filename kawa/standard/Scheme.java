@@ -826,8 +826,7 @@ public class Scheme extends LispLanguage {
                    "define_alias");
       defSntxStFld("define-private-alias", "kawa.standard.define_alias",
                    "define_private_alias");
-      defSntxStFld("define-variable", "kawa.standard.define_variable",
-                   "define_variable");
+      defSntxStFld("define-variable", "kawa.lib.prim_syntax");
       defSntxStFld("define-member-alias", "kawa.standard.define_member_alias",
                    "define_member_alias");
       defSntxStFld("define-enum", "gnu.kawa.slib.enums");
@@ -852,6 +851,7 @@ public class Scheme extends LispLanguage {
 
       defProcStFld("array?", "kawa.lib.arrays");
       defProcStFld("array-rank", "kawa.lib.arrays");
+      defProcStFld("array-size", "kawa.lib.arrays");
       defProcStFld("make-array", "kawa.lib.arrays");
       defProcStFld("array", "kawa.lib.arrays");
       defProcStFld("array-start", "kawa.lib.arrays");
@@ -859,7 +859,21 @@ public class Scheme extends LispLanguage {
       defProcStFld("shape", "kawa.lib.arrays");
       defProcStFld("array-ref", "gnu.kawa.functions.ArrayRef", "arrayRef");
       defProcStFld("array-set!", "gnu.kawa.functions.ArraySet", "arraySet");
+      defProcStFld("array-fill!", "kawa.lib.arrays");
+      defProcStFld("array-copy!", "kawa.lib.arrays");
       defProcStFld("share-array", "kawa.lib.arrays");
+      defProcStFld("array-index-ref", "kawa.lib.arrays");
+      defProcStFld("array-index-share", "kawa.lib.arrays");
+      defProcStFld("array-transform", "kawa.lib.arrays");
+      defProcStFld("array-reshape", "kawa.lib.arrays");
+      defProcStFld("array-flatten", "kawa.lib.arrays");
+      defProcStFld("array->vector", "kawa.lib.arrays");
+      defProcStFld("index-array", "kawa.lib.arrays");
+      defProcStFld("build-array", "kawa.lib.arrays");
+      // array->mutable-array arr -- or plain array-copy
+      // array-map
+      // list*->array and array->list*
+      defProcStFld("format-array", "kawa.lib.arrays");
 
       for (int i = uniformVectorTags.length;  --i >= 0; )
         {
@@ -1089,6 +1103,7 @@ public class Scheme extends LispLanguage {
         if (types == null) {
             types = new HashMap<String, Type>(128); // Bit more wiggle room
             types.put("boolean", booleanType);
+            types.put("parameter", Compilation.typeLocationProc);
             types.putAll(super.getTypeMap());
             for (int i = uniformVectorTags.length; --i >= 0;) {
                 String tag = uniformVectorTags[i];

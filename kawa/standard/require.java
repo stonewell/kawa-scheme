@@ -170,6 +170,7 @@ public class require extends Syntax
                 && requestedClass.charAt(nlen-1) == '>')
                 requestedClass = requestedClass.substring(1, nlen-1);
             String implicitSource = requestedClass.replace('.', '/');
+            requestedClass = Compilation.mangleQualifiedName(requestedClass);
             String explicitSource = null;
             if (args.getCdr() instanceof Pair) {
                 Object sname = ((Pair) args.getCdr()).getCar();
@@ -205,7 +206,10 @@ public class require extends Syntax
     public static ModuleInfo lookupModuleFromSourcePath (String sourceName, ScopeExp defs) {
         ModuleManager manager = ModuleManager.getInstance();
         String baseName = defs.getFileName();
-        if (baseName != null && baseName != InPort.systemInFilename)
+        if (baseName != null
+            && baseName != InPort.systemInFilename
+            && baseName != InPort.stringPathname
+            && baseName != InPort.evalPathname)
             sourceName = Path.valueOf(baseName).resolve(sourceName).toString();
         return manager.findWithSourcePath(sourceName);
     }
@@ -219,10 +223,9 @@ public class require extends Syntax
                       DeclSetMapper mapper, FormStack forms, 
                       ScopeExp defs, Compilation tr) {
         ModuleManager manager = ModuleManager.getInstance();
-        long now;
         if ((info.getState() & 1) == 0
             && info.getCompilation() == null
-            && ! info.checkCurrent(manager, (now = System.currentTimeMillis()))) {
+            && ! info.checkCurrent(manager, System.currentTimeMillis())) {
             SourceMessages messages = tr.getMessages();
             Language language = Language.getDefaultLanguage();
             Compilation comp;
@@ -233,6 +236,8 @@ public class require extends Syntax
                 if (tr.immediate)
                     options |= Language.PARSE_IMMEDIATE;
                 comp = language.parse(fstream, messages, options, info);
+                if (tr.getModule().getFlag(ModuleExp.INTERACTIVE));
+                    comp.getModule().setFlag(ModuleExp.INTERACTIVE);
             } catch (java.io.FileNotFoundException ex) {
                 tr.error('e', "not found: "+ex.getMessage());
                 return false;

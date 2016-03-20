@@ -1,3 +1,58 @@
+2016-03-10  Per Bothner  <per@bothner.com>
+
+	Major re-write for more general array support.
+	* Arrays.java (allocateArray): Helper routine.
+	(class BuiltArray): New Array impementation class. 
+	(class ProcTransformedArray): New TransformedArray subclass.
+	* IsEqual.java: Recursively compare Arrays.
+
+2016-02-25  Per Bothner  <per@bothner.com>
+
+	* ArrayPrint.java: Change to not use Array#getRowMajor.
+
+2016-01-31  Per Bothner  <per@bothner.com>
+
+	* DisplayFormat.java (writeObjectRaw): Use ArrayPrint.
+
+	* ArrayPrint.java: New helper class for pretty-printing arrays.
+
+2016-01-19  Per Bothner  <per@bothner.com>
+
+	* DisplayFormat.java (write(Array,...)): Better Array printing.
+	Print low-bounds and dimensions when needed.
+	Handle multi-dimensional unformm arrays, as as such #2F64(...).
+
+2016-01-16  Per Bothner  <per@bothner.com>
+
+	* Arrays.java  (makeFromSimple): Factory method to help lisp reader.
+
+	* DisplayFormat.java (write(Array,...)): Fix handling of rank 0.
+
+2015-12-21  Per Bothner  <per@bothner.com>
+
+	* DisplayFormat.java: Handle display of Paintable objects
+	when running on DomTerm by converting to SVG with JFreeSVG.
+
+2015-12-16  Per Bothner  <per@bothner.com>
+
+	* DisplayFormat.java (writeObject): Add DomTerm escapes
+	for displaying KNode, so it gets embedded in output.
+
+2015-10-24  Per Bothner  <per@bothner.com>
+
+	Better type inference for Scheme 'parameter' reads.
+	* CompilationHelpers.java (validateApplyToArgs): If procedure is
+	a LocationProc (Scheme parameter object), optimize it.
+
+2015-08-18  Per Bothner  <per@bothner.com>
+
+	* Setter.java (apply2): Add an optimization.
+
+2015-08-16  Per Bothner  <per@bothner.com>
+
+	* Setter.java (apply2): Use coerceToObject rather than coerceFromObject
+	because we're converting to real value, not a reflection value.
+
 2015-08-02  Per Bothner  <per@bothner.com>
 
 	* Arithmetic.java (leastSpecificCode): New method.

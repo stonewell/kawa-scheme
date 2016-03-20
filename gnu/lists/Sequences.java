@@ -15,23 +15,28 @@ public class Sequences {
         }
         if (value instanceof Object[])
             return new FVector((Object[]) value);
+        SimpleVector vec = null;
         if (value.getClass().isArray()) {
             if (value instanceof long[])
-                return new S64Vector((long[]) value);
-            if (value instanceof int[])
-                return new S32Vector((int[]) value);
-            if (value instanceof short[])
-                return new S16Vector((short[]) value);
-            if (value instanceof byte[])
-                return new S8Vector((byte[]) value);
-            if (value instanceof double[])
-                return new F64Vector((double[]) value);
-            if (value instanceof float[])
-                return new F32Vector((float[]) value);
-            if (value instanceof boolean[])
-                return new BitVector((boolean[]) value);
-            if (value instanceof char[])
-                return new CharVector((char[]) value);
+                vec = new S64Vector((long[]) value);
+            else if (value instanceof int[])
+                vec = new S32Vector((int[]) value);
+            else if (value instanceof short[])
+                vec = new S16Vector((short[]) value);
+            else if (value instanceof byte[])
+                vec = new S8Vector((byte[]) value);
+            else if (value instanceof double[])
+                vec = new F64Vector((double[]) value);
+            else if (value instanceof float[])
+                vec = new F32Vector((float[]) value);
+            else if (value instanceof boolean[])
+                vec = new BitVector((boolean[]) value);
+            else if (value instanceof char[])
+                vec = new CharVector((char[]) value);
+            if (vec != null) {
+                vec.info |= SimpleVector.SHARED_FLAG;
+                return vec;
+            }
         }
         return null;
     }
@@ -139,12 +144,10 @@ public class Sequences {
     }
 
     public static List indirectIndexed(List lst, IntSequence indexes) {
-        if (lst instanceof SimpleVector) {
-            SimpleVector svec = (SimpleVector) lst;
-            // FIXME - should do better!
-            if (svec.indexes == null && svec instanceof FVector)
-                return new FVector(((FVector) svec).data, indexes);
-        }
+        /*
+        if (lst instanceof SimpleVector)
+            return ((SimpleVector) lst).select(indexes);
+        */
         return new IndirectIndexedSeq(lst, indexes);
     }
 
@@ -157,6 +160,68 @@ public class Sequences {
     public static Object drop(Object base, int fromStart, int fromEnd) {
         List<?> lbase = (List<?>) base;
         return subList(base, fromStart, lbase.size() - fromEnd);
+    }
+
+    public static SimpleVector copy(SimpleVector base, int start, int end,
+                                    boolean writable) {
+        int sz = end - start;
+        if (base.isVerySimple() || base.isSubRange()) {
+            SimpleVector nvec = base.newInstance(-1);
+            long flags = SimpleVector.SUBRANGE_FLAG;
+            if (! writable)
+                flags |= SimpleVector.READ_ONLY_FLAG;
+            int baseStart, baseSize;
+            if (base.isVerySimple()) {
+                baseStart = 0;
+                baseSize = base.size();
+            } else {
+                baseStart = base.getOffsetBits();
+                baseSize = base.getSizeBits();
+            }
+            int off = baseStart + start;
+            if (start < 0 || start > end || end > baseSize)
+                throw new IndexOutOfBoundsException();
+            // buffer[offset <: offset+size]
+            nvec.setInfoField(sz, off, flags);
+            base.info |= SimpleVector.COPY_ON_WRITE;
+            return nvec;
+        }
+        return copy(base, new Range.IntRange(start, 1, sz), writable);
+    }
+                                    
+    public static SimpleVector copy(List base, Range.IntRange range,
+                                    boolean writable) {
+        if (base instanceof SimpleVector && range.getStepInt() == 1) {
+            SimpleVector svec = (SimpleVector) base;
+            if (svec.isVerySimple() || svec.isSubRange()) {
+                int start = range.getStartInt();
+                int bsize = base.size();
+                int end = range.isUnbounded() ? bsize
+                    : start + range.getSize();
+                if (start < 0 || end > bsize)
+                    throw new IndexOutOfBoundsException();
+                return copy(svec, start, end, writable);
+            }
+        }
+        return Arrays.flattenCopy(new IndirectIndexedSeq(base, range),
+                                  writable);
+    }
+
+    private static Object bufferForCopy(Object obj) {
+        for (;;) {
+            if (obj instanceof SimpleVector)
+                return ((SimpleVector) obj).getBuffer();
+            if (obj instanceof TransformedArray)
+                obj = ((TransformedArray) obj).base;
+            else
+                return null;
+        }
+    }
+
+    public static boolean copyInPlaceIsSafe(Object src, Object dst) {
+        Object s = bufferForCopy(src);
+        Object d = bufferForCopy(dst);
+        return s != d && s != null && d != null;
     }
 
     public static void replace(List lst, int fromStart, int fromEnd,

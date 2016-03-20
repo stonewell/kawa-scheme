@@ -111,6 +111,7 @@ public class Q2 extends Scheme
     ReaderDispatch rdispatch = ReaderDispatch.create(rt, false);
     rt.set('#', rdispatch);
     rdispatch.set(' ', ReaderIgnoreRestOfLine.getInstance());
+    rdispatch.set('[', new ReaderNestedComment('#', '[', ']', '#'));
     //For now, allow #t #f #!eof etc.
     //Also want to allow #!/ at start of file as comment start.
     //rdispatch.set('!', ReaderIgnoreRestOfLine.getInstance());
@@ -123,7 +124,7 @@ public class Q2 extends Scheme
   }
 
   /** Compare two indentation amounts.
-   * An indentation is @{code (numberOfTabs<<16)+numberOfSpaces}.
+   * An indentation is {@code (numberOfTabs<<16)+numberOfSpaces}.
    * A comparison is indeterminate if it depends on tab-width - e.g.
    * the number of tabs in indentation1 is less than indentation2,
    * but it's the reverse when it comes to spaces.

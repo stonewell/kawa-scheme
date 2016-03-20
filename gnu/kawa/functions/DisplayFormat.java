@@ -13,11 +13,17 @@ import gnu.expr.Keyword;
 import gnu.kawa.xml.KNode;
 import gnu.xml.XMLPrinter;
 /* #endif */
+import gnu.kawa.io.CheckConsole;
 import gnu.kawa.io.OutPort;
 import gnu.kawa.io.PrettyWriter;
 import gnu.kawa.xml.XmlNamespace;
 import gnu.kawa.lispexpr.LispLanguage;
 import gnu.text.Printable;
+/* #ifdef with:JFreeSVG */
+// import gnu.kawa.models.Paintable;
+// import gnu.kawa.models.SVGUtils;
+/* #endif */
+import java.util.List;
 /* #ifdef use:java.util.regex */
 import java.util.regex.*;
 /* #endif */
@@ -87,7 +93,7 @@ public class DisplayFormat extends AbstractFormat
   char language;
 
   public boolean getReadableOutput () { return readable; }
-  
+
   @Override
   public void writeBoolean(boolean v, Consumer out)
   {
@@ -339,10 +345,11 @@ public class DisplayFormat extends AbstractFormat
       }
     else if (obj instanceof LList && out instanceof OutPort)
       writeList((LList) obj, (OutPort) out);
-    else if (obj instanceof SimpleVector)
+    else if (obj instanceof List)
       {
-	SimpleVector vec = (SimpleVector) obj;
-	String tag = vec.getTag();
+	List vec = (List) obj;
+	String tag =
+            vec instanceof SimpleVector ? ((SimpleVector) vec).getTag() : null;
 	String start, end;
 	if (language == 'E')
 	  {
@@ -358,14 +365,24 @@ public class DisplayFormat extends AbstractFormat
 	  ((OutPort) out).startLogicalBlock(start, false, end);
 	else
 	  write (start, out);
-	int endpos = vec.size() << 1;
-	for (int ipos = 0;  ipos < endpos;  ipos += 2)
-	  {
-	    if (ipos > 0 && out instanceof OutPort)
-	      ((OutPort) out).writeSpaceFill();
-	    if (! vec.consumeNext(ipos, out))
-	      break;
-	  }
+        if (vec instanceof SimpleVector) {
+            int endpos = vec.size() << 1;
+            for (int ipos = 0;  ipos < endpos;  ipos += 2) {
+                if (ipos > 0 && out instanceof OutPort)
+                    ((OutPort) out).writeSpaceFill();
+                if (! ((SimpleVector) vec).consumeNext(ipos, out))
+                    break;
+            }
+        } else {
+            boolean first = true;
+            for (Object el : vec) {
+                if (first)
+                    first = false;
+                else if (out instanceof OutPort)
+                    ((OutPort) out).writeSpaceFill();
+                writeObject(el, out);
+            }
+        }
 	if (out instanceof OutPort)
 	  ((OutPort) out).endLogicalBlock(end);
 	else
@@ -373,19 +390,39 @@ public class DisplayFormat extends AbstractFormat
       }
     else if (obj instanceof Array)
       {
-	write((Array) obj, 0, 0, out);
+        if (!getReadableOutput () && out instanceof OutPort
+            && ((OutPort) out).atLineStart()
+            && ((OutPort) out).isPrettyPrinting())
+            write(ArrayPrint.print(obj, null), out);
+        else
+            write((Array) obj, 0, 0, out);
       }
     /* #ifdef enable:XML */
     else if (obj instanceof KNode)
       {
+        boolean escapeForDomTerm = false;
         if (getReadableOutput())
           write("#", out);
+        else if (CheckConsole.forDomTerm(out))
+          {
+            write("\033]72;", out);
+            escapeForDomTerm = true;
+          }
         Writer wout = out instanceof Writer ? (Writer) out
           : new ConsumerWriter(out);
         XMLPrinter xout = new XMLPrinter(wout);
         xout.writeObject(obj);
         xout.closeThis();
+        if (escapeForDomTerm)
+          write("\007", out);
       }
+    /* #endif */
+    /* #ifdef with:JFreeSVG */
+    // else if (obj instanceof Paintable && ! getReadableOutput()
+    //          && CheckConsole.forDomTerm(out))
+    // {
+    //     write("\033]72;"+SVGUtils.toSVG((Paintable) obj)+"\007", out);
+    // }
     /* #endif */
     else if (obj == Values.empty && getReadableOutput())
       write("#!void", out);
@@ -486,11 +523,40 @@ public class DisplayFormat extends AbstractFormat
   {
     int rank = array.rank();
     int count = 0;
-    String start = level > 0 ? "("
-      : rank == 1 ? "#("
-      : "#" + rank + "a(";
+    String start;
+    if (level > 0)
+        start = "(";
+    else {
+        boolean printDims = false;
+        int i = rank;
+        while (--i >= 0) {
+            if (array.getLowBound(i) != 0 || array.getSize(i) == 0)
+                break;
+        }
+        StringBuilder sbuf = new StringBuilder();
+        sbuf.append('#');
+        sbuf.append(rank);
+        String tag = array instanceof GeneralArray
+            ? ((GeneralArray) array).getTag()
+            : null;
+        sbuf.append(tag == null ? 'a' : tag);
+        if (i >= 0) {
+            for (i = 0; i < rank; i++) {
+                int low = array.getLowBound(i);
+                if (low != 0) {
+                    sbuf.append('@');
+                    sbuf.append(low);
+                }
+                sbuf.append(':');
+                sbuf.append(array.getSize(i));
+            }
+        }
+        sbuf.append(rank == 0 ? ' ' : '(');
+        start = sbuf.toString();
+    }
+    String end = rank == 0 ? "" : ")";
     if (out instanceof OutPort)
-      ((OutPort) out).startLogicalBlock(start, false, ")");
+      ((OutPort) out).startLogicalBlock(start, false, end);
     else
       write (start, out);
     if (rank > 0)
@@ -517,10 +583,12 @@ public class DisplayFormat extends AbstractFormat
 	    count += step;
 	  }
       }
-    if (out instanceof OutPort)
-      ((OutPort) out).endLogicalBlock(")");
     else
-      write(")", out);
+      writeObject(array.getRowMajor(index), out);
+    if (out instanceof OutPort)
+      ((OutPort) out).endLogicalBlock(end);
+    else
+      write(end, out);
     return count;
   }
 

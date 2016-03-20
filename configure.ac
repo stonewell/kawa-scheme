@@ -1,5 +1,5 @@
 qdnl Process this with autoconf to create configure
-AC_INIT([kawa],[2.0.3_invoke]) dnl Also update bin/configure.ac and build.xml.
+AC_INIT([kawa],[2.0.1_invoke]) dnl Also update bin/configure.ac and build.xml.
 AC_CONFIG_SRCDIR([doc/kawa.texi])
 
 AM_MAINTAINER_MODE
@@ -20,12 +20,19 @@ AC_ARG_WITH(servlet,
   AS_HELP_STRING(--with-servlet@<:@=servlet-api.jar@:>@,Build support for generating servlets))
 WITH_SERVLET_ARG="${with_servlet}"
 
+AC_ARG_WITH(jfreesvg)
+WITH_JFREESVG_ARG="${with_jfreesvg}"
+
 AC_ARG_WITH(android,
   AS_HELP_STRING(--with-android@<:@=android.jar@:>@,Build for the Android platform))
 
 AC_ARG_WITH(javafx,
   AS_HELP_STRING(--with-javafx@<:@=jfxrt.jar@:>@,Enable support for JavaFX))
 WITH_JAVAFX_ARG="${with_javafx}"
+
+AC_ARG_WITH(jline2,
+ AS_HELP_STRING(--with-jline2=<:@=jline2.jar@:>@,Build support JLine2 input editing))
+ WITH_JLINE2_ARG="${with_jline2}"
 
 AC_ARG_WITH(XQTS,
   AS_HELP_STRING(--with-XQTS@<:@=XQTS-path@:>@,Support XQuery Test Suite))
@@ -67,35 +74,39 @@ test -z "${with_java_source}" -a -n "${with_android}" \
   && with_java_source=android
 
 with_java_source=`echo ${with_java_source} | tr A-Z a-z`
+# Java 7 is the (current) default
+test "${with_java_source}" = "" && with_java_source=7
 case "/${with_java_source}/" in
-  /1/) JAVA_SOURCE=1 ;;
-  /2/) JAVA_SOURCE=2 ;;
-  /4/) JAVA_SOURCE=4 ;;
-  /4x/) JAVA_SOURCE=4x ;;
-  /5/) JAVA_SOURCE=5 ;;
-  /6/) JAVA_SOURCE=6 ;;
-  /6compat5/) JAVA_SOURCE=6compat5 ;;
-  /7/) JAVA_SOURCE=7 ;;
-  /8/) JAVA_SOURCE=8 ;;
-  /1.1*/) JAVA_SOURCE=1 ;;
-  /1.2*/) JAVA_SOURCE=2 ;;
-  /1.3*/) JAVA_SOURCE=2 ;;
-  /1.4*+jaxp1.3/) JAVA_SOURCE=4x ;;
-  /1.4*/) JAVA_SOURCE=4 ;;
-  /1.5*/) JAVA_SOURCE=5 ;;
-  /1.6*/) JAVA_SOURCE=6 ;;
-  /1.7*/) JAVA_SOURCE=7 ;;
-  /1.8*/) JAVA_SOURCE=8 ;;
+  /1/|/1.1*/) # JDK 1.1 - not supported
+    JAVA_SOURCE=1; JAVA_SOURCE_SELECTOR='%java1';;
+  /2/|/1.2*/|/1.3*/) # JDK 1.2+, GCJ-3.x - not supported
+    JAVA_SOURCE=2; JAVA_SOURCE_SELECTOR='%java2' ;;
+  /4/|/1.4*/) # JDK 1.4, GCJ-4.x, without JAXP - not supported
+    JAVA_SOURCE=4; JAVA_SOURCE_SELECTOR='%java4' ;;
+  /4x/|/1.4*+jaxp1.3/) # JDK 1.4, GCJ-4.x with JAXP 1.3 - not supported
+    JAVA_SOURCE=4x; JAVA_SOURCE_SELECTOR='%java4x' ;;
+  /5/|/1.5*/) # JDK 1.5
+    JAVA_SOURCE=5; JAVA_SOURCE_SELECTOR='%java5' ;;
+  /6/|/1.6*/) # JDK 1.6
+    JAVA_SOURCE=6; JAVA_SOURCE_SELECTOR='%java6' ;;
+  /6compat5/) # JDK 1.5 with some Java6 features.
+    # Requires building with Java6, but runs on Java5 (without those features)
+    # or on Java6 (with those features).
+    JAVA_SOURCE=6compat5; JAVA_SOURCE_SELECTOR='%java6compat5' ;;
+  /7/|/1.7*/) # JDK 1.7
+    JAVA_SOURCE=7; JAVA_SOURCE_SELECTOR='%java7' ;;
+  /8/|/1.8*/) # Java 8
+    JAVA_SOURCE=8; JAVA_SOURCE_SELECTOR='%java8' ;;
   /android*/)
-        JAVA_SOURCE=android
+        JAVA_SOURCE=android; JAVA_SOURCE_SELECTOR='%android'
         test -z "$with_swing" && with_swing="no"
         test -z "$with_awt" && with_awt="no"
         ;;
-  //) JAVA_SOURCE=7 ;;
   /*/) AC_MSG_ERROR([Invalid version for --with-java-version.
   (Must be 1, 2, 5, 6, 7, 8, or a JDK version such as 1.5.)]) ;;
 esac
 AC_SUBST(JAVA_SOURCE)
+AC_SUBST(JAVA_SOURCE_SELECTOR)
 
 if test -z "$with_sax2" ; then
   case "$JAVA_SOURCE" in
@@ -131,11 +142,6 @@ case "$JAVA_SOURCE" in
   6compat5) JAVACFLAGS="${JAVACFLAGS} -target 1.5 -source 1.5" ;;
 esac
 
-pathsep="$PATH_SEPARATOR"
-case ${host} in
-  *-*-mingw*|*-*-cygwin*) CLASSPATH_SEPARATOR=";" ;;
-  *) CLASSPATH_SEPARATOR="$PATH_SEPARATOR"
-esac
 filesep='/'
 
 # Partly for compatibility (--enable/--disable-servlet was the old option);
@@ -163,6 +169,10 @@ AM_CONDITIONAL(ENABLE_XML, test "$enable_xml" = "yes")
 AM_CONDITIONAL(ENABLE_SERVLET,
   test "$enable_servlet" != "" -a "$enable_servlet" != "no")
 AM_CONDITIONAL(WITH_SWING, test "$with_swing" != "no")
+AM_CONDITIONAL(WITH_JFREESVG,
+  test "$with_jfreesvg" != "" -a "$with_jfreesvg" != "no")
+AM_CONDITIONAL(WITH_JLINE2,
+  test "$with_jline2" != "" -a "$with_jline2" != "no")
 AM_CONDITIONAL(WITH_JAVAFX,
   test "$with_javafx" != "" -a "$with_javafx" != "no")
 AM_CONDITIONAL(WITH_SWT, test "$with_swt" = "yes")
@@ -177,33 +187,7 @@ AM_CONDITIONAL(ON_WINDOWS, test "$CLASSPATH_SEPARATOR" = ";")
 JEMACS_VERSION=`echo $VERSION | sed  -e 's/^1/0/'`
 BYTECODE_VERSION="$VERSION"
 
-case ${with_servlet} in
-  yes) ;;
-  no) ;;
-  "") ;;
-  *) conf_classpath=${with_servlet}${CLASSPATH_SEPARATOR}$conf_classpath ;;
-esac
-case ${with_javafx} in
-  yes) ;;
-  no) ;;
-  "") ;;
-  *)
-    if test -f "${with_javafx}" ; then true
-    elif test -f "${with_javafx}/rt/lib/jfxrt.jar"
-    then with_javafx="${with_javafx}/rt/lib/jfxrt.jar"
-    elif test -f "${with_javafx}/lib/jfxrt.jar"
-    then with_javafx="${with_javafx}/lib/jfxrt.jar"
-    elif test -f "${with_javafx}/jre/lib/jfxrt.jar"
-    then with_javafx="${with_javafx}/jre/lib/jfxrt.jar"
-    fi
-    conf_classpath=${with_javafx}${CLASSPATH_SEPARATOR}$conf_classpath ;;
-esac
-case ${with_android} in
-  yes) ;;
-  no) ;;
-  "") ;;
-  *) conf_classpath=${with_android}${CLASSPATH_SEPARATOR}$conf_classpath ;;
-esac
+m4_include(config.classpath)
 
 case ${with_sax2} in
   yes) SAX2_PREPROCESS="+SAX2";;
@@ -215,11 +199,14 @@ XQTS_PATH=${with_XQTS:-XQTS}
 AC_SUBST(XQTS_PATH)
 AC_SUBST(SAX2_PREPROCESS)
 AC_SUBST(conf_classpath)
+AC_SUBST(run_classpath)
 AC_SUBST(CLASSPATH_SEPARATOR)
 AC_SUBST(pathsep)
 AC_SUBST(filesep)
 AC_SUBST(WITH_SERVLET_ARG)
+AC_SUBST(WITH_JFREESVG_ARG)
 AC_SUBST(WITH_JAVAFX_ARG)
+AC_SUBST(WITH_JLINE2_ARG)
 
 AC_SUBST(JAVA)
 AC_SUBST(JAVAC)
@@ -249,8 +236,7 @@ AM_COND_IF([ENABLE_KAWA_FRONTEND],
         [AC_CONFIG_SUBDIRS([bin])])
 
 AC_CONFIG_FILES([Makefile gnu/bytecode/Makefile gnu/math/Makefile
-  gnu/Makefile bin/kawa.sh bin/qexo
-  gnu/kawa/servlet/Makefile
+  gnu/Makefile gnu/kawa/servlet/Makefile
   gnu/brl/Makefile gnu/kawa/brl/Makefile
   gnu/kawa/slib/Makefile
   gnu/commonlisp/lang/Makefile
@@ -264,5 +250,7 @@ AC_CONFIG_FILES([Makefile gnu/bytecode/Makefile gnu/math/Makefile
   gnu/xquery/testsuite/Makefile
   gnu/kawa/android/Makefile
   gnu/kawa/javafx/Makefile
-  doc/Makefile testsuite/Makefile],[chmod +x bin/qexo bin/kawa.sh])
+  doc/Makefile testsuite/Makefile])
+AC_CONFIG_FILES([bin/kawa.sh],[chmod +x bin/kawa.sh])
+AC_CONFIG_FILES([bin/qexo],[chmod +x bin/qexo])
 AC_OUTPUT

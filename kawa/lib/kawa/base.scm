@@ -19,6 +19,10 @@
 	  syntax-case
 	  define-syntax-case
 	  identifier?
+          $bracket-apply$
+          $bracket-list$
+          require
+          import
 
           bitwise-not
           bitwise-and bitwise-ior bitwise-xor bitwise-if
@@ -90,32 +94,29 @@
    (scheme write)
    (rnrs arithmetic bitwise)
    (only (scheme r5rs) exact->inexact inexact->exact)
+   (only gnu.kawa.lispexpr.BracketApply (instance $bracket-apply$))
 
-   (only (rename (kawa standard syntax)
-		 (quasiSyntax quasisyntax))
-	 syntax quasisyntax)
+   (only kawa.standard.syntax
+         (quasiSyntax quasisyntax) syntax)
 
    (only (kawa lib std_syntax) identifier?)
 
-   (only (kawa lib syntax)
+   (only kawa.lib.syntax
+         $bracket-list$
 	 define-syntax-case
 	 try-finally
 	 synchronized)
 
    (only (kawa lib prim_syntax)
-	 try-catch)
+	 try-catch define-constant define-variable)
 
    (only (rename (only (kawa standard syntax_case) syntax_case)
 		 (syntax_case syntax-case))
 	 syntax-case)
 
-   (only (rename (kawa standard define_alias)
-		 (define_alias define-alias))
-	 define-alias)
-
-   (only (rename (kawa standard define_variable)
-		 (define_variable define-variable))
-	 define-variable)
+   (only (kawa standard define_alias) (define_alias define-alias))
+   (only kawa.standard.require require)
+   (only kawa.standard.ImportFromLibrary (instance import))
 
    (only (rename (kawa standard define_class)
 		 (define_simple_class define-simple-class)

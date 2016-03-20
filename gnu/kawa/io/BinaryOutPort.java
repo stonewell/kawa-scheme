@@ -1,6 +1,6 @@
 package gnu.kawa.io;
+
 import java.io.*;
-import gnu.text.*;
 import java.nio.charset.Charset;
 
 /** An OutPort that provides access to an underlying OutputStream.
@@ -118,9 +118,6 @@ public class BinaryOutPort extends OutPort {
         else
             return (OutputStream) obj;
     }
-
-    @Override
-    public int getColumnNumber () { return -1; }
 
     /** This an extension of BufferedOutputStream for smarter flushing.
      * Specifically, before doing binary output, we need to flush whatever

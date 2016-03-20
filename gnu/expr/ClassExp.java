@@ -294,14 +294,14 @@ public class ClassExp extends LambdaExp
             name = comp.generateClassName(name);
         else {
             int start = 0;
-            StringBuffer nbuf = new StringBuffer(100);
+            StringBuilder nbuf = new StringBuilder(100);
             // Mangle characters in name, if needed - but don't mangle '.'.
             for (;;) {
                 int dot = name.indexOf('.', start);
                 if (dot < 0)
                     break;
                 nbuf.append(Compilation
-                            .mangleNameIfNeeded(name.substring(start, dot)));
+                            .mangleClassName(name.substring(start, dot)));
                 start = dot + 1;
                 if (start < name.length())
                     nbuf.append('.');
@@ -328,7 +328,7 @@ public class ClassExp extends LambdaExp
                 setFlag(IS_PACKAGE_MEMBER);
             if (start < name.length())
                 nbuf.append(Compilation
-                            .mangleNameIfNeeded(name.substring(start)));
+                            .mangleClassName(name.substring(start)));
             name = nbuf.toString();
         }
         return name;
@@ -543,22 +543,16 @@ public class ClassExp extends LambdaExp
                     // See if bodyFirst is a this(...) or super(...) call.
                     ClassType calledInit = checkForInitCall(bodyFirst);
                     ClassType superClass = instanceType.getSuperclass();
-                    if (calledInit != null) {
-                        bodyFirst.compileWithPosition(comp, Target.Ignore);
-                    } else if (superClass != null) {
+                    if (calledInit == null && superClass != null) {
                         // Call default super constructor if there isn't
                         // an explicit call to a super constructor.
                         invokeDefaultSuperConstructor(superClass, comp, this);
+                        compileCallInitMethods(comp);
                     }
+                    else if (calledInit != instanceType)
+                        ((ApplyExp) bodyFirst).setFlag(ApplyExp.IS_SUPER_INIT);
                     child.enterFunction(comp);
-                    if (calledInit != instanceType)
-                        comp.callInitMethods(getCompiledClassType(comp),
-                                             new ArrayList<ClassType>(10));
-                    if (calledInit != null)
-                        // Skip bodyFirst since we already compiled it.
-                        Expression.compileButFirst(child.body, comp);
-                    else
-                        child.compileBody(comp);
+                    child.compileBody(comp);
                 } else {
                     child.enterFunction(comp);
                     child.compileBody(comp);
@@ -681,6 +675,10 @@ public class ClassExp extends LambdaExp
             comp.method = saveMethod;
         }
     }
+    void compileCallInitMethods(Compilation comp) {
+        comp.callInitMethods(getCompiledClassType(comp),
+                             new ArrayList<ClassType>(10));
+    }
 
     /**
      * Finds a like-named method suitable for bridging the given
@@ -748,7 +746,8 @@ public class ClassExp extends LambdaExp
     protected <R,D> void visitChildren (ExpVisitor<R,D> visitor, D d) {
         LambdaExp save = visitor.currentLambda;
         visitor.currentLambda = this;
-        supers = visitor.visitExps(supers, supers.length, d);
+        if (supers != null)
+            supers = visitor.visitExps(supers, supers.length, d);
         try {
             for (LambdaExp child = firstChild;
                  child != null && visitor.exitValue == null;

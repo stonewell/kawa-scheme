@@ -608,7 +608,8 @@ public class CallContext // implements Runnable
     public final int startFromContext() {
         //System.err.println("startFromContext proc:"+proc+" gapS:"+vstack.gapStart +" onSt:"+vstack.gapStartOnPush+" cons:"+consumer.getClass().getName()+" last:"+vstack.lastObject);
         if (vstack.gapStart == vstack.gapStartOnPush
-            && consumer == vstack) { // Simple efficient case.
+            && consumer == vstack
+            && vstack.lastObject==vstack) { // Simple efficient case.
             return -1;
         } else {
             vstack.push();

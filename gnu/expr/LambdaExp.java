@@ -1225,7 +1225,6 @@ public class LambdaExp extends ScopeExp {
                 // For a simple parameter not captured by an inferior lambda,
                 // just allocate it in the incoming register.
                 var = decl.allocateVariable(null);
-                //var.allocateLocal(code);
             } else {
                 // This variable was captured by an inner lambda.
                 // Its home location is in the heapFrame.
@@ -1257,7 +1256,7 @@ public class LambdaExp extends ScopeExp {
             if (state>=Compilation.COMPILED && state != Compilation.ERROR_SEEN)
                 comp.error('f', "internal error - allocate method for "+this
                            +" in module "+currentModule()
-                           +" that has already been compiled");
+                           +" that has already been compiled\n(Try removing all class files and doing a full re-compile.)");
         }
         if (! getNeedsClosureEnv())
             closureEnvType = null;
@@ -1531,7 +1530,7 @@ public class LambdaExp extends ScopeExp {
                     Expression arg;
                     String lastTypeName = restArgType.getName();
                     if (restArgType == LangObjType.listType || "gnu.lists.LList".equals(lastTypeName))
-                        arg = new QuoteExp(gnu.lists.LList.Empty);
+                        arg = QuoteExp.emptyExp;
                     else if ("java.lang.Object[]".equals(lastTypeName))
                         arg = new QuoteExp(Values.noArgs);
                     else // FIXME
@@ -1583,8 +1582,11 @@ public class LambdaExp extends ScopeExp {
         }
         else
             target = Target.pushValue(getReturnType());
+        ScopeExp savedScope = comp.currentScope();
+        comp.current_scope = this;
         body.compileWithPosition(comp, target,
                                  body.getLineNumber() > 0 ? body : this);
+        comp.current_scope = savedScope;
         comp.callContextVar = callContextSave;
     }
 
@@ -1919,12 +1921,17 @@ public class LambdaExp extends ScopeExp {
      */
     public Expression getBodyFirstExpression() {
         Expression bodyFirst = body;
-        while (bodyFirst instanceof BeginExp) {
-            BeginExp bbody = (BeginExp) bodyFirst;
-            if (bbody.length == 0)
-                bodyFirst = null;
-            else
-                bodyFirst = bbody.exps[0];
+        for (;;) {
+            if (bodyFirst instanceof BeginExp) {
+                BeginExp bbody = (BeginExp) bodyFirst;
+                if (bbody.length == 0)
+                    bodyFirst = null;
+                else
+                    bodyFirst = bbody.exps[0];
+            } else if (bodyFirst instanceof LetExp) {
+                bodyFirst = ((LetExp) bodyFirst).getBody();
+            } else
+                break;
         }
         return bodyFirst;
     }

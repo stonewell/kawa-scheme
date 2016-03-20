@@ -7,16 +7,12 @@ import gnu.kawa.util.HashUtils;
 import java.util.*;
 
 /**
- * An AbstractSequence is used to implement Sequences, and almost all
- * classes that extend AbstractSequence will implement Sequence.
- * However, AbstractSequence itself does not implement Sequence.
- * This is so we can use AbstractSequence to implement classes that are
- * "sequence-like" (such as multi-dimensional arrays) but are not Sequences.
+ * A collection of default methods for implementing sequence-like classes.
  *
  * Additionally, a sequence may have zero or more attributes, which are
  * name-value pairs.  A sequence may also have a named "type".  These
  * extensions are to support XML functionality - it might be cleaner to
- * moe them to a sub-class of Sequence or some interface.
+ * move them to a sub-class of Sequence or some interface.
  *
  * Many of the protected methods in Sequence (such as nextIndex) are
  * only intended to be called from SeqPosition or TreePosition, see those.
@@ -26,8 +22,19 @@ import java.util.*;
 
 public abstract class AbstractSequence<E>
 {
-  /** See java.util.List. */
-  public abstract int size();
+    public static final int[] noInts = new int[0];
+
+    public int size() {
+        if (rank() == 1) return getSize(0);
+        throw unsupported("size");
+    }
+
+    public int getSize() {
+        int sz = 1;
+        for (int r = rank(); --r >= 0; )
+            sz *= getSize(r);
+        return sz;
+    }
 
   public boolean isEmpty()
   {
@@ -39,23 +46,143 @@ public abstract class AbstractSequence<E>
     return 1;
   }
 
-  /** See java.util.List. */
-  public abstract E get (int index);
+    protected void checkRank(int i) {
+        if (i != rank())
+            throw badRank(i);
+    }
 
-  public int getEffectiveIndex(int[] indexes)
-  {
-    return indexes[0];
-  }
+    protected RuntimeException badRank(int i) {
+        return new RuntimeException("wrong number of indexes "+i+" to "+rank()+"-rank array");
+    }
 
-  public E get(int[] indexes)
-  {
-    return get(indexes[0]);
-  }
+    // FIXME remove this - some implementations needed
+    public Array<E> asImmutable() { throw unsupported("asImmutable"); }
 
-  public E set(int[] indexes, E value)
-  {
-    return set(indexes[0], value);
-  }
+    public E get() { return getRaw(effectiveIndex()); }
+    public E get(int i) {
+        return getRaw(effectiveIndex(i));
+    }
+    public E get(int i, int j) { return getRaw(effectiveIndex(i,j)); }
+    public E get(int i, int j, int k, int... rest) {
+        return getRaw(effectiveIndex(i, j, k, rest)); } 
+
+    public E get(int[] indexes) {
+        return getRaw(effectiveIndex(indexes));
+    }
+
+    protected void checkCanWrite () {
+    }
+    public E getRowMajor(int index) {
+        if (rank() == 1)
+            return get(index);
+        if (this instanceof Array)
+            return Arrays.getRowMajor((Array<E>) this, index);
+        throw unsupportedException("getRowMajor");
+    }
+
+    public int effectiveIndex() {
+        checkRank(0);
+        return 0;
+    }
+    public int effectiveIndex(int index) {
+        checkRank(1);
+        return index - getLowBound(0);
+    }
+    public int effectiveIndex(int i, int j) {
+        checkRank(2);
+        return (i - getLowBound(0)) * getSize(1) + (j - getLowBound(1));
+    }
+    public int effectiveIndex(int i, int j, int k, int... rest) {
+        int r = rest.length;
+        checkRank(3+r);
+        int eff = 0;
+        int stride = 1;
+        while (--r >= 0) {
+            eff += (rest[r] - getLowBound(3+r)) * stride;
+            stride *= getSize(3+r);
+        }
+        eff += (k - getLowBound(2)) * stride;
+        stride *= getSize(2);
+        eff += (j - getLowBound(1)) * stride;
+        stride *= getSize(1);
+        eff += (i - getLowBound(0)) * stride;
+        return eff;
+    }
+
+    public int effectiveIndex(int[] indexes) {
+        int ilength = indexes.length;
+        switch (indexes.length) {
+        case 0:
+            return effectiveIndex();
+        case 1:
+            return effectiveIndex(indexes[0]);
+        case 2:
+            return effectiveIndex(indexes[0], indexes[1]);
+        default:
+            int[] rest;
+            if (ilength == 3)
+                rest = noInts;
+            else {
+                rest = new int[ilength-3];
+                System.arraycopy(indexes, 3, rest, 0, ilength-3);
+            }
+            return effectiveIndex(indexes[0], indexes[1], indexes[2], rest);
+        }
+    }
+
+    public E getRaw(int index) { throw unsupported("getRaw"); }
+
+    protected void setBuffer(Object obj) { throw unsupported("setBuffer"); }
+
+    /** Given an "effective index", set selected element. */
+    public void setRaw(int index, E value) { throw unsupported("setRaw"); }
+
+    public boolean getBooleanRaw(int index) {
+        Object value = getRaw(index);
+        return value != null && ((Boolean) value).booleanValue();
+    }
+
+    public char getCharRaw(int index) {
+        return ((Character) getRaw(index)).charValue();
+    }
+
+    public byte getByteRaw(int index) {
+        return ((Number) getRaw(index)).byteValue();
+    }
+
+    public short getShortRaw(int index) {
+        return ((Number) getRaw(index)).shortValue();
+    }
+
+    public int getIntRaw(int index) {
+        return ((Number) getRaw(index)).intValue();
+    }
+
+    public long getLongRaw(int index) {
+        return ((Number) getRaw(index)).longValue();
+    }
+
+    public float getFloatRaw(int index) {
+        return ((Number) getRaw(index)).floatValue();
+    }
+
+    public double getDoubleRaw(int index) {
+        return ((Number) getRaw(index)).doubleValue();
+    }
+
+    public int getInt() { return getIntRaw(effectiveIndex()); }
+    public int getInt(int i) { return getIntRaw(effectiveIndex(i)); }
+    public int getInt(int i, int j) { return getIntRaw(effectiveIndex(i,j)); }
+    public int getInt(int i, int j, int k, int... rest) {
+        return getIntRaw(effectiveIndex(i, j, k, rest)); } 
+    public int getInt(int[] indexes) {
+        return getIntRaw(effectiveIndex(indexes));
+    }
+
+    public void set(int[] indexes, E value) {
+        checkCanWrite();
+        setRaw(effectiveIndex(indexes), value);
+    }
 
   public int getLowBound(int dim)
   {
@@ -67,7 +194,9 @@ public abstract class AbstractSequence<E>
     return dim==0 ? size() : 1;
   }
 
-  protected RuntimeException unsupported (String text)
+    public int getElementKind() { return Sequence.OBJECT_VALUE; }
+
+    protected RuntimeException unsupported (String text)
   {
     return unsupportedException(getClass().getName()
                                 + " does not implement " + text);
@@ -75,18 +204,16 @@ public abstract class AbstractSequence<E>
 
   public static RuntimeException unsupportedException (String text)
   {
-    /* #ifdef JAVA2 */
     return new UnsupportedOperationException(text);
-    /* #endif */
-    /* #ifndef JAVA2 */
-    // return new RuntimeException(text);
-    /* #endif */
   }
 
-  public E set(int index, E element)
-  {
-    throw unsupported("set");
-  }
+    public E set(int index, E value) {
+        checkCanWrite();
+        int effi = effectiveIndex(index);
+        E old = (E) getRaw(effi);
+        setRaw(effi, value);
+        return old;
+    }
 
   public void fill(E value)
   {
@@ -173,7 +300,6 @@ public abstract class AbstractSequence<E>
     return indexOf(o) >= 0;
   }
 
-  /* #ifdef JAVA2 */
   /** See java.util.List. */
   public boolean containsAll(Collection<?> c)
   {
@@ -186,7 +312,6 @@ public abstract class AbstractSequence<E>
       }
     return true;
   }
-  /* #endif */
 
   public final Enumeration<E> elements()
   {
@@ -208,7 +333,6 @@ public abstract class AbstractSequence<E>
     return new SeqPosition<E,AbstractSequence<E>>(this, copyPos(ipos));
   }
 
-  /* #ifdef JAVA2 */
   public final Iterator<E> iterator()
   {
     return getIterator();
@@ -223,7 +347,6 @@ public abstract class AbstractSequence<E>
   {
     return getIterator(index);
   }
-  /* #endif */
 
   /** Add a value at a specified Pos.
    * @return the updated Pos, which is after the inserted value..
@@ -248,7 +371,6 @@ public abstract class AbstractSequence<E>
     releasePos(pos);
   }
 
-  /* #ifdef JAVA2 */
   /** See java.util.Collection. */
   public boolean addAll(Collection<? extends E> c)
   {
@@ -268,26 +390,6 @@ public abstract class AbstractSequence<E>
     releasePos(pos);
     return changed;
   }
-  /* #endif */
-  /* #ifndef JAVA2 */
-  // public boolean addAll(Sequence c)
-  // {
-  //   return addAll(size(), c);
-  // }
-
-  // public boolean addAll(int index, Sequence c)
-  // {
-  //   boolean changed = false;
-  //   int pos = createPos(index, false);
-  //   for (int iter = startPos();  (iter = nextPos(iter)) != 0; )
-  //     {
-  //       pos = addPos(pos, getPosPrevious(iter));
-  //       changed = true;
-  //     }
-  //   releasePos(pos);
-  //   return changed;
-  // }
-  /* #endif */
 
   /**
    * Remove one or more elements.
@@ -344,7 +446,6 @@ public abstract class AbstractSequence<E>
     return true;
   }
 
-  /* #ifdef JAVA2 */
   public boolean removeAll(Collection<?> c)
   {
     boolean changed = false;
@@ -374,7 +475,6 @@ public abstract class AbstractSequence<E>
       }
     return changed;
   }
-  /* #endif */
 
   public void clear()
   {
@@ -442,6 +542,9 @@ public abstract class AbstractSequence<E>
   protected int nextIndex(int ipos) {
     return ipos == -1 ? size() : ipos >>> 1;
   }
+    public int xnextIndex(int ipos) {
+        return nextIndex(ipos);
+    }
 
   protected int fromEndIndex(int ipos)
   {
@@ -734,42 +837,22 @@ public abstract class AbstractSequence<E>
   {
     // Compatible with the Collections specification.
     // FIXME should also depend on class?
-    /* #ifdef JAVA2 */
     if (! (this instanceof java.util.List)
         || ! (o instanceof java.util.List))
       return this == o;
     Iterator<E> it1 = iterator();
     Iterator<E> it2 = ((java.util.List<E>) o).iterator();
-    /* #endif */
-    /* #ifndef JAVA2 */
-    // if (! (this instanceof Sequence) || ! (o instanceof Sequence))
-    //   return this == o;
-    // Enumeration it1 = elements();
-    // Enumeration it2 = ((Sequence) o).elements();
-    /* #endif */
     for (;;)
       {
-        /* #ifdef JAVA2 */
         boolean more1 = it1.hasNext();
         boolean more2 = it2.hasNext();
-        /* #endif */
-        /* #ifndef JAVA2 */
-        // boolean more1 = it1.hasMoreElements();
-        // boolean more2 = it2.hasMoreElements();
-        /* #endif */
         if (more1 != more2)
           return false;
         if (! more1)
           return true;
-	/* #ifdef JAVA2 */
         E e1 = it1.next();
         E e2 = it2.next();
-	/* #endif */
-	/* #ifndef JAVA2 */
-        // Object e1 = it1.nextElement();
-        // Object e2 = it2.nextElement();
-	/* #endif */
-        if (e1 == null)
+	if (e1 == null)
           {
             if (e2 != null)
               return false;
@@ -789,13 +872,11 @@ public abstract class AbstractSequence<E>
     return new SubSequence<E>(this, ipos0, ipos1);
   }
 
-  /* #ifdef JAVA2 */
   public List<E> subList(int fromIx, int toIx)
   {
     return subSequencePos(createPos(fromIx, false),
                           createPos(toIx, true));
   }
-  /* #endif */
 
   /** Copy an element specified by a position pair to a Consumer.
    * @return if hasNext(ipos). */

@@ -2,7 +2,7 @@ package gnu.kawa.io;
 import java.io.*;
 import gnu.mapping.Environment;
 import gnu.mapping.ThreadLocation;
-import gnu.text.*;
+import gnu.text.Printable;
 import gnu.lists.*;
 
 /**
@@ -105,11 +105,11 @@ public class OutPort extends PrintConsumer implements Printable
     public static BinaryOutPort getSystemOut() { return outInitial; }
     public static BinaryOutPort getSystemErr() { return errInitial; }
 
-  public static final ThreadLocation outLocation
-    = new ThreadLocation("out-default");
+  public static final ThreadLocation<gnu.kawa.io.OutPort> outLocation
+    = new ThreadLocation<gnu.kawa.io.OutPort>("out-default");
   static { outLocation.setGlobal(outInitial); }
-  public static final ThreadLocation errLocation
-    = new ThreadLocation("err-default");
+  public static final ThreadLocation<gnu.kawa.io.OutPort> errLocation
+    = new ThreadLocation<gnu.kawa.io.OutPort>("err-default");
   static { errLocation.setGlobal(errInitial); }
   static public OutPort outDefault ()
   {
@@ -134,6 +134,8 @@ public class OutPort extends PrintConsumer implements Printable
     public PrettyWriter getPrettyWriter() {
         return bout;
     }
+
+    public boolean isPrettyPrinting() { return bout.isPrettyPrinting(); }
 
     public static OutPort openFile(Object fname)
         throws java.io.IOException {
@@ -351,8 +353,7 @@ public class OutPort extends PrintConsumer implements Printable
 
   public void freshLine()
   {
-    int col = bout.getColumnNumber();
-    if (col != 0)
+    if (! atLineStart())
       println();
   }
 
@@ -366,6 +367,10 @@ public class OutPort extends PrintConsumer implements Printable
   {
     bout.setColumnNumber(column);
   }
+
+    public boolean atLineStart() {
+        return bout.atLineStart();
+    }
 
     void flushBuffer() {
         bout.forcePrettyOutput();

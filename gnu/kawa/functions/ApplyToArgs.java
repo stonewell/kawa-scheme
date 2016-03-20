@@ -29,6 +29,16 @@ public class ApplyToArgs extends ProcedureN
 
   Language language;
 
+    public static Object index(CharSequence str, Object index) {
+        IntSequence indexes = Sequences.asIntSequenceOrNull(index);
+        if (indexes != null) {
+            return Strings.indirectIndexed(str, indexes);
+        } else {
+            int iindex = ((Number) index).intValue();
+            return Char.valueOf(Strings.characterAt(str, iindex));
+        }
+    }
+
     public Object applyN (Object[] args) throws Throwable {
         Object proc = Promise.force(args[0]);
         if (proc instanceof Procedure) {
@@ -43,15 +53,11 @@ public class ApplyToArgs extends ProcedureN
         if (proc instanceof CharSequence) {
             if (args.length != 2)
                 throw new WrongArguments(this, args.length); // FIXME
-            Object index = Promise.force(args[1]);
-            IntSequence indexes = Sequences.asIntSequenceOrNull(index);
-            CharSequence str = (CharSequence) proc;
-            if (indexes != null) {
-                return Strings.indirectIndexed(str, indexes);
-            } else {
-                int iindex = ((Number) index).intValue();
-                return Char.valueOf(Strings.characterAt(str, iindex));
-            }
+            return index((CharSequence) proc, Promise.force(args[1]));
+        }
+        if (proc instanceof gnu.lists.Array) {
+            return ComposedArray.generalIndex((Array) proc, false,
+                                              1, args.length-1, args);
         }
         if (proc instanceof List) {
             if (args.length != 2)
@@ -66,9 +72,6 @@ public class ApplyToArgs extends ProcedureN
                 return lst.get(index);
 
             }
-        }
-        if (proc instanceof gnu.lists.Array) {
-            return ArrayRef.arrayRef.applyN(args);
         }
         /*
           What should happen if key has no associated value?
@@ -119,6 +122,19 @@ public class ApplyToArgs extends ProcedureN
             ctx.rewind();
             ctx.setNextProcedure(proc, null);
             return proc.getApplyToObjectMethod().invokeExact(proc, ctx);
+        }
+        if (arg0 instanceof CharSequence) {
+            Object arg1 = Promise.force(ctx.getNextArg());
+            if (ctx.checkDone() != 0)
+                return ctx;
+            IntSequence indexes = Sequences.asIntSequenceOrNull(arg1);
+            CharSequence str = (CharSequence) arg0;
+            if (indexes != null)
+                return Strings.indirectIndexed(str, indexes);
+            if (! (arg1 instanceof Number))
+                ctx.matchError(MethodProc.NO_MATCH_BAD_TYPE|2);
+            int iindex = ((Number) arg1).intValue();
+            return Char.valueOf(Strings.characterAt(str, iindex));
         }
         if (arg0 instanceof java.util.List) {
             Object arg1 = Promise.force(ctx.getNextArg());

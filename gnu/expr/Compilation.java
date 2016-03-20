@@ -327,6 +327,8 @@ public class Compilation implements SourceLocator
     = ClassType.make("gnu.mapping.Environment");
   static public ClassType typeLocation
     = ClassType.make("gnu.mapping.Location");
+  public static final ClassType typeLocationProc
+    = ClassType.make("gnu.mapping.LocationProc");
   static public ClassType typeFieldLocation
     = ClassType.make("gnu.kawa.reflect.FieldLocation");
   static public ClassType typeStaticFieldLocation
@@ -861,10 +863,109 @@ public class Compilation implements SourceLocator
     return sbuf.toString();
   }
 
+    /** Mangle a simple class or package name.
+     * Does not handle qualified names.
+     */
+    public static String mangleClassName(String name) {
+        return mangleSymbolic(name, false, false);
+    }
+
+    /** Mangle a possibly-qualified class name. */
+    public static String mangleQualifiedName(String name) {
+        return mangleSymbolic(name, true, false);
+    }
+
   public static String mangleName (String name)
   {
     return Language.mangleName(name, -1);
   }
+
+    /** Mangle according to John Rose's "Symbolic Freedom in the VM".
+     * {@linkplain https://blogs.oracle.com/jrose/entry/symbolic_freedom_in_the_vm See this article.}
+     * @param allowDots True if we're mangling a qualified name with dots,
+     *   which should not be mangled.
+     * @param force True if should escape '\\' even if that is the
+     *   only disallowed character.  The may cause an already-mangled name
+     *   to be doubly mangled.
+     */
+    public static String mangleSymbolic(String name,
+                                        boolean allowDots, boolean force) {
+        StringBuilder sbuf = null;
+        int len = name.length();
+        if (len == 0)
+            return "\\=";
+        int dangerous = 0;
+        for (int i = 0; i < len; i++) {
+            char ch = name.charAt(i);
+            char ch2;
+            switch (ch) {
+            case '/':  ch2 = '|'; break;
+            case '.':  ch2 = allowDots ? 0 : ','; break;
+            case ';':  ch2 = '?'; break;
+            case '$':  ch2 = '%'; break;
+            case '<':  ch2 = '^'; break;
+            case '>':  ch2 = '_'; break;
+            case '[':  ch2 = '{'; break;
+            case ']':  ch2 = '}'; break;
+            case ':':  ch2 = '!'; break;
+            case '\\': ch2 = '-'; break;
+            default:   ch2 = 0;
+            }
+            if (ch2 != 0 && ch != '\\')
+                dangerous++; 
+            if (sbuf != null) {
+                if (ch2 == 0)
+                    sbuf.append(ch);
+                else
+                    sbuf.append('\\').append(ch2);
+            } else if (ch2 != 0) {
+                sbuf = new StringBuilder();
+                if (i != 0)
+                    sbuf.append("\\=");
+                sbuf.append(name, 0, i);
+                sbuf.append('\\').append(ch2);
+            }
+        }
+        return sbuf == null || (dangerous == 0 && ! force) ? name
+            : sbuf.toString();
+    }
+
+    public static String demangleSymbolic(String name) {
+        int len = name.length();
+        if (len < 2 || name.charAt(0) != '\\')
+            return name;
+        StringBuilder sbuf = new StringBuilder();
+        int i = name.charAt(1) == '=' ? 2 : 0;
+        while (i < len) {
+            char ch = name.charAt(i);
+            if (ch == '\\' && i+1 < len) {
+                char ch2 = name.charAt(i+1);
+                char ch1;
+                switch (ch2) {
+                case '|':  ch1 = '/'; break;
+                case ',':  ch1 = '.'; break;
+                case '?':  ch1 = ';'; break;
+                case '%':  ch1 = '$'; break;
+                case '^':  ch1 = '<'; break;
+                case '_':  ch1 = '>'; break;
+                case '{':  ch1 = '['; break;
+                case '}':  ch1 = ']'; break;
+                case '!':  ch1 = ':'; break;
+                case '-':  ch1 = '\\'; break;
+                default: ch1 = 0; break;
+                }
+                if (ch1 != 0)
+                    sbuf.append(ch1);
+                else
+                    sbuf.append('\\').append(ch2);
+                i += 2;
+            } else {
+                sbuf.append(ch);
+                i += 1;
+            }
+        }
+        return sbuf.toString();
+    }
 
   /** Convert a string to a safe Java identifier.
    * @param reversible if we should use an invertible mapping.
@@ -1005,7 +1106,7 @@ public class Compilation implements SourceLocator
    */
   public String generateClassName (String hint)
   {
-    hint = mangleName(hint, true);
+    hint = mangleClassName(hint);
     if (mainClass != null)
       hint = mainClass.getName() + '$' + hint;
     else if (classPrefix != null)
@@ -1828,7 +1929,7 @@ public class Compilation implements SourceLocator
             if (generateMainMethod() && mexp.staticInitRun()) {
                 error('e', "a static init-run module cannot have a 'main' method");
             }
-            setState(messages.seenErrors() ? ERROR_SEEN : RESOLVED);
+            setState(RESOLVED);
           }
 
         // Avoid writing class needlessly.
@@ -1849,7 +1950,7 @@ public class Compilation implements SourceLocator
                 dout.flush();
             }
             PushApply.pushApply(mexp, this);  
-            setState(messages.seenErrors() ? ERROR_SEEN : PRE_WALKED);
+            setState(PRE_WALKED);
           }
 
         if (wantedState >= WALKED && getState() < WALKED)
@@ -1868,7 +1969,7 @@ public class Compilation implements SourceLocator
             }
             ChainLambdas.chainLambdas(mexp, this);
             FindTailCalls.findTailCalls(mexp, this);
-            setState(messages.seenErrors() ? ERROR_SEEN : WALKED);
+            setState(WALKED);
           }
 
         if (wantedState >= COMPILE_SETUP && getState() < COMPILE_SETUP)
@@ -1878,8 +1979,10 @@ public class Compilation implements SourceLocator
             FindCapturedVars.findCapturedVars(mexp, this);
             mexp.allocFields(this);
             mexp.allocChildMethods(this);
-            setState(messages.seenErrors() ? ERROR_SEEN : COMPILE_SETUP);
+            setState(COMPILE_SETUP);
           }
+        if (wantedState >= COMPILED && messages.seenErrors())
+            setState(ERROR_SEEN);
         if (wantedState >= COMPILED && getState() < COMPILED)
           {
             if (mexp.subModulesOnly())
@@ -2301,6 +2404,10 @@ public class Compilation implements SourceLocator
   public void setModule(ModuleExp mexp) { mainLambda = mexp; }
 
   public boolean isStatic() { return mainLambda.isStatic(); }
+
+    public boolean isInteractive() {
+        return mainLambda != null && mainLambda.getFlag(ModuleExp.INTERACTIVE);
+    }
 
   /** The same as getModule, until we allow nested modules. */
   public ModuleExp currentModule() { return current_scope.currentModule(); }
