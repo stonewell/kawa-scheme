@@ -395,6 +395,7 @@ class GetNamedExp extends ApplyExp
 
   public String combinedName;
 
+  @Override
   public void apply (CallContext ctx) throws Throwable
   {
     if (combinedName != null)

@@ -212,18 +212,6 @@ implements Inlineable
             Values.writeValues(arg, out);
     }
 
-    public static Object applyToConsumer(Procedure proc, CallContext ctx) throws Throwable {
-        ((NodeConstructor) proc).apply(ctx);
-        return null;
-    }
-
-    public abstract void apply(CallContext ctx) throws Throwable;
-    static MethodHandle handle = Procedure.lookupApplyHandle(NodeConstructor.class,
-                                                              "applyToConsumer");
-    public NodeConstructor() {
-        super(true, handle);
-    }
-
   static final ClassType typeXMLFilter
     = ClassType.make("gnu.xml.XMLFilter");
   static final ClassType typeKNode

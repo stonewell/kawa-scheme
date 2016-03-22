@@ -376,7 +376,7 @@ public class CallContext // implements Runnable
   {
     if (next < count)
       throw new WrongArguments(null, count);
-    values = null;
+    //values = null;
   }
 
   public Object[] getArgs()

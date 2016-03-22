@@ -11,6 +11,9 @@ import gnu.math.IntNum;
 import gnu.kawa.functions.AddOp;
 import gnu.kawa.functions.NumberCompare;
 import gnu.kawa.functions.ValuesMap;
+/* #ifdef use:java.lang.invoke */
+import java.lang.invoke.*;
+/* #endif */
 
 public class ValuesFilter extends MethodProc implements Inlineable
 {
@@ -18,12 +21,15 @@ public class ValuesFilter extends MethodProc implements Inlineable
    * 'P' if following a PrimaryExpr. */
   char kind;
 
-  public ValuesFilter (char kind)
-  {
-    this.kind = kind;
-    setProperty(Procedure.validateApplyKey,
-                   "gnu.xquery.util.CompileMisc:validateApplyValuesFilter");
-  }
+    static final MethodHandle applyToConsumer =
+        Procedure.lookupApplyHandle(ValuesFilter.class, "applyToConsumer");
+
+    public ValuesFilter(char kind) {
+        this.kind = kind;
+        this.applyToConsumerMethod = applyToConsumer;
+        setProperty(Procedure.validateApplyKey,
+                    "gnu.xquery.util.CompileMisc:validateApplyValuesFilter");
+    }
 
   public static ValuesFilter get (char kind)
   {
@@ -61,10 +67,10 @@ public class ValuesFilter extends MethodProc implements Inlineable
     return BooleanValue.booleanValue(result);
   }
 
-  public void apply (CallContext ctx) throws Throwable
-  {
+    public static Object applyToConsumer(Procedure proc, CallContext ctx) throws Throwable {
+    char kind = ((ValuesFilter) proc).kind;
     Object arg = ctx.getNextArg();
-    Procedure proc = (Procedure) ctx.getNextArg();
+    Procedure filter = (Procedure) ctx.getNextArg();
     Consumer out = ctx.consumer;
     Values values;
     if (kind != 'P')
@@ -78,28 +84,28 @@ public class ValuesFilter extends MethodProc implements Inlineable
     else
       {
 	IntNum one = IntNum.one();
-	if (matches(proc.apply3(arg, one, one), 1))
+	if (matches(filter.apply3(arg, one, one), 1))
 	  out.writeObject(arg);
-	return;
+	return null;
       }
     int count = values.size();
     int it = 0;
     IntNum countObj = IntNum.make(count);
     // The filter procedures takes 3 arguments if last() is needed,
     // or 2 arguments if validateApply has determined we don't need last().
-    int pmax = proc.maxArgs();
+    int pmax = filter.maxArgs();
     for (int i = 0;  i < count;  i++)
       {
 	it = values.nextPos(it);
 	Object dot = values.getPosPrevious(it);
 	int pos = kind == 'R' ? (count - i) : (i + 1);
 	IntNum posObj = IntNum.make(pos);
-	Object pred_res = pmax == 2 ? proc.apply2(dot, posObj)
-          : proc.apply3(dot, posObj, countObj);
+	Object pred_res = pmax == 2 ? filter.apply2(dot, posObj)
+          : filter.apply3(dot, posObj, countObj);
 	if (matches(pred_res, pos))
 	  out.writeObject(dot);
       }
-    return;
+    return null;
   }
 
   public void compile (ApplyExp exp, Compilation comp, Target target)

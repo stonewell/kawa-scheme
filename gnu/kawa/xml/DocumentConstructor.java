@@ -10,11 +10,15 @@ import gnu.bytecode.*;
 
 public class DocumentConstructor extends NodeConstructor
 {
-  public static final DocumentConstructor documentConstructor
-    = new DocumentConstructor();
+    public static final DocumentConstructor documentConstructor
+        = new DocumentConstructor();
 
-  public void apply (CallContext ctx)
-  {
+    private DocumentConstructor() {
+        applyToConsumerMethod =
+            Procedure.lookupApplyHandle(DocumentConstructor.class, "applyToConsumer");
+   }
+
+    public static Object applyToConsumer(Procedure proc, CallContext ctx) throws Throwable {
     Consumer saved = ctx.consumer;
     Consumer out = pushNodeContext(ctx);
     try
@@ -37,6 +41,7 @@ public class DocumentConstructor extends NodeConstructor
       {
 	popNodeContext(saved, ctx);
       }
+    return null;
   }
 
   public void compileToNode (ApplyExp exp, Compilation comp,

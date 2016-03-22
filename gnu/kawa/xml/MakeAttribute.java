@@ -6,13 +6,22 @@ import gnu.lists.*;
 import gnu.mapping.*;
 import gnu.expr.*;
 import gnu.bytecode.*;
+/* #ifdef use:java.lang.invoke */
+import java.lang.invoke.*;
+/* #endif */
 
 public class MakeAttribute extends NodeConstructor
 {
+    static final MethodHandle applyToConsumer =
+        Procedure.lookupApplyHandle(MakeAttribute.class, "applyToConsumer");
   public static final MakeAttribute makeAttribute = new MakeAttribute();
   public static final MakeAttribute makeAttributeS = new MakeAttribute();
     static { makeAttributeS.setStringIsText(true); }
   public static final QuoteExp makeAttributeExp = new QuoteExp(makeAttribute);
+
+    private MakeAttribute() {
+        this.applyToConsumerMethod = applyToConsumer;
+    }
 
   public int numArgs() { return 0xFFFFF001; }
 
@@ -21,8 +30,8 @@ public class MakeAttribute extends NodeConstructor
     out.startAttribute(type);
   }
 
-  public void apply (CallContext ctx)
-  {
+    public static Object applyToConsumer(Procedure proc, CallContext ctx) throws Throwable {
+    boolean stringIsText = ((MakeAttribute) proc).stringIsText;
     Consumer saved = ctx.consumer;
     Consumer out = pushNodeContext(ctx);
     try
@@ -46,6 +55,7 @@ public class MakeAttribute extends NodeConstructor
       {
 	popNodeContext(saved, ctx);
       }
+    return null;
   }
 
   public void compileToNode (ApplyExp exp, Compilation comp,

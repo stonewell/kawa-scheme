@@ -12,6 +12,11 @@ public class MakeText extends NodeConstructor
 {
   public static final MakeText makeText = new MakeText();
 
+    private MakeText() {
+        applyToConsumerMethod =
+            Procedure.lookupApplyHandle(MakeText.class, "applyToConsumer");
+    }
+
   public int numArgs() { return 0x1001; }
 
   public Object apply1 (Object arg)
@@ -39,10 +44,10 @@ public class MakeText extends NodeConstructor
       }
   }
 
-  public void apply (CallContext ctx)
-  {
-    text$X(ctx.getNextArg(null), ctx);
-  }
+    public static Object applyToConsumer(Procedure proc, CallContext ctx) throws Throwable {
+        text$X(ctx.getNextArg(null), ctx);
+        return null;
+    }
 
   public void compile (ApplyExp exp, Compilation comp, Target target)
   {

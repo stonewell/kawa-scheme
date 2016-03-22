@@ -406,6 +406,7 @@ check-ok-for-invoke:
 	  check-interpreted-cycle check-interpreted-cycleb check-interpreted-cyclebr \
 	  check-jmc check-use-slots check-load-require check-sva31180 \
 	  check-bridge check-life-grid check-larceny-tests check-numbers-clisp
+	cd gnu/xquery/testsuite && make check
 
 # TODO in check1: check-lib check-system
 # TODO in check2: check-misc check-mac

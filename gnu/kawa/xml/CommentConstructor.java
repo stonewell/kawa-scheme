@@ -11,10 +11,15 @@ public class CommentConstructor extends MethodProc // NodeConstructor
   public static final CommentConstructor commentConstructor
     = new CommentConstructor();
 
-  public int numArgs() { return 0x1001; }
+     private CommentConstructor() {
+        applyToConsumerMethod =
+            Procedure.lookupApplyHandle(CommentConstructor.class,
+                                        "applyToConsumer");
+    }
 
-  public void apply (CallContext ctx)
-  {
+    public int numArgs() { return 0x1001; }
+
+    public static Object applyToConsumer(Procedure proc, CallContext ctx) throws Throwable {
     Consumer saved = ctx.consumer;
     XConsumer out = NodeConstructor.pushNodeContext(ctx);
     try
@@ -55,5 +60,6 @@ public class CommentConstructor extends MethodProc // NodeConstructor
       {
 	NodeConstructor.popNodeContext(saved, ctx);
       }
+    return null;
   }
 }

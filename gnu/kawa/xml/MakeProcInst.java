@@ -13,7 +13,12 @@ public class MakeProcInst extends NodeConstructor
   public static final MakeProcInst makeProcInst
     = new MakeProcInst();
 
-  public int numArgs() { return 0x2002; }
+    private MakeProcInst() {
+        applyToConsumerMethod =
+            Procedure.lookupApplyHandle(MakeProcInst.class, "applyToConsumer");
+    }
+
+    public int numArgs() { return 0x2002; }
 
   public static void procInst$C (Object target, Object content, Consumer out)
   {
@@ -61,10 +66,10 @@ public class MakeProcInst extends NodeConstructor
       }
   }
 
-  public void apply (CallContext ctx)
-  {
-    procInst$X(ctx.getNextArg(null), ctx.getNextArg(null), ctx);
-  }
+    public static Object applyToConsumer(Procedure proc, CallContext ctx) throws Throwable {
+        procInst$X(ctx.getNextArg(null), ctx.getNextArg(null), ctx);
+        return null;
+    }
 
   public void compileToNode (ApplyExp exp, Compilation comp,
 				      ConsumerTarget target)

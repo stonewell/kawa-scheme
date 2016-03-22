@@ -15,7 +15,7 @@ class ArgListImpl implements ArgList, ArgListBuilder {
     public long lvalue1;
     public long lvalue2;
     */
-    protected Object[] values = new Object[8];
+    Object[] values = new Object[8];
     protected int count;
 
     public void printArgs() {
@@ -72,11 +72,9 @@ class ArgListImpl implements ArgList, ArgListBuilder {
     void resetArgCount(int size) {
         if (count > values.length) throw new Error("bad count:"+count+" vlen:"+values.length);
         int len = values.length;
-        if (len < size) {
+        if (len < size || len > size + 64) {
             int nsize = size > 32 ? size : 2 * size;
             values = new Object[nsize];
-        } else if (len > size + 64) {
-            values = null;
         } else {
             for (int i = size; i < count; i++)
                 values[i] = null;

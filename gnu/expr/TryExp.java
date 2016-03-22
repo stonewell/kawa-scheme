@@ -43,6 +43,7 @@ public class TryExp extends Expression
 
   protected boolean mustCompile () { return false; }
 
+  @Override
   public void apply (CallContext ctx) throws Throwable
   {
     try

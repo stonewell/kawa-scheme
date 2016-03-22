@@ -15,18 +15,21 @@ public class ListItems extends MethodProc
 {
   public static ListItems listItems = new ListItems();
 
-  public void apply (CallContext ctx)
-  {
+    private ListItems() {
+        applyToConsumerMethod =
+            Procedure.lookupApplyHandle(ListItems.class, "applyToConsumer");
+    }
+
+    public static Object applyToConsumer(Procedure proc, CallContext ctx) throws Throwable {
     Consumer out = ctx.consumer;
     Object arg = ctx.getNextArg();
     ctx.lastArg();
 
-    /* #ifdef JAVA2 */
     List list = (List) arg;
     if (arg instanceof AbstractSequence)
       {
 	((AbstractSequence) arg).consumePosRange(0, -1, out);
-	return;
+	return null;
       }
     Iterator iter = list.iterator();
     while (iter.hasNext())
@@ -34,9 +37,6 @@ public class ListItems extends MethodProc
 	Object val = iter.next();
 	Values.writeValues(val, out);
       }
-    /* #endif */
-    /* #ifndef JAVA2 */
-    // ((AbstractSequence) arg).consumePosRange(0, -1, out);
-    /* #endif */
+    return null;
   }
 }

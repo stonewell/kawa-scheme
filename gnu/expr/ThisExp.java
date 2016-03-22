@@ -25,6 +25,7 @@ public class ThisExp extends ReferenceExp
     return (flags & EVAL_TO_CONTEXT) != 0;
   }
 
+  @Override
   public void apply (CallContext ctx)
     throws Throwable
   {

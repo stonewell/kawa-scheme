@@ -111,6 +111,7 @@ public class QuoteExp extends Expression
   
   protected boolean mustCompile () { return false; }
 
+  @Override
   public void apply (CallContext ctx)
   {
     ctx.writeValue(value);

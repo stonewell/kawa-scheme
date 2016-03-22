@@ -1654,6 +1654,7 @@ public class LambdaExp extends ScopeExp {
         return false;
     }
 
+    @Override
     public void apply(CallContext ctx) throws Throwable {
         // It would be better to call setIndexes at compile-time, but that
         // doesn't work if we're called as a syntax expander at rewrite time.

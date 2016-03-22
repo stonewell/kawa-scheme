@@ -12,8 +12,11 @@ import java.lang.invoke.*;
 
 public abstract class Procedure1or2 extends Procedure {
 
+    public static final MethodHandle applyToObject =
+        Procedure.lookupApplyHandle(Procedure1or2.class, "applyToObject");
+
     public Procedure1or2() {
-        super(false, Procedure0or1.applyToObject);
+        super(false, Procedure1or2.applyToObject);
     }
 
     public Procedure1or2(String name) {
@@ -63,15 +66,5 @@ public abstract class Procedure1or2 extends Procedure {
                 return proc.apply2(arg0, arg1);
         }
         return ctx;
-    }
-
-    public static final MethodHandle applyToObject;
-    static {
-        try {
-            applyToObject = MethodHandles.lookup()
-                .findStatic(Procedure0or1.class, "applyToObject", applyMethodType);
-        } catch (Exception ex) {
-            throw new RuntimeException(ex);
-        }
     }
 }

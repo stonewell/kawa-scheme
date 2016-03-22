@@ -5,6 +5,9 @@ package gnu.kawa.xml;
 import gnu.lists.*;
 import gnu.mapping.*;
 import java.io.*;
+/* #ifdef use:java.lang.invoke */
+import java.lang.invoke.*;
+/* #endif */
 
 /** Abstract class that scans part of a node tree.
  * Takes a node argument, and writes matching "relative" nodes
@@ -17,11 +20,14 @@ import java.io.*;
 public abstract class TreeScanner extends MethodProc
   implements Externalizable
 {
-  TreeScanner ()
-  {
-    setProperty(Procedure.validateApplyKey,
-                "gnu.kawa.xml.CompileXmlFunctions:validateApplyTreeScanner");
-  }
+    public static final MethodHandle applyToConsumerTS =
+        Procedure.lookupApplyHandle(TreeScanner.class, "applyToConsumerTS");
+
+    TreeScanner() {
+        applyToConsumerMethod = applyToConsumerTS;
+        setProperty(Procedure.validateApplyKey,
+                    "gnu.kawa.xml.CompileXmlFunctions:validateApplyTreeScanner");
+    }
 
   public NodePredicate type;
 
@@ -32,22 +38,22 @@ public abstract class TreeScanner extends MethodProc
 
   public int numArgs() { return 0x1001; }
 
-  public void apply (CallContext ctx)  throws Throwable
-  {
-    PositionConsumer out = (PositionConsumer) ctx.consumer;
-    Object node = ctx.getNextArg();
-    ctx.lastArg();
-    KNode spos;
-    try
-      {
-        spos = (KNode) node;
-      }
-    catch (ClassCastException ex)
-      {
-        throw new WrongType(getDesc(), WrongType.ARG_CAST, node, "node()");
-      }
-    scan(spos.sequence, spos.getPos(), out);
-  }
+    //public void apply (CallContext ctx)  throws Throwable
+    public static Object applyToConsumerTS(Procedure proc, CallContext ctx) throws Throwable {
+        TreeScanner tproc = (TreeScanner) proc;
+        PositionConsumer out = (PositionConsumer) ctx.consumer;
+        Object node = ctx.getNextArg();
+        ctx.lastArg();
+        KNode spos;
+        try {
+            spos = (KNode) node;
+        } catch (ClassCastException ex) {
+            throw new WrongType(tproc.getDesc(), WrongType.ARG_CAST,
+                                node, "node()");
+        }
+        tproc.scan(spos.sequence, spos.getPos(), out);
+        return null;
+    }
 
   public void writeExternal(ObjectOutput out) throws IOException
   {

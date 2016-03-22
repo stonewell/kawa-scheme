@@ -7,12 +7,21 @@ import gnu.mapping.*;
 import gnu.bytecode.*;
 import gnu.expr.*;
 import gnu.xml.*;
+/* #ifdef use:java.lang.invoke */
+import java.lang.invoke.*;
+/* #endif */
 
 public class MakeElement extends NodeConstructor {
+    static final MethodHandle applyToConsumer =
+        Procedure.lookupApplyHandle(MakeElement.class, "applyToConsumer");
     public static final MakeElement makeElementS = new MakeElement();
     static { makeElementS.setStringIsText(true); }
 
-  public int numArgs() { return tag == null ? 0xFFFFF001 : 0xFFFFF000; }
+    public MakeElement() {
+        this.applyToConsumerMethod = applyToConsumer;
+    }
+
+    public int numArgs() { return tag == null ? 0xFFFFF001 : 0xFFFFF000; }
 
   /** Optional tag.  If non-null, the element tag is this value,
    * rather than the first parameter. */
@@ -87,29 +96,30 @@ public class MakeElement extends NodeConstructor {
     out.endElement();
   }
 
-  public void apply (CallContext ctx)
-  {
+    public static Object applyToConsumer(Procedure proc, CallContext ctx) throws Throwable {
     Consumer saved = ctx.consumer;
+    MakeElement mk = (MakeElement) proc;
+    Symbol tag = mk.tag;
     Consumer out = pushNodeContext(ctx);
     try
       {
         Symbol type = tag != null ? tag : (Symbol) ctx.getNextArg();
-	if (namespaceNodes != null)
-	  startElement(out, type, copyNamespacesMode, namespaceNodes);
+	if (mk.namespaceNodes != null)
+	  startElement(out, type, mk.copyNamespacesMode, mk.namespaceNodes);
 	else
-	  startElement(out, type, copyNamespacesMode);
+	  startElement(out, type, mk.copyNamespacesMode);
 	Object endMarker = Special.dfault;
 	for (;;)
 	  {
 	    Object arg = ctx.getNextArg(endMarker);
 	    if (arg == endMarker)
 	      break;
-            if (stringIsText)
+            if (mk.stringIsText)
                 writeContentS(arg, out);
             else
                 writeContent(arg, out);
             // Handling Keyword values is actually done by the Consumer.
-            if (isHandlingKeywordParameters())
+            if (mk.isHandlingKeywordParameters())
               out.endAttribute();
 	  }
 	endElement(out, type);
@@ -118,6 +128,7 @@ public class MakeElement extends NodeConstructor {
       {
 	popNodeContext(saved, ctx);
       }
+    return null;
   }
 
   public void compileToNode (ApplyExp exp, Compilation comp,

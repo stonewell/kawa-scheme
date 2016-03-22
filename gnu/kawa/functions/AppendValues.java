@@ -7,32 +7,36 @@ import gnu.mapping.*;
 import gnu.bytecode.*;
 import gnu.expr.*;
 import gnu.kawa.reflect.OccurrenceType;
+/* #ifdef use:java.lang.invoke */
+import java.lang.invoke.*;
+/* #endif */
 
 public class AppendValues extends MethodProc implements Inlineable
 {
-  public static final AppendValues appendValues = new AppendValues();
+    public static final MethodHandle applyToConsumerAV =
+        Procedure.lookupApplyHandle(AppendValues.class, "applyToConsumerAV");
+     public static final AppendValues appendValues = new AppendValues();
 
-  public AppendValues ()
-  {
-    super();
-    setProperty(Procedure.validateApplyKey,
-                   "gnu.kawa.functions.CompileMisc:validateApplyAppendValues");
-  }
+    public AppendValues() {
+        super();
+        applyToConsumerMethod = applyToConsumerAV;
+        setProperty(Procedure.validateApplyKey,
+                    "gnu.kawa.functions.CompileMisc:validateApplyAppendValues");
+    }
 
-  public void apply (CallContext ctx)
-  {
-    Object endMarker = Special.dfault;
-    for (;;)
-      {
-	Object arg = ctx.getNextArg(endMarker);
-	if (arg == endMarker)
-	  break;
-	if (arg instanceof Consumable)
-	  ((Consumable) arg).consume(ctx.consumer);
-	else
-	  ctx.writeValue(arg);
-      }
-  }
+    public static Object applyToConsumerAV(Procedure proc, CallContext ctx) throws Throwable {
+        Object endMarker = Special.dfault;
+        for (;;) {
+            Object arg = ctx.getNextArg(endMarker);
+            if (arg == endMarker)
+                break;
+            if (arg instanceof Consumable)
+                ((Consumable) arg).consume(ctx.consumer);
+            else
+                ctx.writeValue(arg);
+        }
+        return null;
+    }
 
     public void compile(ApplyExp exp, Compilation comp, Target target) {
         Expression[] args = exp.getArgs();

@@ -25,18 +25,12 @@ public class Continuation extends MethodProc
         lookupApplyHandle(Continuation.class, "applyMethodCont");
 
     public static Object applyMethodCont(Procedure proc, CallContext ctx) throws Throwable {
-        ((Continuation) proc).apply(ctx);
-        return null;
+        Continuation cont = (Continuation) proc;
+        if (cont.invoked)
+            throw new GenericError
+                ("implementation restriction: continuation can only be used once");
+        throw new CalledContinuation (ctx.getRestArgsArray(), cont, ctx);
     }
-
-    
-  public void apply (CallContext ctx)
-  {
-    if (invoked)
-      throw new GenericError
-	("implementation restriction: continuation can only be used once");
-    throw new CalledContinuation (ctx.getRestArgsArray(), this, ctx);
-  }
 
   public static void handleException$X (Throwable ex, Continuation cont,
                                         CallContext ctx)
