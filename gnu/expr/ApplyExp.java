@@ -307,6 +307,7 @@ public class ApplyExp extends Expression
 		|| (conv == Compilation.CALL_WITH_TAILCALLS
 		    && ! exp.isTailCall()))
 	    && (method = func_lambda.getMethod(nonSpliceCount, spliceCount)) != null
+            && ! func_lambda.getFlag(LambdaExp.HAS_NONTRIVIAL_PATTERN)
             && (exp.firstSpliceArg < 0
                 || (PrimProcedure.takesVarArgs(method)
                     && func_lambda.min_args <= exp.firstSpliceArg)))

@@ -40,6 +40,7 @@ public class PrimProcedure extends MethodProc {
      * '\0' means don't expect a target. */
     private char mode;
     private boolean sideEffectFree;
+
     /** Do we needs to zero-truncate the returned result?
      * A Kawa-compiled function will do so before loading the value
      * on the stack (and hence before returning), but post-return
@@ -510,7 +511,6 @@ public class PrimProcedure extends MethodProc {
       arg_count--;
     int nargs = args.length - startArg;
     boolean is_static = thisType == null || skipArg != 0;
-
     // Do we need to check at runtime whether a final argument to a VARARGS
     // is an array or need to be wrapped in an array?
     // See comment at explicitArrayAsVarArgsAllowed.
@@ -539,7 +539,8 @@ public class PrimProcedure extends MethodProc {
       {
         if (variable && i == fix_arg_count)
           {
-            arg_type = argTypes[arg_count-1+skipArg];
+            arg_type = argDecl != null ? argDecl.getType()
+              : argTypes[arg_count-1+skipArg];
             boolean argTypeIsList = arg_type == Compilation.scmListType || arg_type == LangObjType.listType;
 	    if (argTypeIsList) {
                 if (exp.firstSpliceArg < 0)  {

@@ -14,7 +14,7 @@ public class BindingInitializer extends Initializer
                              Compilation comp)
   {
     BindingInitializer init = new BindingInitializer(decl, value);
-    if (decl.field != null ? decl.field.getStaticFlag() : decl.isStatic())
+    if (decl.getField() != null ? decl.getField().getStaticFlag() : decl.isStatic())
       {
         init.next = comp.clinitChain;
         comp.clinitChain = init;
@@ -31,7 +31,7 @@ public class BindingInitializer extends Initializer
   {
     this.decl = decl;
     this.value = value;
-    this.field = decl.field;
+    this.field = decl.getField();
   }
 
   public void emit(Compilation comp)

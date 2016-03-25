@@ -951,7 +951,7 @@ public class Translator extends Compilation
                 // A special kludge to deal with the overloading between the
                 // object macro and object as being equivalent to java.lang.Object.
                 // A cleaner solution would be to use an identifier macro.
-                Field dfield = decl.field;
+                Field dfield = decl.getField();
                 if (! function && dfield != null
                     && isObjectSyntax(dfield.getDeclaringClass(),
                                       dfield.getName()))

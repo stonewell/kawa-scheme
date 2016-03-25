@@ -299,7 +299,7 @@ public class ModuleExp extends LambdaExp
                         Object dname = decl.getSymbol();
                         if (decl.isPrivate() || dname == null)
                             continue;
-                        Field fld = decl.field;
+                        Field fld = decl.getField();
                         Symbol sym = dname instanceof Symbol ? (Symbol) dname
                             : Symbol.make("", dname.toString().intern());
                         Object property = language.getEnvPropertyFor(decl);
@@ -308,13 +308,13 @@ public class ModuleExp extends LambdaExp
                         // the environment, and just require lexical lookup.
                         // However, various parts of the code makes use of
                         // the environment.
-                        if ((decl.field.getModifiers() & Access.FINAL) != 0) {
+                        if ((decl.getField().getModifiers() & Access.FINAL) != 0) {
                             Object value;
                             if (dvalue instanceof QuoteExp
                                 && dvalue != QuoteExp.undefined_exp)
                                 value = ((QuoteExp) dvalue).getValue();
                             else {
-                                value = decl.field.getReflectField().get(null);
+                                value = decl.getField().getReflectField().get(null);
                                 if (! decl.isIndirectBinding())
                                     decl.setValue(QuoteExp.getInstance(value));
                                 else if (! decl.isAlias() || ! (dvalue instanceof ReferenceExp))
@@ -398,7 +398,7 @@ public class ModuleExp extends LambdaExp
         // executed at init time.
         for (Declaration decl = firstDecl();
              decl != null;  decl = decl.nextDecl()) {
-            if ((decl.isSimple() && ! decl.isPublic()) || decl.field != null)
+            if ((decl.isSimple() && ! decl.isPublic()) || decl.getField() != null)
                 continue;
             if (decl.getFlag(Declaration.IS_UNKNOWN)
                 // We might have an unrefered unknown if the reference gets
@@ -408,7 +408,7 @@ public class ModuleExp extends LambdaExp
         }
         for (Declaration decl = firstDecl();
              decl != null;  decl = decl.nextDecl()) {
-            if (decl.field != null)
+            if (decl.getField() != null)
                 continue;
             Expression value = decl.getValue();
             if (((decl.isSimple() && decl.isModuleLocal()))

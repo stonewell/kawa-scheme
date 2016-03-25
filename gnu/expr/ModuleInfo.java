@@ -157,7 +157,7 @@ public class ModuleInfo {
             if (moduleClass != null) {
                 for (Declaration decl = mod.firstDecl();
                      decl != null;  decl = decl.nextDecl()) {
-                    Field fld = decl.field;
+                    Field fld = decl.getField();
                     if (fld == null
                         || decl.isIndirectBinding()
                         || (fld.getFlags() & Access.STATIC) == 0

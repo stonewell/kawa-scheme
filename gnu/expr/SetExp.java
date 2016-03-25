@@ -174,7 +174,8 @@ public class SetExp extends AccessExp
 	&& isDefining() && ! decl.ignorable())
       {
         if (decl.shouldEarlyInit()
-            && decl.field != null && ! decl.field.hasConstantValueAttr()) 
+            && decl.getField() != null
+            && ! decl.getField().hasConstantValueAttr()) 
           BindingInitializer.create(decl, new_value, comp);
         if (needValue)
           {
@@ -283,7 +284,7 @@ public class SetExp extends AccessExp
 	  }
         else
 	  {
-	    Field field = decl.field;
+	    Field field = decl.getField();
             boolean isStatic = field != null && field.getStaticFlag();
             Method setter;
             if (field == null)

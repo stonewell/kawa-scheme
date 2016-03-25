@@ -352,7 +352,7 @@ public class InlineCalls extends ExpExpVisitor<Type> {
             if (type != null && type.isVoid())
                 return QuoteExp.voidExp;
         }
-        if (decl != null && decl.field == null && ! decl.getCanWrite()
+        if (decl != null && decl.getField() == null && ! decl.getCanWrite()
             && ! exp.getDontDereference()) {
             Expression dval = decl.getValue();
             if (dval instanceof QuoteExp && dval != QuoteExp.undefined_exp)

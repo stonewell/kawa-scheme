@@ -171,7 +171,8 @@ public class LambdaExp extends ScopeExp {
     public static final int PUBLIC_METHOD = 0x4000;
     public static final int ALLOW_OTHER_KEYWORDS = 0x8000;
 
-    protected static final int NEXT_AVAIL_FLAG = 0x10000;
+    protected static final int HAS_NONTRIVIAL_PATTERN = 0x10000;
+    protected static final int NEXT_AVAIL_FLAG = 0x20000;
 
     /** True iff this lambda is only "called" inline. */
     public final boolean getInlineOnly() { return (flags & INLINE_ONLY) != 0; }
@@ -642,9 +643,9 @@ public class LambdaExp extends ScopeExp {
     }
 
     Field allocFieldFor(Compilation comp) {
-        if (nameDecl != null && nameDecl.field != null
+        if (nameDecl != null && nameDecl.getField() != null
             && nameDecl.getValueRaw() == this)
-            return nameDecl.field;
+            return nameDecl.getField();
         boolean needsClosure = getNeedsClosureEnv();
         ClassType frameType = needsClosure ? getOwningLambda().getHeapFrameType()
             : comp.mainClass;
@@ -683,7 +684,7 @@ public class LambdaExp extends ScopeExp {
         Field field =
             frameType.addField(fname, Compilation.typeCompiledProc, fflags);
         if (nameDecl != null)
-            nameDecl.field = field;
+            nameDecl.setField(field);
         return field;
     }
 
@@ -881,15 +882,8 @@ public class LambdaExp extends ScopeExp {
         int numStubs =
             ((flags & DEFAULT_CAPTURES_ARG) != 0) ? 0 : opt_args;
         // check for complications
-        if (key_args > 0) { simpleMatch = false; numStubs = 0; } // For simplicity - FIXME?
-        for (Declaration decl = firstDecl();
-             decl != null;  decl = decl.nextDecl()) {
-            if (decl.getFlag(Declaration.IS_SUPPLIED_PARAMETER|Declaration.SKIP_FOR_METHOD_PARAMETER|Declaration.PATTERN_NESTED)) {
-                numStubs = 0;
-                simpleMatch = false;
-                break;
-            }
-        }
+        if (key_args > 0
+            || getFlag(HAS_NONTRIVIAL_PATTERN)) { simpleMatch = false; numStubs = 0; } // For simplicity - FIXME?
         boolean varArgs = max_args < 0 || min_args + numStubs < max_args;
 
         Method[] methods = new Method[numStubs + 1];
@@ -1361,7 +1355,7 @@ public class LambdaExp extends ScopeExp {
                 : (ClassType) heapFrame.getType();
             for (Declaration decl = capturedVars; decl != null;
                  decl = decl.nextCapturedVar) {
-                if (decl.field != null)
+                if (decl.getField() != null)
                     continue;
                 decl.makeField(frameType, comp, null);
             }
@@ -1437,7 +1431,7 @@ public class LambdaExp extends ScopeExp {
                     code.emitStore(var);
                 }
                 else
-                    code.emitPutField(param.field);
+                    code.emitPutField(param.getField());
             }
         }
         comp.callContextVar = callContextSave;
@@ -1677,7 +1671,7 @@ public class LambdaExp extends ScopeExp {
     public Expression validateApply(ApplyExp exp, InlineCalls visitor,
                                     Type required, Declaration decl) {
         Expression[] args = exp.getArgs();
-        if (exp.firstSpliceArg >= 0) {
+        if (! exp.isSimple()) {
             // We might be unable to inline this function. If we need to
             // call it using apply, it needs to be readable.
             // FIXME better to use pattern-matching:
@@ -1685,8 +1679,10 @@ public class LambdaExp extends ScopeExp {
             // Translate: (fun x @y z) to:
             // (let (([t1 t2 t3 t4] [x @y z])) (fun t1 t2 t3 t4])
             setCanRead(true);
-            if (nameDecl != null)
+            if (nameDecl != null) {
                 nameDecl.setCanRead(true);
+                nameDecl.setSimple(false);
+            }
         }
         if ((flags & ATTEMPT_INLINE) != 0) {
             Expression inlined = InlineCalls.inlineCall(this, args, true);
@@ -1703,7 +1699,6 @@ public class LambdaExp extends ScopeExp {
                                                   max_args,
                                                   nonSpliceNonKeyCount);
         if (msg != null) {
-            System.err.println("error-call "+this+" acount:"+nonSpliceCount);
             return visitor.noteError(msg);
         }
         int conv = getCallConvention();

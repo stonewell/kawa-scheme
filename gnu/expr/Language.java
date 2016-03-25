@@ -1136,7 +1136,7 @@ public abstract class Language
         }
         if (isStatic)
             fdecl.setFlag(Declaration.STATIC_SPECIFIED);
-        fdecl.field = fld; 
+        fdecl.setField(fld); 
         if (isFinal && ! isAlias) // FIXME? ok for location?
             fdecl.setFlag(Declaration.IS_CONSTANT);
         if (isImportedInstance)

@@ -254,7 +254,7 @@ public class Declaration
    * If IS_FLUID, base points to IS_UNKNOWN Symbol. */
   public Declaration base;
 
-    public Field field;
+    private Field field;
     public Method getterMethod;
     public Method setterMethod;
 
@@ -306,12 +306,12 @@ public class Declaration
     Type rtype = dontDeref ? Compilation.typeLocation : getType();
     if (! isIndirectBinding() && dontDeref)
       {
-        if (field == null)
+        if (getField() == null)
           throw new Error("internal error: cannot take location of "+this);
         Method meth;
         ClassType ltype;
         boolean immediate = comp.immediate;
-        if (field.getStaticFlag())
+        if (getField().getStaticFlag())
           {
             ltype = Compilation.typeStaticFieldLocation;
             meth = ltype.getDeclaredMethod("make", immediate ? 1 : 2);
@@ -327,8 +327,8 @@ public class Declaration
           comp.compileConstant(this);
         else
           {
-            comp.compileConstant(field.getDeclaringClass().getName());
-            comp.compileConstant(field.getName());
+            comp.compileConstant(getField().getDeclaringClass().getName());
+            comp.compileConstant(getField().getName());
           }
         code.emitInvokeStatic(meth);
         rtype = ltype;
@@ -357,17 +357,17 @@ public class Declaration
           {
             comp.loadClassRef(((LambdaExp) value).getCompiledClassType(comp));
           }
-        else if (field != null)
+        else if (getField() != null)
           {
-            comp.usedClass(field.getDeclaringClass());
-            comp.usedClass(field.getType());
+            comp.usedClass(getField().getDeclaringClass());
+            comp.usedClass(getField().getType());
             if (! field.getStaticFlag())
               {
                 loadOwningObject(owner, comp);
-                code.emitGetField(field);
+                code.emitGetField(getField());
               }
             else
-              code.emitGetStatic(field);
+              code.emitGetStatic(getField());
             code.fixUnsigned(getType());
           }
         else if (isClassField())
@@ -485,10 +485,10 @@ public class Declaration
           {
             loadOwningObject(null, comp);
             code.emitSwap();
-	    code.emitPutField(field);
+	    code.emitPutField(getField());
           }
 	else
-	  code.emitPutStatic(field);
+	  code.emitPutStatic(getField());
       }
   }
 
@@ -566,7 +566,7 @@ public class Declaration
   {
     return base == null
         && ((isClassField() && ! isStatic())
-            || (field != null && ! field.getStaticFlag()));
+            || (getField() != null && ! field.getStaticFlag()));
   }
 
   /** True if this is a field or method in a class definition. */
@@ -833,8 +833,8 @@ public class Declaration
 
   public boolean isStatic()
   {
-    if (field != null)
-      return field.getStaticFlag();
+    if (getField() != null)
+      return getField().getStaticFlag();
     if (getFlag(STATIC_SPECIFIED)
         || isCompiletimeConstant())
       return true;
@@ -1272,13 +1272,13 @@ public class Declaration
         int counter = 0;
         while (frameType.getDeclaredField(fname) != null)
           fname = fname.substring(0, nlength) + '$' + (++ counter);
-        field = frameType.addField (fname, ftype, fflags);
+            setField(frameType.addField (fname, ftype, fflags));
         if (getAnnotation(kawa.SourceType.class) == null) {
             String encType = comp.getLanguage().encodeType(getType());
             if (encType != null && encType.length() > 0) {
                 AnnotationEntry ae = new AnnotationEntry(ClassType.make("kawa.SourceType"));
                 ae.addMember("value", encType, Type.javalangStringType);
-                RuntimeAnnotationsAttr.maybeAddAnnotation(field, ae);
+                RuntimeAnnotationsAttr.maybeAddAnnotation(getField(), ae);
             }
         }
         if (haveName)
@@ -1313,25 +1313,25 @@ public class Declaration
                   ae.addMember("uri", uri, Type.javalangStringType);
                 if (havePrefix)
                   ae.addMember("prefix", prefix, Type.javalangStringType);
-                RuntimeAnnotationsAttr.maybeAddAnnotation(field, ae);
+                RuntimeAnnotationsAttr.maybeAddAnnotation(getField(), ae);
               }
           }
         if (value instanceof QuoteExp)
           {
             Object val = ((QuoteExp) value).getValue();
-            if (field.getStaticFlag()
+            if (getField().getStaticFlag()
                   && val.getClass().getName().equals(ftype.getName()))
               {
                 Literal literal = comp.litTable.findLiteral(val);
                 if (literal.field == null)
-                  literal.assign(field, comp.litTable);
+                  literal.assign(getField(), comp.litTable);
               }
             else if (ftype instanceof PrimType
                      || "java.lang.String".equals(ftype.getName()))
               {
                 if (val instanceof gnu.text.Char)
                   val = gnu.math.IntNum.make(((gnu.text.Char) val).intValue());
-                field.setConstantValue(val, frameType);
+                    getField().setConstantValue(val, frameType);
                 return;
               }
           }
@@ -1485,15 +1485,15 @@ public class Declaration
   {
     if (nvalues == 0)
       {
-        if (field != null
-            && field.getDeclaringClass().isExisting()
-            && ((field.getModifiers() & Access.STATIC+Access.FINAL)
+        if (getField() != null
+            && getField().getDeclaringClass().isExisting()
+            && ((getField().getModifiers() & Access.STATIC+Access.FINAL)
                 == Access.STATIC+Access.FINAL)
             && ! isIndirectBinding())
           {
             try
               {
-                Expression value = new QuoteExp(field.getReflectField().get(null));
+                Expression value = new QuoteExp(getField().getReflectField().get(null));
                 noteValue(value);
                 return value;
               }
@@ -1639,6 +1639,9 @@ public class Declaration
         if (value instanceof LambdaExp)
             ((LambdaExp) value).nameDecl = nvalues == 0 ? this : null;
     }
+
+    public Field getField() { return field; }
+    public void setField(Field field) { this.field = field; }
 
   public static class ValueSource
   {

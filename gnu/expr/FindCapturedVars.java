@@ -245,6 +245,8 @@ public class FindCapturedVars extends ExpExpVisitor<Void>
 
   protected Expression visitLambdaExp (LambdaExp exp, Void ignored)
   {
+    if (exp.getFlag(LambdaExp.HAS_NONTRIVIAL_PATTERN) && exp.nameDecl != null)
+      exp.nameDecl.setSimple(false);
     if (exp.getInlineOnly())
         backJumpPossible++;
     return super.visitLambdaExp(exp, ignored);
@@ -269,7 +271,7 @@ public class FindCapturedVars extends ExpExpVisitor<Void>
   {
     if (! decl.getCanReadOrCall())
       return;
-    if (decl.field != null && decl.field.getStaticFlag())
+    if (decl.getField() != null && decl.getField().getStaticFlag())
       return;
     // This catches the "(module-instance)" dummy context variable
     // created in Translator.rewrite.

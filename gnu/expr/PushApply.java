@@ -263,6 +263,13 @@ public class PushApply extends ExpVisitor<Expression,Void>
   }
 
     protected Expression visitLambdaExp (LambdaExp exp, Void ignored) {
+        for (Declaration decl = exp.firstDecl();
+             decl != null;  decl = decl.nextDecl()) {
+            if (decl.getFlag(Declaration.IS_SUPPLIED_PARAMETER|Declaration.SKIP_FOR_METHOD_PARAMETER|Declaration.PATTERN_NESTED)) {
+                exp.setFlag(LambdaExp.HAS_NONTRIVIAL_PATTERN);
+                break;
+            }
+        }
         CanFinishTracker oldTracker = canFinishTracker;
         CanFinishTracker newTracker = new CanFinishTracker();
         newTracker.outer = oldTracker;

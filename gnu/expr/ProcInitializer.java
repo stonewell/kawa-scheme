@@ -31,10 +31,10 @@ public class ProcInitializer extends Initializer
             // If there is an existing CompiledProc binding, re-use it.
             ModuleInfo minfo = comp.getMinfo();
             Class oldClass = minfo.getOldModuleClass();
-            if (oldClass != null && pdecl.field != null) {
+            if (oldClass != null && pdecl.getField() != null) {
                 try {
                     Object oldpval = oldClass
-                        .getField(pdecl.field.getName()).get(null);
+                        .getField(pdecl.getField().getName()).get(null);
                     if (oldpval instanceof CompiledProc)
                         oldproc = (CompiledProc) oldpval;
                 } catch (Throwable ex) {

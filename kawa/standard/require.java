@@ -317,20 +317,20 @@ public class require extends Syntax
             if (fdecl.isPrivate())
                 continue;
 
-            if (fdecl.field != null) {
-                String fname = fdecl.field.getName();
+            if (fdecl.getField() != null) {
+                String fname = fdecl.getField().getName();
                 if (fname.equals("$instance"))
                 {
-                    instanceField = fdecl.field;
+                    instanceField = fdecl.getField();
                     continue;
                 }
             }
 
-            if (fdecl.field != null
-                && fdecl.field.getName().endsWith("$instance")) {
+            if (fdecl.getField() != null
+                && fdecl.getField().getName().endsWith("$instance")) {
                 if (moduleReferences == null)
                     moduleReferences = new HashMap<String,Declaration>();
-                moduleReferences.put(fdecl.field.getName(), fdecl);
+                moduleReferences.put(fdecl.getField().getName(), fdecl);
             } else
                 dmap.put((Symbol) fdecl.getSymbol(),
                          new ReferenceExp(fdecl));
@@ -408,7 +408,7 @@ public class require extends Syntax
                 // xdecl can be null on an error.
                 if (xdecl != null && xdecl.needsContext()) {
                     String iname
-                        = (xdecl.field.getDeclaringClass().getName().replace('.', '$')
+                        = (xdecl.getField().getDeclaringClass().getName().replace('.', '$')
                            + "$instance");
                     Declaration cdecl = moduleReferences == null ? null
                         : moduleReferences.get(iname);

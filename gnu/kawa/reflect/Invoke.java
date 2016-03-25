@@ -227,7 +227,7 @@ public class Invoke extends Procedure
                                                   '\0', language);
             if (vproc != null)
               {
-                ctx.setupApply(null);
+                ctx.setupApply(vproc);
                 ctx.addAll((ArgList) ArgListVector.drop(args, 1));
                 ctx.rewind(CallContext.MATCH_CHECK);
                 r = ctx.runUntilValue();
