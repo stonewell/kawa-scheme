@@ -352,16 +352,18 @@ public class TreeList extends AbstractSequence<Object>
             tmp = new Object[newLength];
         } else {
             int oldLength = objects.length;
-            if (oldLength < oindex + needed
-                    || oldLength > 2 * (oindex + needed) + 100) {
+            if (oldLength < oindex + needed) {
                 int grow = oldLength >> 1;
                 if (needed > grow)
                     grow = needed;
                 newLength = oldLength + grow;
-                tmp = new Object[newLength];
-                System.arraycopy(objects, 0, tmp, 0, oindex);
-            } else
-                  tmp = objects;
+            } else if (oldLength > 2 * (oindex + needed) + 100) {
+                newLength = oindex + needed + 100;
+            }
+            else
+                return;
+            tmp = new Object[newLength];
+            System.arraycopy(objects, 0, tmp, 0, oindex);
         }
         objects = tmp;
     }
