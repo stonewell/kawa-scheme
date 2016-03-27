@@ -1,4 +1,4 @@
-(test-init "Miscellaneous" 219)
+(test-init "Miscellaneous" 220)
 
 ;;; DSSSL spec example 11
 (test '(3 4 5 6) (lambda x x) 3 4 5 6)
@@ -8,6 +8,11 @@
 	(list x y z 'i: i 'j: j))
       3 4 5 i: 6 i: 7)
 
+;; The following two tests fail because the heapFrame is allocated too late.
+;; It needs to be allocated in the check method, and then re-used
+;; in the main method.
+;; In cases like this, it make make sense to inline the main method
+;; in the check methid. FIXME
 (test #f 'default-argument-scope-1 "non-working default argument capture")
 #|
 ;; Test for optional argument handling.
@@ -1027,3 +1032,7 @@
   ;;(! [[as bs] ...] [[11 12] [21 22] [31 32]])
   ;;(test "xx" 'list-each (list bs ... as ... (+ as ...)))
 )
+
+(! iarr1 (int[] 3 4 5 6))
+(! [a b c d] iarr1)
+(test '(11 7) list (+ c d) (+ a b))

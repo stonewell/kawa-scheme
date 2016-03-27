@@ -1,6 +1,7 @@
 package gnu.kawa.lispexpr;
 
 import gnu.bytecode.*;
+import gnu.lists.Sequences;
 import java.util.List;
 
 /** This matches a sequences of a specific length.
@@ -17,14 +18,14 @@ public class SeqSizeType extends LangObjType {
         this.requiredExact = requiredExact;
     }
 
-    public SeqSizeType(int requiredSize, boolean requiredExact, String implClass) {
+    public SeqSizeType(int requiredSize, boolean requiredExact) {
         this((requiredExact ? "list#=" : "list#>=") + requiredSize,
-             requiredSize, requiredExact, implClass);
+             requiredSize, requiredExact, "java.util.List");
     }
 
     @Override
     public Object coerceFromObject (Object obj) {
-        List list = (List) obj;
+        List list = (List) Sequences.coerceToSequence(obj);
         int size = list.size();
         if (requiredExact ? size == requiredSize : size >= requiredSize)
             return list;
@@ -44,26 +45,32 @@ public class SeqSizeType extends LangObjType {
     }
 
     public static java.util.List coerceEqOrNull(Object object, int requiredSize) {
+        List list;
         if (object instanceof List) {
-            List list = (List) object;
-            if (list.size() == requiredSize)
-                return list;
+            list = (List) object;
+        } else {
+            list = Sequences.asSequenceOrNull(object);
+            if (list == null)
+                return null;
         }
-        return null;
+        return list.size() == requiredSize ? list : null;
     }
 
     public static java.util.List coerceGeOrNull(Object object, int requiredSize) {
+        List list;
         if (object instanceof List) {
-            List list = (List) object;
-            if (list.size() >= requiredSize)
-                return list;
+            list = (List) object;
+        } else {
+            list = Sequences.asSequenceOrNull(object);
+            if (list == null)
+                return null;
         }
-        return null;
+        return list.size() >= requiredSize ? list : null;
     }
  
     @Override
     public void emitCoerceFromObject (CodeAttr code) {
-        code.emitCheckcast(implementationType);
+        LangObjType.sequenceType.emitCoerceFromObject(code);
         code.emitDup();
         code.emitPushInt(requiredSize);
         ClassType thisCl = ClassType.make("gnu.kawa.lispexpr.SeqSizeType");
@@ -107,7 +114,7 @@ public class SeqSizeType extends LangObjType {
                     return -1;
             }
         }
-        int r = getImplementationType().compare(other);
+        int r = LangObjType.sequenceType.compare(other);
         return r == 0 || r == -1 ? -1 : r == -3 ? -3 : -2;
     }
 }

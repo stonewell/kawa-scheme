@@ -238,8 +238,7 @@ public class BindDecls {
             d.setScanNesting(curScanNesting);
             d.setFlag(Declaration.PATTERN_NESTED);
         }
-        Type type = new SeqSizeType(count-ellipsisCount, ellipsisCount==0,
-                                    "java.util.List");
+        Type type = new SeqSizeType(count-ellipsisCount, ellipsisCount==0);
         decl.setType(type);
     }
 
