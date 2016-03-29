@@ -1,4 +1,4 @@
-(test-init "Miscellaneous" 220)
+(test-init "Miscellaneous" 221)
 
 ;;; DSSSL spec example 11
 (test '(3 4 5 6) (lambda x x) 3 4 5 6)
@@ -1036,3 +1036,6 @@
 (! iarr1 (int[] 3 4 5 6))
 (! [a b c d] iarr1)
 (test '(11 7) list (+ c d) (+ a b))
+
+(test #(4 5 7 x 9 8 3) 'scan-1
+      (let (([a r ... b c] (list 3 4 5 7 8 9))) (vector r ... 'x c b a)))

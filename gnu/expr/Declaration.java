@@ -638,6 +638,7 @@ public class Declaration
     public static final long IS_SUPPLIED_PARAMETER = 0x100000000000l;
     public static final long KEYWORDS_OK = 0x200000000000l;
     public static final long DONT_COPY = 0x400000000000l;
+    public static final long SCAN_OWNER = 0x800000000000l;
 
     protected long flags = IS_SIMPLE;
 

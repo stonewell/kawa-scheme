@@ -69,6 +69,12 @@ public class Sequences {
         return lst;
     }
 
+    public static Object getAt(List seq, int index) {
+        if (index < 0)
+            index = seq.size() + index;
+        return seq.get(index);
+    }
+
     public static int getSize(Object values) {
         if (values instanceof Object[])
             return ((Object[]) values).length;

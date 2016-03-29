@@ -225,11 +225,20 @@ public class BindDecls {
                 init = new ApplyExp(dropMethod, args);
             } else {
                 // FIXME Probably better to use an Iterator or "position indexes"
-                Method indexMethod = listType
-                    .getMethod("get", new Type[] { Type.intType  });
+                Method indexMethod;
+                int index;
+                if (ellipsisCount > 0) {
+                    index = -1 - Translator.listLength(cdr);
+                    indexMethod = ConsumerTarget.typeSequences
+                        .getDeclaredMethod("getAt", 2);
+                } else {
+                    index = count;
+                    indexMethod = listType
+                        .getMethod("get", new Type[] { Type.intType  });
+                }
                 init = new ApplyExp(indexMethod, new Expression[] {
                         new ReferenceExp(decl),
-                        new QuoteExp(count, Type.intType) });
+                        new QuoteExp(index, Type.intType) });
             }
             Object[] r = parsePatternCar(patpair, init, null, curScanNesting,
                                          scope, comp);
@@ -237,9 +246,10 @@ public class BindDecls {
             Declaration d = (Declaration) r[1];
             d.setScanNesting(curScanNesting);
             d.setFlag(Declaration.PATTERN_NESTED);
+            if (sawEllipsis)
+                d.setFlag(Declaration.SCAN_OWNER);
         }
-        Type type = new SeqSizeType(count-ellipsisCount, ellipsisCount==0);
-        decl.setType(type);
+        decl.setType(new SeqSizeType(count-ellipsisCount, ellipsisCount==0));
     }
 
     private void setInitializer(Declaration decl, Expression init, ScopeExp scope, Translator comp) {
