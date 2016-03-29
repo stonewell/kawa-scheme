@@ -44,6 +44,17 @@ public class SeqSizeType extends LangObjType {
             throw new ClassCastException("sequence has size "+sz+" should be at least "+requiredSize);
     }
 
+    public static java.util.List coerceEq(Object object, int requiredSize) {
+        List list = Sequences.coerceToSequence(object);
+        checkSizeEq(list, requiredSize);
+        return list;        
+    }
+
+    public static java.util.List coerceGe(Object object, int requiredSize) {
+        List list = Sequences.coerceToSequence(object);
+        checkSizeGe(list, requiredSize);
+        return list;        
+    }
     public static java.util.List coerceEqOrNull(Object object, int requiredSize) {
         List list;
         if (object instanceof List) {
@@ -70,11 +81,9 @@ public class SeqSizeType extends LangObjType {
  
     @Override
     public void emitCoerceFromObject (CodeAttr code) {
-        LangObjType.sequenceType.emitCoerceFromObject(code);
-        code.emitDup();
         code.emitPushInt(requiredSize);
         ClassType thisCl = ClassType.make("gnu.kawa.lispexpr.SeqSizeType");
-        code.emitInvokeStatic(thisCl.getDeclaredMethod(requiredExact ? "checkSizeEq" : "checkSizeGe", 2));
+        code.emitInvokeStatic(thisCl.getDeclaredMethod(requiredExact ? "coerceEq" : "coerceGe", 2));
     }
 
     public boolean emitCoercionOrNull(CodeAttr code) {
