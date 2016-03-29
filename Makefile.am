@@ -387,7 +387,7 @@ distall:  distcheck dist-kawa-@VERSION@.jar kawa-doc-$(VERSION).tar.gz
 
 check-ok-for-invoke:
 	cd testsuite && make OPTIONS=--no-full-tailcalls \
-	  check-scm check-r7rs check-misc check-obj check-polytype check-case
+	  check-scm check-r7rs check-misc check-mac check-obj check-polytype check-case
 	cd testsuite && \
 	  make check-num check-arr check-java-array check-lazy check-lib \
 	  check-srfi-16 check-srfi-38 check-srfi-64 check-srfi-69 \
@@ -401,7 +401,7 @@ check-ok-for-invoke:
 	  check-nsieve check-pidigits check-regexdna check-revcomp \
 	  check-spectralnorm check-threadring
 	cd testsuite && make OPTIONS=--full-tailcalls \
-	  check-scm check-r7rs check-misc check-obj check-polytype check-case
+	  check-scm check-r7rs check-misc check-mac check-obj check-polytype check-case
 	cd testsuite && make \
 	  check-interpreted-cycle check-interpreted-cycleb check-interpreted-cyclebr \
 	  check-inlining check-jmc check-use-slots check-load-require check-sva31180 \
@@ -409,5 +409,5 @@ check-ok-for-invoke:
 	cd gnu/xquery/testsuite && make check
 
 # TODO in check1: check-system
-# TODO in check2: check-misc check-mac
+# TODO in check2: check-misc
 # TODO in check:  check-no-inline $(SERVLET_TESTS) $(SAX2_TESTS)
