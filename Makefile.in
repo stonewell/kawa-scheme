@@ -1167,13 +1167,13 @@ check-ok-for-invoke:
 	  check-scm check-r7rs check-misc check-obj check-polytype check-case
 	cd testsuite && make \
 	  check-interpreted-cycle check-interpreted-cycleb check-interpreted-cyclebr \
-	  check-jmc check-use-slots check-load-require check-sva31180 \
+	  check-inlining check-jmc check-use-slots check-load-require check-sva31180 \
 	  check-bridge check-life-grid check-larceny-tests check-numbers-clisp
 	cd gnu/xquery/testsuite && make check
 
 # TODO in check1: check-system
 # TODO in check2: check-misc check-mac
-# TODO in check:  check-no-inline $(SERVLET_TESTS) $(SAX2_TESTS) check-inlining
+# TODO in check:  check-no-inline $(SERVLET_TESTS) $(SAX2_TESTS)
 
 # Tell versions [3.59,3.63) of GNU make to not export all variables.
 # Otherwise a system limit (for SysV at least) may be exceeded.
