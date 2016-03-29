@@ -1023,8 +1023,7 @@ public class Declaration
 	  }
 	else
 	  {
-	    Type type = isIndirectBinding() ? Compilation.typeLocation
-	      : getType().getImplementationType();
+            Type type = getImplementationType();
             Scope scope = autoPopScope ? code.pushAutoPoppableScope()
                 : context.getVarScope();
 	    var = scope.addVariable(code, type, vname);
@@ -1032,6 +1031,22 @@ public class Declaration
       }
     return var;
   }
+
+    public Type getImplementationType() {
+        Type ftype = getType().getImplementationType();
+        if (isIndirectBinding() && ! ftype.isSubtype(Compilation.typeLocation)) {
+            if (ftype == null || ftype == Type.objectType)
+                ftype = Compilation.typeLocation;
+            else {
+                if (ftype instanceof PrimType)
+                    ftype = ((PrimType) ftype).boxedType();
+                ftype = new ParameterizedType(Compilation.typeLocation, ftype);
+            }
+        }
+        for (int scan = getScanNesting(); --scan >= 0; )
+            ftype =  new ParameterizedType(Compilation.typeList, ftype);
+        return ftype;
+    }
 
   String filename;
   int position;
@@ -1233,16 +1248,7 @@ public class Declaration
                  || (context instanceof ModuleExp && ((ModuleExp) context).staticInitRun()))))
         && (context instanceof ClassExp || context instanceof ModuleExp))
       fflags |= Access.FINAL;
-    Type ftype = getType().getImplementationType();
-    if (isIndirectBinding() && ! ftype.isSubtype(Compilation.typeLocation)) {
-        if (ftype == null || ftype == Type.objectType)
-            ftype = Compilation.typeLocation;
-        else {
-            if (ftype instanceof PrimType)
-                ftype = ((PrimType) ftype).boxedType();
-            ftype = new ParameterizedType(Compilation.typeLocation, ftype);
-        }
-    }
+    Type ftype = getImplementationType();
     if (! ignorable())
       {
         String dname = getName();
