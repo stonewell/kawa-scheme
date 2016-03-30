@@ -392,7 +392,7 @@ check-ok-for-invoke:
 	  make check-num check-arr check-java-array check-lazy check-lib \
 	  check-srfi-16 check-srfi-38 check-srfi-64 check-srfi-69 \
 	  check-srfi-101 check-srfi-108 check-srfi-109 \
-	  check-format check-ppfile check-text check-regex check-xml \
+	  check-format check-ppfile check-system check-text check-regex check-xml \
 	  scribble.class check-run-test-scripts check-moduleM \
 	  check-annotations1 check-annotations2 \
 	  check-binarytrees check-chameneosredux check-fannkuch \
@@ -408,6 +408,5 @@ check-ok-for-invoke:
 	  check-bridge check-life-grid check-larceny-tests check-numbers-clisp
 	cd gnu/xquery/testsuite && make check
 
-# TODO in check1: check-system
 # TODO in check2: check-misc
 # TODO in check:  check-no-inline $(SERVLET_TESTS) $(SAX2_TESTS)

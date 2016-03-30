@@ -43,7 +43,7 @@ public class RunProcess extends ProcedureN {
 
     public static Object applyToConsumerRP(Procedure proc, CallContext ctx)
             throws Throwable {
-        doit(ctx.getArgs(), ctx.consumer);
+        doit(ctx.getRestArgsVector(), ctx.consumer);
         return null;
     }
 
@@ -56,9 +56,9 @@ public class RunProcess extends ProcedureN {
     public static final SimpleSymbol currentSymbol = Symbol.valueOf("current");
     public static final SimpleSymbol outSymbol = Symbol.valueOf("out");
 
-    public static void doit(Object[] args, Consumer consumer) throws Throwable {
+    public static void doit(ArgListVector args, Consumer consumer) throws Throwable {
         ProcessBuilder builder = new ProcessBuilder();
-        int nargs = args.length;
+        int nargs = args.size();
         boolean useShell = false;
         boolean returnBlob = true;
         Object inRedirect = null;
@@ -69,14 +69,16 @@ public class RunProcess extends ProcedureN {
         InputStream inputBytes = null;
         boolean directorySet = false;
         Object command = null;
+        int firstKeyword = args.firstKeyword();
+        int endKeywords = firstKeyword + 2 * args.numKeywords();
         for (int iarg = 0; iarg < nargs;  iarg++) {
-            Object arg = args[iarg];
-            if (arg instanceof Keyword) {
+            Object arg = args.get(iarg);
+            if (iarg >= firstKeyword && iarg < endKeywords) {
                 String key = ((Keyword) arg).getName();
                 boolean outSpecifier = key.startsWith("out");
                 if (++iarg >= nargs)
                     error("missing keyword value for keyword "+arg);
-                Object kval = args[iarg];
+                Object kval = args.get(iarg);
                 Object newRedirect = null;
                 if (key.equals("shell")) {
                     useShell = ((Boolean) kval).booleanValue();
