@@ -629,7 +629,7 @@ public class Declaration
     public static final long IS_PARAMETER = 0x80000000000l;
     /** Is this a supplied-parameter variable?
      * If IS_SUPPLIED_PARAMETER is true and IS_PARAMETER is false
-     * then this is a boolean variable reports if the previous parameter
+     * then this is a boolean variable which reports if the previous parameter
      * was provided by the argument list, rather than defaulted.
      * If IS_SUPPLIED_PARAMETER is true and IS_PARAMETER is true then
      * this is an optional or keyword parameter that has corresponding
