@@ -2,6 +2,7 @@ package gnu.mapping;
 
 import gnu.lists.Pair;
 import java.util.List;
+import java.util.Map;
 
 class ArgListImpl implements ArgList, ArgListBuilder {
     /*
@@ -197,7 +198,9 @@ class ArgListImpl implements ArgList, ArgListBuilder {
 
     public void addSequence(Object args) {
         // FIXME optimize
-        addAll(gnu.lists.Sequences.coerceToSequence(args));
+        List list = gnu.lists.Sequences.coerceToSequence(args);
+        for (Object v : list)
+            add(v);
     }
     public void addArgList(Object args) {
         for (;;) {
@@ -208,6 +211,11 @@ class ArgListImpl implements ArgList, ArgListBuilder {
                 Pair pair = (Pair) args;
                 add(pair.getCar());
                 args = pair.getCdr();
+            } else if (args instanceof Map) {
+                Map map = (Map) args;
+                for (Object k : map.keySet()) {
+                    addKey(k.toString(), map.get(k));
+                }
             } else {
                 addSequence(args);
                 break;

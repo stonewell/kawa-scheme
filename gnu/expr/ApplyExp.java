@@ -458,7 +458,7 @@ public class ApplyExp extends Expression
 					       initial+1));
             for (int i = initial;  i < args_length;  i++) {
                 Expression arg = exp.args[i];
-                char mode = '\0';
+                char mode = '\0'; // ''\0', 'K', '@' or ':'
                 String key = null;
                 if (i >= exp.firstKeywordArgIndex-1
                     && i < exp.firstKeywordArgIndex-1 + 2 * exp.numKeywordArgs) {
@@ -472,7 +472,11 @@ public class ApplyExp extends Expression
                 } else {
                     Expression sarg = MakeSplice.argIfSplice(arg);
                     if (sarg != null) {
-                        mode = '@';
+                        if (((ApplyExp) arg).getFunction()
+                            == MakeSplice.quoteKeywordsAllowedInstance)
+                            mode = ':';
+                        else
+                            mode = '@';
                         arg = sarg;
                     }
                 }
@@ -486,9 +490,10 @@ public class ApplyExp extends Expression
                 if (mode == 'K') {
                     code.emitInvoke(Compilation.typeCallContext
                                     .getDeclaredMethod("addKey", 2));
-                } else if (mode == '@') {
+                } else if (mode == '@' || mode == ':') {
+                    String mname = mode == '@' ? "addSequence" : "addArgList";
                     code.emitInvoke(Compilation.typeCallContext
-                                    .getDeclaredMethod("addSequence", 1));
+                                    .getDeclaredMethod(mname, 1));
                 } else {
                     code.emitInvoke(Compilation.typeCallContext
                                     .getDeclaredMethod("addArg", 1));
@@ -607,7 +612,9 @@ public class ApplyExp extends Expression
         for (int i = 0;  i < nargs && visitor.getExitValue() == null;  i++) {
             while (param != null
                    && (param.isThisParameter()
-                       || param.getFlag(Declaration.PATTERN_NESTED)))
+                       || param.getFlag(Declaration.PATTERN_NESTED)
+                       || (param.getFlag(Declaration.IS_SUPPLIED_PARAMETER)
+                           && ! param.getFlag(Declaration.IS_PARAMETER))))
                 param = param.nextDecl();
             Type ptype = dtype;
             if (param != null && i < lexp.min_args+lexp.opt_args

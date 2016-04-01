@@ -17,15 +17,17 @@ import java.util.List;
 
 public class MakeSplice extends Procedure1 {
     private boolean keywordsAllowed;
-    public static final MakeSplice instance = new MakeSplice(false);
+    public static final MakeSplice instance =
+        new MakeSplice("$splice$", false);
     public static final MakeSplice keywordsAllowedInstance =
-        new MakeSplice(true);
+        new MakeSplice("$splice-with-keywords$", true);
 
     public static final QuoteExp quoteInstance = new QuoteExp(instance);
     public static final QuoteExp quoteKeywordsAllowedInstance =
         new QuoteExp(keywordsAllowedInstance);
 
-    MakeSplice(boolean keywordsAllowed) {
+    MakeSplice(String name, boolean keywordsAllowed) {
+        super(name);
         this.keywordsAllowed = keywordsAllowed;
     } 
 
