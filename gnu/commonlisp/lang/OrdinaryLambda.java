@@ -268,7 +268,11 @@ public class OrdinaryLambda extends Lambda
           Declaration suppliedDecl = addParam((Symbol) suppliedp,
                                               templateScope, lexp, tr);
           suppliedDecl.setFlag(Declaration.IS_SUPPLIED_PARAMETER);
-          suppliedDecl.setType(Type.booleanType);
+          Language language = Language.getDefaultLanguage();
+          Type booleanType = language instanceof CommonLisp
+              ? ((CommonLisp) language).booleanType
+              : Type.booleanType;
+          suppliedDecl.setType(booleanType);
       }
       tr.popPositionOf(savePos);
     }

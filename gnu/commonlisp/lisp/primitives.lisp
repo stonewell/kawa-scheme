@@ -82,17 +82,6 @@
 	(t
 	 (member-plain x lst))))
 
-(defun apply (func &rest args)
-  (invoke (the |function|
-	       (if (symbolp func)
-		   (symbol-function func)
-		   func))
-	  '|applyN|
-	  (invoke-static |gnu.kawa.functions.Apply|
-			 '|getArguments|
-			 args
-			 0 #'apply)))
-
 (defun funcall (func &rest args)
   (apply func args))
 
