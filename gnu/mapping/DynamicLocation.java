@@ -24,16 +24,27 @@ public class DynamicLocation<T> extends NamedLocation<T> implements Named
         return loc;
     }
 
+    NamedLocation<T> lookup() {
+        Environment curenv = Environment.getCurrent();
+        NamedLocation<T> loc = curenv.getLocation(name, property, hash, false);
+        return loc;
+    }
+
     public T get() {
-        return getLocation().get();
+        Location<T> loc = lookup();
+        if (loc == null)
+            throw new UnboundLocationException(this);
+        return loc.get();
     }
 
     public T get(T defaultValue) {
-        return getLocation().get(defaultValue);
+        Location<T> loc = lookup();
+        return loc == null ? defaultValue : loc.get(defaultValue);
     }
 
     public boolean isBound() {
-        return getLocation().isBound();
+        Location<T> loc = lookup();
+        return loc != null && loc.isBound();
     }
 
     public void set(T value) {
