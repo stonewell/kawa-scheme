@@ -1820,7 +1820,7 @@ public class Compilation implements SourceLocator
   /** Copy incoming arguments to varargs/#!rest array.
    */
   private void varArgsToArray (LambdaExp source, int singleArgs,
-                               Variable counter, Type lastArgType,
+                               Variable sizeVar, Type lastArgType,
                                Variable ctxVar, boolean keywordsOk)
   {
     CodeAttr code = getCode();
@@ -1836,9 +1836,9 @@ public class Compilation implements SourceLocator
     else
       {
         code.pushScope();
-        if (counter == null)
+        if (sizeVar == null)
           {
-            counter = code.addLocal(Type.intType);
+            sizeVar = code.addLocal(Type.intType);
             code.emitLoad(ctxVar);
             code.emitInvoke(typeCallContext.getDeclaredMethod("getArgCount", 0));
             if (singleArgs != 0)
@@ -1846,10 +1846,13 @@ public class Compilation implements SourceLocator
                 code.emitPushInt(singleArgs);
                 code.emitSub(Type.intType);
               }
-            code.emitStore(counter);
+            code.emitStore(sizeVar);
           }
-        code.emitLoad(counter);
+        code.emitLoad(sizeVar);
         code.emitNewArray(elType.getImplementationType());
+        Variable index = code.addLocal(Type.intType);
+        code.emitPushInt(0);
+        code.emitStore(index);
         Label testLabel = new Label(code);
         Label loopTopLabel = new Label(code);
         loopTopLabel.setTypes(code);
@@ -1857,7 +1860,8 @@ public class Compilation implements SourceLocator
         loopTopLabel.define(code);
 
         code.emitDup(1); // new array
-        code.emitLoad(counter);
+        // FIXME sizeVar counts down, but index needs to cound up!
+        code.emitLoad(index);
         code.emitLoad(ctxVar);
         code.emitInvokeVirtual(typeCallContext.getDeclaredMethod("getNextArg", 0));
         if (mustConvert)
@@ -1867,10 +1871,11 @@ public class Compilation implements SourceLocator
                0, elType, null);
           }
         code.emitArrayStore(elType);
+        code.emitInc(index, (short) 1);
         testLabel.define(code);
-        code.emitInc(counter, (short) (-1));
-        code.emitLoad(counter);
-        code.emitGotoIfIntGeZero(loopTopLabel);
+        code.emitLoad(index);
+        code.emitLoad(sizeVar);
+        code.emitGotoIfLt(loopTopLabel);
         code.popScope();	
       }
   }
