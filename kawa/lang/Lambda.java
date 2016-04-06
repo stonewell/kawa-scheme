@@ -488,6 +488,7 @@ public class Lambda extends Syntax
     int key_args = lexp.keywords == null ? 0 : lexp.keywords.length;
     int opt_args = lexp.opt_args;
     int arg_i = 0;
+    tr.lexical.pop(lexp);
     for (Declaration cur = lexp.firstDecl(); cur != null; cur = cur.nextDecl())
       {
 	if (cur.isAlias())
@@ -519,8 +520,9 @@ public class Lambda extends Syntax
             cur.setInitValue(tr.rewrite(cur.getInitValue()));
           }
         arg_i++;
-        }
-      }
+        } 
+        tr.lexical.push(cur);
+     }
 
     if (lexp.isClassMethod()
         && ! lexp.nameDecl.getFlag(Declaration.STATIC_SPECIFIED))
