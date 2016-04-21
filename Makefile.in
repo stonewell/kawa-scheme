@@ -1169,6 +1169,7 @@ check-ok-for-invoke:
 	  check-interpreted-cycle check-interpreted-cycleb check-interpreted-cyclebr \
 	  check-inlining check-jmc check-use-slots check-load-require check-sva31180 \
 	  check-bridge check-life-grid check-larceny-tests check-numbers-clisp
+	cd gnu/commonlisp/testsuite && make check
 	cd gnu/xquery/testsuite && make check
 
 # TODO in check2: check-misc

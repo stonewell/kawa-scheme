@@ -8,13 +8,6 @@
 	(list x y z 'i: i 'j: j))
       3 4 5 i: 6 i: 7)
 
-;; The following two tests fail because the heapFrame is allocated too late.
-;; It needs to be allocated in the check method, and then re-used
-;; in the main method.
-;; In cases like this, it make make sense to inline the main method
-;; in the check methid. FIXME
-(test #f 'default-argument-scope-1 "non-working default argument capture")
-#|
 ;; Test for optional argument handling.
 ;; (Savannah bug #10613 was a bug in name scoping of default arguments.)
 (define (test-opt-args a b c d)
@@ -41,15 +34,11 @@
    #(arg-a: a3 arg-b: b3 arg-c: c3 argd: d3)
    n: 5) 
  test-opt-args 'a1 'b1 'c1 'd1)
-|#
 
-(test #f 'default-argument-scope-2 "non-working default argument capture")
-#|
 (test '(200 . 100)
       (lambda (x #!optional (y (* 2 x)) (p (lambda () (cons y x))))
 	(p))
       100)
-|#
 
 (test '(100 . 200)
       (lambda (x #!optional (y (* 2 x)))
