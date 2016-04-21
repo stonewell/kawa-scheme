@@ -1438,18 +1438,14 @@ public class Compilation implements SourceLocator
 	ClassType saveClass = curClass;
 	curLambda = lexp;
         Method primMethod = lexp.getMainMethod();
-	curClass = primMethod.getDeclaringClass();
+        if (! lexp.inlinedInCheckMethod())
+            curClass = primMethod.getDeclaringClass();
 	/* if not using MethodHandles:
 	if (! (curClass.getSuperclass().isSubtype(typeModuleBody)))
 	    curClass = moduleClass;
 	*/
 	Variable callContextSave = callContextVar;
-        String primName = primMethod.getName();
-        int primNameLength = primName.length();
-        if (primNameLength >= 3 && primName.charAt(primNameLength-2) == '$'
-            && (primName.charAt(primNameLength-1) == 'V'
-                || primName.charAt(primNameLength-1) == 'P'))
-            primName = primName.substring(0, primNameLength-2);
+        String primName = lexp.getMethodName(this);
         String checkName = primName  + "$check";
         Type[] checkArgs = { typeProcedure, typeCallContext };
 
@@ -1470,22 +1466,16 @@ public class Compilation implements SourceLocator
         callContextVar = ctxVar;
 	//int kin = 0;
 	//int scopesToPop = 0;
-	int needsThis = primMethod.getStaticFlag() ? 0 : 1;
-	int explicitFrameArg = lexp.getNeedsClosureEnv() ? 1-needsThis : 0;
-        //   singleArgs + (varArgs ? 2 : 1) < primArgTypes.length ? 1 : 0;
-	if (needsThis + explicitFrameArg > 0) {
-	    code.emitLoad(code.getArg(0));
-            code.emitCheckcast(Compilation.typeCompiledProc);
-            code.emitInvoke(Compilation.typeCompiledProc
-                            .getDeclaredMethod("getModule", 0));
-            //code.emitCheckcast(primMethod.getDeclaringClass()); // FIXME
-            if (needsThis > 0)
-                code.emitCheckcast(primMethod.getDeclaringClass()); // FIXME
-            else
-                code.emitCheckcast(lexp.closureEnv.getType());
-	}
         Scope scope = code.pushScope();
         lexp.scope = scope;
+        if (lexp.inlinedInCheckMethod()) {
+            Variable clEnv = lexp.declareClosureEnv();
+            if (clEnv != null)
+                clEnv.allocateLocal(code);
+            lexp.allocFrame(this);
+            lexp.allocChildMethods(this);
+            lexp.enterFunction(this);
+        }
         Declaration[] keyDecls = generateCheckKeywords(lexp);
         ArrayList<Variable> argVariables = new ArrayList<Variable>();
 	Declaration param = lexp.firstDecl();
@@ -1596,7 +1586,8 @@ public class Compilation implements SourceLocator
         // So they should always be plain variables.
         // FIXME: If the parameter is computed by an init expression,
         // we have a problem - which we should handle by lambda lifting?
-        param.setSimple(true);
+        if (! lexp.inlinedInCheckMethod())
+            param.setSimple(true);
 
         Variable incoming = null;
         boolean convertNeeded = ptype != Type.objectType;
@@ -1650,7 +1641,7 @@ public class Compilation implements SourceLocator
                         scope.addVariable(code, Type.booleanType, null);
                     code.emitStore(suppliedParameterVar);
                 }
-                if (lexp.primMethods.length == 1) {
+                if (lexp.primMethods == null || lexp.primMethods.length == 1) {
                     code.emitIfIntNotZero();
                     code.emitLoad(ctxVar);
                     code.emitInvoke(getNextArgMethod);
@@ -1778,6 +1769,9 @@ public class Compilation implements SourceLocator
                 ptype.emitCoerceFromObject(code);
                 code.emitStore(param.var);
 	    }
+            if (lexp.inlinedInCheckMethod()) {
+                lexp.saveParameter(param, this);
+            }
 	if (recurseNeeded)
 	    generateCheckArg(param.nextDecl(), lexp, knext, code, keyDecls, argVariables, suppliedParameterVar);
     }
@@ -1785,18 +1779,29 @@ public class Compilation implements SourceLocator
     private void generateCheckCall(LambdaExp lexp, CodeAttr code, Method primMethod, ArrayList<Variable> argVariables) {
 	boolean usingCallContext = lexp.usingCallContext();
 	Variable ctxVar = callContextVar;
-        for (Variable var : argVariables)
-            code.emitLoad(var);
-        for (Declaration param = lexp.firstDecl();
-	     param != null; param = param.nextDecl()) {
-            param.var = null;
+        if (lexp.inlinedInCheckMethod()) {
+            lexp.compileBody(this);
+            lexp.compileEnd(this);
+        } else {
+            if (lexp.getNeedsClosureEnv() || ! primMethod.getStaticFlag()) {
+                ClassType mtype =
+                    ! primMethod.getStaticFlag()
+                    ? primMethod.getDeclaringClass()
+                    : (ClassType) lexp.closureEnv.getType();
+                loadModuleRef(mtype);
+            }
+            for (Variable var : argVariables)
+                code.emitLoad(var);
+            for (Declaration param = lexp.firstDecl();
+                 param != null; param = param.nextDecl()) {
+                param.var = null;
+            }
+            if (primMethod == lexp.getMainMethod())
+                code.popScope();
+            if (usingCallContext)
+                code.emitLoad(ctxVar); // get $ctx
+            code.emitInvoke(primMethod);
         }
-        if (primMethod == lexp.getMainMethod())
-            code.popScope();
-	if (usingCallContext)
-            code.emitLoad(ctxVar); // get $ctx
-	code.emitInvoke(primMethod);
-
 	if (usingCallContext) {
             code.emitPushNull();
         } else {
@@ -1817,10 +1822,19 @@ public class Compilation implements SourceLocator
         }
     }
 
+    void loadModuleRef(ClassType clas) {
+        CodeAttr code = getCode();
+        code.emitLoad(code.getArg(0));
+        code.emitCheckcast(Compilation.typeCompiledProc);
+        code.emitInvoke(Compilation.typeCompiledProc
+                        .getDeclaredMethod("getModule", 0));
+        code.emitCheckcast(clas);
+    }
+
   /** Copy incoming arguments to varargs/#!rest array.
    */
   private void varArgsToArray (LambdaExp source, int singleArgs,
-                               Variable sizeVar, Type lastArgType,
+                               Variable counter, Type lastArgType,
                                Variable ctxVar, boolean keywordsOk)
   {
     CodeAttr code = getCode();
@@ -1836,9 +1850,9 @@ public class Compilation implements SourceLocator
     else
       {
         code.pushScope();
-        if (sizeVar == null)
+        if (counter == null)
           {
-            sizeVar = code.addLocal(Type.intType);
+            counter = code.addLocal(Type.intType);
             code.emitLoad(ctxVar);
             code.emitInvoke(typeCallContext.getDeclaredMethod("getArgCount", 0));
             if (singleArgs != 0)
@@ -1846,13 +1860,10 @@ public class Compilation implements SourceLocator
                 code.emitPushInt(singleArgs);
                 code.emitSub(Type.intType);
               }
-            code.emitStore(sizeVar);
+            code.emitStore(counter);
           }
-        code.emitLoad(sizeVar);
+        code.emitLoad(counter);
         code.emitNewArray(elType.getImplementationType());
-        Variable index = code.addLocal(Type.intType);
-        code.emitPushInt(0);
-        code.emitStore(index);
         Label testLabel = new Label(code);
         Label loopTopLabel = new Label(code);
         loopTopLabel.setTypes(code);
@@ -1860,8 +1871,7 @@ public class Compilation implements SourceLocator
         loopTopLabel.define(code);
 
         code.emitDup(1); // new array
-        // FIXME sizeVar counts down, but index needs to cound up!
-        code.emitLoad(index);
+        code.emitLoad(counter);
         code.emitLoad(ctxVar);
         code.emitInvokeVirtual(typeCallContext.getDeclaredMethod("getNextArg", 0));
         if (mustConvert)
@@ -1871,11 +1881,10 @@ public class Compilation implements SourceLocator
                0, elType, null);
           }
         code.emitArrayStore(elType);
-        code.emitInc(index, (short) 1);
         testLabel.define(code);
-        code.emitLoad(index);
-        code.emitLoad(sizeVar);
-        code.emitGotoIfLt(loopTopLabel);
+        code.emitInc(counter, (short) (-1));
+        code.emitLoad(counter);
+        code.emitGotoIfIntGeZero(loopTopLabel);
         code.popScope();	
       }
   }
@@ -2058,7 +2067,8 @@ public class Compilation implements SourceLocator
     Variable heapFrame = module.heapFrame;
     boolean staticModule = module.isStatic();
 
-    if (curClass.getSuperclass() != typeModuleBody) {
+    if (curClass.getSuperclass() != typeModuleBody
+        && ! module.staticInitRun()) {
         Field runDoneField = curClass.addField("$runDone$", Type.booleanType,
                              Access.PROTECTED);
         Method runDoneMethod =
@@ -2077,7 +2087,7 @@ public class Compilation implements SourceLocator
     Method apply_method;
     if (module.staticInitRun()) {
         apply_method = curClass.addMethod("$runBody$", Type.typeArray0, Type.voidType,
-				       Access.PUBLIC+Access.STATIC);
+                                          Access.PRIVATE|Access.STATIC);
     } else {
         Type[] arg_types = { typeCallContext };
         apply_method = curClass.addMethod ("run", arg_types, Type.voidType,
@@ -2097,16 +2107,9 @@ public class Compilation implements SourceLocator
     module.heapFrame = module.isStatic() ? null : module.thisVariable;
     module.allocChildClasses(this);
 
-    if (module.isHandlingTailCalls() || usingCPStyle())
-      {
-	callContextVar = new Variable ("$ctx", typeCallContext);
-	module.getVarScope().addVariableAfter(thisDecl, callContextVar);
-	callContextVar.setParameter(true);
-      }
-
-    int line = module.getLineNumber();
-    if (line > 0)
-      code.putLineNumber(module.getFileName(), line);
+    callContextVar = new Variable ("$ctx", typeCallContext);
+    module.getVarScope().addVariableAfter(thisDecl, callContextVar);
+    callContextVar.setParameter(true);
 
     module.allocParameters(this);
     module.enterFunction(this);
@@ -2173,8 +2176,6 @@ public class Compilation implements SourceLocator
         method = save_method;
         callContextVar = callContextSave;
       }
-
-    module.generateApplyMethods(this);
 
     curLambda = saveLambda;
 

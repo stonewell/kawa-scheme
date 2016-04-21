@@ -142,7 +142,6 @@ public class ApplyExp extends Expression
     Procedure proc = (Procedure) func.eval(ctx);
     int n = args.length;
     Object[] vals = new Object[n];
-    //System.err.println("App.apply "+this+" proc:"+proc+" n:"+n);
     for (int i = 0; i < n; i++)
       vals[i] = args[i].eval(ctx);
     ctx.setupApplyAll(proc, vals);
@@ -297,7 +296,7 @@ public class ApplyExp extends Expression
 			   + func_lambda);
 	int conv = func_lambda.getCallConvention();
         if (func_lambda.primMethods==null && ! func_lambda.isClassGenerated()
-            && ! func_lambda.getInlineOnly())
+            && ! func_lambda.inlinedInCallerOrCheckMethodOnly())
             func_lambda.allocMethod(func_lambda.outerLambda(), comp);
         // Mostly duplicates logic with LambdaExp.validateApply.
         // See comment there.
@@ -416,7 +415,7 @@ public class ApplyExp extends Expression
       }
 
     if ((comp.curLambda.isHandlingTailCalls()
-         && ! comp.curLambda.getInlineOnly()
+         && ! comp.curLambda.inlinedInCallerOrCheckMethodOnly()
          && (exp.isTailCall() || target instanceof ConsumerTarget))
         || exp.firstSpliceArg >= 0 || exp.numKeywordArgs > 0
         || (! tail_recurse &&  args_length > 4))
@@ -562,7 +561,8 @@ public class ApplyExp extends Expression
     static void finishTrampoline(boolean isTailCall, Target target, Compilation comp) {
         CodeAttr code = comp.getCode();
         ClassType typeContext = Compilation.typeCallContext;
-        if (isTailCall && comp.curLambda.isHandlingTailCalls()) {
+        if (isTailCall && comp.curLambda.isHandlingTailCalls()
+            && ! comp.curLambda.inlinedInCheckMethod()) {
             code.emitReturn();
         } else if (! (target instanceof ConsumerTarget
                       || target instanceof IgnoreTarget)) {

@@ -550,14 +550,10 @@ public class ClassExp extends LambdaExp
                     }
                     else if (calledInit != instanceType)
                         ((ApplyExp) bodyFirst).setFlag(ApplyExp.IS_SUPER_INIT);
-                    child.enterFunction(comp);
-                    child.compileBody(comp);
-                } else {
-                    child.enterFunction(comp);
-                    child.compileBody(comp);
                 }
+                child.enterFunction(comp);
+                child.compileBody(comp);
                 child.compileEnd(comp);
-                child.generateApplyMethods(comp);
 
                 // Check to see if child overrides a superclass method and has
                 // a covariant return type. If so, generate a bridge method

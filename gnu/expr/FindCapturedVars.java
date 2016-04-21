@@ -54,7 +54,8 @@ public class FindCapturedVars extends ExpExpVisitor<Void>
 	    if (value instanceof LambdaExp)
 	      {
 		LambdaExp lexp = (LambdaExp) value;
-		if (! lexp.getNeedsClosureEnv())
+		if (! lexp.getNeedsClosureEnv()
+                    && ! lexp.getFlag(LambdaExp.HAS_NONTRIVIAL_PATTERN))
                   skipFunc = true;
 	      }
 	  }
@@ -114,6 +115,9 @@ public class FindCapturedVars extends ExpExpVisitor<Void>
   {
     super.visitDefaultArgs(exp, ignored);
 
+    if (exp.getClass() != LambdaExp.class)
+        return;
+
     // Check if any default expression "captured" a parameter.
     // If so, evaluating a default expression cannot be done until the
     // heapFrame is allocated in the main-method.  But in most cases, a
@@ -125,7 +129,7 @@ public class FindCapturedVars extends ExpExpVisitor<Void>
       {
 	if (! param.isSimple())
 	  {
-	    exp.setFlag(true, LambdaExp.DEFAULT_CAPTURES_ARG);
+	    exp.setFlag(LambdaExp.DEFAULT_CAPTURES_ARG|LambdaExp.HAS_NONTRIVIAL_PATTERN);
 	    break;
 	  }
       }
@@ -245,8 +249,6 @@ public class FindCapturedVars extends ExpExpVisitor<Void>
 
   protected Expression visitLambdaExp (LambdaExp exp, Void ignored)
   {
-    if (exp.getFlag(LambdaExp.HAS_NONTRIVIAL_PATTERN) && exp.nameDecl != null)
-      exp.nameDecl.setSimple(false);
     if (exp.getInlineOnly())
         backJumpPossible++;
     return super.visitLambdaExp(exp, ignored);

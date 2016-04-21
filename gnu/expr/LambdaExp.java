@@ -179,6 +179,16 @@ public class LambdaExp extends ScopeExp {
     public final void setInlineOnly(boolean inlineOnly)
     { setFlag(inlineOnly, INLINE_ONLY); }
 
+    public final boolean inlinedInCheckMethod() {
+        return (flags & HAS_NONTRIVIAL_PATTERN) != 0;
+    }
+
+    /** True if no primitive method is created for this procedure.
+        Specifically if {@code getInlineOnly() || inlinedInCheckMethod()} .*/
+    public boolean inlinedInCallerOrCheckMethodOnly() {
+        return (flags & (INLINE_ONLY|HAS_NONTRIVIAL_PATTERN)) != 0;
+    }
+
     /** Note this function is inlined in a give context.
      * This is meant to be used during validate-apply processing,
      * for procedures that will be inlined in a compile method.
@@ -515,10 +525,14 @@ public class LambdaExp extends ScopeExp {
             else if (! isClassGenerated() && ! getInlineOnly()) {
                 Method primMethod = getMainMethod();
                 boolean isInit = "*init*".equals(getName());
-                if (! primMethod.getStaticFlag()
+                if (primMethod != null && ! primMethod.getStaticFlag()
                     && ! isInit)
                     closureEnv = declareThis(primMethod.getDeclaringClass());
-                else {
+                else if (inlinedInCheckMethod()) {
+                    Type envType = getOwningLambda().getHeapFrameType();
+                    closureEnv = new Variable(CLOSURE_ENV_NAME, envType);
+                    getVarScope().addVariable(closureEnv);
+                } else {
                     Type envType = primMethod.getParameterTypes()[0];
                     closureEnv = new Variable(CLOSURE_ENV_NAME, envType);
                     Variable prev;
@@ -613,7 +627,7 @@ public class LambdaExp extends ScopeExp {
         code.getCurrentScope().fixParamNames(varMap);
         popScope(code);        // Undoes enterScope in allocParameters
 
-        if (! getInlineOnly()) {
+        if (! inlinedInCallerOrCheckMethodOnly()) {
             if (comp.method.reachableHere()
                 && (getCallConvention() < Compilation.CALL_WITH_TAILCALLS
                     || isModuleBody() || isClassMethod() || isHandlingTailCalls())) {
@@ -635,7 +649,8 @@ public class LambdaExp extends ScopeExp {
         }
 
         if (heapFrame != null)
-            comp.generateConstructor(this);
+            comp.generateConstructor(this); 
+        generateApplyMethods(comp);
     }
 
     public void generateApplyMethods(Compilation comp) {
@@ -712,13 +727,15 @@ public class LambdaExp extends ScopeExp {
     }
 
     public Field compileSetField(Compilation comp) {
-        if (primMethods == null)
+        if (primMethods == null
+            && ! inlinedInCheckMethod())
             allocMethod(outerLambda(), comp);
         Field field = allocFieldFor(comp);
         if (comp.usingCPStyle())
             compile(comp, Type.objectType);
         else {
-            compileAsMethod(comp);
+            if (! inlinedInCheckMethod())
+                compileAsMethod(comp);
             addApplyMethod(comp, field);
         }
         if (nameDecl != null)
@@ -768,7 +785,6 @@ public class LambdaExp extends ScopeExp {
 
             compileBody(comp);
             compileEnd(comp);
-            generateApplyMethods(comp);
             comp.curLambda = saveLambda;
             func_end.define(code);
             code.restoreStackTypeState(stackTypes);
@@ -809,8 +825,6 @@ public class LambdaExp extends ScopeExp {
                 || comp.dumpingInitializers
                 || (comp.immediate && outer instanceof ModuleExp
                     && comp.mainClass == comp.moduleClass)) {
-                if (primMethods == null)
-                    allocMethod(outerLambda(), comp);
                 compileAsMethod(comp);
                 addApplyMethod(comp, null);
                 Variable savedInstance = comp.moduleInstanceVar;
@@ -855,6 +869,27 @@ public class LambdaExp extends ScopeExp {
                     && ((LambdaExp) exp).heapFrame != null))
                 return (LambdaExp) exp;
         }
+    }
+
+    String primMethodName;
+    String getMethodName(Compilation comp) {
+        if (primMethodName == null) {
+            StringBuilder nameBuf = new StringBuilder(60);
+            LambdaExp outer = outerLambda();
+            String name = getName();
+           if (! (outer.isModuleBody() || outer instanceof ClassExp)
+                || name == null) {
+                nameBuf.append("lambda");
+                nameBuf.append(+(++comp.method_counter));
+            }
+            if (outer instanceof ClassExp
+                && this == ((ClassExp) outer).clinitMethod)
+                nameBuf.append("<clinit>");
+            else if (getSymbol() != null)
+                nameBuf.append(Compilation.mangleName(name));
+            primMethodName = nameBuf.toString();
+        }
+        return primMethodName;
     }
 
     void addMethodFor(Compilation comp, ObjectType closureEnvType) {
@@ -923,7 +958,6 @@ public class LambdaExp extends ScopeExp {
         } else
             isStatic = true;
 
-        StringBuffer nameBuf = new StringBuffer(60);
         int mflags = isStatic ? Access.STATIC : 0;
         if (nameDecl != null) {
             if (nameDecl.needsExternalAccess())
@@ -937,15 +971,7 @@ public class LambdaExp extends ScopeExp {
         }
         if (getFlag(PUBLIC_METHOD))
             mflags |= Access.PUBLIC;
-        if (! (outer.isModuleBody() || outer instanceof ClassExp)
-            || name == null) {
-            nameBuf.append("lambda");
-            nameBuf.append(+(++comp.method_counter));
-        }
-        if (isInitMethod == 'C')
-            nameBuf.append("<clinit>");
-        else if (getSymbol() != null)
-            nameBuf.append(Compilation.mangleName(name));
+        StringBuilder nameBuf = new StringBuilder(getMethodName(comp));
         if (getFlag(SEQUENCE_RESULT))
             nameBuf.append("$C");
         boolean withContext
@@ -1060,7 +1086,7 @@ public class LambdaExp extends ScopeExp {
                 Type lastType = var.getType();
                 String lastTypeName = lastType.getName();
                 if (! simpleMatch)
-                    ; // nameBuf.append("$P");
+                    ;
                 else if (ctype.getClassfileVersion() >= ClassType.JDK_1_5_VERSION
                     && lastType instanceof ArrayType)
                     mflags |= Access.VARARGS;
@@ -1091,7 +1117,7 @@ public class LambdaExp extends ScopeExp {
                    || (outer instanceof ModuleExp
                        && (((ModuleExp) outer)
                            .getFlag(ModuleExp.SUPERTYPE_SPECIFIED))));
-            if (! simpleMatch)
+            if (! simpleMatch) // ??? never happens - inlinedInCheckMethod
                 nameBuf.append("$P");
             name = nameBuf.toString();
             Type[] atypes = argTypes.toArray(new Type[argTypes.size()]);
@@ -1121,7 +1147,6 @@ public class LambdaExp extends ScopeExp {
             }
 
             Method method = ctype.addMethod(name, atypes, rtype, mflags);
-            //System.err.println("method#"+i+": "+method);
             // Maybe emit kawa.SourceMethodType annotation.
             if (encTypesSize > 0
                 && ! (nameDecl != null
@@ -1333,17 +1358,22 @@ public class LambdaExp extends ScopeExp {
         CodeAttr code = comp.getCode();
 
         // Tail-calls loop back to here!
-        getVarScope().noteStartFunction(code);
+        if (! getFlag(LambdaExp.HAS_NONTRIVIAL_PATTERN))
+            getVarScope().noteStartFunction(code);
 
         if (closureEnv != null && ! closureEnv.isParameter()
             && ! comp.usingCPStyle()) {
-            if (! getInlineOnly()) {
+            if (! inlinedInCallerOrCheckMethodOnly()) {
                 code.emitPushThis();
                 Field field = closureEnvField;
                 if (field == null)
                     field = outerLambda().closureEnvField;
                 code.emitGetField(field);
                 code.emitStore(closureEnv);
+            } else if (inlinedInCheckMethod()) {
+                 comp.loadModuleRef(getOwningLambda().getHeapFrameType());
+                 
+                 code.emitStore(closureEnv);
             } else if (! inlinedIn(outerLambda())) {
                 outerLambdaOrCaller().loadHeapFrame(comp);
                 code.emitStore(closureEnv);
@@ -1383,27 +1413,22 @@ public class LambdaExp extends ScopeExp {
             }
         }
 
-        // For each non-artificial parameter, copy it from its incoming
-        // location (a local variable register, or the argsArray) into
-        // its home location, if they are different.
-        Declaration param = firstDecl();
-        // i is index of current parameter, not counting this.
-        int i = param != null && param.isThisParameter() ? -1 : 0;
-        int key_i = 0;
-        int key_args = keywords == null ? 0 : keywords.length;
-        if (this instanceof ModuleExp)
-            return;
-        int defaultStart = 0;
-        Method mainMethod = getMainMethod();
-        Variable callContextSave = comp.callContextVar;
-        comp.callContextVar
-            = (getCallConvention() < Compilation.CALL_WITH_CONSUMER ? null
-               : getVarScope().lookup("$ctx"));
+        if (! inlinedInCheckMethod() && ! (this instanceof ModuleExp)) {
+            // For each non-artificial parameter, copy it from its incoming
+            // location (a local variable register, or the argsArray) into
+            // its home location, if they are different.
 
-        for (;  param != null; param = param.nextDecl(), i++) {
-            boolean ignorable = param.ignorable();
-            if (! param.isSimple()
+            for (Declaration param = firstDecl();  param != null;
+                 param = param.nextDecl()) {
+                saveParameter(param, comp);
+            }
+        }
+    }
+
+    void saveParameter(Declaration param, Compilation comp) {
+            if (! param.isSimple() && ! param.ignorable()
                 || param.isIndirectBinding()) {
+                CodeAttr code = comp.getCode();
                 Type paramType = param.getType();
                 Type stackType = paramType;
                 // If the parameter is captured by an inferior lambda,
@@ -1411,17 +1436,10 @@ public class LambdaExp extends ScopeExp {
                 // slot in the heapFrame.  Thus we emit an aaload instruction.
                 // Unfortunately, it expects the new value *last*,
                 // so first push the heapFrame array and the array index.
-                if (!param.isSimple () && ! ignorable)
+                if (!param.isSimple())
                     param.loadOwningObject(null, comp);
                 // This part of the code pushes the incoming argument.
-                if (! ignorable)
-                        code.emitLoad(param.getVariable());
-                if (ignorable)
-                    continue;
-                // Now finish copying the incoming argument into its
-                // home location.
-                if (paramType != stackType)
-                    CheckedTarget.emitCheckedCoerce(comp, this, i+1, stackType, paramType, null);
+                code.emitLoad(param.getVariable());
                 if (param.isIndirectBinding())
                     param.pushIndirectBinding(comp);
                 if (param.isSimple()) {
@@ -1433,8 +1451,6 @@ public class LambdaExp extends ScopeExp {
                 else
                     code.emitPutField(param.getField());
             }
-        }
-        comp.callContextVar = callContextSave;
     }
 
     void compileAsInlined(Compilation comp, Target target) {
@@ -1451,12 +1467,12 @@ public class LambdaExp extends ScopeExp {
 	enterFunction(comp);
 	body.compileWithPosition(comp, target);
 	compileEnd(comp);
-	generateApplyMethods(comp);
 	comp.curLambda = saveLambda;
     }
 
     void compileAsMethod(Compilation comp) {
-        if ((flags & METHODS_COMPILED) != 0 || isAbstract() || isNative())
+        if ((flags & METHODS_COMPILED) != 0 || isAbstract() || isNative()
+            || inlinedInCheckMethod())
             return;
         flags |= METHODS_COMPILED;
         if (primMethods == null)
@@ -1556,7 +1572,6 @@ public class LambdaExp extends ScopeExp {
 
                 compileBody(comp);
                 compileEnd(comp);
-                generateApplyMethods(comp);
             }
         }
 
@@ -1679,10 +1694,8 @@ public class LambdaExp extends ScopeExp {
             // Translate: (fun x @y z) to:
             // (let (([t1 t2 t3 t4] [x @y z])) (fun t1 t2 t3 t4])
             setCanRead(true);
-            if (nameDecl != null) {
+            if (nameDecl != null)
                 nameDecl.setCanRead(true);
-                nameDecl.setSimple(false);
-            }
         }
         if ((flags & ATTEMPT_INLINE) != 0) {
             Expression inlined = InlineCalls.inlineCall(this, args, true);

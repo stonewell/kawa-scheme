@@ -263,6 +263,9 @@ public class PushApply extends ExpVisitor<Expression,Void>
   }
 
     protected Expression visitLambdaExp (LambdaExp exp, Void ignored) {
+        if (exp.keywords != null && exp.keywords.length > 0)
+            exp.setFlag(LambdaExp.HAS_NONTRIVIAL_PATTERN);
+        else if (! (exp instanceof ModuleExp))
         for (Declaration decl = exp.firstDecl();
              decl != null;  decl = decl.nextDecl()) {
             if (decl.getFlag(Declaration.IS_SUPPLIED_PARAMETER|Declaration.SKIP_FOR_METHOD_PARAMETER|Declaration.PATTERN_NESTED)) {
