@@ -489,7 +489,58 @@ public class PrimProcedure extends MethodProc {
 
   public final Type[] getParameterTypes() { return argTypes; }
 
-  /** Compile arguments and push unto stack.
+    public static final void compileRestArg(Type arg_type, ApplyExp exp, int startArg, int i, Compilation comp) {
+        Expression[] args = exp.getArgs();
+        int nargs = args.length - startArg;
+        CodeAttr code = comp.getCode();
+        boolean argTypeIsList = arg_type == Compilation.scmListType
+            || arg_type == LangObjType.listType;
+        if (argTypeIsList) {
+            if (exp.firstSpliceArg < 0)  {
+		gnu.kawa.functions.MakeList.compile(args, startArg+i, comp);
+		return;
+            }
+            // FIXME check if can use splice argument directly
+        }
+        if (startArg+i+1== args.length
+            && exp.firstSpliceArg==startArg+i) {
+            // See if final argument is a splice of an array we can re-use.
+            Expression spliceArg = MakeSplice.argIfSplice(args[startArg+i]);
+            Type spliceType = spliceArg.getType();
+            if (spliceType instanceof ArrayType && arg_type instanceof ArrayType) {
+                Type spliceElType = ((ArrayType) spliceType).getComponentType();
+                Type argElType = ((ArrayType) arg_type).getComponentType();
+                if (spliceElType == argElType
+                    || (argElType == Type.objectType
+                        && spliceElType instanceof ObjectType)
+                    || (argElType instanceof ClassType
+                        && spliceElType instanceof ClassType
+                        && spliceElType.isSubtype(argElType))) {
+                    spliceArg.compileWithPosition(comp, Target.pushObject);
+                    return;
+                }
+            }
+            if (argTypeIsList
+                && (spliceType == Compilation.scmListType
+                    || spliceType == LangObjType.listType)) {
+                spliceArg.compileWithPosition(comp,
+                                              Target.pushValue(arg_type));
+                return;
+            }
+        }
+                
+        Type el_type = arg_type instanceof ArrayType
+            ? ((ArrayType) arg_type).getComponentType()
+            : Type.objectType;
+        CompileArrays.createArray(el_type, comp,
+                                  args, startArg+i, args.length);
+        if (argTypeIsList) {
+            code.emitPushInt(0);
+            code.emitInvokeStatic(Compilation.makeListMethod);
+        }
+    }
+
+    /** Compile arguments and push unto stack.
    * @param args arguments to evaluate and push.
    * @param startArg Normally 0, but 1 in the case of a constructor,
    *   or the case of "static" method of a non-static class.
@@ -499,8 +550,9 @@ public class PrimProcedure extends MethodProc {
    *   pass a link to a closure environment, which was pushed by our caller.)
    *   If thisType==null, no special handling of args[0] or argTypes[0].
    */
-    private void compileArgs(ApplyExp exp, Expression[] args, int startArg, Type thisType, Compilation comp)
+    private void compileArgs(ApplyExp exp, int startArg, Type thisType, Compilation comp)
  {
+    Expression[] args = exp.getArgs();
     boolean variable = takesVarArgs();
     String name = getName();
     Type arg_type = null;
@@ -541,51 +593,7 @@ public class PrimProcedure extends MethodProc {
           {
             arg_type = argDecl != null ? argDecl.getType()
               : argTypes[arg_count-1+skipArg];
-            boolean argTypeIsList = arg_type == Compilation.scmListType || arg_type == LangObjType.listType;
-	    if (argTypeIsList) {
-                if (exp.firstSpliceArg < 0)  {
-		gnu.kawa.functions.MakeList.compile(args, startArg+i, comp);
-		break;
-                }
-                // FIXME check if can use splice argument directly
-	      }
-            if (startArg+i+1== args.length
-                && exp.firstSpliceArg==startArg+i) {
-                // See if final argument is a splice of an array we can re-use.
-                Expression spliceArg = MakeSplice.argIfSplice(args[startArg+i]);
-                Type spliceType = spliceArg.getType();
-                if (spliceType instanceof ArrayType && arg_type instanceof ArrayType) {
-                    Type spliceElType = ((ArrayType) spliceType).getComponentType();
-                    Type argElType = ((ArrayType) arg_type).getComponentType();
-                    if (spliceElType == argElType
-                        || (argElType == Type.objectType
-                            && spliceElType instanceof ObjectType)
-                        || (argElType instanceof ClassType
-                            && spliceElType instanceof ClassType
-                            && spliceElType.isSubtype(argElType))) {
-                        spliceArg.compileWithPosition(comp, Target.pushObject);
-                        //i = nargs; unused after break
-                        break;
-                    }
-                }
-                if (argTypeIsList
-                    && (spliceType == Compilation.scmListType
-                        || spliceType == LangObjType.listType)) {
-                    spliceArg.compileWithPosition(comp,
-                                                  Target.pushValue(arg_type));
-                    break;
-                }
-            }
-                
-            Type el_type = arg_type instanceof ArrayType
-                ? ((ArrayType) arg_type).getComponentType()
-                : Type.objectType;
-            CompileArrays.createArray(el_type, comp,
-                                      args, startArg+i, args.length);
-            if (argTypeIsList) {
-                code.emitPushInt(0);
-                code.emitInvokeStatic(Compilation.makeListMethod);
-            }
+            compileRestArg(arg_type, exp, startArg, i, comp);
             i = nargs;
             break;
           }
@@ -737,7 +745,7 @@ public class PrimProcedure extends MethodProc {
       }
     else if (takesTarget() && method.getStaticFlag())
       startArg = 1;
-    compileArgs(exp, args, startArg, thisType, comp);
+    compileArgs(exp, startArg, thisType, comp);
 
     if (method == null)
       {

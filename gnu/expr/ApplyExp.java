@@ -147,56 +147,6 @@ public class ApplyExp extends Expression
     ctx.setupApplyAll(proc, vals);
   }
 
-  private static void compileToArray(Expression[] args, int start, Declaration restParam, Compilation comp)
-  {
-    Type restType = restParam.getType();
-    if (restType == LangObjType.listType
-        || restType == Compilation.scmListType) {
-        MakeList.compile(args, start, comp);
-        return;
-    }
-    CodeAttr code = comp.getCode();
-    int argslength = args.length;
-    int nargs = argslength - start;
-    if (nargs == 0)
-      {
-	code.emitGetStatic(Compilation.noArgsField);
-      }
-    else {
-    code.emitPushInt(nargs);
-    code.emitNewArray(Type.pointer_type);
-    for (int i = start; i < argslength; ++i)
-      {
-	Expression arg = args[i];
-	if (comp.usingCPStyle()
-	    && ! (arg instanceof QuoteExp) && ! (arg instanceof ReferenceExp))
-	  {
-	    // If the argument involves a CPStyle function call, we will
-	    // have to save and restore anything on the JVM stack into
-	    // fields in the CallFrame.  This is expensive, so defer
-	    // pushing the duplicated argument array and the index
-	    // until *after* we've calculated the argument.  The downside
-	    // is that we have to do some extra stack operations.
-	    // However, these are cheap (and get compiled away when
-	    // compiling to native code).
-	    arg.compileWithPosition(comp, Target.pushObject);
-	    code.emitSwap();
-	    code.emitDup(1, 1);
-	    code.emitSwap();
-	    code.emitPushInt(i);
-	    code.emitSwap();
-	  }
-	else
-	  {
-	    code.emitDup(Compilation.objArrayType);
-	    code.emitPushInt(i);
-	    arg.compileWithPosition(comp, Target.pushObject);
-	  }
-	code.emitArrayStore(Type.pointer_type);
-      }
-    }
-  }
-
   public void compile (Compilation comp, Target target)
   {
     compile(this, comp, target, true);
@@ -418,7 +368,7 @@ public class ApplyExp extends Expression
          && ! comp.curLambda.inlinedInCallerOrCheckMethodOnly()
          && (exp.isTailCall() || target instanceof ConsumerTarget))
         || exp.firstSpliceArg >= 0 || exp.numKeywordArgs > 0
-        || (! tail_recurse &&  args_length > 4))
+        || (! tail_recurse && args_length > 4))
       {
         comp.loadCallContext();
 	exp_func.compile(comp, new StackTarget(Compilation.typeProcedure));
@@ -514,7 +464,8 @@ public class ApplyExp extends Expression
         incValues = new int[fixed];
         Declaration rest = pushArgs(func_lambda, exp.args, fixed, incValues, comp);
         if (toArray)
-            compileToArray(exp.args, fixed, rest, comp);
+            PrimProcedure.compileRestArg(rest.getType(), exp,
+                                         0, exp.args.length-1, comp);
         method = null;
       }
     else
@@ -652,10 +603,17 @@ public class ApplyExp extends Expression
     out.writeSpaceFill();
     printLineColumn(out);
     func.print(out);
+    int firstKeyword = firstKeywordArgIndex-1;
     for (int i = 0; args != null && i < args.length; ++i)
       {
 	out.writeSpaceLinear();
-	args[i].print(out);
+        Expression arg = args[i];
+        if (i >= firstKeyword && ((i - firstKeyword) & 1) == 0
+            && i < firstKeyword + 2 * numKeywordArgs
+            && arg.valueIfConstant() instanceof Keyword) {
+            out.print(arg.valueIfConstant().toString());
+        } else
+            arg.print(out);
       }
     out.endLogicalBlock(")");
   }
