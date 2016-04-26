@@ -12,6 +12,10 @@ public class ArgListVector extends ConstVector implements ArgList {
         this.numKeywords = numKeywords;
     }
 
+    public static ArgListVector getArgs(CallContext ctx) {
+        return drop(ctx, 0);
+    }
+
     public static ArgListVector prepend(ArgListVector args, Object... extra) {
         int xlen = extra.length;
         int n = args.size();

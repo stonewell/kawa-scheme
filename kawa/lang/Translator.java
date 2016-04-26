@@ -437,6 +437,7 @@ public class Translator extends Compilation
     ScopeExp save_scope = current_scope;
     int first_keyword = -1;
     int last_keyword = -1;
+    boolean bad_keyword_reported = false;
     int firstSpliceArg = -1;
     int i = 0;
     while (cdr != LList.Empty)
@@ -460,13 +461,18 @@ public class Translator extends Compilation
                 first_keyword = i;
                 last_keyword = i - 2; // To suppress incorrect warnings
             }
-            if (keywordsAreSelfEvaluating())
+            if (bad_keyword_reported)
                 ;
-            else if (i == last_keyword + 1 || i + 1 == cdr_length)
+            else if (keywordsAreSelfEvaluating())
+                last_keyword = i;
+            else if (i == last_keyword + 1 || i + 1 == cdr_length) {
+                bad_keyword_reported = true;
                 error('w', "missing value after unquoted keyword");
-            else if (i != last_keyword + 2)
+            } else if (i != last_keyword + 2) {
+                bad_keyword_reported = true;
                 error('w', "keyword separated from other keyword arguments");
-            last_keyword = i;
+            } else
+                last_keyword = i;
             arg = QuoteExp.getInstance(cdr_car, this);
             arg.setFlag(QuoteExp.IS_KEYWORD);
         } else if (cdr_cdr instanceof Pair

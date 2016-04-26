@@ -171,7 +171,7 @@ public class InlineCalls extends ExpExpVisitor<Type> {
         if (func instanceof LambdaExp) {
             // This optimization in principle should be redundant, but leaving
             // it out currently causes worse type-inference and code generation.
-            Expression inlined = inlineCall((LambdaExp) func, exp.args, false);
+            Expression inlined = inlineCall((LambdaExp) func, exp, false);
             if (inlined != null)
                 return visit(inlined, required);
         }
@@ -945,10 +945,11 @@ public class InlineCalls extends ExpExpVisitor<Type> {
      * @return the inlined expression (a LetExp), or null if we
      *   weren't able to inline.
      */
-    public static Expression inlineCall(LambdaExp lexp, Expression[] args,
+    public static Expression inlineCall(LambdaExp lexp, ApplyExp aexp,
                                         boolean makeCopy) {
-        if (lexp.keywords != null)
+        if (lexp.keywords != null || ! aexp.isSimple())
             return null;
+        Expression[] args = aexp.getArgs();
         boolean varArgs = lexp.max_args < 0;
         int fixed = lexp.min_args;
         if ((fixed == lexp.max_args

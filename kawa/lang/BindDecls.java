@@ -151,10 +151,7 @@ public class BindDecls {
                             scope.setFlag(LambdaExp.ALLOW_OTHER_KEYWORDS);
                     }
                     if (! decl.getFlag(Declaration.TYPE_SPECIFIED)) {
-                        // FIXME these may not be the optimal default types.
-                        // Maybe it should be ArgListVector if keywordsOk.
-                        // Maybe ConstVector or ArrayList otherwise.
-                        decl.setType(keywordsOk ? LangObjType.listType
+                        decl.setType(keywordsOk ? LangObjType.argVectorType
                                      : ArrayType.make(Type.objectType));
                     }
                 }

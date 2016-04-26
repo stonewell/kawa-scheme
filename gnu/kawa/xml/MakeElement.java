@@ -104,16 +104,19 @@ public class MakeElement extends NodeConstructor {
     try
       {
         Symbol type = tag != null ? tag : (Symbol) ctx.getNextArg();
+        int i = tag != null ? 0 : 1;
 	if (mk.namespaceNodes != null)
 	  startElement(out, type, mk.copyNamespacesMode, mk.namespaceNodes);
 	else
 	  startElement(out, type, mk.copyNamespacesMode);
-	Object endMarker = Special.dfault;
-	for (;;)
+        int len = ctx.numArguments()-1;
+	for (; i <= len;  i++)
 	  {
-	    Object arg = ctx.getNextArg(endMarker);
-	    if (arg == endMarker)
-	      break;
+            Object arg = ctx.getArgAsObject(i);
+            String key = ctx.getKeyword(i);
+            if (key != null) {
+                writeContent(Keyword.make(key), out);
+            }
             if (mk.stringIsText)
                 writeContentS(arg, out);
             else

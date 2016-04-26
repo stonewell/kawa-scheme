@@ -19,7 +19,7 @@
 		 #!optional (b (list a b c d (next-n)))
 		 (c (list a b c d (next-n)))
 		 #!key (d (list a b c d (next-n))))
-    (vector arg-a: a arg-b: b arg-c: c argd: d))
+    (vector 'arg-a: a 'arg-b: b 'arg-c: c 'argd: d))
   (list inner1: (inner 'a2) n: (next-n)
 	inner2: (inner 'a3 'b3 'c3 d: 'd3) n: (next-n)))
 (test

@@ -16,6 +16,10 @@ public class ArgListPair
         this.start = skip;
     }
 
+    public static LList getArgs(CallContext ctx) {
+        return valueOf(ArgListVector.getArgs(ctx));
+    }
+
     public static LList valueOf(ArgListVector args) {
         return args == null || args.isEmpty() ? LList.Empty
             : new ArgListPair(args, 0);

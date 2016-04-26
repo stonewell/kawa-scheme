@@ -91,6 +91,7 @@ public class ApplyExp extends Expression
             this.firstSpliceArg = src.firstSpliceArg + delta;
         if (src.firstKeywordArgIndex > 0)
             this.firstKeywordArgIndex = src.firstKeywordArgIndex + delta;
+        this.numKeywordArgs = src.numKeywordArgs;
     }
 
     public int spliceCount() {
@@ -372,83 +373,8 @@ public class ApplyExp extends Expression
       {
         comp.loadCallContext();
 	exp_func.compile(comp, new StackTarget(Compilation.typeProcedure));
-	// evaluate args to frame-locals vars;  // may recurse!
 
-            Scope scope = code.pushScope();
-            Variable[] vars = new Variable[args_length];
-            int initial = args_length <= 4 ? args_length : 4;
-            if (exp.numKeywordArgs > 0 && initial >= exp.firstKeywordArgIndex)
-                initial = exp.firstKeywordArgIndex-1;
-            if (exp.firstSpliceArg >= 0 && initial > exp.firstSpliceArg)
-                initial = exp.firstSpliceArg;
-            if (initial != args_length) {
-                for (int i = 0; i < args_length; ++i) {
-                    Expression arg = exp.args[i];
-                    Expression sarg = MakeSplice.argIfSplice(arg);
-                    if (sarg != null)
-                        arg = sarg;
-                    if (arg instanceof QuoteExp)
-                        continue;
-                    arg.compileWithPosition(comp, Target.pushObject);
-                    Variable var = scope.addVariable(code, Type.objectType, null);
-                    code.emitStore(var);
-                    vars[i] = var;
-                }
-            }
-            for (int i = 0; i < initial; ++i) {
-                Expression arg = exp.args[i];
-                if (vars[i] != null)
-                    code.emitLoad(vars[i]);
-                else
-                    arg.compileWithPosition(comp, Target.pushObject);
-            }
-            code.emitInvoke(Compilation.typeCallContext
-			    .getDeclaredMethod("setupApply",
-					       initial+1));
-            for (int i = initial;  i < args_length;  i++) {
-                Expression arg = exp.args[i];
-                char mode = '\0'; // ''\0', 'K', '@' or ':'
-                String key = null;
-                if (i >= exp.firstKeywordArgIndex-1
-                    && i < exp.firstKeywordArgIndex-1 + 2 * exp.numKeywordArgs) {
-                    // a keyword or keyword arg
-                    if (((i - exp.firstKeywordArgIndex) & 1) != 0)
-                        continue ; // keyword - handled next iteration
-                    // FIXME use ArgListImpl.setKeys when possible
-                    Object keyarg = exp.args[i-1].valueIfConstant();
-                    key = ((Keyword) keyarg).getName();
-                    mode = 'K';
-                } else {
-                    Expression sarg = MakeSplice.argIfSplice(arg);
-                    if (sarg != null) {
-                        if (((ApplyExp) arg).getFunction()
-                            == MakeSplice.quoteKeywordsAllowedInstance)
-                            mode = ':';
-                        else
-                            mode = '@';
-                        arg = sarg;
-                    }
-                }
-                comp.loadCallContext();
-                if (key != null)
-                    code.emitPushString(key);
-                if (vars[i] != null)
-                    code.emitLoad(vars[i]);
-                else
-                    arg.compileWithPosition(comp, Target.pushObject);
-                if (mode == 'K') {
-                    code.emitInvoke(Compilation.typeCallContext
-                                    .getDeclaredMethod("addKey", 2));
-                } else if (mode == '@' || mode == ':') {
-                    String mname = mode == '@' ? "addSequence" : "addArgList";
-                    code.emitInvoke(Compilation.typeCallContext
-                                    .getDeclaredMethod(mname, 1));
-                } else {
-                    code.emitInvoke(Compilation.typeCallContext
-                                    .getDeclaredMethod("addArg", 1));
-                }
-            }
-            code.popScope();
+        compileArgsToContext(exp, null, comp);
 
         finishTrampoline(exp.isTailCall(), target, comp);
  	return;
@@ -508,6 +434,91 @@ public class ApplyExp extends Expression
     code.emitInvokeVirtual(method);
     target.compileFromStack(comp, Type.pointer_type);
   }
+
+    public static void compileArgsToContext(ApplyExp exp, Method setupMethod,
+                                            Compilation comp) {
+        CodeAttr code = comp.getCode();
+        int args_length = exp.args.length;
+
+        // evaluate args to frame-locals vars;  // may recurse!
+
+        Scope scope = code.pushScope();
+        Variable[] vars = new Variable[args_length];
+        int initial = setupMethod != null ? 0 : args_length <= 4 ? args_length : 4;
+        if (exp.numKeywordArgs > 0 && initial >= exp.firstKeywordArgIndex)
+            initial = exp.firstKeywordArgIndex-1;
+        if (exp.firstSpliceArg >= 0 && initial > exp.firstSpliceArg)
+            initial = exp.firstSpliceArg;
+        if (setupMethod == null)
+            setupMethod = Compilation.typeCallContext
+                .getDeclaredMethod("setupApply", initial+1);
+        if (initial != args_length) {
+            for (int i = 0; i < args_length; ++i) {
+                Expression arg = exp.args[i];
+                Expression sarg = MakeSplice.argIfSplice(arg);
+                if (sarg != null)
+                    arg = sarg;
+                if (arg instanceof QuoteExp)
+                    continue;
+                arg.compileWithPosition(comp, Target.pushObject);
+                Variable var = scope.addVariable(code, Type.objectType, null);
+                code.emitStore(var);
+                vars[i] = var;
+            }
+        }
+        for (int i = 0; i < initial; ++i) {
+            Expression arg = exp.args[i];
+            if (vars[i] != null)
+                code.emitLoad(vars[i]);
+            else
+                arg.compileWithPosition(comp, Target.pushObject);
+        }
+        code.emitInvoke(setupMethod);
+        for (int i = initial;  i < args_length;  i++) {
+            Expression arg = exp.args[i];
+            char mode = '\0'; // ''\0', 'K', '@' or ':'
+            String key = null;
+            if (i >= exp.firstKeywordArgIndex-1
+                && i < exp.firstKeywordArgIndex-1 + 2 * exp.numKeywordArgs) {
+                // a keyword or keyword arg
+                if (((i - exp.firstKeywordArgIndex) & 1) != 0)
+                    continue ; // keyword - handled next iteration
+                // FIXME use ArgListImpl.setKeys when possible
+                Object keyarg = exp.args[i-1].valueIfConstant();
+                key = ((Keyword) keyarg).getName();
+                mode = 'K';
+            } else {
+                Expression sarg = MakeSplice.argIfSplice(arg);
+                if (sarg != null) {
+                    if (((ApplyExp) arg).getFunction()
+                        == MakeSplice.quoteKeywordsAllowedInstance)
+                        mode = ':';
+                    else
+                        mode = '@';
+                    arg = sarg;
+                }
+            }
+            comp.loadCallContext();
+            if (key != null)
+                code.emitPushString(key);
+            if (vars[i] != null)
+                code.emitLoad(vars[i]);
+            else
+                arg.compileWithPosition(comp, Target.pushObject);
+            if (mode == 'K') {
+                code.emitInvoke(Compilation.typeCallContext
+                                .getDeclaredMethod("addKey", 2));
+            } else if (mode == '@' || mode == ':') {
+                String mname = mode == '@' ? "addSequence" : "addArgList";
+                code.emitInvoke(Compilation.typeCallContext
+                                .getDeclaredMethod(mname, 1));
+            } else {
+                code.emitInvoke(Compilation.typeCallContext
+                                .getDeclaredMethod("addArg", 1));
+            }
+        }
+        code.popScope();
+    }
 
     static void finishTrampoline(boolean isTailCall, Target target, Compilation comp) {
         CodeAttr code = comp.getCode();

@@ -202,13 +202,6 @@ public class Procedure extends PropertySet
       throw new WrongArguments(proc, argCount);
   }
 
-  public static void apply (Procedure proc, CallContext ctx) throws Throwable
-  {
-        ctx.next = 0;
-        ctx.matchState = CallContext.MATCH_THROW_ON_EXCEPTION;
-        Object ignored = proc.applyToConsumerMethod.invokeExact(proc, ctx);
-  }
-
   public Procedure getSetter()
   {
     if (! (this instanceof HasSetter))

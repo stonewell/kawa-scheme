@@ -1698,7 +1698,7 @@ public class LambdaExp extends ScopeExp {
                 nameDecl.setCanRead(true);
         }
         if ((flags & ATTEMPT_INLINE) != 0) {
-            Expression inlined = InlineCalls.inlineCall(this, args, true);
+            Expression inlined = InlineCalls.inlineCall(this, exp, true);
             if (inlined != null)
                 return visitor.visit(inlined, required);
         }

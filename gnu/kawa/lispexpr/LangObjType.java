@@ -783,6 +783,8 @@ public class LangObjType extends SpecialObjectType implements TypeValue
       case LIST_TYPE_CODE:
       case REGEX_TYPE_CODE:
       case PROMISE_TYPE_CODE:
+      case ARGLIST_TYPE_CODE:
+      case ARGVECTOR_TYPE_CODE:
         code.emitCheckcast(implementationType);
         break;
       default:
@@ -826,9 +828,9 @@ public class LangObjType extends SpecialObjectType implements TypeValue
       case DYNAMIC_TYPE_CODE:
           return MakeDynamic.instance;
       case ARGLIST_TYPE_CODE:
-          return makeArgList;
+          return ArgListBuilder.makeArgList;
       case ARGVECTOR_TYPE_CODE:
-          return makeArgVector;
+          return ArgListBuilder.makeArgVector;
       default:
         return null;
       }
@@ -934,18 +936,26 @@ public class LangObjType extends SpecialObjectType implements TypeValue
         }
     }
 
-    public static final Procedure makeArgList;
-    public static final Procedure makeArgVector;
-    static {
-        MethodHandle handle = Procedure.lookupApplyHandle(LangObjType.class,
-                                                          "applyToObjArgList");
-        makeArgList = new Procedure(false, handle, "arglist");
-        makeArgVector = new Procedure(false, handle, "argvector");
-    }
+    // Use a custom class (rather than Procedure directly)
+    // so makeArgList and makeArgVector can be found by the LitTable support.
+    public static class ArgListBuilder extends Procedure {
+        public static final Procedure makeArgList;
+        public static final Procedure makeArgVector;
+        static {
+            MethodHandle handle =
+                Procedure.lookupApplyHandle(ArgListBuilder.class,
+                                            "applyToObjArgList");
+            makeArgList = new ArgListBuilder(handle, "arglist");
+            makeArgVector = new ArgListBuilder(handle, "argvector");
+        }
+        private ArgListBuilder(MethodHandle handle, String name) {
+            super(false, handle, name);
+        }
 
-    public static Object applyToObjArgList(Procedure proc, CallContext ctx) throws Throwable {
-        ArgListVector args = ctx.getRestArgsVector();
-        return proc == makeArgVector ? args
-            : ArgListPair.valueOf(args);
+        public static Object applyToObjArgList(Procedure proc, CallContext ctx) throws Throwable {
+            ArgListVector args = ctx.getRestArgsVector();
+            return proc == makeArgVector ? args
+                : ArgListPair.valueOf(args);
+        }
     }
 }

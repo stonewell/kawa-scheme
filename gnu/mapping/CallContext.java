@@ -123,6 +123,11 @@ public class CallContext // implements Runnable
         nextKeyword = 0;
     }
 
+    public void reset() {
+        super.clear();
+        rewind(MATCH_THROW_ON_EXCEPTION);
+    }
+
     public void shiftArgs(Procedure proc, int toDrop) {
         super.shiftArgs(toDrop);
         rewind();
@@ -146,7 +151,7 @@ public class CallContext // implements Runnable
             if (code == MethodProc.NO_MATCH_TOO_FEW_ARGS
                 || code == MethodProc.NO_MATCH_TOO_MANY_ARGS) {
                 WrongArguments wr = new WrongArguments(proc, getArgCount());
-                System.err.println("before WrongArgs code:"+Integer.toHexString(code)+" proc:"+proc+(proc==null?"":(" max:"+proc.maxArgs()))+" nargs:"+getArgCount()+" wr.m:"+wr.getMessage()+" wr:"+wr+" next:"+next+" count:"+count+" firstK:"+firstKeyword+" nextK:"+nextKeyword);
+                System.err.println("before WrongArgs code:"+Integer.toHexString(code)+" proc:"+proc+(proc==null?"":(" max:"+proc.maxArgs()))+" nargs:"+getArgCount()+" wr.m:"+wr.getMessage()+" wr:"+wr+" next:"+next+" count:"+count+" firstK:"+firstKeyword+" numK:"+numKeywords+" nextK:"+nextKeyword);
                 throw wr;
             }
             if (code == MethodProc.NO_MATCH_UNUSED_KEYWORD) {
@@ -187,7 +192,8 @@ public class CallContext // implements Runnable
         return next < count && (next != firstKeyword || numKeywords == 0); // && matchState == 0;
     }
 
-    public int checkOptionalDone() { // Or: doneWithArgs
+    /*
+    public int checkOptionalDone() { // Or: doneWithArgs FIXME unused?
         if (next != count)
             matchError(MethodProc.NO_MATCH_TOO_MANY_ARGS|next);
         else if (matchState == MATCH_THROW_ON_EXCEPTION
@@ -195,6 +201,7 @@ public class CallContext // implements Runnable
             return 0;
         return matchState;
     }
+    */
 
     public void checkKeywordsDone() {
         if (next == count)
@@ -222,46 +229,28 @@ public class CallContext // implements Runnable
 
   public int getArgCount () { return count; }
 
-  /** Get the next incoming argument.
-   * Throw WrongArguments if there are no more arguments.
-   * FIXME: This and following methods don't really fit until the
-   * current match/apply-based API, at least as currently implemented.
-   * We probably need to pass in (or make this a method of) the Procedure.
-   */
-  public Object getNextArg()
-  {
-          if (haveArg())
-              return getArgAsObject(next++);
-          else {
-              matchError(MethodProc.NO_MATCH_TOO_FEW_ARGS|next);
-              return null;
-          }
-   }
-
-    public Object getLastArg()  {
-        if (haveArg()) {
-            Object r = getArgAsObject(next++);
-            if (haveArg()) {
-                matchError(MethodProc.NO_MATCH_TOO_FEW_ARGS|next);
-                return null;
-            }
-            return r;
-        }
-        else {
-            matchError(MethodProc.NO_MATCH_TOO_MANY_ARGS|next);
+    /** Get the next incoming argument.
+     */
+    public Object getNextArg() {
+        if (next >= count) {
+            matchError(MethodProc.NO_MATCH_TOO_FEW_ARGS|next);
             return null;
-        }
+        } else if (next == firstKeyword && numKeywords != 0) {
+            matchError(MethodProc.NO_MATCH_UNUSED_KEYWORD|0);
+            return null;
+        } else
+            return getArgAsObject(next++);
     }
 
-  /** Get the next incoming argument.
-   * Return defaultValue if there are no more arguments.
-   */
-  public Object getNextArg(Object defaultValue)
-  {
-      if (! haveArg())
-      return defaultValue;
-    return getArgAsObject(next++);
-  }
+
+    /** Get the next incoming argument.
+     * Return defaultValue if there are no more arguments.
+     */
+    public Object getNextArg(Object defaultValue) {
+        if (! haveArg())
+            return defaultValue;
+        return getArgAsObject(next++);
+    }
 
     public final Object[] getRestPlainArray() {
         int numKeys = numKeywords();
@@ -416,7 +405,7 @@ public class CallContext // implements Runnable
     /* * A sorted list of keyword arguments.
      * (It might be a win to use a String instead of a short[],
      * because a String is cheaper to initialize.
-     * {@code values[keywordIndexes[i]+firstKeyword]} is the {@code i}'th
+     * {@code values[sortedKeywords[i]+firstKeyword]} is the {@code i}'th
      * keyword argument in lexicographic order.
      */ 
     public static short[] getSortedKeywords(String[] keywords, int nkeys) {
@@ -440,10 +429,9 @@ public class CallContext // implements Runnable
     }
     static final KeywordSorter keywordSorter = new KeywordSorter();
 
-    //short[] keywordIndexes;
-    // Index in keywordIndexes array.  Set to 0;
-    // Should be combined with argState???
+    // Index in the sortedKeywords array.  Initialized to 0.
     int nextKeyword;
+
     /** Return index of matching keyword argument.
      * Must be called with keywords in increasing lexicographic order.
      * @return {@code dfault} if no matching keyword argument,

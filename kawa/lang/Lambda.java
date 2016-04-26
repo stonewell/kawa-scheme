@@ -242,11 +242,12 @@ public class Lambda extends Syntax
         if (mode == restKeyword)
 	  {
             decl.setFlag(Declaration.IS_REST_PARAMETER);
-            decl.setFlag(Declaration.KEYWORDS_OK);
-            lexp.setFlag(LambdaExp.ALLOW_OTHER_KEYWORDS);
-            if (! decl.getFlag(Declaration.TYPE_SPECIFIED))
-                decl.setType(LangObjType.listType);
-	  }
+            if (! decl.getFlag(Declaration.TYPE_SPECIFIED)) {
+                decl.setType(LangObjType.argListType);
+                decl.setFlag(Declaration.KEYWORDS_OK);
+                lexp.setFlag(LambdaExp.ALLOW_OTHER_KEYWORDS);
+            }
+          }
         decl.setFlag(Declaration.IS_SINGLE_VALUE);
         if (suppliedPair != null) {
             Declaration suppliedDecl = addParam((Symbol) suppliedPair.getCar(),
@@ -277,7 +278,7 @@ public class Lambda extends Syntax
             rest_args = 1;
             Declaration decl = addParam((Symbol) bindings,
                                         templateScopeRest, lexp, tr);
-            decl.setType(LangObjType.listType);
+            decl.setType(LangObjType.argListType);
             decl.setFlag(Declaration.IS_SINGLE_VALUE
                          |Declaration.IS_PARAMETER
                          |Declaration.IS_REST_PARAMETER);
@@ -512,15 +513,23 @@ public class Lambda extends Syntax
 
         if (cur.getFlag(Declaration.IS_PARAMETER)) {
 
-        if (arg_i >= lexp.min_args
-            && (arg_i < lexp.min_args + opt_args
-                || lexp.max_args >= 0
-                || arg_i != lexp.min_args + opt_args))
-          {
-            cur.setInitValue(tr.rewrite(cur.getInitValue()));
-          }
-        arg_i++;
-        } 
+            if (arg_i >= lexp.min_args
+                && (arg_i < lexp.min_args + opt_args
+                    || lexp.max_args >= 0
+                    || arg_i != lexp.min_args + opt_args)) {
+                cur.setInitValue(tr.rewrite(cur.getInitValue()));
+            }
+            if (cur.getFlag(Declaration.IS_REST_PARAMETER)
+                && cur.getFlag(Declaration.TYPE_SPECIFIED)) {
+                Type rstType = cur.getType();
+                if (rstType == LangObjType.argListType
+                    || rstType == LangObjType.argVectorType) {
+                    cur.setFlag(Declaration.KEYWORDS_OK);
+                    lexp.setFlag(LambdaExp.ALLOW_OTHER_KEYWORDS);
+                }
+            }
+            arg_i++;
+        }
         tr.lexical.push(cur);
      }
 

@@ -209,7 +209,10 @@ public class PrimProcedure extends MethodProc {
         Type elementType = null;
         if (takesVarArgs) {
             Type restType = argTypes[paramCount-1];
-            if (restType == Compilation.scmListType || restType == LangObjType.listType) {
+            if (restType == Compilation.scmListType
+                || restType == LangObjType.listType
+                || restType == LangObjType.argListType
+                || restType == LangObjType.argVectorType) {
                 nargs = fixArgs+1;
                 elementType = Type.objectType;
             } else {
@@ -520,13 +523,33 @@ public class PrimProcedure extends MethodProc {
                     return;
                 }
             }
-            if (argTypeIsList
-                && (spliceType == Compilation.scmListType
-                    || spliceType == LangObjType.listType)) {
+            if (arg_type == spliceType
+                || ((argTypeIsList || arg_type == LangObjType.argListType)
+                    && (spliceType == Compilation.scmListType
+                        || spliceType == LangObjType.listType))) {
                 spliceArg.compileWithPosition(comp,
                                               Target.pushValue(arg_type));
                 return;
             }
+        }
+        if (arg_type == LangObjType.argListType
+            || arg_type == LangObjType.argVectorType) {
+            Expression[] xargs = new Expression[nargs-i];
+            System.arraycopy(args, startArg+i, xargs, 0, xargs.length);
+            ApplyExp xexp = new ApplyExp(exp.func, xargs);
+            xexp.adjustSplice(exp, startArg+i);
+            Method setupMethod =
+                Compilation.typeCallContext.getDeclaredMethod("reset", 0);
+            comp.loadCallContext();
+            ApplyExp.compileArgsToContext(xexp, setupMethod, comp);
+            comp.loadCallContext();
+            ClassType ctype =
+                ClassType.make(arg_type == LangObjType.argListType
+                               ? "gnu.mapping.ArgListPair"
+                               : "gnu.mapping.ArgListVector");
+            Method getArgsMethod = ctype.getDeclaredMethod("getArgs", 1);
+            code.emitInvokeStatic(getArgsMethod);
+            return;
         }
                 
         Type el_type = arg_type instanceof ArrayType
