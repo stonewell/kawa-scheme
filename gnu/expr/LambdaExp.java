@@ -1798,7 +1798,7 @@ public class LambdaExp extends ScopeExp {
                 mode = null;
             else if (i < min_args + opt_args)
                 mode = Special.optional;
-            else if (max_args < 0 && i == min_args + opt_args)
+            else if (decl.getFlag(Declaration.IS_REST_PARAMETER))
                 mode = Special.rest;
             else
                 mode = Special.key;

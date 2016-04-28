@@ -116,6 +116,7 @@ public class Lambda extends Syntax
 	    pair_car = sf.getDatum();
 	    templateScope = sf.getScope();
 	  }
+        Object pccar;
 	if (pair_car == optionalKeyword)
 	  {
 	    if (opt_args >= 0)
@@ -124,10 +125,22 @@ public class Lambda extends Syntax
               tr.syntaxError (optionalKeyword.toString()+" after " + restKeyword + " or " + keyKeyword);
 	    opt_args = 0;
 	  }
+        else if (pair_car instanceof Pair
+                 && ((pccar = ((Pair) pair_car).getCar()) == LispLanguage.splice_sym
+                     || pccar == LispLanguage.splice_colon_sym))
+        {
+            System.err.println("splice noted min:"+lexp.min_args);
+	    if (rest_args >= 0)
+              tr.syntaxError ("xxmultiple " + restKeyword
+                              + " keywords in parameter list");
+            mode = null;
+            lexp.min_args++; // compensate for later decrement
+	    rest_args = -1;
+        }
 	else if (pair_car == restKeyword)
 	  {
 	    if (rest_args >= 0)
-              tr.syntaxError ("multiple " + restKeyword
+              tr.syntaxError ("yymultiple " + restKeyword
                               + " keywords in parameter list");
 	    else if (key_args >= 0)
               tr.syntaxError (restKeyword.toString()
@@ -169,9 +182,12 @@ public class Lambda extends Syntax
         pair_car = tr.namespaceResolve(pair_car);
         Declaration decl = null;
 	if (pair_car instanceof Symbol
-                 || (pair_car instanceof Pair && mode == null
-                 && (Translator.listLength(pair_car) != 3
-                     || ! tr.matches(((Pair) ((Pair) pair_car).getCdr()).getCar(), "::"))))
+            || (pair_car instanceof Pair
+                && (mode == null
+                    || (pccar = ((Pair) pair_car).getCar()) == LispLanguage.splice_sym
+                    || pccar == LispLanguage.splice_colon_sym)
+                && (Translator.listLength(pair_car) != 3
+                    || ! tr.matches(((Pair) ((Pair) pair_car).getCdr()).getCar(), "::"))))
         {
             Object[] r = parsePatternCar(pair, templateScope, lexp, tr);
             next = r[0];
@@ -512,13 +528,9 @@ public class Lambda extends Syntax
 	prev = cur;
 
         if (cur.getFlag(Declaration.IS_PARAMETER)) {
-
-            if (arg_i >= lexp.min_args
-                && (arg_i < lexp.min_args + opt_args
-                    || lexp.max_args >= 0
-                    || arg_i != lexp.min_args + opt_args)) {
-                cur.setInitValue(tr.rewrite(cur.getInitValue()));
-            }
+            Expression initValue = cur.getInitValue();
+            if (initValue != null)
+                cur.setInitValue(tr.rewrite(initValue));
             if (cur.getFlag(Declaration.IS_REST_PARAMETER)
                 && cur.getFlag(Declaration.TYPE_SPECIFIED)) {
                 Type rstType = cur.getType();

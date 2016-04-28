@@ -212,7 +212,8 @@ public class CallContext // implements Runnable
             matchError(MethodProc.NO_MATCH_UNUSED_KEYWORD|keywordIndex);
             nextKeyword = numKeywords;
         }
-        next = firstKeyword + numKeywords;
+        if (numKeywords > 0)
+            next = firstKeyword + numKeywords;
     }
 
     public int checkDone() { // Or: doneWithArgs
@@ -277,8 +278,9 @@ public class CallContext // implements Runnable
   {
     int numKeys = numKeywords();
     int skipKeys = next - firstKeyword();
-    if (skipKeys > 0 && skipKeys < numKeys)
+    if (skipKeys > 0 && skipKeys <= numKeys)
         numKeys -= skipKeys;
+    int sz = count - next;
     Object[] args = new Object[count - next + numKeys];
     int i = 0;
     while (next < count)
