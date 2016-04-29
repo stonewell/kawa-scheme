@@ -131,7 +131,7 @@ public class Lambda extends Syntax
         {
             System.err.println("splice noted min:"+lexp.min_args);
 	    if (rest_args >= 0)
-              tr.syntaxError ("xxmultiple " + restKeyword
+              tr.syntaxError ("multiple " + restKeyword
                               + " keywords in parameter list");
             mode = null;
             lexp.min_args++; // compensate for later decrement
@@ -140,7 +140,7 @@ public class Lambda extends Syntax
 	else if (pair_car == restKeyword)
 	  {
 	    if (rest_args >= 0)
-              tr.syntaxError ("yymultiple " + restKeyword
+              tr.syntaxError ("multiple " + restKeyword
                               + " keywords in parameter list");
 	    else if (key_args >= 0)
               tr.syntaxError (restKeyword.toString()
