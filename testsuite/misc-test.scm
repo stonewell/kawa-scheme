@@ -1,4 +1,4 @@
-(test-init "Miscellaneous" 221)
+(test-init "Miscellaneous" 228)
 
 ;;; DSSSL spec example 11
 (test '(3 4 5 6) (lambda x x) 3 4 5 6)
@@ -1028,3 +1028,22 @@
 
 (test #(4 5 7 x 9 8 3) 'scan-1
       (let (([a r ... b c] (list 3 4 5 7 8 9))) (vector r ... 'x c b a)))
+
+(let ()
+  (define (f1 a b @rst) (format #f "a:~w b:~w r:~w" a b rst))
+  (test "a:1 b:2 r:[7 8]" f1 1 2 7 8)
+  (define (f2 a #!key k1 k2 @rst)
+    (format #f "a:~w k1:~w k2:~w r:~w" a k1 k2 rst))
+  (test "a:12 k1:#f k2:#f r:[7 8]" f2 12 7 8)
+  (test "a:12 k1:#f k2:99 r:[7 8]" 'f2 (f2 12 k2: 99 7 8))
+  (define (f3 a #!key k1 k2 #!rest rst)
+    (format #f "a:~w k1:~w k2:~w r:~w" a k1 k2 rst))
+  (test "a:12 k1:#f k2:#f r:(7 8)" f3 12 7 8)
+  (test "a:12 k1:#f k2:99 r:(7 8)" 'f3
+        (f3 12 k2: 99 7 8))
+  (define (f4 a #!rest rst #!key k1 k2)
+    (format #f "a:~w k1:~w k2:~w r:~w" a k1 k2 rst))
+  (test "a:12 k1:#f k2:#f r:(7 8)" f4 12 7 8)
+  (test "a:12 k1:#f k2:99 r:(k2: 99 7 8)" 'f4
+        (f4 12 k2: 99 7 8))
+)

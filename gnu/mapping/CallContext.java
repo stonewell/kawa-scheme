@@ -339,23 +339,24 @@ public class CallContext // implements Runnable
   }
 
     /** Get remaining arguments are an ArgListVector.
-     * @param The number of required and options argumemts
-     *  that should be skipped.  We assume keywords have not been processed.
+     * @param next The number of arguments that should be skipped.
+     * Assume either no keywords have been processed, or they all have.
      */
     public ArgListVector getRestArgsVector(int next) {
-        int size = numKeywords + count - next;
-        Object[] args = new Object[size];
-        if (numKeywords == 0) {
+        int size = count - next;
+        if (next >= firstKeyword + numKeywords) {
+            Object[] args = new Object[size];
             System.arraycopy(values, next, args, 0, size);
-        } else {
-            int j = firstKeyword-next;
-            System.arraycopy(values, next, args, 0, j);
-            for (int i = 0;  i < numKeywords; i++) {
-                args[j++] = Keyword.make(keywords[i]);
-                args[j++] = values[firstKeyword+i];
-            }
-            System.arraycopy(values, firstKeyword+numKeywords,
-                             args, j, size-j);
+            return new ArgListVector(args, 0, 0);
+        }
+        size += numKeywords;
+        Object[] args = new Object[size];
+        int j = 0;
+        for (int i = next; i < count; i++) {
+            String key = getKeyword(i);
+            if (key != null)
+                args[j++] = Keyword.make(key);
+            args[j++] = getArgAsObject(i);
         }
         return new ArgListVector(args, firstKeyword-next, numKeywords);
     }

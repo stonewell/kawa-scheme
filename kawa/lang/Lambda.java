@@ -129,22 +129,18 @@ public class Lambda extends Syntax
                  && ((pccar = ((Pair) pair_car).getCar()) == LispLanguage.splice_sym
                      || pccar == LispLanguage.splice_colon_sym))
         {
-            System.err.println("splice noted min:"+lexp.min_args);
 	    if (rest_args >= 0)
               tr.syntaxError ("multiple " + restKeyword
                               + " keywords in parameter list");
             mode = null;
             lexp.min_args++; // compensate for later decrement
-	    rest_args = -1;
+	    rest_args = 0;
         }
 	else if (pair_car == restKeyword)
 	  {
 	    if (rest_args >= 0)
               tr.syntaxError ("multiple " + restKeyword
                               + " keywords in parameter list");
-	    else if (key_args >= 0)
-              tr.syntaxError (restKeyword.toString()
-                              + " after " + keyKeyword);
 	    rest_args = 0;
 	  }
 	else if (pair_car == keyKeyword)
@@ -154,9 +150,9 @@ public class Lambda extends Syntax
                               + " keywords in parameter list");
 	    key_args = 0;
 	  }
-	else if (key_args >= 0)
+	else if (mode == keyKeyword)
 	  key_args++;
-	else if (rest_args >= 0)
+	else if (mode == restKeyword)
 	  rest_args++;
 	else if (opt_args >= 0)
 	  opt_args++;
@@ -196,7 +192,7 @@ public class Lambda extends Syntax
                 decl = new Declaration("<error>");
             if (decl.getFlag(Declaration.IS_REST_PARAMETER)) {
                 lexp.min_args--;
-                if (rest_args >= 0)
+                if (rest_args > 0)
                     tr.syntaxError("multiple rest arguments in parameter list");
                 rest_args = 1;
             }
@@ -259,9 +255,13 @@ public class Lambda extends Syntax
 	  {
             decl.setFlag(Declaration.IS_REST_PARAMETER);
             if (! decl.getFlag(Declaration.TYPE_SPECIFIED)) {
-                decl.setType(LangObjType.argListType);
-                decl.setFlag(Declaration.KEYWORDS_OK);
-                lexp.setFlag(LambdaExp.ALLOW_OTHER_KEYWORDS);
+                if (key_args > 0)
+                    decl.setType(LangObjType.listType);
+                else {
+                    decl.setType(LangObjType.argListType);
+                    decl.setFlag(Declaration.KEYWORDS_OK);
+                    lexp.setFlag(LambdaExp.ALLOW_OTHER_KEYWORDS);
+                }
             }
           }
         decl.setFlag(Declaration.IS_SINGLE_VALUE);
