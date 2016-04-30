@@ -85,4 +85,8 @@ public class ArgListVector extends ConstVector implements ArgList {
 
     public int numKeywords() { return numKeywords; }
     public int firstKeyword() { return firstKeyword; }
+
+    public int findKeyword(String key) {
+        return ArgListImpl.findKeyword(this, key);
+    }
 }

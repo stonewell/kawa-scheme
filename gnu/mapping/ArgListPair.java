@@ -46,6 +46,11 @@ public class ArgListPair
         else
             return ((Keyword) get(2  * i - firstKeyword)).getName();
     }
+
+    public int findKeyword(String key) {
+         return ArgListImpl.findKeyword(this, key);
+    }
+
     public int numArguments() {
         return arguments.size() - start - numKeywords();
     }

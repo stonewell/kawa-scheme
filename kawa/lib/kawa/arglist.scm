@@ -33,3 +33,14 @@
               (proc (args:getKeyword i) (args:getArgAsObject i)))))
   (lambda (args ::java.util.List proc)
     (for-each (lambda (v) (proc #!null v)) args)))
+
+(define-procedure arglist-key-index
+  (lambda (args ::gnu.mapping.ArgList key)::int
+          (args:findKeyword key))
+  (lambda (args ::java.util.List key)::int
+    -1))
+
+(define (arglist-key-value args key default)
+  (let ((i (arglist-key-index args key)))
+    (if (< i 0) default
+        (arglist-arg-ref args i))))

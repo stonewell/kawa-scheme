@@ -1,6 +1,6 @@
 ;; -*- coding: utf-8 -*-
 
-(test-begin "libs" 259)
+(test-begin "libs" 269)
 
 (test-begin "vectors")
 (test-equal '(dah dah didah)
@@ -487,6 +487,30 @@
 (test-equal 1 (cons* 1))
 
 (test-end "rnrs-lists")
+
+(test-begin "arglists")
+(import (kawa arglist))
+(let ()
+  (! a1 [10 11 12])
+  (test-equal 3 (arglist-arg-count a1))
+  (! a2 (arglist 2 k1: "K1" k2: "K2" @a1))
+  (test-equal 6 (arglist-arg-count a2))
+  (test-equal "k2" (arglist-key-ref a2 2))
+  (test-equal "K2" (arglist-arg-ref a2 2))
+  (test-equal 11 (arglist-arg-ref a2 4))
+  (test-equal 2 (arglist-key-index a2 "k2"))
+  (test-equal "K2" (arglist-key-value a2 "k2" "none"))
+  (test-equal -1 (arglist-key-index a2 "k3"))
+  (test-equal "none" (arglist-key-value a2 "k3" "none"))
+  (let ((out (open-output-string)))
+    (arglist-walk a2
+                  (lambda (key arg)
+                    (if key (format out "{~a: ~w}" key arg)
+                        (format out "{~w}" arg))))
+    (test-equal "{2}{k1: \"K1\"}{k2: \"K2\"}{10}{11}{12}"
+                (get-output-string out)))
+  )
+(test-end "arglists")
 
 (test-begin "strings")
 (import (kawa string-cursors))

@@ -14,9 +14,14 @@ public interface ArgList {
 
     public int numKeywords();
     public int firstKeyword();
-    /** Get keyword (as String) for given argument.
+    /** Get keyword (as an interned String) for given argument.
      * Indexing is the same as getArgAsObject.
      * Return null for non-keyword arguments.
      */
     public String getKeyword(int index);
+
+    /** Find index for keyword.
+     * @param key an interned string
+     */
+    public int findKeyword(String key);
 }

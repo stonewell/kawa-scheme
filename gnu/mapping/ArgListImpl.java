@@ -291,6 +291,20 @@ class ArgListImpl implements ArgList, ArgListBuilder {
             : keywords[index-firstKeyword];
     }
 
+    public static int findKeyword(ArgList args, String key) {
+        int numK = args.numKeywords();
+        int firstK = args.firstKeyword();
+        for (int i = 0; i < numK; i++) {
+            if (args.getKeyword(firstK+i) == key)
+                return firstK + i;
+        }
+        return -1;
+    }
+
+    public int findKeyword(String key) {
+        return findKeyword(this, key);
+    }
+
     public void setKeys(int numKeywords, String[] keys, short[] sorted) {
         this.numKeywords = numKeywords;
         this.keywords = keys;
