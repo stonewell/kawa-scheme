@@ -145,31 +145,33 @@ public class ApplyToArgs extends ProcedureN
             int index = ((Number) Promise.force(arg1)).intValue();
             return ((java.util.List) arg0).get(index);
         }
-        Class pclass = arg0.getClass();
-        if (pclass.isArray()) {
-            Object arg1 = ctx.getNextArg();
-            if (! (arg1 instanceof Number))
-                ctx.matchError(MethodProc.NO_MATCH_BAD_TYPE|2);
-            if (ctx.checkDone() != 0)
-                return ctx;
-            int index = ((Number) Promise.force(arg1)).intValue();
-            return java.lang.reflect.Array.get(arg0, index);
-        }
-        if (arg0 instanceof gnu.lists.Array) {
-            Procedure proc = ArrayRef.arrayRef;
-            ctx.next = 0;    // OR: ctx.shiftArgs(proc, 0);
-            return proc.getApplyToObjectMethod().invokeExact(proc, ctx);
-        }
-        /*
-          What should happen if key has no associated value?
-          Throw an exception?  Return null?
-        if (arg0 instanceof java.util.Map) {
-            if (args.length != 2)
-                throw new WrongArguments(this, args.length); // FIXME
-            Object key = Promise.force(args[1]);
+        if (arg0 != null) {
+            Class pclass = arg0.getClass();
+            if (pclass.isArray()) {
+                Object arg1 = ctx.getNextArg();
+                if (! (arg1 instanceof Number))
+                    ctx.matchError(MethodProc.NO_MATCH_BAD_TYPE|2);
+                if (ctx.checkDone() != 0)
+                    return ctx;
+                int index = ((Number) Promise.force(arg1)).intValue();
+                return java.lang.reflect.Array.get(arg0, index);
+            }
+            if (arg0 instanceof gnu.lists.Array) {
+                Procedure proc = ArrayRef.arrayRef;
+                ctx.next = 0;    // OR: ctx.shiftArgs(proc, 0);
+                return proc.getApplyToObjectMethod().invokeExact(proc, ctx);
+            }
+            /*
+              What should happen if key has no associated value?
+              Throw an exception?  Return null?
+              if (arg0 instanceof java.util.Map) {
+              if (args.length != 2)
+              throw new WrongArguments(this, args.length); // FIXME
+              Object key = Promise.force(args[1]);
             
+              }
+            */
         }
-        */
         ctx.matchError(MethodProc.NO_MATCH_BAD_TYPE|1);
         return ctx;
     }
