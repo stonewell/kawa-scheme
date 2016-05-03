@@ -44,7 +44,7 @@ public class ThisExp extends ReferenceExp
 
   public ThisExp(ScopeExp context)
   {
-    super(THIS_NAME);
+    this();
     this.context = context;
   }
 

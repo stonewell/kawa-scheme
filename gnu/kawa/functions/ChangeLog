@@ -1,3 +1,12 @@
+2016-05-02  Per Bothner  <per@bothner.com>
+
+	* IsEqual.java (apply, arrayEquals): Make non-static.
+	This allows inheriting for IsEqual and overriding the comparison.
+
+2016-05-01  Per Bothner  <per@bothner.com>
+
+	* IsEqual.java (Procedure2): Allocate identity map (more) lazily.
+
 2016-03-10  Per Bothner  <per@bothner.com>
 
 	Major re-write for more general array support.

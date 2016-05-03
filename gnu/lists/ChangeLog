@@ -1,3 +1,16 @@
+2016-05-02  Per Bothner  <per@bothner.com>
+
+	* Arrays.java (hashCode(Array)): New static method.
+	* AbstractSequence.java (hashCode): Use new method for Arrays.
+
+2016-05-01  Per Bothner  <per@bothner.com>
+
+	* ConstVector.java: Remove class.  Use FVector.makeVector instead.
+	* FVector.java (makeVector): New factory method.
+	(replaceAll): New method.
+	* SimpleVector.java (VERY_SIMPLE_FLAG): New constant.
+	(isReadOnly, setReadOnly): New methods.
+
 2016-03-16  Okumura Yuki <mjt@cltn.org>
 
 	* IntSequence.java: Fix thinko.

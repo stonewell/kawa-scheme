@@ -2,7 +2,7 @@ package gnu.mapping;
 import gnu.lists.*;
 import gnu.expr.Keyword;
 
-public class ArgListVector extends ConstVector implements ArgList {
+public class ArgListVector extends FVector implements ArgList {
     private int firstKeyword;
     private int numKeywords;
 
@@ -10,6 +10,7 @@ public class ArgListVector extends ConstVector implements ArgList {
         super(args);
         this.firstKeyword = firstKeyword;
         this.numKeywords = numKeywords;
+        setReadOnly();
     }
 
     public static ArgListVector getArgs(CallContext ctx) {
