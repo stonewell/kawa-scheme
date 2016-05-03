@@ -4,7 +4,7 @@ import gnu.lists.Pair;
 import java.util.List;
 import java.util.Map;
 
-class ArgListImpl implements ArgList, ArgListBuilder {
+public class ArgListImpl implements ArgList, ArgListBuilder {
     /*
     public Object value0;
     public Object value1;

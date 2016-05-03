@@ -120,6 +120,20 @@ public class ApplyExp extends Expression
         return isSimple() && ac >= min && ac <= max;
     }
 
+    public boolean hasSpliceAllowingKeywords() {
+        if (firstSpliceArg < 0)
+            return false;
+        int n = args.length;
+        for (int i = 0; i < n; i++) {
+            Expression arg = args[i];
+            if (arg instanceof ApplyExp
+                && (((ApplyExp) arg).getFunction()
+                    == MakeSplice.quoteKeywordsAllowedInstance))
+                return true;
+        }
+        return false;
+    }
+
     public boolean isAppendValues() {
         return func instanceof QuoteExp
             && (((QuoteExp) func).getValue()
@@ -474,16 +488,20 @@ public class ApplyExp extends Expression
                 arg.compileWithPosition(comp, Target.pushObject);
         }
         code.emitInvoke(setupMethod);
+        int firstKeyword = exp.firstKeywordArgIndex - 1;
+        int numKeywords = exp.numKeywordArgs;
+        boolean useSetKeys = numKeywords > 0
+            && ! exp.hasSpliceAllowingKeywords();
+        ClassType typeArgListImpl = Compilation.typeCallContext.getSuperclass();
         for (int i = initial;  i < args_length;  i++) {
             Expression arg = exp.args[i];
             char mode = '\0'; // ''\0', 'K', '@' or ':'
             String key = null;
-            if (i >= exp.firstKeywordArgIndex-1
-                && i < exp.firstKeywordArgIndex-1 + 2 * exp.numKeywordArgs) {
+            if (i >= firstKeyword
+                && i < firstKeyword + 2 * numKeywords) {
                 // a keyword or keyword arg
-                if (((i - exp.firstKeywordArgIndex) & 1) != 0)
+                if (((i - firstKeyword) & 1) == 0)
                     continue ; // keyword - handled next iteration
-                // FIXME use ArgListImpl.setKeys when possible
                 Object keyarg = exp.args[i-1].valueIfConstant();
                 key = ((Keyword) keyarg).getName();
                 mode = 'K';
@@ -499,22 +517,37 @@ public class ApplyExp extends Expression
                 }
             }
             comp.loadCallContext();
-            if (key != null)
+            if (key != null && ! useSetKeys)
                 code.emitPushString(key);
             if (vars[i] != null)
                 code.emitLoad(vars[i]);
             else
                 arg.compileWithPosition(comp, Target.pushObject);
-            if (mode == 'K') {
+            if (mode == '@' || mode == ':') {
+                String mname = mode == '@' ? "addSequence" : "addArgList";
+                code.emitInvoke(typeArgListImpl.getDeclaredMethod(mname, 1));
+            } else if (mode == 'K' && ! useSetKeys) {
                 code.emitInvoke(Compilation.typeCallContext
                                 .getDeclaredMethod("addKey", 2));
-            } else if (mode == '@' || mode == ':') {
-                String mname = mode == '@' ? "addSequence" : "addArgList";
-                code.emitInvoke(Compilation.typeCallContext
-                                .getDeclaredMethod(mname, 1));
             } else {
                 code.emitInvoke(Compilation.typeCallContext
                                 .getDeclaredMethod("addArg", 1));
+            }
+            if (mode == 'K' && useSetKeys
+                // is this the last keyword argument?
+                && i == firstKeyword + 2 * numKeywords - 1) {
+                String[] keywords = new String[numKeywords];
+                for (int j = numKeywords; --j >= 0; )
+                    keywords[j] = ((Keyword) exp.args[firstKeyword + 2 * j]
+                                   .valueIfConstant()).getName();
+                short[] sorted
+                    = CallContext.getSortedKeywords(keywords, keywords.length);
+                comp.loadCallContext();
+                code.emitPushInt(numKeywords);
+                comp.compileConstant(keywords, Target.pushObject);
+                comp.compileConstant(sorted, Target.pushObject);
+                code.emitInvoke(typeArgListImpl
+                                .getDeclaredMethod("setKeys", 3));
             }
         }
         code.popScope();
