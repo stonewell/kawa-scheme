@@ -54,6 +54,8 @@
 @macro arbno{THING}
 \THING\@sup{*}
 @end macro
+@c maybe use \x2217
+@c \THING\ @var{...}
 
 @macro atleastone{THING}
 \THING\@sup{+}
@@ -3582,7 +3584,7 @@ character of Scheme.
 @stxdef{comment-text} character sequence not containing @stxlit{#|} or @stxlit{|#}
 @stxdef{comment-cont} @stxref{nested-comment} @stxref{comment-text}
 @stxdef{atmosphere} @stxref{whitespace} | @stxref{comment}
-@stxdef{interlexeme-space} @var{atmosphere}*
+@stxdef{interlexeme-space} @arbno{@var{atmosphere}}
 @end display
 
 As a special case the characters @stxlit{#!/} are treated as starting a comment,
@@ -3808,9 +3810,9 @@ Syntax'':
 @stxdef{symbol} @stxref{identifier}
 @stxdef{compound-datum} @stxref{list} | @stxref{vector} | @stxref{uniform-vector} | @stxref{extended-string-literal} | @stxref{xml-literal}
 @stxdef{list} @stxlit{(}@stxref{datum}*@stxlit{)}
-         | @stxlit{(}@stxref{datum}+ @stxlit{.} @stxref{datum}@stxlit{)}
+         | @stxlit{(}@atleastone{@stxref{datum}} @stxlit{.} @stxref{datum}@stxlit{)}
          | @stxref{abbreviation}
-@stxdef{vector} @stxlit{#(}@stxref{datum}*@stxlit{)}
+@stxdef{vector} @stxlit{#(}@arbno{@stxref{datum}}@stxlit{)}
 @stxdef{uniform-vector} TODO
 @end display
 @c FIXME: add to abbrev-prefix: @stxlit{#,} | @stxlit{#,@@}
@@ -4081,6 +4083,9 @@ x   @result{}  28
 @stxdef{procedure-call} @stxlit{(}@stxref{operator} @stxref{operand} @dots{})
 @stxdef{operator} @stxref{expression}
 @stxdef{operand} @stxref{expression}
+  | @stxref{keyword} @stxref{expression}
+  | @code{@@} @stxref{expression}
+  | @code{@@:} @stxref{expression}
 @end display
 
 A procedure call consists of expressions for the procedure to be called
@@ -4096,6 +4101,20 @@ passed the resulting arguments.
 (+ 3 4)                @result{}  7
 ((if #f + *) 3 4)      @result{}  12
 @end example
+
+The syntax @stxref{keyword} @var{expression} is a @dfn{keyword argument}.
+This is a mechanism for specifying arguments using a name rather than position,
+and is especially useful for procedures with many optional paramaters.
+Note that @stxref{keyword} must be literal, and cannot be the
+result from evaluating a non-literal expression.
+(This is a change from previous versions of Kawa,
+and is different from Common Lisp and some other Scheme dialects.)
+
+An expression prefixed by @code{@@} or @code{@@:} is
+a splice argument.  The following expression must evaluate to an
+``argument list'' (see XXX for details); each element in the argument
+becomes a separate argument when call the @var{operator}.
+(This is very similar to the ``spread'' operator is EcmaScript 6.)
 
 @node Colon notation
 @section Property access using colon notation
@@ -5480,6 +5499,7 @@ structure of an entire source file.
 @menu
 * Boolean values::
 * Conditionals::
+* Variables and Patterns::
 * Definitions::
 * Local binding constructs::
 * Lazy evaluation::
@@ -5799,12 +5819,125 @@ If @var{test-expression} is false, evaluate each @var{form} in order,
 returning the value of the last one.
 @end deffn
 
+@node Variables and Patterns
+@section Variables and Patterns
+
+An identifier can name either a type of syntax or a location
+where a value can be stored. An identifier that names a
+type of syntax is called a @dfn{syntactic keyword}
+(informally called a @dfn{macro}), and is said to be
+@dfn{bound} to a transformer for that syntax. An identifier that
+names a location is called a @dfn{variable} and is said to be @dfn{bound}
+to that location. The set of all visible bindings in effect at
+some point in a program is known as the @dfn{environment} in
+effect at that point. The value stored in the location to
+which a variable is bound is called the variable’s value.
+By abuse of terminology, the variable is sometimes said
+to name the value or to be bound to the value. This is
+not quite accurate, but confusion rarely results from this
+practice.
+
+Certain expression types are used to create new kinds of
+syntax and to bind syntactic keywords to those new syntaxes,
+while other expression types create new locations
+and bind variables to those locations. These expression
+types are called @dfn{binding constructs}.
+Those that bind syntactic keywords are discussed in @ref{Macros}.
+The most fundamental of the variable binding constructs is the
+@ref{meta-lambda-expression,@code{lambda} expression},
+because all other variable binding constructs
+can be explained in terms of @code{lambda} expressions.
+Other binding constructs include the @ref{Definitions,@code{define} family},
+and the @ref{Local binding constructs,@code{let} family}.
+
+Scheme is a language with block structure. To each place
+where an identifier is bound in a program there corresponds
+a @dfn{region} of the program text within which the binding is visible.
+The region is determined by the particular binding construct that
+establishes the binding; if the binding is
+established by a @code{lambda} expression, for example, then its
+region is the entire @code{lambda} expression. Every mention of
+an identifier refers to the binding of the identifier that established
+the innermost of the regions containing the use.
+
+If there is no binding of the identifier whose region contains the use,
+then the use refers to the binding for the
+variable in the global environment, if any;
+if there is no binding for the identifier, it is said to be @dfn{unbound}.
+
+@subsection Patterns
+
+The usual way to bind variables is to match an incoming
+value against a @dfn{pattern}.  The pattern contains variables
+that are bound to some value derived from the value.
+@example
+(! [x::double y::double] (some-expression))
+@end example
+In the above example, the pattern @code{[x::double y::double]}
+is matched against the incoming value that results from
+evaluating @code{(some-expression)}.
+That value is required to be a two-element sequence.
+Then the sub-pattern @code{x::double} is matched against
+element 0 of the sequence, which means it is coerced to a @code{double}
+and then the coerced value is matched against the sub-pattern @code{x}
+(which trivially succeeds).  Similarly, @code{y::double} is matched
+against element 1.
+
+The syntax of patterns is a work-in-progress. (The focus until now
+has been in designing and implementing how patterns work in general,
+rather than the details of the pattern syntax.)
+
+@display
+@stxdef{pattern} @stxref{identifier}
+  | @stxlit{_}
+  | @stxref{pattern} @stxlit{::} @stxref{type}
+  | @stxlit{[} @arbno{@stxref{lpattern}} @stxlit{]}
+@stxdef{lpattern} @stxref{pattern}
+  | @stxlit{@@} @stxref{pattern}
+  | @stxref{pattern} @stxlit{...}
+@end display
+
+This is how the specific patterns work:
+
+@table @asis
+@item @stxref{identifier}
+This is the simplest and most common form of pattern.
+The @var{identifier} is bound to a new variable
+that is initialized to the incoming value.
+
+@item @stxlit{_}
+This pattern just discards the incoming value.
+It is equivalent to a unique otherwise-unused @var{identifier}.
+
+@item @stxref{pattern} @stxlit{::} @stxref{type}
+The incoming value is coerced to a value of the specified @var{type},
+and then the coerced value is matched against the sub-@var{pattern}.
+Most commonly the sub-@var{pattern} is a plain @var{identifier},
+so the latter match is trivial.
+
+@item @stxlit{[} @arbno{@stxref{lpattern}} @stxlit{]}
+The incoming value must be a sequence (a list, vector or similar).
+In the case where each sub-pattern is a plain @var{pattern},
+then the number of sub-patterns must match the size of the sequence, and
+each sub-pattern is matched against the corresponding element of the sequence.
+More generally, each sub-pattern may match zero or more consequtive
+elements of the incoming sequence.
+@end table
+
 @node Definitions
 @section Definitions
 
 A variable definition binds one or more identifiers and specifies
 an initial value for each of them. The simplest kind of
 variable definition takes one of the following forms:
+
+@deffn Syntax ! @stxref{pattern} @stxref{expression}
+Evaluate @stxref{expression}, and match the result against @var{pattern}.
+Defining variables in @stxref{pattern} becomes bound in the
+current (surrounding) scope.
+
+This is similar to @code{define-constant} except generalized to a @var{pattern}.
+@end deffn
 
 @deffn Syntax define name [@stxlit{::} @stxref{type}] @stxref{expression}
 Evaluate the @var{expression}, optionally converting it to @var{type},
@@ -5900,17 +6033,15 @@ values are being computed, thus allowing mutually recursive definitions.
 @c are designed to handle multiple-valued expressions, bind-
 @c ing different identifiers to the returned values.
 
-@deffn Syntax let @stxlit{((}variable [@stxlit{::} @stxref{type}] init@stxlit{)} ...@stxlit{)} @stxref{body}
-Declare new local variables with the given @var{name}, initial value
-@var{init}, and optional type specification @var{type}.
+@deffn Syntax let @stxlit{((}@stxref{pattern} @var{init}@stxlit{)} ...@stxlit{)} @stxref{body}
+Declare new local variables as found in the @meta{pattern}s.
+Each @var{pattern} is matched against the corresponding @var{init}.
 The @var{init}s are evaluated in the current environment (in left-to-right
-onder), the @var{variable}s are bound to fresh locations holding the results,
+onder), the @var{variable}s in the @var{patterns}s are bound to fresh
+locations holding the matched results,
 the @var{body} is evaluated in the extended environment, and the values of
 the last expression of body are returned.
 Each binding of a variable has @var{body} as its region.
-If @var{type} is specified, then after the expression @var{init} is evaluated,
-the result coerced to @var{type}, and then assigned to the variable.
-If @var{type} is not specified, it defaults to @code{Object}.
 
 @example
 (let ((x 2) (y 3))
@@ -5923,17 +6054,23 @@ If @var{type} is not specified, it defaults to @code{Object}.
         (z (+ x y)))
     (* z x)))   @result{} 35
 @end example
+
+An example with a non-trivial pattern:
+
+@example
+(let (([a::double b::integer] (vector 4 5)))
+  (cons b a))  @result{} (5 . 4.0)
+@end example
 @end deffn
 
-@deffn Syntax let* @stxlit{((}variable [@stxlit{::} @stxref{type}] init@stxlit{)} ...@stxlit{)} @stxref{body}
+@deffn Syntax let* @stxlit{((}@stxref{pattern} init@stxlit{)} ...@stxlit{)} @stxref{body}
 
 The @code{let*} binding construct is similar to @code{let},
 but the bindings are performed sequentially from left to
-right, and the region of a @var{variable}
+right, and the region of a @var{variable}s in a @var{pattern}
 is that part of the @code{let*} expression to the right of
-the binding. Thus the second binding is done in an environment
-in which the first binding is visible, and so on.
-The @var{variable}s need not be distinct.
+the @var{pattern}. Thus the second pattern is matched in an environment
+in which the bindings from the first pattern are visible, and so on.
 
 @example
 (let ((x 2) (y 3))
@@ -7250,9 +7387,9 @@ Keywords are similar to symbols.
 They are used mainly for specifying keyword arguments.
 
 Historically keywords have been self-evaluating (you did not need to
-quote them).  This is changing: you should quote a keyword if you
+quote them).  This has changed: you must quote a keyword if you
 want a literal keyword value, and not quote it if it is used
-with a keyword argument.  (This change is a work-in-progress.)
+as a keyword argument.
 
 @display
 @stxdef{keyword} @stxref{identifier}@stxlit{:}
@@ -7335,13 +7472,244 @@ but is useful when interfacing to low-level Java code.
 @node Procedures, Numbers, Symbols and namespaces, Top
 @chapter Procedures
 
-@deffn Procedure apply proc [arg1 ...] args
-@var{Args} must be a sequence (list, vector, or string) or a
+@menu
+* Application and Arguments Lists::
+* Procedure properties::
+* Generic procedures::
+* Extended formals::
+* Partial application::
+@end menu
+
+@node Application and Arguments Lists
+@section Application and Arguments Lists
+
+When a procedure called, the actual argument expression are evaluated,
+and the resulting values becomes the actual argument list.
+This is then matched against the formal parameter list
+(in the procedure definition), and assuming they match,
+the procedure body is called.
+
+@subsection Arguments lists
+
+An argument list has tree parts:
+@itemize @bullet
+@item
+Zero or more @dfn{prefix arguments}, each of which is a value.
+These typically get bound to named required or optional formal parameters,
+but can also get bound to patterns.
+@item
+Zero or more @dfn{keyword arguments}, each of which is a keyword
+(an identifier specified with keyword syntax) combined with a value.
+These are bound to either named keyword formal parameters, or
+bundled in with a rest parameter.
+@item
+Zero or more @dfn{postfix arguments}, each of which is a value.
+These are usually bound to a ``rest'' formal parameter, which
+receives any remaining arguments.
+
+If there are no keyword arguments, then it ambiguous where
+prefix arguments and and where postfix arguments start.
+This is normally not the problem: the called procedure can
+split them up however it wishes.
+@end itemize
+
+Note that all keyword arguments have to be grouped together:
+It is not allowed to have a keyword argument followed by a plain
+argument followed by a keyword argument.
+
+The argument list is constructed by evaluating the each @stxref{operand}
+of the @stxref{procedure-call} in order:
+@table @asis
+@item @var{expression}
+The @var{expression} is evaluated, yielding a single value
+that becomes a prefix or postfix argument.
+@item @var{keyword} @var{expression}
+The @var{expression} is evaluated.  The resulting value combined
+with the @var{keyword} becomes a keyword argument.
+@item @stxlit{@@}@var{expression}
+The @var{expression} is evaluated.
+The result must be a sequence - a list, vector, or primitive array.
+The values of the sequence are appended to the resulting argument list.
+Keyword arguments are not allowed.
+@item @stxlit{@@:}@var{expression}
+The @var{expression} is evaluted.
+The result can be a sequence;
+a hash table (viewed as a collection of (keyword,value) pairs);
+or an @dfn{explicit argument list} object, which is a sequence of values
+@emph{or} keyword arguments.
+The values and keyword arguments
+are appended to the resulting argument list, though subject to the restriction
+that keyword arguments must be adjacent in the resulting argument list.
+@end table
+
+@subsection Explicit argument list objects
+
+Sometimes it is useful to create an argument list out of
+pieces, take argument lists apart, iterate over them,
+and generally treat an argument list as an actual first-class value.
+
+Explicit argument list objects can take multiple forms.
+The simplest is a sequence: a list, vector, or primitive array.
+Each element of the list becomes a value in the resulting argument list.
+
+@example
+(define v1 '(a b c))
+(define v2 (int[] 10 11 12 13))
+(list "X" @@v1 "Y" @@v2 "Z")
+  @result{} ("X" a b c "Y" 10 11 12 13 "Z")
+@end example
+
+Things get more complicated once keywords are involved.
+An explicit argument list with keywords is only allowed
+when using the @code{@@:} splicing form,
+not the @code{@@} form.  It can be either
+a hash table (anything the implement @code{java.util.Map}
+or the types @code{arglist} or @code{argvector}.
+
+@quotation
+@emph{Design note:} An argument list with keywords is straightforward
+in Common Lisp and some Scheme implementations (including order versions of
+Kawa): It's just a list some of whose @code{car} cells are keyword objects.
+The problem with this model is neither a human or the compiler can
+reliably tell when an argument is a keyword, since any variable
+might have been assigned a keyword.  This limits performance and
+error checking.
+@end quotation
+
+A hash table (anything the implement @code{java.util.Map})
+whose keys are strings or keyword objects is
+interpreted as a sequence of keyword arguments,
+using the hash-table keys and values.
+
+@deffn Type argvector
+@deffnx Constructor argvector @arbno{@stxref{operand}}
+List of arguments represented as an immutable vector.
+A keyword argument takes two elements in this vector:
+A keyword object, followed by the value.
+
+@example
+(define v1 (argvector 1 2 k1: 10 k2: 11 98 99))
+(v1 4) @result{} 'k2
+(v1 5) @result{} 11
+@end example
+When @code{v1} is viewed as a vector it
+is equivalent to @code{(vector 1 2 'k1: 10 'k2: 11 98 99)}.
+(Note in this case the keywords need to be quoted, since
+the @code{vector} constructor does not take keyword arguments.)
+However, the @code{argvector} ``knows'' which arguments
+are actually keyword arguments, and can be examined using the
+@code{(kawa arglist)} library discussed below:
+
+@example
+(arglist-key-count (argvector 1 x: 2 3)) @result{} 1
+(arglist-key-count (argvector 1 'x: 2 3)) @result{} 0
+(arglist-key-count (vector 1 'x: 2 3)) @result{} 0
+@end example
+
+In this case:
+@example
+(fun 'a @@:v1)
+@end example
+is equivalent to:
+@example
+(fun 'a 1 2 k1: 10 k2: 11 98 99)
+@end example
+@end deffn
+
+@deffn Type arglist
+@deffnx Constructor arglist @arbno{@stxref{operand}}
+Similar to @code{argvector}, but compatible with @code{list}.
+If there are no keyword arguments, returns a plain list.
+If there is at least one keyword argument creates a special
+@code{gnu.mapping.ArgListPair} object that implements the
+usual @code{list} properties but internally wraps a @code{argvector}.
+@end deffn
+
+@subsection Argument list library
+
+@example
+(import (kawa arglist))
+@end example
+
+In the following, @var{args} is an @code{arglist} or @code{argvector}
+(or in general any object that implement @code{gnu.mapping.ArgList}).
+Also, @var{args} can be a generalized list, in which case it
+behaves like an @code{argvector} that has no keyword arguments.
+
+@deffn Procedure arglist-walk args proc
+Call @var{proc} once, in order, for each argument in @var{args}.
+The @var{proc} is called with two arguments,
+corresponding to @code{(arglist-key-ref @var{args} @var{i})}
+and @code{(arglist-arg-ref @var{args} @var{i})} for each @var{i} from 0
+up to @code{(arglist-arg-count @var{args})} (exclusive).
+I.e. the first argument is either @code{#!null} or the keyword (as a string);
+the second argument is the corresponding argument value.
+
+@example
+(define (print-arguments args #!optional (out (current-output-port)))
+  (arglist-walk args
+                (lambda (key value)
+                  (if key (format out "key: ~a value: ~w~%" key value)
+                      (format out "value: ~w~%" value)))))
+@end example
+@end deffn
+
+@deffn Procedure arglist-key-count args
+Return the number of keyword arguments.
+@end deffn
+
+@deffn Procedure arglist-key-start args
+Number of prefix arguments, which is the number of arguments before
+the first keyword argument.
+@end deffn
+
+@deffn Procedure arglist-arg-count args
+Return the number of non-keyword arguments.
+(The count includes neither the keywords nor the corresponding values.)
+@end deffn
+
+@deffn Procedure arglist-arg-ref args index
+Get the @var{index}'th argument value.
+The @var{index} counts keyword argument values, but not the keywords themselves.
+@example
+(arglist-arg-ref (arglist 10 11 k1: -1 19) 2) @result{} -1
+(arglist-arg-ref (arglist 10 11 k1: -1 19) 3) @result{} 19
+@end example
+@end deffn
+
+@deffn Procedure arglist-key-ref args index
+The @var{index} counts arguments like @code{arglist-arg-ref} does.
+If this is a keyword argument, return the corresponding keyword
+(as a string); otherwise, return @code{#!null} (which counts are false).
+@example
+(arglist-key-ref (argvector 10 11 k1: -1 k2: -2 19) 3) @result{} "k2"
+(arglist-key-ref (argvector 10 11 k1: -1 k2: -2 19) 4) @result{} #!null
+@end example
+@end deffn
+
+@deffn Procedure arglist-key-index args key
+Search for a keyword matching @var{key} (which must be an interned string).
+If there is no such keyword, return -1.
+Otherwise return the keyword's index as as argument to @code{arglist-key-ref}.
+@end deffn
+
+@deffn Procedure arglist-key-value args key default
+Search for a keyword matching @var{key} (which must be an interned string).
+If there is no such keyword, return the @var{default}.
+Otherwise return the corresponding keyword argument's value.
+@end deffn
+
+@subsection Apply procedures
+
+@deffn Procedure apply proc @arbno{argi} argrest
+@var{Argrest} must be a sequence (list, vector, or string) or a
 primitive Java array.
 (This is an extension over standard Scheme, which requires that
 @var{args} be a list.)
 Calls the @var{proc} (which must be a procedure), using as arguments
-the @var{arg1}... values plus all the elements of @var{args}.
+the @var{argi}... values plus all the elements of @var{argrest}.
+
+Equivalent to: @code{(}@var{proc} @arbno{@var{argi}} @code{@@}@var{argrest}@code{)}.
 @end deffn
 
 @deffn Syntax constant-fold proc arg1 ...
@@ -7359,13 +7727,6 @@ For example:
 is equivalent to @code{(quote #(a b c))}, assuming @code{vector}
 has not been re-bound.
 @end deffn
-
-@menu
-* Procedure properties::
-* Generic procedures::
-* Extended formals::
-* Partial application::
-@end menu
 
 @node Procedure properties, Generic procedures, , Procedures
 @section Procedure properties
@@ -7511,7 +7872,7 @@ You can of course also use the extended format in a @ref{Definitions,@code{defin
 @display
 @stxdef{req-opt-args} @stxref{required-arg} ... [@stxlit{#!optional} @stxref{optional-arg} ...]
 @stxdef{rest-key-args} [@stxlit{#!rest} @stxref{rest-arg}] [@stxlit{#!key} @stxref{key-arg} ...]
-@stxdef{pattern} @var{variable} | TODO
+  | [@stxlit{#!key} @stxref{key-arg} ...] [@stxlit{#!rest} @stxref{rest-arg}]
 @stxdef{required-arg} @stxref{pattern} [@stxlit{::} @stxref{type}]
   | @stxlit{(} @stxref{pattern} @stxlit{::} @stxref{type} @stxlit{)}
 @stxdef{optional-arg} @var{variable} [@stxlit{::} @stxref{type}]
@@ -7542,7 +7903,7 @@ If no @var{initializer} was specified, it defaults to @code{#f}.
 is the default value of the @var{type}.)
 The @var{initializer} is evaluated in an
 environment in which all the previous formal parameters have been bound.
-If a @var{supplied-var} is specified, it is has type boolean,
+If a @var{supplied-var} is specified, it has type boolean,
 and is set to true if there was an actual corresponding argument,
 and false if the initializer was evaluated.
 @item
