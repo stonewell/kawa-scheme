@@ -47,11 +47,15 @@ public class LitTable extends GeneralHashTable<Object,Object>
 
     @Override
     public int hash(Object key) {
+        if (comp.immediate)
+            return System.identityHashCode(key);
         return HashUtils.boundedHash(key);
     }
 
     @Override
     protected boolean matches(Object key1, Object key2) {
+        if (comp.immediate)
+            return key1 == key2;
         return litEquals.apply(key1, key2, null);
     }
 
@@ -345,9 +349,7 @@ public class LitTable extends GeneralHashTable<Object,Object>
 	  }
       }
 
-    if (literal != null)
-      put(value, literal);
-    else
+    if (literal == null)
       literal = new Literal (value, valueType, this);
     return literal;
   }
