@@ -596,9 +596,7 @@ public class Lambda extends Syntax
       lexp.setCoercedReturnType(rtype);
     } finally {
     tr.pop(lexp);
-    lexp.countDecls();
     tr.popRenamedAlias(numRenamedAlias);
-    lexp.countDecls();
     }
     if (tr.curMethodLambda == lexp)
       tr.curMethodLambda = null;
