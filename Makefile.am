@@ -387,30 +387,3 @@ bin/kawa.bat: $(srcdir)/bin/kawa.bat.in
 distall:  distcheck dist-kawa-@VERSION@.jar kawa-doc-$(VERSION).tar.gz
 # Consider also:
 # kawa-@VERSION@-src.zip jemacs-@JEMACS_VERSION@.jar bytecode-@BYTECODE_VERSION@.jar
-
-check-ok-for-invoke:
-	cd testsuite && make OPTIONS=--no-full-tailcalls \
-	  check-scm check-r7rs check-misc check-mac check-obj check-polytype check-case
-	cd testsuite && \
-	  make check-num check-arr check-java-array check-lazy check-lib \
-	  check-srfi-16 check-srfi-38 check-srfi-64 check-srfi-69 \
-	  check-srfi-101 check-srfi-108 check-srfi-109 \
-	  check-format check-ppfile check-system check-text check-regex check-xml \
-	  scribble.class check-run-test-scripts check-moduleM \
-	  check-annotations1 check-annotations2 \
-	  check-binarytrees check-chameneosredux check-fannkuch \
-	  check-fannkuchredux check-fasta \
-	  check-knucleotide check-mandelbrot check-meteor check-nbody \
-	  check-nsieve check-pidigits check-regexdna check-revcomp \
-	  check-spectralnorm check-threadring
-	cd testsuite && make OPTIONS=--full-tailcalls \
-	  check-scm check-r7rs check-misc check-mac check-obj check-polytype check-case
-	cd testsuite && make \
-	  check-interpreted-cycle check-interpreted-cycleb check-interpreted-cyclebr \
-	  check-inlining check-jmc check-use-slots check-load-require check-sva31180 \
-	  check-bridge check-life-grid check-larceny-tests check-numbers-clisp
-	cd gnu/commonlisp/testsuite && make check
-	cd gnu/xquery/testsuite && make check
-
-# TODO in check2: check-misc
-# TODO in check:  check-no-inline $(SERVLET_TESTS) $(SAX2_TESTS)
