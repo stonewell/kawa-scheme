@@ -16,7 +16,6 @@ public class lambda extends Lambda
 
   public void rewriteBody(LambdaExp lexp, Object body, Translator tr)
   {
-    tr.push(lexp);
     for (Declaration p = lexp.firstDecl();  p != null;  p = p.nextDecl())
       {
         Expression defaultArg = p.getInitValue();
