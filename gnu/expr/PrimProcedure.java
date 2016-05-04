@@ -283,17 +283,16 @@ public class PrimProcedure extends MethodProc {
 	Object result;
 	if (is_constructor)
           {
-            Object[] args = rargs;
             if (slink)
               {
-                Object[] xargs = new Object[nargs+1];
-                System.arraycopy(args, 0, xargs, 1, nargs);
+                Object[] xargs = new Object[nargs];
+                System.arraycopy(rargs, 0, xargs, 1, nargs-1);
                 xargs[0] = ((PairClassType) extraArg).staticLink;
-                args = xargs;
+                rargs = xargs;
               }
 
             result = (((java.lang.reflect.Constructor) member)
-                      .newInstance(args));
+                      .newInstance(rargs));
           }
         else if (method == Type.clone_method)
           {
