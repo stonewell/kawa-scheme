@@ -71,7 +71,7 @@ public class Procedure extends PropertySet
         ctx.proc = proc;
         Object r = proc.applyToObjectMethod.invokeExact(proc, ctx);
         if (r != ctx) {
-            ctx.consumer.writeObject(r);
+            Values.writeValues(r, ctx.consumer);
             r = null;
         }
         return r;
