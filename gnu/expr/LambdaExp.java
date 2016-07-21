@@ -1056,7 +1056,7 @@ public class LambdaExp extends ScopeExp {
             = (getFlag(SEQUENCE_RESULT)
                || getCallConvention () >= Compilation.CALL_WITH_CONSUMER)
             ? Type.voidType
-            : getReturnType().getImplementationType();
+            : getReturnType().promoteIfUnsigned().getImplementationType();
         int extraArg = (closureEnvType != null && closureEnvType != ctype) ? 1 : 0;
 
         String rtypeEnc = comp.getLanguage().encodeType(getReturnType());
@@ -1096,7 +1096,7 @@ public class LambdaExp extends ScopeExp {
                 }
             
                 if (var.parameterForMethod())
-                    argTypes.add(var.getType().getImplementationType());
+                    argTypes.add(var.getType().promoteIfUnsigned().getImplementationType());
                 String encType = comp.getLanguage().encodeType(var.getType());
                 if (encType == null /* || not interesting */)
                     encType = "";
@@ -1252,7 +1252,7 @@ public class LambdaExp extends ScopeExp {
                 // assign a Variable for the incoming (register) value.
                 String vname
                     = Compilation.mangleName(decl.getName()).intern();
-                Type vtype = decl.getType().getImplementationType();
+                Type vtype = decl.getType().promoteIfUnsigned().getImplementationType();
                 var = decl.var = getVarScope().addVariable(null, vtype, vname);
                 //getVarScope().addVariableAfter(var, decl);
                 var.setParameter (true);

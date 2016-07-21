@@ -83,9 +83,7 @@ public class KawaAutoHandler
         for (;;)
           {
             int sl = xpath.lastIndexOf('/');
-            if (sl < 0)
-              break;
-            xpath = xpath.substring(0, sl);
+            xpath = sl < 0 ? "." : xpath.substring(0, sl);
             upath = xpath + "/+default+";
             url = hctx.getResourceURL(upath);
             if (url != null)
@@ -94,6 +92,8 @@ public class KawaAutoHandler
                 absPath = Path.valueOf(url);
                 break;
               }
+            if (sl < 0)
+              break;
           }
       }
     else
@@ -125,8 +125,6 @@ public class KawaAutoHandler
       minfo = mmanager.findWithURL(url);
     if (minfo.checkCurrent(mmanager, now))
       return mcontext.findInstance(minfo);
-
-    mmap.put(path, minfo);
 
     InputStream resourceStream = absPath.openInputStream();
     if (! (resourceStream instanceof BufferedInputStream))
@@ -236,6 +234,7 @@ public class KawaAutoHandler
       }
 
     minfo.setModuleClass(cl);
+    mmap.put(path, minfo);
 
     //if (saveClass)  FIXME
     //  comp.outputClass(context.getRealPath("WEB-INF/classes")+'/');

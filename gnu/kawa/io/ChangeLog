@@ -1,3 +1,98 @@
+2016-07-18  Per Bothner  <per@bothner.com>
+
+	* WriterManager.java (run): Call flush rather than finalize on ports.
+	This is safer, since otherwise we can get races because other threads
+	might still be active and try to access the port.
+
+2016-07-17  Per Bothner  <per@bothner.com>
+
+	REPL input causing SyntaxException was not being added to history.
+	* JLineInPort.java (parse): SyntaxException is now caught by
+	Language#parse, so detect end-of-file using ERROR_SEEN.
+
+2016-07-14  Per Bothner  <per@bothner.com>
+
+	* TermErrorStream.java (write): Don't write error markers
+	if byte array is empty.
+
+2016-07-01  Per Bothner  <per@bothner.com>
+
+	* TtyInPort.java: Some changes in prompt handling.
+	Better support for DomTerm.
+	(promptTemplate1, promptTemplate2): New convenience methods.
+	(expandPrompt): Handle %{...%} escapes.  Return width.
+	* JLineInPort.java: Use promptTemplate1 and promptTemplate2.
+
+2016-06-25  Per Bothner  <per@bothner.com>
+
+	* Path.java (readAllBytes): Handle case if unknown content-length.
+
+2016-06-22  Per Bothner  <per@bothner.com>
+
+	* JLineInPort.java: Remove obsolete support for JLine version 2.
+
+2016-06-17  Per Bothner  <per@bothner.com>
+
+	* TtyInPort.java (signIntHandler): New field.
+
+	* QueueReader.java (appendEOF): Add missing notifyAll call.
+
+2016-06-15  Per Bothner  <per@bothner.com>
+
+	* JLineInPort.java (parse): Update to use new ParseContext parameter.
+
+2016-06-14  Per Bothner  <per@bothner.com>
+
+	Pass windows size events from DomTem to JLine.
+	* JLineInPort.java (setSIze): New method.
+
+	* CheckConsole.java (useJLine): New ThreadLocation; new method.
+	(useDomTerm): New ThreadLocation; new method.
+	(forDomTerm): Use isDomTerm method rather than checking outInitial.
+	* JLineInPort.java: Various tweaks and small fixes.
+
+	* TtyInPort.java (make): Only create a JLineInPort if useJLine.
+	* OutPort.java (finalizeAction): Rename field to flags.
+	(IS_DOMTERM): New flag constant.
+	(isDomTerm, setDomTerm): New methods.
+
+2016-06-11  Per Bothner  <per@bothner.com>
+
+	Handle setting prompt1 and prompt2 templates from command-line.
+	* TtyInPort.java (prompt1, prompt2): Move to ...
+	* CheckConsole.java: ... here to avoid class initialization
+	order problem.
+	* TtyInPort.java (expandPrompt): Make static.
+	* JLineInPort.java: Update.
+
+2016-06-05  Per Bothner  <per@bothner.com>
+
+	* JLineInPort.java: Major changes to tab-completion for jline3.
+	(parseForComplete): New method.
+
+	* DomTermErrorStream.java: Renamed to ...
+	* TermErrorStream.java: and add support for generic ANSI terminals.
+
+2016-06-02  Per Bothner  <per@bothner.com>
+
+	* JLine2InPort.java: Rename to ...
+	* JLineInPort.java ... because we primarily support JLine version 3.
+
+	Add support for using JLine3.  Relatedly, re-do prompt handling.
+	* JLine2InPort.java: Add support for version 3 of JLine library.
+	Specifically handle multiline inputs.
+	* TtyInPort.java (prompt1, prompt2): New ThreadLocations static.
+	(defaultPrompt, expandPrompt): Expand a prompt pattern.
+	(lineStart): Don't call prompter procedure for continuation lines.
+	(wrapPromptForAnsi): Add styling for prompt.
+	* InPort.java (eofSeen): New method.
+	* CharArrayInPort.java (make(CharSequence,String)): New overload.
+
+2016-05-07  Per Bothner  <per@bothner.com>
+
+	* JLine2InPort.java: Extend so it works with either JLine3
+	proptotype as well as with JLine2.
+
 2016-03-18  Per Bothner  <per@bothner.com>
 
 	* Path.java (coerceToPathOrNull): Fix check for absolute filename

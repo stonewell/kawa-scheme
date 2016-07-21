@@ -1,3 +1,67 @@
+2016-07-17  Per Bothner  <per@bothner.com>
+
+	* Language.java (parse): Catch SyntaxException.
+
+2016-07-12  Per Bothner  <per@bothner.com>
+
+	* LambdaExp.java (addMethodFor): Fix nonportability for unsigned types.
+	Recent JVM/Java SE version appears to have changed how bytes and
+	short are passed between methods.  Before it worked when a method was
+	declared to return a byte, but which was zero-truncated before
+	returning.  You did't have to truncate the result before pushing
+	on the JVM stack.  That doesn't seem to work reliably any more.
+	The fix is to change the return type (and parameter types) to int.
+
+2016-06-22  Per Bothner  <per@bothner.com>
+
+	* CommandCompleter.java: Remove obsolete support for JLine version 2.
+
+2016-06-14  Per Bothner  <per@bothner.com>
+
+	* ApplicationMainSupport.java (propertyField): Bind console:use-jline
+	and console:use-domterm.
+
+2016-06-11  Per Bothner  <per@bothner.com>
+
+	Handle setting prompt1 and prompt2 templates from command-line.
+	* ApplicationMainSupport.java (propertyField): Bind console:prompt1
+	and console:prompt2.
+	* Language.java (setCurrentLanguage): Only initialize prompt1 and
+	prompt2 ThreadLocations if they haven't been set yet.
+	* Language.java (declFromField): Tweak 06-02 change so we also
+	set IS_DYNAMIC given an appropriate ParameterizedType.
+
+2016-06-05  Per Bothner  <per@bothner.com>
+
+	* CommandCompleter.java (word, wordCursor, comp): New fields.
+	(complete): Method is semi-deprecated - only used for jline2.
+
+2016-06-04  Per Bothner  <per@bothner.com>
+
+	* LitTable.java (findLiteral): Use 'matches' rather than '=='
+	to see if value matches a static field.
+	Also, do some caching of hash codes.
+
+2016-06-02  Per Bothner  <per@bothner.com>
+
+	* Language.java (setCurrentLanguage): Update prompt1 and prompt2
+	dynamic variables from language defaults.
+	(getPrompter): Remove method.
+	(getPrimaryPrompt, getSecondaryPrompt): New methods.
+
+	* Language.java (declFromField): Set IS_DYNAMIC if field is a
+	ThreadLocation, which avoids a warning if assigning to say *print-base*.
+
+2016-05-07  Per Bothner  <per@bothner.com>
+
+	* NameLookup.java (getCompletingSymbols): Tweak parameter type.
+
+2016-05-05  Per Bothner  <per@bothner.com>
+
+	* ConditionalTarget.java (compileFromStack): Add missing emitPop
+	when compiling always-true primitive numbers.  This fixes Savannah
+	bug #47863 "InternalError in compilation seemingly related to if (int)".
+
 2016-05-03  Per Bothner  <per@bothner.com>
 
 	* LitTable.java (findLiteral): Remove redundant put operation.

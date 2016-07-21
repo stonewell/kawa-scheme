@@ -1327,7 +1327,8 @@ public class Declaration
           {
             Object val = ((QuoteExp) value).getValue();
             if (getField().getStaticFlag()
-                  && val.getClass().getName().equals(ftype.getName()))
+                && val != null
+                && val.getClass().getName().equals(ftype.getName()))
               {
                 Literal literal = comp.litTable.findLiteral(val);
                 if (literal.field == null)

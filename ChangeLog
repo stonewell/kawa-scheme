@@ -1,3 +1,84 @@
+2016-07-13  Per Bothner  <per@bothner.com>
+
+	Replace use of JFreeSVG with VectorGraphics2D library.
+	The former is strict GPL, which could be a problem.
+	* configure.ac: Replace --with-with_jfreesvg by --with-vectorgraphics2d.
+	* config.classpath: Update accordingly.
+	* Makefile.am: Link in and copy new library.
+	* bin/kawa.bat.in: Add new library.
+
+	* Makefile.am (kawa/Version.java): Update check for Subversion.
+
+2016-07-11  Per Bothner  <per@bothner.com>
+
+	* Makefile.am: Some tweaks for faster re-compilation.
+	Specifically, don't make javac look at all files when only
+	some are changed.  The downside is we could run into command line
+	limits more easily, so we use the @filelist method for clean builds.
+
+2016-07-01  Per Bothner  <per@bothner.com>
+
+	* Makefile.am (kawa-snapshot.zip): Add lib/servlet.jar.
+	* bin/kawa.sh.in: Simplify - just use run_classpath.
+	* config.classpath: Update run_classpath for using links in lib.
+
+2016-07-01  Jamison Hope  <jrh@theptrgroup.com>
+
+	* build.xml: Fix for relocated JEmacs files.
+
+2016-06-26  Per Bothner  <per@bothner.com>
+
+	* Makefile.am (kawa-snapshot.zip): Include the Kawa manual in
+	epub3 format, as well as scripts and advice for reading it.
+
+2016-06-24  Per Bothner  <per@bothner.com>
+
+	* source-list: Don't include kawa/Version.java, because it could
+	be in either srcdir or builddir, which complicates things.
+	* Makefile.am: Update to build Version.class separately.
+
+2016-06-22  Per Bothner  <per@bothner.com>
+
+	* Makefile.am: Make bin/kawa a link to bin/kawa.sh if not using the
+	C/readline front-end.
+
+	Generated Makefile.in and configure removed from repository.
+	* autogen.sh: Script to generates those files.
+
+	* Makefile.am: Merge the Makefiles of gnu/math, gnu/commonlisp/lang,
+	gnu/xquery/lang, gnu/xquery/util, gnu/q2/lang, and kawa into
+	source.list and the top-level Makefile.
+	(tmp-sources1.list): Build list of source file names for '@' argument
+	passed to javac, to limit command-line length.
+
+	* Makefile.am: Pull most of logic from gnu/Makefile.am here.
+	This is a step to having fewer Makefiles.
+	(source-list): New separate list of files, for inclusion.
+
+2016-06-14  Per Bothner  <per@bothner.com>
+
+	* Makefile.am: Add domterm.jar to kawa.zip.
+	* bin/kawa.sh.in: Add dmterm.jar to classpath.
+
+	* configure.ac: Implement new --with-domterm option.
+	* config.classpath: Update classpath.
+
+2016-06-03  Per Bothner  <per@bothner.com>
+
+	* configure.in (AC_INIT): Set version to 2.1.9.
+	* bin/configure.in (AC_INIT): Likewise.
+	* build.xml (version.release): Likewise.
+
+	* Makefile.am (kawa-snapshot.zip): New rule.
+
+2016-05-07  Per Bothner  <per@bothner.com>
+
+	* configure.ac: Support --with-jline3 flag in addition to jline2.
+	* Makefile.am: LRelated changes.
+
+	* configure.ac: Convert to kawa.bat.in kawa.bat using configure.
+	* Makefile.am (bin/kawa.bat): Comment out rule.
+
 2016-04-17  Per Bothner  <per@bothner.com>
 
 	* Makefile.am: Update uninstall rules so 'make distcheck' works again.

@@ -1,0 +1,35 @@
+#!/bin/sh
+#|
+# This is a hybrid shell/Scheme script for browsing Kawa's documentation.
+# It reads (and uncompresses) the documentation in ../doc/kawa-manual.epub.
+#
+thisfile=`type -p $0`
+case "$thisfile" in
+  "") echo "installation error - can't find path to $0"; exit -1 ;;
+  /*) ;;
+  *) thisfile="$PWD/$thisfile"  ;;
+esac         
+while test -L "$thisfile"; do thisfile=$(readlink -f "$thisfile"); done
+KAWA_HOME=`echo $(dirname $thisfile) | sed -e 's|/bin$||'`
+if test -n "$JAVA_HOME"; then
+    JAVA="${JAVA_HOME}/bin/java"
+else
+    JAVA=${JAVA-java}
+fi
+exec ${JAVA-"java"} -jar ${KAWA_HOME}/lib/kawa-@VERSION@.jar $thisfile
+|#
+
+(require 'javafx-defs)
+(javafx-application)
+
+(javafx-scene
+ title: "Kawa documentation"
+ width: 800 height: 700  ;;fill: Color: "#666970"
+ (let* ((browser (javafx.scene.web.WebView))
+        (web-engine (browser:getEngine))
+        (manual-url (resource-url "../doc/kawa-manual.epub")))
+   ;; Using an <iframe> for the sidebar on WebView doesn't work for some
+   ;; unknown reason so we use the <frameset> version instead.
+   ;; (web-engine:load &{jar:&[manual-url]!/OEBPS/index.xhtml})
+   (web-engine:load &{jar:&[manual-url]!/OEBPS/with-frames.html})
+   browser))

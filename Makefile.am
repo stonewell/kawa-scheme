@@ -1,16 +1,19 @@
 # Process this with automake to create Makefile.in
 
-FIXED_SUBDIRS = doc testsuite gnu/bytecode gnu/math \
+include $(top_srcdir)/source-list
+
+CLASSPATH = .$(CLASSPATH_SEPARATOR)$(srcdir)$(CLASSPATH_SEPARATOR)@conf_classpath@$$CLASSPATH
+
+FIXED_SUBDIRS = doc testsuite gnu/bytecode \
   gnu \
-  kawa gnu/kawa/slib gnu/kawa/servlet \
-  gnu/commonlisp/lang gnu/commonlisp/lisp gnu/commonlisp/testsuite \
-  gnu/q2/lang gnu/q2/testsuite
+  kawa/lib gnu/kawa/slib gnu/kawa/servlet \
+  gnu/commonlisp/lisp gnu/commonlisp/testsuite \
+  gnu/q2/testsuite
 ANDROID_SUBDIRS = gnu/kawa/android
 BRL_SUBDIRS = gnu/brl gnu/kawa/brl
 JAVAFX_SUBDIRS = gnu/kawa/javafx
-JEMACS_SUBDIRS = gnu/jemacs/lang gnu/jemacs/buffer gnu/jemacs/lisp \
-  gnu/jemacs/testsuite gnu/jemacs/swing gnu/jemacs/swt
-XQUERY_SUBDIRS = gnu/xquery/util gnu/xquery/lang gnu/xquery/testsuite
+JEMACS_SUBDIRS = gnu/jemacs/lisp gnu/jemacs/testsuite
+XQUERY_SUBDIRS = gnu/xquery/testsuite
 
 SUBDIRS = $(FIXED_SUBDIRS)
 if ENABLE_JEMACS
@@ -55,8 +58,30 @@ if WITH_JAVAX_SCRIPT
 META_INF_FILES = $(META_ScriptEngineFactory)
 endif
 
+misc-classes.stamp: $(java_sources)
+	if test -f misc-classes.stamp; then \
+	  $(JAVAC) -d $(top_builddir) -classpath "$(CLASSPATH)" $(JAVACFLAGS) $?; \
+	else \
+	  $(MAKE) javac-all; \
+	fi
+	echo timestamp > misc-classes.stamp
+
+javac-all: tmp-sources1.list
+	$(JAVAC) -d $(top_builddir) -classpath "$(CLASSPATH)" $(JAVACFLAGS) @tmp-sources1.list
+
+kawa-jar.stamp: misc-classes.stamp kawa/Version.class
+	echo timestamp > kawa-jar.stamp
+
 classes.list: ./kawa-jar.stamp
 	$(FIND) gnu kawa -name '*.class' -print >classes.list
+
+tmp-sources1.list: source-list Makefile
+	(for f in $(sources_gnu_core); do echo $(srcdir)/$$f; done) >tmp-list
+	(for f in $(sources_gnu_misc); do echo $(srcdir)/$$f; done) >>tmp-list
+	(for f in $(sources_gnu_selected); do echo $(srcdir)/$$f; done) >>tmp-list
+	(for f in $(sources_kawa_core); do echo $(srcdir)/$$f; done) >>tmp-list
+	(for f in $(sources_kawa_selected); do echo $(srcdir)/$$f; done) >>tmp-list
+	mv tmp-list $@
 
 classes-rt.list: ./kawa-jar.stamp $(srcdir)/classes-to-skip-for-runtime 
 	$(FIND) gnu kawa -name '*.class' -print | grep -v -f $(srcdir)/classes-to-skip-for-runtime >classes-rt.list
@@ -82,6 +107,12 @@ kawa-doc.tar.gz: kawa-doc-$(VERSION).tar.gz
 kawa-doc-$(VERSION).tar.gz:  doc/kawa.texi
 	cd doc; $(MAKE) ../kawa-doc-$(VERSION).tar.gz
 
+if WITH_JLINE3
+JLINE_VERSION_MAJOR=3
+else
+JLINE_VERSION_MAJOR=2
+endif
+
 dist-kawa-$(VERSION).jar: dist
 	srcdir=`(cd $(srcdir); /bin/pwd)` \
 	  && rm -rf tmpdir \
@@ -90,21 +121,43 @@ dist-kawa-$(VERSION).jar: dist
 	  && tar xzf ../$(distdir).tar.gz \
 	  && rm -f ./patch-source-list \
 	  && ./kawa-$(VERSION)/configure --with-java-source=7 \
-	    --with-jline2=@WITH_JLINE2_ARG@ \
+	    --with-domterm="@WITH_DOMTERM_ARG@" \
+	    --with-jline$(JLINE_VERSION_MAJOR)="@WITH_JLINE_PATH@" \
+	    --with-vectorgraphics2d="@WITH_VECTORGRAPHICS2D_ARG@" \
 	    --with-servlet=@WITH_SERVLET_ARG@ --with-javafx=@WITH_JAVAFX_ARG@ \
-	  && CLASSPATH=@conf_classpath@.$(CLASSPATH_SEPARATOR)$$CLASSPATH $(MAKE) \
+	  && CLASSPATH=@conf_classpath@.$(CLASSPATH_SEPARATOR)$$CLASSPATH $(MAKE) all JAVAC="$(JAVAC) -source 7 -target 7" \
 	  && mv lib/kawa-$(VERSION).jar ../dist-kawa-$(VERSION).jar \
 	  && cd .. && rm -rf tmpdir
 
-kawa.zip: kawa-$(VERSION).zip
-kawa-$(VERSION).zip: dist-kawa-$(VERSION).jar
-	mkdir -p kawa-$(VERSION) kawa-$(VERSION)/lib  kawa-$(VERSION)/bin
+ZIP_VERSION = $(VERSION)
+kawa.zip: kawa-$(ZIP_VERSION).zip
+kawa-snapshot.zip:
+	$(MAKE) kawa.zip ZIP_VERSION=$(VERSION)-`date +%Y%m%d`
+kawa-$(ZIP_VERSION).zip: dist-kawa-$(VERSION).jar doc/kawa-manual.epub bin/kawa.bat
+	mkdir -p kawa-$(VERSION) kawa-$(VERSION)/lib  kawa-$(VERSION)/bin kawa-$(VERSION)/doc
 	cd kawa-$(VERSION)/lib; \
 	  $(LN_S) ../../dist-kawa-$(VERSION).jar kawa-$(VERSION).jar; \
-	  $(LN_S) @WITH_JLINE2_ARG@ jline.jar
+	  $(LN_S) @WITH_DOMTERM_ARG@ domterm.jar; \
+	  $(LN_S) @WITH_SERVLET_ARG@ servlet.jar; \
+	  $(LN_S) @WITH_VECTORGRAPHICS2D_ARG@ VectorGraphics2D.jar; \
+	  $(LN_S) @WITH_SERVLET_ARG@ servlet.jar; \
+	  $(LN_S) @WITH_JLINE_PATH@ jline.jar
+	docsrcdir="`cd $(srcdir); pwd`/doc"; \
+	  cd kawa-$(VERSION)/doc; \
+	  $(LN_S) ../../doc/kawa-manual.epub kawa-manual.epub; \
+	  $(LN_S) $$docsrcdir/README-epub README-epub; \
+	  $(LN_S) $$docsrcdir/+default+ +default+
 	cd kawa-$(VERSION)/bin; \
-	  $(LN_S) ../../bin/kawa.sh kawa
-	zip $@ kawa-$(VERSION)/bin/kawa kawa-$(VERSION)/lib/kawa-$(VERSION).jar kawa-$(VERSION)/lib/jline.jar
+	  $(LN_S) ../../bin/kawa.sh kawa; \
+	  $(LN_S) ../../bin/browse-kawa-manual browse-kawa-manual; \
+	  $(LN_S) ../../bin/kawa.bat kawa.bat
+	zip $@ kawa-$(VERSION)/bin/kawa -r kawa-$(VERSION)
+
+upload-kawa.snapshot.zip:
+	gnupload --replace --to ftp.gnu.org:kawa --symlink-regex kawa-$(VERSION)-`date +%Y%m%d`.zip
+
+doc/kawa-manual.epub: doc/kawa.texi
+	cd doc && $(MAKE) kawa-manual.epub
 
 lib/jemacs-$(JEMACS_VERSION).jar:
 	srcdir=`(cd $(srcdir); /bin/pwd)` \
@@ -140,15 +193,16 @@ EXTRA_DIST = debian/control debian/rules debian/changelog debian/dirs \
   config.guess config.sub install-sh ./mkinstalldirs \
   patch-source-list selected-java-source \
   build.xml build.properties \
+  $(MISC_EXTRA_DIST) \
   gnu/jemacs/jar-manifest gnu/jemacs/status.html \
   kawa/Version.java jar-manifest Make-rules classes-to-skip-for-runtime \
   bin/configure.ac bin/configure bin/Makefile.am bin/Makefile.in \
   bin/ChangeLog bin/kawa.bat.in bin/kawa.c bin/kawapath.c bin/cgi-servlet.c \
   bin/kawa.sh.in bin/qexo.in
 
-MOSTLYCLEANFILES = tmp* *.o bin/*.o *.stamp classes.list classes-rt.list
-CLEANFILES = *.jar lib/*.jar *.zip bin/qexo kawa/Version.java bin/kawa.bat $(META_ScriptEngineFactory)
-DISTCLEANFILES = selected-java-source bin/kawa.sh
+MOSTLYCLEANFILES = tmp* *.o bin/*.o *.stamp */*.class */*/*.class */*/*/*.class classes.list classes-rt.list
+CLEANFILES = *.jar lib/*.jar *.zip bin/kawa bin/qexo kawa/Version.java $(META_ScriptEngineFactory)
+DISTCLEANFILES = selected-java-source bin/kawa.sh bin/kawa.bat
 MAINTAINERCLEANFILES = \
   $(GENERATED_SIMPLEVECTOR_FILES) $(srcdir)/patch-source-list
 
@@ -225,9 +279,21 @@ install-jar:
 	  $(DESTDIR)$(datadir)/kawa/lib/$(KAWAJAR)
 	cd $(DESTDIR)$(datadir)/kawa/lib && rm -f kawa.jar \
 	  && $(LN_S) $(KAWAJAR) kawa.jar
+if WITH_DOMTERM
+	cd $(DESTDIR)$(datadir)/kawa/lib && \
+	  $(LN_S) @WITH_DOMTERM_ARG@ domterm.jar
+endif
+if ENABLE_SERVLET
+	cd $(DESTDIR)$(datadir)/kawa/lib && \
+	  $(LN_S) @WITH_SERVLET_ARG@ servlet.jar
+endif
 if WITH_JLINE2
 	cd $(DESTDIR)$(datadir)/kawa/lib && \
-	  $(LN_S) @WITH_JLINE2_ARG@ jline.jar
+	  $(LN_S) @WITH_JLINE_PATH@ jline.jar
+endif
+if WITH_VECTORGRAPHICS2D
+	cd $(DESTDIR)$(datadir)/kawa/lib && \
+	  $(LN_S) @WITH_VECTORGRAPHICS2D_ARG@ VectorGraphics2D.jar
 endif
 
 install-bytecode-jar: lib/bytecode-@BYTECODE_VERSION@.jar
@@ -254,21 +320,39 @@ uninstall-bytecode-jar:
 	  $(DESTDIR)$(javadir)/bytecode.jar
 
 kawa/Version.java: $(srcdir)/kawa/Version.java.in $(srcdir)/configure.ac
-	test -f $(srcdir)/.svn/entries \
+	test -f $(srcdir)/.svn/wc.db \
 	&& SVN_REVISION=`cd $(srcdir) && svnversion 2>/dev/null` \
 	&& test -n "$$SVN_REVISION" \
 	&& SVN_REVISION=" (revision $${SVN_REVISION})"; \
 	sed -e 's|VERSION|@VERSION@'"$$SVN_REVISION|" <$(srcdir)/kawa/Version.java.in >$@
 
 all-recursive:  kawa/Version.java selected-java-source $(GENERATED_SIMPLEVECTOR_FILES)
-all: lib/kawa-@VERSION@.jar lib/kawart-@VERSION@.jar $(JLINE_LINK)
+all: lib/kawa-@VERSION@.jar lib/kawart-@VERSION@.jar $(JLINE_LINK) $(DOMTERM_LINK) $(SERVLET_LINK) $(VECTORGRAPHICS2D_LINK)
 
 if WITH_JLINE2
 JLINE_LINK = lib/jline.jar
 
 lib/jline.jar:
 	mkdir -p lib
-	$(LN_S) @WITH_JLINE2_ARG@ lib/jline.jar
+	$(LN_S) @WITH_JLINE_PATH@ lib/jline.jar
+endif
+if WITH_DOMTERM
+DOMTERM_LINK = lib/domterm.jar
+lib/domterm.jar:
+	mkdir -p lib
+	$(LN_S) @WITH_DOMTERM_ARG@ lib/domterm.jar
+endif
+if WITH_VECTORGRAPHICS2D
+VECTORGRAPHICS2D_LINK = lib/VectorGraphics2D.jar
+lib/VectorGraphics2D.jar:
+	mkdir -p lib
+	$(LN_S) @WITH_VECTORGRAPHICS2D_ARG@ lib/VectorGraphics2D.jar
+endif
+if ENABLE_SERVLET
+SERVLET_LINK = lib/servlet.jar
+lib/servlet.jar:
+	mkdir -p lib
+	$(LN_S) @WITH_SERVLET_ARG@ lib/servlet.jar
 endif
 
 JAVA_SOURCE = @JAVA_SOURCE@
@@ -278,10 +362,20 @@ PREPROCESS_HTTPSERVER = +use:com.sun.net.httpserver
 else
 PREPROCESS_HTTPSERVER = -use:com.sun.net.httpserver
 endif
-if WITH_JFREESVG
-PREPROCESS_JFREESVG = +with:JFreeSVG
+if WITH_VECTORGRAPHICS2D
+PREPROCESS_VECTORGRAPHICS2D = +with:VectorGraphics2D
 else
-PREPROCESS_JFREESVG = -with:JFreeSVG
+PREPROCESS_VECTORGRAPHICS2D = -with:VectorGraphics2D
+endif
+if WITH_JLINE2
+PREPROCESS_JLINE2 = +with:jline2
+else
+PREPROCESS_SLINE2 = -with:jline2
+endif
+if WITH_JLINE3
+PREPROCESS_JLINE3 = +with:jline3
+else
+PREPROCESS_SLINE3 = -with:jline3
 endif
 if ENABLE_XML
 PREPROCESS_XML = +enable:XML
@@ -294,10 +388,13 @@ $(srcdir)/patch-source-list: $(top_srcdir)/configure
 	$(FIND) . -name '*.java' -exec grep -lE ' #endif ' '{}' ';') \
 	  | sed -e 's|./||' | sort > $@
 
-gnu/kawa/util/PreProcess.class: $(srcdir)/gnu/kawa/util/PreProcess.java
-	$(JAVAC) -d . $(srcdir)/gnu/kawa/util/PreProcess.java
+kawa/Version.class: kawa/Version.java
+	$(JAVAC) -d . $^
 
-JAVA_PREPROCESS_OPTIONS = @JAVA_SOURCE_SELECTOR@ $(PREPROCESS_HTTPSERVER) $(PREPROCESS_XML) $(PREPROCESS_JFREESVG)
+gnu/kawa/util/PreProcess.class: gnu/kawa/util/PreProcess.java
+	$(JAVAC) -d . $^
+
+JAVA_PREPROCESS_OPTIONS = @JAVA_SOURCE_SELECTOR@ $(PREPROCESS_HTTPSERVER) $(PREPROCESS_XML) $(PREPROCESS_VECTORGRAPHICS2D) $(PREPROCESS_JLINE2) $(PREPROCESS_JLINE3)
 
 selected-java-source: Makefile $(srcdir)/patch-source-list
 	if test ! -e selected-java-source -o \
@@ -374,15 +471,40 @@ if ON_WINDOWS
 # kawa.sh is still needed for 'make check', even on Windows.
 KAWASCRIPTS_KAWA = bin/kawa.bat bin/kawa.sh
 else
+if ENABLE_KAWA_FRONTEND
 KAWASCRIPTS_KAWA = bin/kawa.sh
+else
+KAWASCRIPTS_KAWA = bin/kawa.sh bin/kawa
+bin/kawa: bin/kawa.sh
+	cd bin && $(LN_S) kawa.sh kawa
+endif
 endif
 noinst_SCRIPTS = bin/kawa.sh
 bin_SCRIPTS = bin/qexo $(KAWASCRIPTS_KAWA)
 
-bin/kawa.bat: $(srcdir)/bin/kawa.bat.in
-	sed -e 's|%DEFAULT_KAWA_VERSION%|$(VERSION)|' \
-	    -e 's|%DEFAULT_EXTRA_PATH%|'`echo '$(conf_classpath)'| sed -e 's|[\]|\\\\|g' -e 's|\&|\\&|g'`'|' \
-	  <$(srcdir)/bin/kawa.bat.in > bin/kawa.bat
+#bin/kawa.bat: $(srcdir)/bin/kawa.bat.in
+#	sed -e 's|@VERSION@|$(VERSION)|' \
+#	    -e 's|@DEFAULT_EXTRA_PATH@|'`echo '$(conf_classpath)'| sed -e 's|[\]|\\\\|g' -e 's|\&|\\&|g'`'|' \
+#	  <$(srcdir)/bin/kawa.bat.in > bin/kawa.bat
+
+STANDARD_NAMED_CHARS_URL = http://www.w3.org/2003/entities/2007/w3centities-f.ent
+
+$(srcdir)/gnu/text/StandardNamedChars.java:
+	wget -nv -O - $(STANDARD_NAMED_CHARS_URL) \
+	| sed -n -e 's|&#38;|\&|' \
+	      -e '/ENTITY/s/^.*ENTITY *\([^ ]*\) *"\([^"]*\)" *>\(.*\)$$/    t.put("\1"\2);\3/p' \
+	| sed -e 's|<!--\(.*\)-->|  // \1|' \
+	      -e 's|&#x\([0-9a-fA-F]*\);|, 0x\1|g' \
+	      -e 's|&#0*\([0-9a-fA-F]*\);|, \1|g' \
+	      -e '1i\' \
+	      -e '// DO NOT EDIT: This file is automatically generated by gnu/text/Makefile.\' \
+	      -e 'package gnu.text;\' \
+	      -e 'public class StandardNamedChars {\' \
+	      -e '  public static final NamedCharTable instance = new NamedCharTable();\' \
+	      -e '  static { NamedCharTable t = instance;' \
+	      -e '$$a\' \
+	      -e '}}' \
+	> $@
 
 distall:  distcheck dist-kawa-@VERSION@.jar kawa-doc-$(VERSION).tar.gz
 # Consider also:

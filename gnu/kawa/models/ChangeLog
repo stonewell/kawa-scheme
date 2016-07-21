@@ -1,3 +1,30 @@
+2016-07-19  Per Bothner  <per@bothner.com>
+
+	* StandardColor.java: Don't hyphenate or camel-case goldenrod.
+
+2016-07-18  Per Bothner  <per@bothner.com>
+
+	* SVGUtils.java: Clean up and fix PreProcess problems.
+
+	* StandardColor.java: New class.
+	* PBox.java (makeZBox): New factory method.
+
+2016-07-15  Per Bothner  <per@bothner.com>
+
+	* PBox.java (makeHBox, makeVBox): Generalize to Images and Shapes.
+	(asPaintable, asPaintableAll): Helper methods.
+
+2016-07-13  Per Bothner  <per@bothner.com>
+
+	* DrawImage.java: Now implements RenderedImage.
+	* PBox.java: New class for combining Paintables.
+	* WithTransform.java (identityTransform): New constant.
+
+	* SVGUtils.java: Remove undesuirable translation.
+
+	* SVGUtils.java: Re-write to use VectorGraphics2D library
+	instead of JFreeSVG.
+
 2015-12-21  Per Bothner  <per@bothner.com>
 
 	* SVGUtils.java: New file.

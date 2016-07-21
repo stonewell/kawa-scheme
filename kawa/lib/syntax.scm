@@ -326,7 +326,7 @@
        (let ((cname (datum->syntax #'name (%symbol->construct (syntax->datum #'name)))))
          #`(define-syntax #,cname
              (syntax-rules ()
-               ((#,cname . args)
+               ((_ . args)
                 (%simple-construct-builder constructor text-collector () . args))))))
       ((_ name constructor)
        #`(define-simple-constructor name constructor $string$)))))
@@ -335,6 +335,8 @@
   (syntax-rules ($<<$ $>>$)
     ((%simple-construct-builder fun mkstr (seen ...) $<<$ . rest)
      (fun (mkstr seen ... $<<$ . rest)))
+    ((%simple-construct-builder fun mkstr (seen ...) $>>$)
+     (fun seen ...))
     ((%simple-construct-builder fun mkstr (seen ...) $>>$ . rest)
      (fun seen ... (mkstr . rest)))
     ((%simple-construct-builder fun mkstr (seen ...) x . rest)

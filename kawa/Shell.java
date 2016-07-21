@@ -14,6 +14,7 @@ import gnu.kawa.io.OutPort;
 import gnu.kawa.io.Path;
 import gnu.kawa.io.TtyInPort;
 import gnu.kawa.util.ExitCalled;
+import gnu.kawa.util.Signals;
 import gnu.text.Lexer;
 import gnu.text.SourceMessages;
 import gnu.text.SyntaxException;
@@ -173,9 +174,7 @@ public class Shell
     OutPort perr;
     if (inp instanceof TtyInPort) // Interactive?
       {
-	Procedure prompter = language.getPrompter();
-	if (prompter != null)
-	  ((TtyInPort)inp).setPrompter(prompter);
+        ((TtyInPort)inp).setPrompter(defaultPrompter);
         perr = OutPort.errDefault();
       }
     else
@@ -249,16 +248,36 @@ public class Shell
       {
         // Nothing - we'll just lose some minor functionality.
       }
+    java.lang.reflect.Method parserMethod = getJLineParserMethod(inp);
     Environment saveEnv = Environment.setSaveCurrent(env);
     try
       {
+        SigIntHandler sigIntHandler = null;
+        if (interactive) {
+          sigIntHandler = new SigIntHandler();
+          ((TtyInPort) inp).sigIntHandler = sigIntHandler;
+        }
 	for (;;)
 	  {
+            Object oldIntHandler = null;
 	    int opts = Language.PARSE_FOR_EVAL|Language.PARSE_ONE_LINE|Language.PARSE_INTERACTIVE_MODULE;
 	    try
 	      {
-		Compilation comp = language.parse(lexer, opts, null);
-                boolean sawError;
+                Compilation comp;
+                if (interactive)
+                    oldIntHandler =
+                        Signals.register("INT",
+                                         ((TtyInPort) inp).sigIntHandler);
+                if (parserMethod != null) {
+                    try {
+                        comp = (Compilation) parserMethod.invoke(null, language, lexer);
+                    } catch (java.lang.reflect.InvocationTargetException ex) {
+                        throw ex.getTargetException();
+                    }
+                } else {
+                    comp = language.parse(lexer, opts, null);
+                }
+		boolean sawError;
                 if (interactive) {
                   sawError = messages.checkErrors(perr, 20);
                   perr.flush();
@@ -273,18 +292,22 @@ public class Shell
                     comp.lexical.pop(comp.mainLambda);
                     continue;
                 }
-
-                int ch = inp.peek();
-                if (ch == '\n')
-                    inp.skip();
-
-		if (! ModuleExp.evalModule(env, ctx, comp, url, perr))
+                if (! ModuleExp.evalModule(env, ctx, comp, url, perr))
 		  throw new SyntaxException(messages);
                 if (out instanceof Writer)
                   ((Writer) out).flush();
-		if (ch < 0)
+		if (inp.eofSeen())
 		  break;
 	      }
+            catch (ThreadDeath e)
+              {
+                if (! interactive)
+                    throw e;
+                else if (sigIntHandler == null || sigIntHandler.trace == null)
+                    e.printStackTrace(perr);
+                else
+                    sigIntHandler.trace.printStackTrace(perr);
+              }
             catch (Error e)
               {
                 throw e;
@@ -295,6 +318,11 @@ public class Shell
 		  return e;
                 printError(e, messages, perr);
 	      }
+            finally
+              {
+                if (oldIntHandler != null)
+                  Signals.unregister("INT", oldIntHandler);
+              }
 	  }
       }
     finally
@@ -306,6 +334,19 @@ public class Shell
       }
     return null;
   }
+
+    static java.lang.reflect.Method getJLineParserMethod(InPort in) {
+        Class cls = in.getClass();
+        try {
+            if (cls.getName().equals("gnu.kawa.io.JLineInPort")) {
+                cls = Class.forName("gnu.kawa.io.JLineInPort$KawaParsedLine");
+                return cls.getDeclaredMethod("parse",
+                                             Language.class, Lexer.class);
+            }
+        } catch (Throwable ex) {
+        }
+        return null;
+    }
 
   public static void printError (Throwable ex, SourceMessages messages,
                                  OutPort perr)
@@ -576,4 +617,25 @@ public class Shell
             return null;
         }
     }
+
+    public static final Procedure1 defaultPrompter = new Prompter();
+    static class Prompter extends Procedure1 {
+        public Object apply1 (Object arg) {
+            return ((TtyInPort) arg).defaultPrompt();
+        }
+    }
+
+    static class SigIntHandler implements Runnable {
+        public Thread thread;
+        public Error trace;
+        public SigIntHandler(Thread thread) { this.thread = thread; }
+        public SigIntHandler() { this.thread = Thread.currentThread(); }
+
+        public void run() {
+            Error ex = new Error("uses interrupt killed "+thread);
+            ex.setStackTrace(thread.getStackTrace());
+            this.trace = ex;
+            thread.stop();
+        }
+    };
 }

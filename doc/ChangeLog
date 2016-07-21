@@ -1,3 +1,50 @@
+2016-07-11  Per Bothner  <per@bothner.com>
+
+	Generate navigation sidebar for epub manual using JavaScript.
+	* style/kawa-ebook.js: New code for building, inserting and updating
+	a navigation sidebar, when requested.  This code is not enabled
+	by default  i.e. when just browsing index.xhtml.
+	* style/kawa-ebook.css: New stylesheet - similar to web site.
+	* +default+: Update to request sidebar. Handle .js/.css.
+	* Makefile.am: updates for building kawa-manual.epub.
+	* README-epub: Remove note about lack of sidebar.
+	* with-frames.html: Frameset version, as oppused to using iframe.
+
+2016-07-01  Per Bothner  <per@bothner.com>
+
+	* Makefile.am; Change --path to xsltproc invocation.
+	This allows things to work when srcdir is not ".".
+
+2016-06-26  Per Bothner  <per@bothner.com>
+
+	* kawa.texi (Server-side scripts): Mention doc/+default+ script.
+	(Building JavaFX applications): Mention browse-kawa-manual.
+
+	* Makefile.am: Add rules for making web and epub documentation.
+	Before they were in a Makefile on the fsf website.
+	* README-epub: Documentation on the documentation.
+	* +default+: A web server script for reading kawa-manual.epub.
+	* style/docbook-to-html.xsl, style/kawa-epub.xsl, style/kawa.xsl:
+	XSLT stylesheets for converting the DocBook version of the manual
+	to either web pages or EPUB3.
+	* style/kawa-1col.css, style/kawa-ebook.css, style/kawa-l.css,
+	style/kawa-r.css, style/kawa.css, style/top-navbar.css:
+	CSS stylesheets for the web pages or epub.
+	* Compliance.html: Remove ancient file.
+
+2016-06-26  Jakub Jankiewicz
+
+	* style/kawa-logo.png: Kawa logo
+
+2016-06-12  Per Bothner  <per@bothner.com>
+
+	* kawa.texi (Ports): Document new features for setting prompts.
+
+2016-05-07  Per Bothner  <per@bothner.com>
+
+	* Makefile.am (all): New rule does nothing.
+	This is to avoid 'make all' failing if makeinfo is older than 6.0.
+
 2016-04-09  Per Bothner  <per@bothner.com>
 
 	* kawa.texi (Module classes): More about "dual-purpose" module classes.

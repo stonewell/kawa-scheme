@@ -718,7 +718,7 @@ check-numbers-clisp:
 
 CLEANFILES = tmp* *.log testing.zip revcomp-input.txt knucleotide-input.txt regexdna-input.txt *.class HelloCgiK HelloCgiS
 SCRIPTS_TO_RUN = case-warnings.scm uninit1.scm \
-  errors1.scm errors2.scm errors3.scm errors4.scm errors5.scm \
+  errors1.scm errors2.scm errors3.scm errors4.scm errors5.scm errors-arr.scm\
   convert1.scm inner-1.scm lambda-in-class-1.scm reflect1.scm reflect2.scm \
   promise1.scm bad-keywords1.scm splice1.scm standards1.scm \
   anonymous-lambda-1.scm unreach1.scm unreach2.scm unreach3.scm \
@@ -738,7 +738,8 @@ SCRIPTS_TO_RUN = case-warnings.scm uninit1.scm \
   sva39060.scm sva39150.scm sva39945.scm sva39940.scm sva39947.scm \
   sva40077.scm sva40494.scm sva40649.scm sva40729.scm sva40814.scm \
   sva42377.scm sva42382.scm sva42689.scm sva42722.scm sva43131.scm \
-  sva43750.scm sva47412.scm sva46728.scm sva47651.scm svn47725.scm
+  sva43750.scm sva47412.scm sva46728.scm sva47651.scm sva47725.scm \
+  sva47863.scm
 # Files needed for SCRIPTS_TO_RUN
 AUX_FOR_SCRIPTS_TO_RUN = aux-libs.scm sva46728x.scm sva46728z.scm
 BUILD_BEFORE_SCRIPTS_TO_RUN = sva46728x.class sva46728z.class

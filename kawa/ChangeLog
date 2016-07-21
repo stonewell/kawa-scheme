@@ -1,3 +1,73 @@
+2016-07-01  Per Bothner  <per@bothner.com>
+
+	* Shell.java (defaultPrompter): New static instance of Prompter.
+	(run): Use it.
+	* standard/Scheme.java: Redefine define-prompter.
+
+	* standard/ImportFromLibrary.java (scanImportSet): Support 'class'
+	import set form for the default package (i.e. empty prefix).
+
+2016-06-26  Per Bothner  <per@bothner.com>
+
+	* repl.java: For --http-start, print message with port number.
+
+2016-06-25  Per Bothner  <per@bothner.com>
+
+	* repl.java: After --http-start wait for console input and exit.
+
+2016-06-18  Per Bothner  <per@bothner.com>
+
+	* DomTermBackend.java (reportEvent): Minor update.
+
+2016-06-17  Per Bothner  <per@bothner.com>
+
+	Improve handling of Ctrl-C (interrupt) and Ctrl-D (end-of-file).
+	* DomTermBackend.java (reportEvent): New method.
+	(run): Write end-of-file sequence to DomTerm.
+	* Shell.java (class SigIntHandler): New class, implements Runnable.
+	(run): Set up SIGINT handlers.
+
+2016-06-16  Per Bothner  <per@bothner.com>
+
+	Add support for (re-)loading stylesheet under DomTerm.
+	* DomTermBackend.java (loadStyleSheet): New static method.
+	* standard/Scheme.java: Define domterm-load-stylesheet.
+
+2016-06-14  Per Bothner  <per@bothner.com>
+
+	Pass windows size events from DomTem to JLine.
+	* DomTermBackend.java (setWindowSize): Override.
+
+	* repl.java (startJfxConsole): Change to set window title.
+
+	New option to run a REPL in a JavaFX DomTerm window.
+	* DomTermBackend.java: New class, extends org.domterm.Backend.
+	It wraps a Kawa REPL.
+	* repl.java (startJfxConsole): Use reflection to start DomTerm
+	in a JavaFX WebEngine.
+	* Shell.java (run): Unwrap InvocationTargetException.
+
+2016-06-11  Per Bothner  <per@bothner.com>
+
+	* standard/Scheme.scm: Update input-prompt1 and input-prompt2.
+
+2016-06-02  Per Bothner  <per@bothner.com>
+
+	* Shell.java (run): Add hook for using JLine.
+	Change setting of prompt and newline handling.
+	(class Prompter): New static member class.
+	* standard/Scheme.java: Define input-prompt1 and input-prompt2.
+
+2016-05-27  Per Bothner  <per@bothner.com>
+
+	* lang/Translator.java (checkDefaultBinding): Handle "arrayRANK".
+	* standard/Scheme.java: Change bindings of "array" to the type.
+	(formatType): Handle GenArrayType.
+
+2016-05-07  Per Bothner  <per@bothner.com>
+
+	* lang/Translator.java (getCompletions): Tweak parameter type.
+
 2016-04-09  Per Bothner  <per@bothner.com>
 
 	* lang/Macro.java:

@@ -1,5 +1,5 @@
 qdnl Process this with autoconf to create configure
-AC_INIT([kawa],[2.0.1_invoke]) dnl Also update bin/configure.ac and build.xml.
+AC_INIT([kawa],[2.1.9_invoke]) dnl Also update bin/configure.ac and build.xml.
 AC_CONFIG_SRCDIR([doc/kawa.texi])
 
 AM_MAINTAINER_MODE
@@ -20,8 +20,8 @@ AC_ARG_WITH(servlet,
   AS_HELP_STRING(--with-servlet@<:@=servlet-api.jar@:>@,Build support for generating servlets))
 WITH_SERVLET_ARG="${with_servlet}"
 
-AC_ARG_WITH(jfreesvg)
-WITH_JFREESVG_ARG="${with_jfreesvg}"
+AC_ARG_WITH(vectorgraphics2d)
+WITH_VECTORGRAPHICS2D_ARG="${with_vectorgraphics2d}"
 
 AC_ARG_WITH(android,
   AS_HELP_STRING(--with-android@<:@=android.jar@:>@,Build for the Android platform))
@@ -32,7 +32,13 @@ WITH_JAVAFX_ARG="${with_javafx}"
 
 AC_ARG_WITH(jline2,
  AS_HELP_STRING(--with-jline2=<:@=jline2.jar@:>@,Build support JLine2 input editing))
- WITH_JLINE2_ARG="${with_jline2}"
+
+AC_ARG_WITH(domterm,
+ AS_HELP_STRING(--with-domterm=<:@=domterm.jar@:>@,Build support for DomTerm))
+ WITH_DOMTERM_ARG="${with_domterm}"
+
+AC_ARG_WITH(jline3,
+ AS_HELP_STRING(--with-jline3=<:@=jline3.jar@:>@,Build support JLine3 input editing))
 
 AC_ARG_WITH(XQTS,
   AS_HELP_STRING(--with-XQTS@<:@=XQTS-path@:>@,Support XQuery Test Suite))
@@ -169,10 +175,14 @@ AM_CONDITIONAL(ENABLE_XML, test "$enable_xml" = "yes")
 AM_CONDITIONAL(ENABLE_SERVLET,
   test "$enable_servlet" != "" -a "$enable_servlet" != "no")
 AM_CONDITIONAL(WITH_SWING, test "$with_swing" != "no")
-AM_CONDITIONAL(WITH_JFREESVG,
-  test "$with_jfreesvg" != "" -a "$with_jfreesvg" != "no")
+AM_CONDITIONAL(WITH_VECTORGRAPHICS2D,
+  test "$with_vectorgraphics2d" != "" -a "$with_vectorgraphics2d" != "no")
 AM_CONDITIONAL(WITH_JLINE2,
-  test "$with_jline2" != "" -a "$with_jline2" != "no")
+  test "$with_jline2" != "" -a "$with_jline2" != "no" || test "$with_jline3" != "" -a "$with_jline3" != "no")
+AM_CONDITIONAL(WITH_JLINE3,
+  test "$with_jline3" != "" -a "$with_jline3" != "no")
+AM_CONDITIONAL(WITH_DOMTERM,
+  test "$with_domterm" != "" -a "$with_domterm" != "no")
 AM_CONDITIONAL(WITH_JAVAFX,
   test "$with_javafx" != "" -a "$with_javafx" != "no")
 AM_CONDITIONAL(WITH_SWT, test "$with_swt" = "yes")
@@ -183,6 +193,12 @@ AM_CONDITIONAL(WITH_HTTPSERVER, test "$with_httpserver" = "yes")
 AM_CONDITIONAL(WITH_XQTS, test "$with_XQTS" != "" -a "$with_XQTS" != "no")
 AM_CONDITIONAL(ENABLE_KAWA_FRONTEND, test "$enable_kawa_frontend" = "yes")
 AM_CONDITIONAL(ON_WINDOWS, test "$CLASSPATH_SEPARATOR" = ";")
+
+if test "$with_jline3" != "" -a "$with_jline3" != "no"
+then WITH_JLINE_PATH="${with_jline3}"
+elif test "$with_jline2" != "" -a "$with_jline2" != "no"
+then WITH_JLINE_PATH="${with_jline2}"
+fi
 
 JEMACS_VERSION=`echo $VERSION | sed  -e 's/^1/0/'`
 BYTECODE_VERSION="$VERSION"
@@ -204,9 +220,12 @@ AC_SUBST(CLASSPATH_SEPARATOR)
 AC_SUBST(pathsep)
 AC_SUBST(filesep)
 AC_SUBST(WITH_SERVLET_ARG)
-AC_SUBST(WITH_JFREESVG_ARG)
+AC_SUBST(WITH_VECTORGRAPHICS2D_ARG)
 AC_SUBST(WITH_JAVAFX_ARG)
-AC_SUBST(WITH_JLINE2_ARG)
+AC_SUBST(WITH_JLINE2)
+AC_SUBST(WITH_JLINE3)
+AC_SUBST(WITH_JLINE_PATH)
+AC_SUBST(WITH_DOMTERM_ARG)
 
 AC_SUBST(JAVA)
 AC_SUBST(JAVAC)
@@ -235,22 +254,18 @@ AC_CONFIG_LINKS(
 AM_COND_IF([ENABLE_KAWA_FRONTEND],
         [AC_CONFIG_SUBDIRS([bin])])
 
-AC_CONFIG_FILES([Makefile gnu/bytecode/Makefile gnu/math/Makefile
+AC_CONFIG_FILES([Makefile gnu/bytecode/Makefile
   gnu/Makefile gnu/kawa/servlet/Makefile
   gnu/brl/Makefile gnu/kawa/brl/Makefile
-  gnu/kawa/slib/Makefile
-  gnu/commonlisp/lang/Makefile
+  kawa/lib/Makefile gnu/kawa/slib/Makefile
   gnu/commonlisp/lisp/Makefile gnu/commonlisp/testsuite/Makefile
-  gnu/jemacs/lang/Makefile gnu/jemacs/buffer/Makefile
   gnu/jemacs/lisp/Makefile gnu/jemacs/testsuite/Makefile
-  gnu/jemacs/swing/Makefile gnu/jemacs/swt/Makefile
-  kawa/Makefile kawa/lib/Makefile
-  gnu/q2/lang/Makefile gnu/q2/testsuite/Makefile
-  gnu/xquery/util/Makefile gnu/xquery/lang/Makefile
+  gnu/q2/testsuite/Makefile
   gnu/xquery/testsuite/Makefile
   gnu/kawa/android/Makefile
   gnu/kawa/javafx/Makefile
-  doc/Makefile testsuite/Makefile])
-AC_CONFIG_FILES([bin/kawa.sh],[chmod +x bin/kawa.sh])
+  doc/Makefile testsuite/Makefile
+  bin/kawa.bat])
+AC_CONFIG_FILES([bin/kawa.sh bin/browse-kawa-manual],[chmod +x bin/kawa.sh bin/browse-kawa-manual])
 AC_CONFIG_FILES([bin/qexo],[chmod +x bin/qexo])
 AC_OUTPUT

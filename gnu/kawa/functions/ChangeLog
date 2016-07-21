@@ -1,3 +1,13 @@
+2016-07-13  Per Bothner  <per@bothner.com>
+
+	* DisplayFormat.java (writeObjectRaw): No longer depend on
+	with:JFreeSVG pre-processor option.
+
+2016-05-27  Per Bothner  <per@bothner.com>
+
+	* CompilationHelpers.java (validateApplyToArgs): Optimize
+	general array indexing.
+
 2016-05-02  Per Bothner  <per@bothner.com>
 
 	* IsEqual.java (apply, arrayEquals): Make non-static.

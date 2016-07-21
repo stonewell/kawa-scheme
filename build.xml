@@ -7,7 +7,7 @@
   <!-- Give the user a chance to override the defaults. -->
   <property file="build.properties"/>
 
-  <property name="version.release" value="2.1.1"/>
+  <property name="version.release" value="2.1.9_invoke"/>
   <property name="version.local" value=""/>
   <property name="version" value="${version.release}${version.local}"/>
 
@@ -574,6 +574,7 @@
         <file name="bytevectors.scm"/>
         <file name="arrays.scm"/>
         <file name="system.scm"/>
+        <file name="kawa/pictures.scm"/>
         <file name="kawa/string-cursors.scm"/>
         <file name="kawa/quaternions.scm"/>
         <file name="kawa/rotations.scm"/>
@@ -819,26 +820,21 @@
   <target name="jemacs-classes" 
           depends="build-settings, java-classes, jemacs-java-classes"
           if="${enable-jemacs}">
-    <kawac failonerror="true" destdir="${build.classes}"
-	    prefix="gnu.jemacs.lang."  modulestatic="run" language="scheme">
-      <fileset dir="${src.dir}/gnu/jemacs/lang"> 
-	<include name="MiscOps.scm"/>
-	<include name="NumberOps.scm"/>
-      </fileset>
-    </kawac>
-
-    <kawac failonerror="true" destdir="${build.classes}"
-	    prefix="gnu.jemacs.buffer."  modulestatic="run" language="scheme">
-      <fileset dir="${src.dir}/gnu/jemacs/buffer"> 
-	<include name="emacs.scm"/>
-      </fileset>
-    </kawac>
 
     <kawac failonerror="true" destdir="${build.classes}"
 	    prefix="gnu.kawa.slib" modulestatic="run" language="scheme">
       <fileset dir="${src.dir}/gnu/kawa/slib"> 
 	<include name="gui.scm"/>
       </fileset>
+    </kawac>
+
+    <kawac failonerror="true" destdir="${build.classes}"
+           prefix="gnu.jemacs.lisp." language="scheme">
+      <filelist dir="${src.dir}/gnu/jemacs/lisp">
+        <file name="MiscOps.scm"/>
+        <file name="NumberOps.scm"/>
+        <file name="emacs.scm"/>
+      </filelist>
     </kawac>
 
     <kawac failonerror="true" destdir="${build.classes}"

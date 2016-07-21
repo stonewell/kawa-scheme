@@ -13,10 +13,10 @@ import gnu.bytecode.ClassType;
 import gnu.kawa.servlet.HttpRequestContext;
 import gnu.kawa.io.CharArrayInPort;
 import gnu.kawa.io.CheckConsole;
-import gnu.kawa.io.DomTermErrorStream;
 import gnu.kawa.io.InPort;
 import gnu.kawa.io.OutPort;
 import gnu.kawa.io.Path;
+import gnu.kawa.io.TermErrorStream;
 import gnu.kawa.io.WriterManager;
 import gnu.kawa.util.ExitCalled;
 import kawa.lang.SyntaxPattern;
@@ -534,7 +534,18 @@ public class repl extends Procedure0or1 {
                     port = -1; // never seen.
                 }
                 try {
-                    gnu.kawa.servlet.KawaHttpHandler.startServer(port);
+                    gnu.kawa.servlet.KawaHttpHandler
+                        .startServer(port, System.err);
+                    /* #ifdef JAVA6 */
+                    Console console;
+                    if (CheckConsole.haveConsole()
+                        && (console = System.console()) != null) {
+                        if (console.readLine() != null) {
+                            System.err.println("kawa: HttpServer shutting down");
+                            System.exit(0);
+                        }
+                    }
+                    /* #endif */
                 } catch (NoClassDefFoundError ex) {
                     System.err.println("kawa: HttpServer classes not found");
                     System.exit(-1);
@@ -686,7 +697,9 @@ public class repl extends Procedure0or1 {
             getLanguage();
             iArg = getArgs(args, iArg);
             checkInitFile();
-            if (! CheckConsole.haveConsole())
+            if (! CheckConsole.haveConsole()
+                // || CheckConsole.useDomTerm() > 0
+                )
                 startGuiConsole();
             else {
                 boolean ok = Shell.run(Language.getDefaultLanguage(),
@@ -813,12 +826,38 @@ public class repl extends Procedure0or1 {
         checkedDomTerm = true;
         String dversion = CheckConsole.getDomTermVersionInfo();
         if (dversion != null) {
+            OutPort.getSystemOut().setDomTerm(true);
             if (dversion.indexOf("err-handled;") < 0)
-                DomTermErrorStream.setSystemErr();
+                TermErrorStream.setSystemErr(false);
+        }
+        /*else if (isAnsiTerminal())
+            TermErrorStream.setSystemErr(true);
+        */
+    }
+    private static boolean isAnsiTerminal() {
+        return CheckConsole.haveConsole(); // FIXME
+    }
+
+    private static Throwable startJfxConsole() {
+        try {
+            Object replBackend =
+                Class.forName("kawa.DomTermBackend").newInstance();
+            Class.forName("org.domterm.javafx.WebTerminalApp")
+                .getMethod("startApp",
+                           Class.forName("org.domterm.Backend"),
+                           String.class, String[].class)
+                .invoke(null, replBackend, "Kawa (DomTerm)", null);
+            return null;
+        } catch (Throwable ex) {
+            return ex;
         }
     }
 
     private static void startGuiConsole() {
+        if (CheckConsole.useDomTerm() >= 0) {
+            if (startJfxConsole() == null)
+                return;
+        }
         // Do this instead of just new GuiConsole in case we have
         // configured --without-awt.
         try {

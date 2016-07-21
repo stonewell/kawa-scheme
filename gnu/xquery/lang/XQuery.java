@@ -570,11 +570,11 @@ public class XQuery extends Language
 
     defProcStFld("unescaped-data", "gnu.kawa.xml.MakeUnescapedData", "unescapedData");
     defProcStFld("item-at", "gnu.xquery.util.ItemAt", "itemAt");
-    defProcStFld("count", "gnu.xquery.util.Xutils", "count$Mnvalues");
+    defProcStFld("count", "kawa.lib.xquery.Xutils", "count$Mnvalues");
     define_method("sum", "gnu.xquery.util.Reduce", "sum"); // Overloaded
     defProcStFld("avg", "gnu.xquery.util.Average", "avg");
-    defProcStFld("sublist", "gnu.xquery.util.Xutils", "sublist"); // deprecated
-    defProcStFld("subsequence", "gnu.xquery.util.Xutils", "sublist");
+    defProcStFld("sublist", "kawa.lib.xquery.Xutils", "sublist"); // deprecated
+    defProcStFld("subsequence", "kawa.lib.xquery.Xutils", "sublist");
     define_method("empty", "gnu.xquery.util.SequenceUtils",
 		  "isEmptySequence");
     define_method("exists", "gnu.xquery.util.SequenceUtils",
@@ -897,12 +897,11 @@ public class XQuery extends Language
     return Type.make(clas);
   }
 
-  @Override
-  public Procedure getPrompter()
-  {
-    return new Prompter();
-  }
-
+    @Override
+    public String getPrimaryPrompt() { return "<!--%N-->"; }
+    @Override
+    public String getSecondaryPrompt() { return "{%P.%N} "; }
+ 
   /*
   static boolean isPunctuation (char ch)
   {
@@ -1031,23 +1030,5 @@ public class XQuery extends Language
                             type.toString());
       }
     return value;
-  }
-}
-
-class Prompter extends Procedure1
-{
-  public Object apply1 (Object arg)
-  {
-    InPort port = (InPort) arg;
-    int line = port.getLineNumber() + 1;
-    char state = port.readState;
-    if (state == '\n')
-      state = ' ';
-    if (state == '<')
-      return "<!--" + line + "-->";
-    else if (state == ':')
-      return "-(:" + line + "c:) ";
-    else
-      return "(: " + line + state + ":) ";
   }
 }

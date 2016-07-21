@@ -695,7 +695,7 @@ public class Translator extends Compilation
     public int getCompletions(Environment env,
                               String nameStart, Object property,
                               String namespaceUri,
-                              List<String> matches) {
+                              List<? super String> matches) {
         LocationEnumeration e = env.enumerateAllLocations();
         int count = 0;
         while (e.hasMoreElements()) {
@@ -797,7 +797,8 @@ public class Translator extends Compilation
                                candidates);
                 lexical.getCompletingSymbols(prefix, symspace,
                                              candidates);
-                throw new CommandCompleter(complete, candidates);
+                throw new CommandCompleter(complete, candidates,
+                                           prefix, prefix.length(), this);
             }
 
             if (s.hasUnknownNamespace()) {
@@ -1270,6 +1271,18 @@ public class Translator extends Compilation
             tr.error('w', "error loading class " + cname + " - " + ex.getMessage() + " not found");
         } catch (Exception ex) {
         }
+        if (name.startsWith("array")) {
+            int nlen = name.length();
+            if (nlen == 5)
+                return makeQuoteExp(GenArrayType.generalInstance);
+            try {
+                rank = Integer.parseInt(name.substring(5));
+                if (rank >= 0)
+                    return makeQuoteExp(new GenArrayType(rank, Type.objectType));
+            } catch (Throwable ex) {
+            }
+        }
+
         return null;
     }
 

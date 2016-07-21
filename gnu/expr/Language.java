@@ -9,8 +9,10 @@ import gnu.lists.*;
 import gnu.text.Lexer;
 import gnu.text.SourceMessages;
 import gnu.kawa.io.CharArrayInPort;
+import gnu.kawa.io.CheckConsole;
 import gnu.kawa.io.InPort;
 import gnu.kawa.io.OutPort;
+import gnu.kawa.io.TtyInPort;
 import gnu.kawa.reflect.*;
 import gnu.kawa.functions.GetNamedPart;
 import java.lang.reflect.Constructor;
@@ -45,6 +47,10 @@ public abstract class Language
   public static void setCurrentLanguage (Language language)
   {
     current.set(language);
+    if (CheckConsole.prompt1.get(null) == null)
+        CheckConsole.prompt1.set(language.getPrimaryPrompt());
+    if (CheckConsole.prompt2.get(null) == null)
+        CheckConsole.prompt2.set(language.getSecondaryPrompt());
   }
 
   public static Language setSaveCurrent (Language language)
@@ -762,8 +768,13 @@ public abstract class Language
       }
     if (info != null)
       info.setCompilation(tr);
-    if (! parse(tr, options))
-      return null;
+    try {
+        if (! parse(tr, options))
+            return null;
+    } catch (gnu.text.SyntaxException ex) {
+        tr.setState(Compilation.ERROR_SEEN);
+        return tr;
+    }
     if (tr.getState() == Compilation.PROLOG_PARSING)
       tr.setState(Compilation.PROLOG_PARSED);
     else
@@ -1124,9 +1135,13 @@ public abstract class Language
         boolean isStatic = (fld.getModifiers() & Access.STATIC) != 0;
         if (isAlias) {
             fdecl.setIndirectBinding(true);
-            if (ftype instanceof ClassType
-                && ((ClassType) ftype).isSubclass("gnu.mapping.DynamicLocation"))
-                fdecl.setFlag(Declaration.IS_DYNAMIC);
+            Type frtype = ftype.getRawType();
+            if (frtype instanceof ClassType) {
+                ClassType cftype = (ClassType) frtype;
+                if (cftype.isSubclass("gnu.mapping.DynamicLocation")
+                    || cftype.isSubclass("gnu.mapping.ThreadLocation"))
+                    fdecl.setFlag(Declaration.IS_DYNAMIC);
+            }
         }
         else if (isFinal && ftype instanceof ClassType) {
             if (ftype.isSubtype(Compilation.typeProcedure))
@@ -1192,18 +1207,8 @@ public abstract class Language
       Environment.setGlobal(Environment.getCurrent());
   }
 
-  public Procedure getPrompter()
-  {
-    Object property = null;
-    if (hasSeparateFunctionNamespace())
-      property = EnvironmentKey.FUNCTION;
-    Procedure prompter = (Procedure) getEnvironment()
-      .get(getSymbol("default-prompter"), property, null);
-    if (prompter != null)
-      return prompter;
-    else
-      return new SimplePrompter();
-  }
+    public String getPrimaryPrompt() { return "> "; }
+    public String getSecondaryPrompt() { return "- "; }
 
   /** Return the result of evaluating a string as a source expression. */
   public final Object eval (String string) throws Throwable

@@ -513,10 +513,13 @@ public class Scheme extends LispLanguage {
       defProcStFld("set-input-port-line-number!", "kawa.lib.ports");
       defProcStFld("input-port-column-number", "kawa.lib.ports");
       defProcStFld("input-port-read-state", "kawa.lib.ports");
-      defProcStFld("default-prompter", "kawa.lib.ports");
+      defProcStFld("default-prompter", "kawa.Shell", "defaultPrompter");
       defProcStFld("input-port-prompter", "kawa.lib.ports");
       defProcStFld("set-input-port-prompter!", "kawa.lib.ports");
+      defAliasStFld("input-prompt1", "gnu.kawa.io.CheckConsole", "prompt1");
+      defAliasStFld("input-prompt2", "gnu.kawa.io.CheckConsole", "prompt2");
       defProcStFld("base-uri", "kawa.lib.misc");
+      defProcStFld("domterm-load-stylesheet", "kawa.lib.kawa.domterm");
 
       defProcStFld("syntax-error", "kawa.standard.syntax_error",
                    "syntax_error");
@@ -853,7 +856,8 @@ public class Scheme extends LispLanguage {
       defProcStFld("array-rank", "kawa.lib.arrays");
       defProcStFld("array-size", "kawa.lib.arrays");
       defProcStFld("make-array", "kawa.lib.arrays");
-      defProcStFld("array", "kawa.lib.arrays");
+      defAliasStFld("array",
+                    "gnu.kawa.lispexpr.GenArrayType", "generalInstance");
       defProcStFld("array-start", "kawa.lib.arrays");
       defProcStFld("array-end", "kawa.lib.arrays");
       defProcStFld("shape", "kawa.lib.arrays");
@@ -1133,6 +1137,20 @@ public class Scheme extends LispLanguage {
                 sbuf.append(etype == null ? "unspecified" : formatType(etype));
             }
             sbuf.append(']');
+            return sbuf.toString();
+        }
+        if (type instanceof GenArrayType) {
+            GenArrayType atype = (GenArrayType) type;
+            StringBuilder sbuf = new StringBuilder("array");
+            int rank = atype.rank();
+            if (rank >= 0)
+                sbuf.append(rank);
+            Type elementType = atype.getComponentType();
+            if (elementType != null && elementType != Type.objectType) {
+                sbuf.append('[');
+                sbuf.append(formatType(elementType));
+                sbuf.append(']');
+            }
             return sbuf.toString();
         }
         if (typeToStringMap == null)  {
