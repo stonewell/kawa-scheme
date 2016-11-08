@@ -1,3 +1,17 @@
+2016-11-06  Per Bothner  <per@bothner.com>
+
+	* CheckConsole.java (useDomTerm): Remove ThreadLocal.
+	(consoleType): New TheadLocal; new static method.
+
+	* JLineInPort.java (makeTerminal): Set charset to UTF-8.
+	This fixes some problems on Windows.
+
+	* TtyInPort.java (promptTemplate1): Add hide/show button if DomTerm.
+
+	* WriterManager.java (run): Call close rather than flush.
+	Revises previous change (from finalize to flush);
+	let's hope this works ok ...
+
 2016-11-05  Per Bothner  <per@bothner.com>
 
 	* Path.java (probeContentType): Make a bit more general and robust.
