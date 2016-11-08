@@ -1,0 +1,37 @@
+2016-09-09  Per Bothner  <per@bothner.com>
+
+	* GenericFormat.java: More complex logic to allow handlers to
+	indicate two kinds of failure: class-mismatch and other.
+	(TryFormatResult): New enum type.
+	(tryFormat): New method - only check current entries list.
+
+2016-09-07  Per Bothner  <per@bothner.com>
+
+	* AbstractFormat.java (getPassThroughOutPort): Move to OutPort.
+	(class FormatConsumer): Make public.
+	(FormatConsumer.getBase): Make public.
+	(FormatConsumer.getFormat): New method.
+	(format): Use OutPort.pushFormat rather than accessing
+	OutPort.formatter directly.
+
+2016-09-05  Per Bothner  <per@bothner.com>
+
+	* GenericFormat.java: New class, extends AbstractFormat.
+	* AbstractFormat.java (getReadableOutput): New method.
+
+2016-09-03  Per Bothner  <per@bothner.com>
+
+	New package.
+	* AbstractFormat.java: Moved from gnu.lists.
+	* CaseConvertFormat.java: Moved from gnu.text.
+	* CompoundFormat.java: Moved from gnu.text.
+	* DelimitSubstitutionFormat.java: Moved from gnu.text.
+	* EnglishIntegerFormat.java: Moved from gnu.text.
+	* FlushFormat.java: Moved from gnu.text.
+	* IntegerFormat.java: Moved from gnu.text.
+	* LiteralFormat.java: Moved from gnu.text.
+	* PadFormat.java: Moved from gnu.text.
+	* Printable.java: Moved from gnu.text.
+	* ReportFormat.java: Moved from gnu.text.
+	* RomanIntegerFormat.java: Moved from gnu.text.
+

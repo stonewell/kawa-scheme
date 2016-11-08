@@ -87,8 +87,10 @@ PRE_UNINSTALL = :
 POST_UNINSTALL = :
 build_triplet = @build@
 host_triplet = @host@
-@WITH_DOMTERM_TRUE@am__append_1 = kawa/domterm.scm
-@ENABLE_XML_TRUE@@ENABLE_XQUERY_TRUE@am__append_2 = $(scm_WITH_XQUERY)
+@WITH_AWT_TRUE@am__append_1 = $(scm_WITH_AWT)
+@WITH_AWT_TRUE@@WITH_SWING_TRUE@am__append_2 = $(scm_WITH_SWING)
+@WITH_DOMTERM_TRUE@am__append_3 = kawa/domterm.scm
+@ENABLE_XML_TRUE@@ENABLE_XQUERY_TRUE@am__append_4 = $(scm_WITH_XQUERY)
 subdir = kawa/lib
 ACLOCAL_M4 = $(top_srcdir)/aclocal.m4
 am__aclocal_m4_deps = $(top_srcdir)/config.classpath \
@@ -171,11 +173,9 @@ TOP_BUILDDIR = @TOP_BUILDDIR@
 VERSION = @VERSION@
 WITH_DOMTERM_ARG = @WITH_DOMTERM_ARG@
 WITH_JAVAFX_ARG = @WITH_JAVAFX_ARG@
-WITH_JLINE2 = @WITH_JLINE2@
 WITH_JLINE3 = @WITH_JLINE3@
 WITH_JLINE_PATH = @WITH_JLINE_PATH@
 WITH_SERVLET_ARG = @WITH_SERVLET_ARG@
-WITH_VECTORGRAPHICS2D_ARG = @WITH_VECTORGRAPHICS2D_ARG@
 XQTS_PATH = @XQTS_PATH@
 abs_builddir = @abs_builddir@
 abs_srcdir = @abs_srcdir@
@@ -275,7 +275,7 @@ java_SCM_ALWAYS = \
   system.scm \
   kawa/string-cursors.scm kawa/arglist.scm \
   kawa/quaternions.scm kawa/rotations.scm \
-  kawa/pictures.scm \
+  kawa/process-keywords.scm kawa/pprint.scm \
   kawa/hashtable.scm kawa/regex.scm kawa/reflect.scm kawa/base.scm \
   rnrs/hashtables.scm rnrs/lists.scm rnrs/arithmetic/bitwise.scm \
   srfi95.scm rnrs/unicode.scm rnrs/sorting.scm rnrs/programs.scm \
@@ -286,18 +286,17 @@ java_SCM_ALWAYS = \
   scheme/write.scm scheme/r5rs.scm \
   trace.scm
 
-scm_WITH_SWING = windows.scm
+scm_WITH_SWING = windows.scm kawa/swing.scm
+scm_WITH_AWT = kawa/pictures.scm 
 scm_WITH_XQUERY = xquery/Xutils.scm
-EXTRA_DIST = $(java_SCM_ALWAYS) $(scm_WITH_SWING) $(scm_WITH_XQUERY) \
+EXTRA_DIST = $(java_SCM_ALWAYS) $(scm_WITH_AWT) $(scm_WITH_SWING) $(scm_WITH_XQUERY) \
   scheme/base-exports scheme/char-exports scheme/complex-exports \
   scheme/cxr-exports scheme/eval-exports scheme/file-exports \
   scheme/inexact-exports scheme/lazy-exports \
   scheme/process-context-exports scheme/time-exports scheme/write-exports
 
-@WITH_SWING_FALSE@java_SCM = $(java_SCM_ALWAYS) $(am__append_1) \
-@WITH_SWING_FALSE@	$(am__append_2)
-@WITH_SWING_TRUE@java_SCM = $(java_SCM_ALWAYS) $(scm_WITH_SWING) \
-@WITH_SWING_TRUE@	$(am__append_1) $(am__append_2)
+java_SCM = $(java_SCM_ALWAYS) $(am__append_1) $(am__append_2) \
+	$(am__append_3) $(am__append_4)
 PACKAGE_FNAME = kawa-lib
 SCM_COMPILE_FLAGS = --warn-undefined-variable --warn-unknown-member --warn-as-error
 EXTRA_CLEAN = */*.class */*/*.class

@@ -1,3 +1,42 @@
+2016-11-05  Per Bothner  <per@bothner.com>
+
+	* webtest/README: New file - helps test http serving of static files.
+
+2016-10-29  Per Bothner  <per@bothner.com>
+
+	* xml-test.scm: Update for changed XML-xhtml formatting.
+
+2016-10-22  Adrián Medraño Calvo <adrian@medranocalvo.com>
+
+	* sva49416.scm: New testcase for Savannah bug #49416
+	"Error macro-expanding with-syntax with ... patterns".
+
+2016-10-16  Per Bothner  <per@bothner.com>
+
+	* Makefile.am (LARCENY_TEST_FILES): Add 2 missing test files.
+
+	* sva47725.scm: Tweak so it also work with Java-7.
+
+2016-10-11  Per Bothner  <per@bothner.com>
+
+	* text-test.scm: Add tests of pretty-printing using pprint.
+
+2016-09-02  Per Bothner  <per@bothner.com>
+
+	* arr-test.scm: More array tests.
+
+2016-08-31  Per Bothner  <per@bothner.com>
+
+	* arr-test.scm: Array pretty-printing no longer ends with a newline.
+
+	* arr-test.scm: Added tests for ranges.
+
+2016-08-29  Sakamoto Osamu <saka1029>
+            Per Bothner  <per@bothner.com>
+
+	* sva48938.scm: Testcase for
+	Savannah bug #48938 "lambda cannot be cast to java.util.Comparator".
+
 2016-07-12  Per Bothner  <per@bothner.com>
 
 	* inlining.expected: Update for API change for unsigned byte and short.

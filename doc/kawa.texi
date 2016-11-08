@@ -50,6 +50,9 @@
 @macro stxlit{TEXT}
 @code{@b{\TEXT\}}
 @end macro
+@macro stxlitlbrace{TEXT}
+@code{@b{@{}}
+@end macro
 
 @macro arbno{THING}
 \THING\@sup{*}
@@ -115,6 +118,8 @@
 @page
 @end titlepage
 
+@contents
+
 @ifinfo
 @format
 START-INFO-DIR-ENTRY
@@ -156,8 +161,7 @@ other programming languages on the Java platform.
 It has many useful utility classes.
 
 This documents version @value{VERSION}, updated @value{UPDATED}.
-See the summary
-of @uref{http://www.gnu.org/software/kawa/news.html,recent changes}.
+See the summary of @ref{News,recent changes}.
 
 @c Old versions of makeinfo don't support: @ifnotdocbook
 The Kawa home page (which is currently just an on-line
@@ -177,6 +181,7 @@ Various people and orgnizations @ref{Acknowledgements,have contributed to Kawa}.
 This package has nothing to do with the defunct Kawa commercial Java IDE.
 
 @menu
+* News::                 News - Recent Changes
 * Features::
 * Community::
 * Installation::         Building and installing Kawa
@@ -202,6 +207,10 @@ This package has nothing to do with the defunct Kawa commercial Java IDE.
 * License::
 * Overall Index::	 Index of functions, macros, concepts, and more.
 @end menu
+
+@node News
+@chapter News - Recent Changes
+@include news.texi
 
 @node Features
 @chapter Features
@@ -237,9 +246,9 @@ Deployment is easy and flexible.  You just need the Kawa jar file.
 @ref{Macros} and @ref{Named quasi-literals,custom named literals} make it easy
 to extend the syntax, and implement Domain-Specific Languages.
 
-Kawa provides the usual read-eval-print loop, as well as batch modes.
+Kawa provides the usual @ref{REPL Console,read-eval-print loop}, as well as batch modes.
 
-Kawa has builtin pretty-printer support, and fancy formatting.
+Kawa has builtin @ref{Pretty-printing,pretty-printer} support, and fancy formatting.
 
 Kawa supports class-definition facilities, and separately-compiled modules.
 
@@ -247,6 +256,13 @@ You can @ref{Allocating objects,allocate and initialize objects}
 with a compact ``builder'' syntax.  It works out-of-the-box
 (with no run-time overhead) on many classes and APIs,
 but can be customized if need be.
+
+A library for functional @ref{Composable pictures,composable pictures}
+lets you create ``picture'' objects,
+display them, transform them, combine them, convert to
+SVG or images, and more.
+This can be ``printed'' directly in the Kawa console
+(either the DomTerm console or the Swing one).
 
 @ref{Building JavaFX applications,JavaFX programming} is simpler.
 
@@ -259,9 +275,29 @@ Flexible shell-like functionality, including @ref{process literals}.
 with @ref{Self-configuring page scripts,self-configuring web servers}
 and optionally using @ref{Servlets,servlets} and @ref{XML literals}.
 
-Kawa implements the full numeric tower, including infinite-precision
-rational numbers and complex numbers.  It also supports @ref{Quantities}
-with units, such as @code{3cm}.
+@ref{Arrays} and sequences have a lot of flexibility:
+Arrays can be multi-dimensional;
+you can use an array as an index (which generalizes slices and permutations);
+you can define a lazy array using a function that maps indexes to values;
+you can re-map the indexes to yield a transformed array.
+
+Many useful features for mathematics and numerics:
+@itemize
+@item
+The full ``numeric tower'' includes infinite-precision
+rational numbers and complex numbers.
+@item
+Compile-time optimization of arithmetic
+with the use of type declarations and inference.
+@item
+A @ref{Quantities,@dfn{quantity}} is a real number with a unit,
+such as @code{3cm}.
+@item
+@ref{Quaternions} are a 4-dimensional generalization of complex numbers.
+Unsigned primitive integer types (@code{ubyte}, @code{ushort},
+@code{uint}, @code{ulong}) are implemented efficiently without
+object allocation.
+@end itemize
 
 A @ref{Lazy evaluation,lazy value} wraps an expression which is evaluated
 only when it is needed.
@@ -506,8 +542,8 @@ Daniel Bonniot for multiple small improvements
 to gnu.bytecode and gnu.expr.
 
 Jamison Hope for multiple contributions,
-including quaternion support, the SRFI-14 implementation, and Google
-Summer of Code mentoring.
+including quaternion support, the SRFI-14 implementation,
+Ant improvements, and Google Summer of Code mentoring.
 
 Jim White for Ant support and other improvements.
 
@@ -588,8 +624,10 @@ Seth Alves;
 Khairul Azhar;
 Bob Bane;
 Hans Boehm;
+Adrián Medraño Calvo;
 Brian D. Carlstrom;
 Luis Casillas;
+Sudarshan S Chawathe;
 Ken Dickey (format tests);
 Helge Dietert;
 Allan Erskine;
@@ -995,46 +1033,11 @@ Kawa currently records the line and column position of syntactic elements.
 For an IDE it is desirable to have both start and end position of an element,
 for example so it can put a squiggly line under an erroneous form.
 
-@subsection Output formatting and pretty printing
-It would be nice to integrate the pretty-printer with the REPL,
-so that window re-sizing re-breaks the output lines.
-It would be nice to enhance the pretty-printer to handle
-variable-width fonts and other ``rich'' text.
-This might best be done in the context of an enhanced
-terminal emulator such as @uref{http://domterm.org,DomTerm}.
-
-Figuring out how to make the output formatter more flexible,
-more efficient, and more customizable are also desirable.
-
 @subsection Hop-style web programming
 @uref{http://hop.inria.fr/,Hop} is an interesting design
 for integrating server-side and client-side programming using
 a Scheme dialect.  These ideas seem like they would port
 quite well to Kawa.
-
-@subsection Functional Pictures
-
-@i{(GSoC)}
-
-Kawa has functional picture library, using the @code{Paintable}
-and @code{Viewable} interfaces in the @code{gnu.kawa.models} Java package.
-There are bindings to Swing (in @code{gnu.kawa/swindviews}),
-SVG (using JFreeSVG), and SWT (unmaintained).  However,
-it's a very minimal proof-of-concept.
-
-The Racket language has a @uref{https://docs.racket-lang.org/pict/,Pict}
-library, with a lot more functionality;
-it is used by the @uref{https://docs.racket-lang.org/quick/,Racket tutorial}.
-Racket also has a @uref{https://docs.racket-lang.org/teachpack/2htdpimage-guide.html,@code{2htdp/image} library} which should also be studied.
-
-Porting Racket's Pict library directly may not be practical,
-but it should be a good source of design and implementation ideas,
-as well as algorithms.
-
-If you ``print'' a picture in a REPL
-under @uref{http://domterm.org,DomTerm},
-the picture should be converted to HTML, SVG, or PNG
-and inserted in the DomTerm display.
 
 @subsection String localization
 
@@ -1127,7 +1130,7 @@ and @ref{Quantities,quantities} (such as @code{4cm^2}).
 We would like to integrate these into the type system, both
 for performance and compile-time type checking.
 
-For syntax we could a pseudo-parameteried type @code{quantity}.  For example:
+For syntax we can use a pseudo-parameterized type @code{quantity}.  For example:
 @example
 (define a1 ::quantity[cm^2] 4cm^2)
 (* 2.0 a1) ;; @result{} 8cm^2
@@ -1190,13 +1193,16 @@ You can get Kawa sources and binaries from the Kawa ftp site
 @uref{ftp://ftp.gnu.org/pub/gnu/kawa/},
 or from a @uref{http://www.gnu.org/order/ftp.html,mirror site}.
 
-The latest release of the Kawa source code is
+The current release of the Kawa source code is
 @uref{ftp://ftp.gnu.org/pub/gnu/kawa/kawa-@value{VERSION}.tar.gz}.
 (To unpack @code{.tar.gz} files Windows users can use
 @uref{http://www.7-zip.org/,7-Zip}, which is Free Software.)
 
-A ready-to-run @code{.jar} archive of the pre-compiled classes is in
-@uref{ftp://ftp.gnu.org/pub/gnu/kawa/kawa-@value{VERSION}.jar}.
+The corresponding pre-compiled release
+is @uref{ftp://ftp.gnu.org/pub/gnu/kawa/kawa-@value{VERSION}.zip}.
+The most recent snapshot is
+@uref{ftp://ftp.gnu.org/pub/gnu/kawa/kawa-latest.zip}.
+Instructions for using either are @ref{Binary distribution,here}.
 
 @subsection Getting the development sources using SVN
 
@@ -1220,6 +1226,12 @@ Use this command instead:
 @example
 svn -q checkout http://sourceware.org/svn/kawa/trunk kawa
 @end example
+
+After a checkout you will need to run:
+@example
+./autogen.sh
+@end example
+before proceding with instructions for @ref{Source distribution,building the source distribution}.
 
 Once you have it checked out, you can keep it up-to-date with @code{svn update}.
 
@@ -1256,48 +1268,109 @@ PATH=$JAVA_HOME/bin:$PATH
 export PATH
 @end example
 
-@node Binary distribution, Source distribution, Running Java, Installation
+@node Binary distribution
 @section Installing and using the binary distribution
 
-The binary release includes only the binary compiled @samp{.class}
-versions of the same @samp{.java} source files in the source release.
-It does not include any documentation, so you probably want the
-source release in addition to the binary release.  The purpose
-of the binary release is just to save you the time and trouble of
-compiling the sources.
+The binary release comes as a @code{.zip} archive that
+includes Kawa itself (as a @code{.jar} file @code{kawa-@var{version}.jar}),
+some third-party helper libraries, @code{kawa} command scripts
+(for GNU/Linux/Unix/MacOS or Windows),
+and documentation (basically this manual).
+
+After downloading (see @ref{Getting Kawa}), extract the files
+from the @code{.zip} archive using a suitable @code{unzip} program,
+which will create a directory @code{kawa-@var{version}},
+with @code{lib}, @code{bin}, and @code{doc} sub-directories.
+In the following, we assume the environment variable @code{KAWA_HOME}
+refers to this directory:
+@example
+unzip ~/Downloads/kawa-@var{version}.zip
+export KAWA_HOME=`pwd`/kawa-@var{version}
+@end example
 
 The binary release requires Java 7 or later.
 If you have an older Java implementation, or build for a mobile
 environment like Android,
 then you will need to get the source distribution.
 
-The binary release comes as a @code{.jar} archive
-@samp{kawa-@value{VERSION}.jar}.
-Copy this archive to some suitable location,
-such as @code{/usr/local/lib/kawa.jar}.
+If you want to use Kawa as part of some other application,
+you just need the @code{$KAWA_HOME/lib/kawa.jar}.
 
-Then, before you can actually run Kawa, you need to set @code{CLASSPATH}
-so it includes the Kawa archive.  On Unix, using a Bourne-style shell:
+@subsubheading Running the @code{kawa} command
+
+To run a Kawa script file or the Kawa read-eval-print-loop
+run the Kawa application.  There are various way to do so.
+
+The recommended way is to execute the @code{$KAWA_HOME/bin/kawa} Bash
+shell script.
+This should work on most Unix-like platforms that have Bash installed,
+including GNU/Linux, BSD, MacOS, and Cygwin/MingW.
+(Please report if you have problems.)
+
+The script assumes that either a suitable @code{java} program is
+in your @code{PATH}; or the @code{JAVA} environment variable
+names a suitable @code{java} executable; or that @code{JAVA_HOME}
+is set so @code{$JAVA_HOME/bin/java} is suitable.
+
+If you want to put @code{kawa} in your search path you can of course do:
 @example
-CLASSPATH=/usr/local/lib/kawa.jar
-export CLASSPATH
+PATH=$KAWA_HOME/bin:$PATH
 @end example
-
-On Windows you need to set @code{classpath} in a DOS console.
+Alternatively you can create a symbolic link in an already-searched directory.
 For example:
 @example
-set classpath=\kawa\kawa-@value{VERSION}.jar
+cd /usr/local/bin
+ln -s $KAWA_HOME/bin/kawa kawa
 @end example
 
-Then to run Kawa do:
+The @code{bin/kawa.bat} script works on Windows.
+
+Both scripts add some helper libraries, including support for input editing.
+
+It is also possible to run Kawa using @code{java} directly:
 @example
+java -jar $KAWA_HOME/lib/kawa.jar
+@end example
+or:
+@example
+CLASSPATH=$KAWA_HOME/lib/kawa.jar
+export CLASSPATH
 java kawa.repl
 @end example
+On Windows:
+@example
+set classpath=%KAWA_HOME%\lib\kawa.jar
+@end example
 
-To run Kawa in a fresh window, you can do:
+To run Kawa in a fresh window use the -w flag:
+@example
+kawa -w
+@end example
+or
 @example
 java kawa.repl -w
 @end example
+
+@subsubheading Reading the documentation
+
+The file @code{doc/kawa-manual.epub} contains the Kawa documention
+packaged as an electronic book, which is readable by most
+e-book readers.  Plugins are also available for common browsers,
+for example @uref{http://www.epubread.com,EPUBReader} for @code{firefox}.
+
+The script @code{bin/browse-kawa-manual} (in the binary
+distribution) also works.  It uses JavaFX WebView.
+
+An @code{epub} is essentially a zip archive, which you can unzip:
+@example
+cd $KAWA_HOME/doc
+unzip kawa-manual.epub
+@end example
+Then you can use a plain browser
+with the URL @code{file:$KAWA_HOME/doc/OEBPS/index.xhtml}.
+
+The file @code{$KAWA_HOME/doc/README-epub} gives other alternatives
+for reading the documentation without unziping it.
 
 @node Source distribution,  , Binary distribution, Installation
 @section Installing and using the source distribution
@@ -1327,10 +1400,17 @@ the features of the @code{configure}+@code{make} method.
 (See @ref{building-on-Windows-with-make,below} for some notes for building
 on Microsoft Windows.)
 
-In your build directory do:
+If you have a @code{tar.gz} file, first unpack that in your build directory:
 @example
 tar xzf kawa-@value{VERSION}.tar.gz
 cd kawa-@value{VERSION}
+@end example
+
+If you're building from the Subversion repository, you need to
+generate @code{configure} and some other files. This is
+easiest done with the @code{autogen.sh} script:
+@example
+./autogen.sh
 @end example
 
 Then you must configure the sources.  This you can do
@@ -1437,16 +1517,31 @@ make READLINE_INCLUDE_PATH=-I/usr/local/unix/readline/include \
      READLINE_LIB_PATH=-L/usr/local/unix/readline/lib
 @end example
 
-@item @code{--with-jline2}
-@itemx @code{--with-jline2=@var{jline2.jar}}
-Build support for using @uref{https://github.com/jline/jline2,JLine 2},
+@item @code{--with-domterm}
+@itemx @code{--with-domterm=@var{domterm.jar}}
+Compile with extra support for the @ref{Using DomTerm,DomTerm}
+terminal emulator library.  (Some DomTerm support is built-in regardless.)
+
+If you use this option along with @code{--with-javafx}
+then creating a new @ref{REPL Console,REPL} window
+will create a DomTerm window.
+
+As an optional convenience, you can use the @code{domterm.jar}
+in the Kawa binary distribution.
+
+@item @code{--with-jline3}
+@itemx @code{--with-jline3=@var{jline3.jar}}
+Build support for using @uref{https://github.com/jline/jline3,JLine 3},
 which is a library for handling console input, similar to GNU readline.
-If specified, the @var{jline2.jar} is added to the classpath of the
+If specified, the @var{jline3.jar} is added to the classpath of the
 generated @code{kawa.sh} or @code{kawa} shell program.
 
-An advantage of @code{--with-jline2} (compared to
+An advantage of @code{--with-jline3} (compared to
 @code{--enable-kawa-frontend}) is that the former works without native code
 (on most Unix-like platforms), and it does not require a C wrapper program.
+
+As an optional convenience, you can use the @code{jline.jar}
+in the Kawa binary distribution.
 
 @item @code{--with-servlet}
 @itemx @code{--with-servlet=@var{servlet-jar}}
@@ -1662,6 +1757,7 @@ Paul Wilson's @uref{ftp://ftp.cs.utexas.edu/pub/garbage/cs345/schintro-v14/schin
 * Tutorial - Numbers::           Numbers
 * Tutorial - Functions::         Functions
 * Tutorial - Variables::         Variables
+* Tutorial - Pictures::          Pictures
 * Tutorial - Sequences::         Lists and sequences
 * Tutorial - Objects::           Creating and using objects
 * Tutorial - Types::             Types and declarations
@@ -1710,15 +1806,15 @@ if not see these @ref{Installation,installation instructions}.
 Running the @code{kawa} command in interactive mode
 is a good way start learning Kawa:
 @example
-$ kawa
-#|kawa:1|# 
+$ @kbd{kawa}
+#|kawa:1|# @kbd{}
 @end example
 If you don't have @code{kawa} but you have a
 Kawa ``jar'' and you have Java installed you can instead do:
 
 @example
-$ java -jar kawa-@var{version-number}.jar
-#|kawa:1|# 
+$ @kbd{java -jar kawa-@var{version-number}.jar}
+#|kawa:1|# @kbd{}
 @end example
 
 The prompt string has the form of a Scheme comment,
@@ -1729,9 +1825,9 @@ For example a quoted string is a simple expression that evaluates to a
 string value, which will print as itself, before printing the next prompt:
 
 @example
-#|kawa:1|# "Hello, world!"
+#|kawa:1|# @kbd{"Hello, world!"}
 Hello, world!
-#|kawa:2|# 
+#|kawa:2|# @kbd{}
 @end example
 @c Thus the Kawa equivalent of the traditional
 @c @uref{http://en.wikipedia.org/wiki/Hello_world,``hello world''} is trivial.
@@ -1763,8 +1859,8 @@ and @code{+} is just a regular function name:
 
 The same prefix notation is used for special operations like assignments:
 @example
-#|kawa:1|# (set! sqrt-of-2 (sqrt 2))
-#|kawa:2|# sqrt-of-2
+#|kawa:1|# @kbd{(set! sqrt-of-2 (sqrt 2))}
+#|kawa:2|# @kbd{sqrt-of-2}
 1.4142135623730951
 @end example
 
@@ -1843,9 +1939,9 @@ Kawa has arbitrary-precision integers.
 Let us implement the @uref{http://en.wikipedia.org/wiki/Factorial,factorial} function.
 Type in the following (we'll look at the syntax shortly):
 @example
-#|kawa:1|# (define (factorial x)
-#|(---:2|#   (if (< x 1) 1
-#|(---:3|#     (* x (factorial (- x 1)))))
+#|kawa:1|# @kbd{(define (factorial x)}
+#|(---:2|# @kbd{  (if (< x 1) 1}
+#|(---:3|# @kbd{    (* x (factorial (- x 1)))))}
 @end example
 
 (The prompt changes to indicate a continuation line.)
@@ -1856,9 +1952,9 @@ and later a JIT compiler may compile it to native code.
 
 A few tests:
 @example
-#|kawa:4|# (list (factorial 3) (factorial 4))
+#|kawa:4|# @kbd{(list (factorial 3) (factorial 4))}
 (6 24)
-#|kawa:5|# (factorial 30)
+#|kawa:5|# @kbd{(factorial 30)}
 265252859812191058636308480000000
 @end example
 
@@ -1924,9 +2020,9 @@ expression to the variable.
 If you prefer, you can use @code{define} instead of @code{!}:
 
 @example
-#|kawa:1|# (define binary-kilo 1024)
-#|kawa:2|# (define binary-mega (* binary-kilo binary-kilo))
-#|kawa:3|# binary-mega
+#|kawa:1|# @kbd{(define binary-kilo 1024)}
+#|kawa:2|# @kbd{(define binary-mega (* binary-kilo binary-kilo))}
+#|kawa:3|# @kbd{binary-mega}
 1048576
 @end example
 
@@ -1944,6 +2040,156 @@ You can also declare local variables.  NEED EXAMPLES.
 
 Alternative forms for defining local variables are
 @code{let}, @code{let*}, or @code{letrec}/@code{letrec*}.
+
+@node Tutorial - Pictures
+@section Composable pictures
+
+The @code{pictures} library lets you create geometric shapes
+and images, and combine them in interesting ways.
+You first need to import the library:
+@example
+(import (kawa pictures))
+@end example
+The easiest way to use and learn the library
+is with a suitable REPL, where you can type
+expression that evaluate to pictures values,
+and then view the resulting pictures directly on the console.
+The easiest way is to start the @code{kawa} command with the @code{-w}
+flag.  Alternative you can use
+a @ref{Using DomTerm,DomTerm}-based terminal emulator
+such as @code{qtdomterm} (which is shown in the image below),
+and then that the @code{kawa} command.
+
+@image{images/domterm-pictures-1}
+
+The above image shows two simple example: a filled
+circle (radius 30 pixels, color magenta), and a non-filled rotated rectangle
+(color maroonm 3-pixel wide strokes).
+
+See @ref{Composable pictures} for details and more examples.
+
+@subheading Shapes and coordinates
+
+A @dfn{shape} a geometrical figure consisting of
+one or more curves and lines.  One kind of shape is a circle;
+you can create one with the @code{circle} procedure,
+specifying the radius in ``pixels''.
+
+@example
+#|kawa:1|# @kbd{(import (kawa pictures))}
+#|kawa:2|# @kbd{(circle 30)}
+@image{images/fill-circ-1}
+@end example
+It you print a shape, it will show it as a thin black curve.
+
+A @dfn{point} has two real-numbered parts: the point's x-coordinate,
+and its y-coordinate.
+The x-coordinate increases as you move right along the page/screen,
+while the y-coordinate increases as you move @emph{down}.
+(Unlike traditional mathematics, where
+the y-coordinate increases as you go up.)
+The unit distance is one ``pixel'', which is defined as CSS or HTML.
+You can create a point with @code{&P} operator.
+For example:
+@example
+&P[30 20]
+@end example
+is a a point 30 pixels right and 20 pixels down from the origin point.
+To create a circle centered on that point do @code{(center 30 &P[30 20])}.
+
+The expression @code{(rectangle &P[10 20] &P[50 40])} creates
+a rectangle whose upper left corner is (10,20) and whose
+lower right corner (50,40).
+
+A @dfn{dimension} is a pair of a width and height,
+and is written:
+@example
+&D[@var{width} @var{height}]
+@end example
+In addition to being used for sizes,
+a deminsion is also used for relative offsets.
+For example the previous rectangle could also
+be written  @code{(rectangle &P[10 20] &D[40 20])}.
+
+You can you @code{line} to create a line.
+More generally, if you specify @var{n} points you get a
+@dfn{polyline} of @var{n-1} line segments:
+@example
+#|kawa:3|# @kbd{(line &P[10 20] &P[50 60] &P[90 0])}
+@image{images/polyline-1}
+@end example
+The same line using dimensions for relative offsets:
+@example
+#|kawa:4|# @kbd{(line &P[10 20] &D[40 20] &D[40 -60])}
+@end example
+
+A @dfn{closed shape} is one whose end point is the same as its start point.
+The @code{polygon} functions creates one using straight line segments
+@example
+#|kawa:5|# @kbd{(polygon &P[10 20] &P[50 60] &P[90 0])}
+@image{images/polygon-1}
+@end example
+
+@subheading Colors and filling
+
+You can override the default color (black) using the
+@code{with-paint} procedure, which takes a color and a picture
+to produce a new picture:
+@example
+#|kawa:6|# @kbd{(with-paint 'red (circle 32))}
+@end example
+
+The first arguement can be either one of the standard CSS/HTML5 color
+names (such as @code{'red} or @code{'medium-slate-blue}),
+or an integer represent an a sRBG color, usually written
+as a hex literal in the form @code{#xRRGGBB}:
+@example
+#|kawa:7|# @kbd{(with-paint #x0808FF (circle 32))}
+@end example
+
+The name @code{with-paint} refers to that the first argument
+can be not just a color, but a general ``paint'', such as
+a gradient or a background image.  However, we won't go into that.
+
+If the spape is closed, you can ``fill'' its inside:
+@example
+(fill (circle 32))
+@end example
+
+You can change the color using @code{with-paint}:
+@example
+(with-paint 'goldenrod (fill (circle 32)))
+@end example
+or as an extra argument to @code{fill}:
+@example
+(fill 'goldenrod (circle 32))
+@end example
+
+draw TODO
+
+@subheading Images
+An image is a picture represented as a rectangular grid of color values.
+It may be a photograph from a camera, or be created by a painting
+program like Photoshop or gimp.
+You can use @code{image-read} to read an image from a file,
+typically a @code{png} or @code{.jpg}file.
+
+@example
+#|kawa:10|# @kbd{(define img1 (image-read "http://pics.bothner.com/2013/Cats/06t.jpg"))}
+#|kawa:11|# @kbd{img1}
+@image{images/image-cat-1a}
+@end example
+
+@subheading Transforms TODO
+
+@example
+#|kawa:12|# @kbd{(scale 0.6 (rotate 30 img1))}
+@image{images/image-cat-1b}
+@end example
+
+@subheading Combining and adjusting pictures TODO
+
+@subheading Using and combining pictures TODO
 
 @node Tutorial - Sequences
 @section Lists and sequences
@@ -2050,6 +2296,9 @@ You can also use @code{<=:} if you want to include the upper bound:
 
 You can use @code{>=:} or @code{>:} for a decreasing range.
 @code{[5 >=: 1]} or @code{[5 >: 0]} both evaluate to @code{[5 4 3 2 1]}.
+You can also specifify a step value: @code{[1 by: 2 <=: 9]},
+which evaluates to @code{[1 3 5 7 9]}.
+(@ref{Ranges,Details here}.)
 
 @subheading Using vector and ranges indexes
 
@@ -2058,14 +2307,14 @@ the result is a new sequence (of the same type)
 selecting only the elements matching the index values.
 For example:
 @example
-#|kawa:2|# (vec1 [3 5 2])
+#|kawa:2|# @kbd{(vec1 [3 5 2])}
 #(D F C)
 @end example
 In general, @code{((V1 V2) I)} is @code{(V1 (V2 I))}.
 
 You can use a range to create a slice - a contiguous subset of a list.
 @example
-#|kawa:3|# (vec1 [2 <: 6])
+#|kawa:3|# @kbd{(vec1 [2 <: 6])}
 #(C D E F)
 @end example
 
@@ -2073,8 +2322,8 @@ A range is different from a vector integer in that you can use
 a range as the index in the LHS of a set!:
 
 @example
-#|kawa:4|# (set! (vec1 [2 <: 4]) #(a b c d e))
-#|kawa:5|# vec1
+#|kawa:4|# @kbd{(set! (vec1 [2 <: 4]) #(a b c d e))}
+#|kawa:5|# @kbd{vec1}
 #(A B a b c d e E F)
 @end example
 
@@ -2083,8 +2332,8 @@ then the number of elements in the replacement value.
 I.e. you can do insertion and deletion this way.
 
 @example
-#|kawa:7|# (! str1 (string-copy "ABCDEF"))
-#|kawa:8|# (set! (str1 [2 <: 5]) "98")
+#|kawa:7|# @kbd{(! str1 (string-copy "ABCDEF"))}
+#|kawa:8|# @kbd{(set! (str1 [2 <: 5]) "98")}
 AB98F
 @end example
 
@@ -2204,11 +2453,11 @@ Instead of colon notation, you can use the @code{field} procedure.
 
 See @ref{Field operations} for details.
 
-@subheading Static fields and method
+@subheading Static fields and methods
 
 Kawa views static properties and methods as
 properties and methods of the class itself.
-To call a status method use the syntax:
+To call a static method use the syntax:
 @example
 (@var{clas}:@var{meth} @var{v1} ... @var{vn})
 @end example
@@ -2234,10 +2483,10 @@ You can use a type to specify that a variable can only have
 values of the specified types:
 
 @example
-#|kawa:5|# (define v ::vector #(3 4 5))
-#|kawa:6|# v
+#|kawa:5|# @kbd{(define v ::vector #(3 4 5))}
+#|kawa:6|# @kbd{v}
 #(3 4 5)
-#|kawa:7|# (set! v 12)
+#|kawa:7|# @kbd{(set! v 12)}
 /dev/stdin:7:1: warning - cannot convert literal (of type gnu.math.IntNum) to vector
 Value (12) for variable 'v' has wrong type (gnu.math.IntNum) (gnu.math.IntNum cannot be cast to gnu.lists.FVector)
 	at atInteractiveLevel$7.run(stdin:7)
@@ -2411,7 +2660,7 @@ result (if there is a non-"void" result).
 @menu
 * Options::      Command-line arguments
 * Scripts::      Running Command Scripts
-* New-Window::   Running a Command Interpreter in a new Window
+* REPL Console:: The REPL (read-eval-print-loop) console
 * Exiting::      Exiting Kawa
 * Compiling::    Compiling to byte-code
 @end menu
@@ -2573,8 +2822,10 @@ Provide better compatibility with the specified Scheme standards.
 For example @code{--r6rs} aims to disable Kawa extensions
 that conflict with R6RS.  It does not aim to disable all extensions,
 only incompatible extensions.
-So far these extensions disable the colon operator and keyword literals,
+These extensions disable the colon operator and keyword literals,
 as well as the use of initial @samp{@@} as a splicing operator.
+The ``@code{l}'' exponent suffix of a number literal creates a
+floating-point double, rather than a @code{BigInteger}.
 Selecting @code{--r5rs} makes symbols by default
 case-insensitive.
 @item --elisp
@@ -2612,9 +2863,9 @@ the XQuery parser, but that will hopefully change.
 @subsection Options for warnings and errors
 
 @table @code
-@cindex --warn-@var{whatever}
-@cindex --no-warn-@var{whatever}
-@pindex warn-undefined-variable
+@cindex @code{--warn-@var{whatever}}
+@cindex @code{--no-warn-@var{whatever}}
+@pindex @code{warn-undefined-variable}
 @item --warn-undefined-variable
 Emit a warning if the code references a variable which is neither in
 lexical scope nor in the compile-time dynamic (global) environment.
@@ -2695,14 +2946,28 @@ Sets the JVM property @var{variable-name} to @var{variable-value},
 using the @code{setProperty} method of @code{java.lang.System}.
 @end table
 
-@table @code
+@subsection Options for the REPL console
+
+@table @asis
+@item @code{--console}
+@itemx @code{--no-console}
+Usually Kawa can detect when the standard input port is a ``console''
+or ``terminal'', but these are useful for overriding that detection.
+The @code{--console} flag is useful when the standard input is a pipe,
+but you want to direct Kawa to treat it as an interactive terminal.
+The @code{--no-console} flag was useful for older pre-Java-6
+implementations that did not have the @code{java.lang.Console} class.
+@item @code{console:use-domterm=}[@code{yes}|@code{no}]
+@item @code{console:use-jline=}[@code{yes}|@code{no}]
 @item @code{console:prompt1=@var{prompt1}}
 @itemx @code{console:prompt2=@var{prompt2}}
 Initialize @ref{input-prompt1,@code{input-promp1} and @code{input-prompt2}}, respectively.
 @end table
+See also the @code{--output-format} flag.
 
 @subsection Options for controlling output formatting
 
+@cindex @code{--output-format}
 @table @code
 @item --output-format @var{format}
 @itemx --format @var{format}
@@ -2868,7 +3133,7 @@ Sets the JVM property @var{variable-name} to @var{variable-value}.
 Equivalent to @code{-J-D@var{variable-name}=@var{variable-value}}.
 @end table
 
-@node Scripts, New-Window, Options, Running
+@node Scripts
 @section Running Command Scripts
 
 If you write a Kawa application it is convenient to be able
@@ -3059,21 +3324,153 @@ However, this is no longer supported, as gcj is no longer
 being actively developed.)
 @end ignore
 
-@node New-Window, Exiting, Scripts, Running
-@section Running a Command Interpreter in a new Window
+@node REPL Console
+@section The REPL (read-eval-print-loop) console
 
-An alternative interface runs the Java read-eval-print-loop
-inside a new window. This is in some ways nicer.  One reason
-is that it provides better editing.
-(Mouse selection, arrow keys, and ``standard'' control keys should all work.)
+The read-eval-print-loop (REPL) console is a convenient way to
+do simple programming, test out things, and experiment.
+As the name implies, the REPL repeatedly (in a loop)
+prints out a prompt, reads an input command, evaluates it, the prints the result.
 
-You can also create new windows.  They can either have different top-level
-environments or they can share environments.  To try it, do:
+The REPL is started out when you invoke the @code{kawa} command
+with no arguments.  For example:
+
 @example
-java kawa.repl -w
+$ @kbd{kawa}
+#|kawa:1|# @kbd{(define pi (* 2 (asin 1)))}
+#|kawa:2|# @kbd{(list pi (sqrt pi))}
+(3.141592653589793 1.7724538509055159)
+#|kawa:3|# @kbd{}
 @end example
 
-@node Exiting,  , New-Window, Running
+The colors and styles used for the prompt and the user input
+depend on user preference and the capabilities of the console device.
+(If you read this on a color screen you should see pale green for the
+prompt and pale yellow for the user input;
+this matches the defaults for the DomTerm console.)
+
+You can @ref{Prompts,change the prompt string} if you want.
+The default format depends on the (programming) language use;
+the one shown above is used for Scheme.
+It has the form of a comment, which can be convenient for copying
+and pasting lines.
+
+You can @ref{Named output formats,change the output formatting} with
+the @code{--output-format} command-line option.
+
+The basic console has few frills, but should work in any enviroment
+where you have a console or terminal.  It has no dependencies,
+except the kawa @code{.jar} file (and Java):
+@example
+$ @kbd{java kawa-@value{VERSION}.jar}
+#|kawa:2|# @kbd{}
+@end example
+
+On rare occason you may need to specify the @code{--console} flag.
+
+@subsection Input line editing and history
+
+When typing a command in a console it is helpful to go back
+and correct mistakes, repeat and edit previous commands, and so on.
+How well you can do this varies at lot depending on which tools you use.
+Kawa delegates input editing to an external tool.
+The recommended and default input-editing tool
+the the @uref{https://github.com/jline/jline3,JLine3 library},
+which is bundled with Kawa binary distribution.
+
+JLine3 handles the normal editing comands, including arrow keys
+for moving around in the input, and deleting with backspace or delete.
+In general, JLine3 uses te same keybindings as GNU readline,
+which are based on etc Emacs key-bindings.
+
+You can use the up-arrow to move to previous commands in the
+input history and down-arrow to go forwards.
+Control-R (``reverse search'' searches backwards in the history
+for a previous comands that contains the search string.
+
+Multi-line commands are treated as unit by JLine3:
+If Kawa determines that input is ``incomplete'' it will
+ask for continuation lines - and you can go back and edit previous
+lines in the same command.
+An entry in the command history may b multiple lines.
+
+Tab-completion works for Kawa-Scheme identiers: If you type TAB
+after an identifier, Kawa will present a possible of valid completions.
+
+There are multiple alternatives to using JLine3.
+You can use GNU readline (if you configued with @code{--enable-kawa-frontend}).
+You can use a front-end program like @code{rlfe} or @code{fep}.
+You can use Emacs shell or scheme mode.
+You can also use DomTerm in line-edit mode, where the browser handles
+the editing.
+
+@anchor{New-Window}
+@subsection Running a Command Interpreter in a new Window
+
+Instead of using an existing terminal window for Kawa's REPL console,
+you can request a new window.
+The command-line options @code{-w} creates a new window.
+Kawa also creates a new window when it needs to create a REPL
+(for example if invoked with no options) and it is not running
+in a console.
+
+By default the new REPL window uses the DomTerm JavaScript
+toolkit running in a JavaFX WebView window.
+
+If JavaFX/WebView is not available, or if you specify
+
+@anchor{Using DomTerm}
+@subsection Using DomTerm
+
+@uref{http://domterm.org,DomTerm} is a family of terminal emulators that use
+the DomTerm JavaScript library.
+
+You can either have Kawa start DomTerm:
+@example
+$ kawa @var{options} -w
+@end example
+or start a DomTerm terminal emulator and have it start Kawa:
+@example
+$ domterm kawa @var{options} --
+@end example
+(You can also start a shell in a @code{domterm} window, and then start @code{kawa}.)
+
+Either approach works and both give you the benefits of DomTerm:
+@itemize
+@item
+A xterm/ansi-compatible terminal emulator,
+which means you can use (for example) JLine3 for input editing.
+@item
+You can ``print'' images, @ref{Composable pictures,pictures}, or HTML elements.
+@item
+Pretty-printing is handled by the terminal,
+which means line-breaking is re-computed when window width changes.
+@item
+You can save a session as an HTML file,
+which can be viewed later.
+(Still with dynamic line-breaking and pretty-printing!)
+The file is actually XHTML, so it can be processed with XML-reading tools.
+@item
+Distinct styles for prompts, input, error output and regular output,
+which can be customized with CSS.
+@end itemize
+
+For now it is recommended to use both DomTerm and JLine3.
+
+@deffn Procedure domterm-load-stylesheet stylesheet [name]
+The string @var{stylesheet} should be a literal CSS stylesheet
+which is downloaded into the current DomTerm console.
+The new stylesheet is given the attribute @code{name=@var{name}},
+where @var{name} defaults to @code{"Kawa"}.  If there is an
+existing stylesheey whose @code{name} attribute is @var{name},
+it is replaced.
+In this example we change the background color to light gray:
+@example
+(domterm-load-stylesheet "div.domterm @{ background-color: lightgray@}")
+@end example
+@end deffn
+
+@node Exiting
 @section Exiting Kawa
 Kawa normally keeps running as long as there is an active
 read-eval-print loop still awaiting input or there is an unfinished
@@ -3081,14 +3478,15 @@ other computation (such as requested by a @samp{-e} of @samp{-f} option).
 
 To close a read-eval-print-loop, you can type the special
 literal @code{#!eof} at top level.  This is recognized as end-of-file.
-Unfortunately, due to thread-related complications, just typing
-an end-of-file character (normally ctrl/D until Unix), will not work.
+Typing an end-of-file character (normally ctrl-D under Unix)
+should also work, but that depends on your operating system
+and terminal interface.
 
 If the read-eval-print-loop
 is in a new window, you can select @samp{Close} from the @samp{File} menu.
 
 To exit the entire Kawa session, call the
-@code{exit} procedure (with 0 or 1 integer arguments).
+@ref{Exiting the current process,@code{exit} procedure} (with 0 or 1 integer arguments).
 
 @node Compiling, , , Running
 @section Compiling to byte-code
@@ -3814,12 +4212,11 @@ Syntax'':
 @stxdef{lexeme-datum} @stxref{boolean} | @meta{number}
          | @stxref{character} | @stxref{string} | @stxref{symbol}
 @stxdef{symbol} @stxref{identifier}
-@stxdef{compound-datum} @stxref{list} | @stxref{vector} | @stxref{uniform-vector} | @stxref{extended-string-literal} | @stxref{xml-literal}
+@stxdef{compound-datum} @stxref{list} | @stxref{vector} | @stxref{uniform-vector} | @stxref{array-literal} | @stxref{extended-string-literal} | @stxref{xml-literal}
 @stxdef{list} @stxlit{(}@stxref{datum}*@stxlit{)}
          | @stxlit{(}@atleastone{@stxref{datum}} @stxlit{.} @stxref{datum}@stxlit{)}
          | @stxref{abbreviation}
 @stxdef{vector} @stxlit{#(}@arbno{@stxref{datum}}@stxlit{)}
-@stxdef{uniform-vector} TODO
 @end display
 @c FIXME: add to abbrev-prefix: @stxlit{#,} | @stxlit{#,@@}
 
@@ -3964,6 +4361,9 @@ the integer @var{number} and that @var{datum}, which can be
 used by a subsequent @code{#@var{number}#} form.
 @item @stxlit{#}@var{number}@stxlit{#}
 A back-reference, allowing cyclic and shared structure.
+@item @stxlit{#}@var{R}@stxlit{a}@var{datum}
+An @ref{array-literals,array literal},
+for a multi-dimensional array of rank @var{R}.
 @item @stxlit{#b}
 A binary (base-2) number.
 @item @stxlit{#d}
@@ -6720,7 +7120,7 @@ If the key is @code{#t}, then a throw to @emph{any} symbol will match
 this call to @code{catch}.
 @end deffn
 
-@deffn procedure throw key arg ...
+@deffn Procedure throw key arg ...
 Invoke the catch form matching @var{key}, passing the @var{arg}s to the
 current @var{handler}.  
 
@@ -7348,13 +7748,13 @@ along with an infinite set of definitions, for every possible @var{tag}:
 
 @example
 $ kawa --output-format xml
-#|kawa:1|# (define-xml-namespace na "Namespace1")
-#|kawa:2|# (define-xml-namespace nb "Namespace1")
-#|kawa:3|# (define xa (na:em "Info"))
-#|kawa:4|# xa
+#|kawa:1|# @kbd{(define-xml-namespace na "Namespace1")}
+#|kawa:2|# @kbd{(define-xml-namespace nb "Namespace1")}
+#|kawa:3|# @kbd{(define xa (na:em "Info"))}
+#|kawa:4|# @kbd{xa}
 <na:em xmlns:na="Namespace1">Info</na:em>
-#|kawa:5|# (define xb (nb:em "Info"))
-#|kawa:6|# xa
+#|kawa:5|# @kbd{(define xb (nb:em "Info"))}
+#|kawa:6|# @kbd{xa}
 <nb:em xmlns:nb="Namespace1">Info</nb:em>
 @end example
 
@@ -8749,6 +9149,15 @@ arguments.
 @end example
 @end deffn
 
+@deffn Procedure sinh z
+@deffnx Procedure cosh z
+@deffnx Procedure tanh z
+@deffnx Procedure asinh z
+@deffnx Procedure acosh z
+@deffnx Procedure atanh z
+The hyperbolic functions.
+@end deffn
+
 @deffn Procedure square z
 Returns the square of @var{z}.
 This is equivalent to @code{(* @var{z} @var{z})}.
@@ -9471,6 +9880,33 @@ so the above is equivalent to:
 @example
 (define-constant unit:cent (* 0.01 unit:dollar))
 @end example
+@end deffn
+
+@subheading Angles
+
+The following angle units are dimensionless, with no base unit.
+
+Some procedures treat a unit-less real number as if it were in radians
+(which mathematicians prefer);
+some procedures (such as @code{rotate}) treat a unit-less real number
+as if it were in degrees
+(which is common in Web and other standards).
+
+@deffn Unit rad
+A unit for angles specified in radians.
+A full circle is 2*pi radians.
+Note that @code{(= 1.5 1.5rad)} is true,
+while @code{(eqv? 1.5 1.5rad)} is false.
+@end deffn
+
+@deffn Unit deg
+A unit for angles specified in degrees.
+A full circle is 360 degrees.
+@end deffn
+
+@deffn Unit grad
+A unit for angles specified in gradiants.
+A full circle is 400 gradiants.
 @end deffn
 
 @node Logical Number Operations
@@ -11508,6 +11944,7 @@ See @uref{http://www.ccs.neu.edu/home/dorai/pregexp/index.html,here for details}
 * Vectors::
 * Uniform vectors::
 * Bytevectors::
+* Ranges::
 * Streams:: Lazy lists.
 * Arrays::  Multi-dimensional Arrays
 * Hash tables::
@@ -11552,11 +11989,26 @@ there is usually a function @code{@var{stype}-ref}.  For example:
 (define vec1 (vector 5 6 7 8))
 (vector-ref vec1 2) @result{} 7
 @end example
+
 More concisely, you can use (Kawa-specific) function call syntax:
 @example
 (vec1 3) @result{} 8
 @end example
-The same function call syntax also works for raw Java arrays:
+
+The index can be another sequence, which creates a new sequence
+of the selected indexes:
+@example
+(vec1 [3 0 2 1]) @result{} #(8 5 7 6)
+@end example
+It is convenient to use a @ref{Ranges,@dfn{range}} to select
+a sub-sequence:
+@example
+(vec1 [1 <=: 3]) @result{} #(6 7 8)
+(vec1 [2 <:]) @result{} #(7 8)
+@end example
+
+The same function call syntax also works for raw Java arrays
+(though the index is restricted to an integer, not a sequence or array):
 @example
 (define arr1 (long[] 4 5 6 7))
 (arr1 3) @result{} 7
@@ -11941,6 +12393,26 @@ Uniform vectors are vectors whose elements are of the same numeric type.
 The are defined by @uref{http://srfi.schemers.org/srfi-4/srfi-4.html,SRFI-4}.
 The type names (such as @code{s8vector}) are a Kawa extension.
 
+@display
+@stxdef{uniform-vector} @stxlit{#} @stxref{uniform-tag} @stxref{list}
+@stxdef{uniform-tag} @stxlit{f32} | @stxlit{f64}
+    | @stxlit{s8} | @stxlit{s16} | @stxlit{s32} | @stxlit{s64}
+    | @stxlit{u8} | @stxlit{u16} | @stxlit{u32} | @stxlit{u64}
+@end display
+
+This example is a literal for a 5-element vector of unsigned short (@code{ushort}) values:
+@example
+(define uvec1 #u16(64000 3200 160 8 0))
+@end example
+
+Since a uniform vector is a sequence, you can use function-call
+notation to index one.  For example:
+@example
+(uvec1 1) @result{} 3200
+@end example
+In this case the result is a primitive unsigned short (@code{ushort}),
+which is converted to a @code{gnu.math.UShort} if an object is needed.
+
 @deffn Type s8vector
 The type of uniform vectors where each element can contain
 a signed 8-bit integer.  Represented using an array of @code{byte}.
@@ -12286,6 +12758,81 @@ in UTF-8 encoding.
 @end example
 @end deffn
 
+@node Ranges
+@section Ranges
+
+A @dfn{range} is an immutable sequence of values
+that increase ``linearly'' - i.e. by a fixed amount.
+Most commonly it's a sequence of consequtive integers.
+An example of the syntax is @code{[3 <: 7]} which evaluates
+to the sequence @code{[3 4 5 6]}.
+You can specify an explicit increment with a @code{by:} option.
+There are multiple ways to specify when the sequence stops.
+For example @code{[3 by 2 <=: 7]} is the even numbers from
+3 up to 7 (inclusive, because of the @code{<=}).
+
+Ranges are very useful for loop indexes, or selecting a sub-sequence.
+If you have a sequence @var{q} and a range @var{r}, and you
+use the syntax @code{(@var{q} @var{r})} to
+``apply''@var{q} with the argument @var{r},
+is result is to select elements of @var{q} with indexes in @var{r}.
+@example
+("ABCDEFG" [1 by: 2 <: 7])  @result{} "BDF"
+@end example
+
+A range can be @dfn{unbounded}, or non-finite, if you leave off
+the end value.  For example @code{[3 by: 2]} is the odd integers starting at 3.
+
+@display
+@stxdef{unbounded-range}
+  @stxlit{[} @var{start-expression} @stxlit{by:} @var{step-expression} @stxlit{]}
+  | @stxlit{[} @var{start-expression} @stxlit{<:} @stxlit{]}
+@end display
+
+The expression @code{[@var{start} by: @var{step}]} evaluates to an
+infinite sequence of values, starting with @var{start}, and followed by
+@code{(+ @var{start} @var{step})},
+@code{(+ @var{start} (* 2 @var{step}))}, and so on.
+
+The syntax @code{[@var{start-expression} <:]}
+is shorthand for @code{[@var{start-expression} by: 1]}.
+
+@display
+@stxdef{bounded-range} @stxlit{[} @var{start-expression} [@stxlit{by:} @var{step-expression}] @stxref{range-end} @stxlit{]}
+@stxdef{range-end} @stxlit{<:} @var{end-expression}
+  | @stxlit{<=:} @var{end-expression}
+  | @stxlit{>:} @var{end-expression}
+  | @stxlit{>=:} @var{end-expression}
+  | @stxlit{size:} @var{size-expression}
+@end display
+
+A bounded range takes an initial subsequence of the unbounded
+range specified by the @var{start-expression} and optional @var{step-expression}.
+The different @var{end-expression} variants provide different
+ways to specify the initial subsequence.
+
+If @code{size: @var{size}} is specified, then the resulting range
+is the first @var{size} elements of unbounded sequence.
+
+In the @code{<: @var{end}} or @code{<=: @var{end}} cases then
+the sequence counts up: The @var{step} must be positive, and defaults to 1.
+The resulting values are those  @var{x} such that @code{(< @var{x} @var{end})},
+or  @code{(<= @var{x} @var{end})}, respectively.
+
+In the @code{>: @var{end}} or @code{>=: @var{end}} cases then
+the sequence counts down: The @var{step} must be negative, and defaults to -1.
+The resulting values are those  @var{x} such that @code{(> @var{x} @var{end})},
+or  @code{(>= @var{x} @var{end})}, respectively.
+
+The @var{start-expression}, @var{step-expression}, and @var{size-expression}
+must evaluate to real numbers, not necessarily integers.
+For example: @code{[1 by: 0.5 <=: 3.0]} is @code{[1.0 1.5 2.0 2.5 3.0]}.
+
+The two pseudo-ranges @code{[<:]} and @code{[>:]} are useful as
+array indexes. They mean ``all of the valid indexes'' of the array being indexed.
+For increasing index values use @code{[<:]}; for decreasing
+index values (i.e. reversing) use @code{[>:]}.
+
 @node Streams
 @section Streams - lazy lists
 
@@ -12328,23 +12875,27 @@ is the rank or the number of dimensions of an array.
 @c (define arr1 (
 @c @end example
 
-Multi-dimensional arrays are specified
-by @uref{http://srfi.schemers.org/srfi-25/srfi-25.html,SRFI-25}.
-In Kawa, a one-dimensional array whose lower bound is 0 is also a sequence.
+Kawa multi-dimensional arrays follows the
+by @uref{http://srfi.schemers.org/srfi-25/srfi-25.html,SRFI-25 specification},
+with additions from Racket's
+@uref{https://docs.racket-lang.org/math/array.html, math.array} package
+and other sources.
+
+An array whose rank is 1, and where the (single) lower bound is 0
+is a sequence.
 Furthermore, if such an array is simple (not created by @code{share-array})
 it will be implemented using a @code{<vector>}.
 Uniform vectors and strings are also arrays in Kawa.
-For example:
-@example
-(share-array
- (f64vector 1.0 2.0 3.0 4.0 5.0 6.0)
- (shape 0 2 0 3)
- (lambda (i j) (+ (* 2 i) j)))
-@end example
-evaluates to a two-dimensionsal array of @code{<double>}:
-@example
-#2a((1.0 2.0 3.0) (3.0 4.0 5.0))
-@end example
+
+A rank-0 array has a single value.  It is essentially a box for that
+value.  Functions that require arrays may treat non-arrays
+as a rank-0 array containing that value.
+
+An array of rank 2 is frequently called a @dfn{matrix}.
+
+Note that Kawa arrays are distinct from Java (native) arrays.
+The latter is a simpler one-dimensional vector-like data structure,
+which is used to implement Kawa arrays and vectors.
 
 @deffn Procedure array? obj
 Returns @code{#t} if @var{obj} is an array, otherwise returns @code{#f}.
@@ -12360,17 +12911,37 @@ The @dfn{shape} of an array consists of bounds for each index.
 
 The lower bound @var{b} and the upper bound @var{e} of a dimension are
 exact integers with @code{(<= @var{b} @var{e})}. A valid index along the
-dimension is an exact integer @var{k} that satisfies both
-@code{(<= @var{b} @var{k})} and @code{(< @var{k} @var{e})}.
+dimension is an exact integer @var{i} that satisfies both
+@code{(<= @var{b} @var{i})} and @code{(< @var{i} @var{e})}.
 The length of the array along the dimension is the difference
 @code{(- @var{e} @var{b})}.
 The size of an array is the product of the lengths of its dimensions.
 
-A shape is specified as an even number of exact integers. These are
-alternately the lower and upper bounds for the dimensions of an array.
-
-An array whose rank is 1, and where the (single) lower bound is 0
-is a sequence.
+A procedure that requires a @var{shape} accepts any of the following:
+@itemize
+@item
+A vector of simple @ref{Ranges,ranges}, one for each
+dimension, all of who are
+bounded (finite), consist of integer values,
+and have a @var{step} of 1.
+Each range, which is usually written as @code{[@var{b} <: @var{e}]},
+expresses the bounds of the corresponding dimension.
+For example @code{[[0 <: 5] [2 <=: 6]]} is the shape
+of a rank-2 array, where the first index can be from 0 to 5 (exclusive),
+while the second index can be from 2 to 6 (inclusive).
+@item
+A vector of simple integers.
+Each integer @var{e} is an upper bound,
+and is equivalent to the range @code{[0 <: @var{e}]}.
+@item
+A vector consisting of a mix of integers and ranges.
+@item
+A rank-2 array @var{S} whose own shape is @code{[@var{r} 2]}.
+For each dimension @var{k}
+(where @code{(<= @var{k} 0)} and @code{(< @var{k} @var{r})}),
+the lower bound @var{b@sub{k}} is @code{(S @var{k} 0)},
+and the upper bound @var{e@sub{k}} is @code{(S @var{k} 1)}.
+@end itemize
 
 @deffn Procedure shape bound ...
 Returns a shape. The sequence @var{bound} ... must consist of an even number
@@ -12388,6 +12959,10 @@ where the element at @var{k 0} contains the lower bound for an index along
 dimension @var{k} and the element at @var{k 1} contains the
 corresponding upper bound, where @var{k} satisfies @code{(<=  0 @var{k})}
 and @code{(< @var{k} @var{d})}.
+
+@code{(shape @@@var{bounds})}
+is equivalent to:
+@code{(array [2 (/ (length @var{bounds}) 2)] @@@var{bounds})}
 @end deffn
 
 @deffn Procedure array-rank array
@@ -12415,7 +12990,143 @@ Return the total number of elements of @var{array}.
 This is the product of @code{(- (array-end @var{array} @var{k}) (array-start @var{array} @var{k}))} for every valid @var{k}.
 @end deffn
 
-@subsection Array literals
+@subsection Array types
+
+@deffn Type array
+@deffnx Type array@var{N}
+@deffnx Type array[@var{etype}]
+@deffnx Type array@var{N}[@var{etype}]
+
+The type @code{array} matches all array values.
+The type @code{array@var{N}}, where @var{N} is an integer
+matches array of rank @var{N}.
+For example @code{array2} matches rank-2 array - i.e. matrixes.
+
+You can optionally specify the element type @var{etype}.
+This can be a primitive type.
+For example a @code{array2[double]} is a rank-2 array
+whose elements are @code{double} values.
+@end deffn
+
+@anchor{array-literals}
+@subsection Array literals and printing
+
+An array literal starts with @code{#} followed by its rank,
+followed by a tag that describes the underlying vector (by default @code{a}),
+optionally followed by information about its shape,
+and finally followed by the cells, organized into dimensions using parentheses.
+
+For example, @code{#2a((11 12 13) (21 22 23))} is a rank-2 array (a matrix)
+whose shape is @code{[2 3]} or equivalently @code{[[0 <: 2] [0 <: 3]]}.
+It is pretty-printed as:
+@example
+╔#2a:2:3═╗
+║11│12│13║
+╟──┼──┼──╢
+║21│22│23║
+╚══╧══╧══╝
+@end example
+
+@display
+@stxdef{array-literal} @stxref{array-literal-header} @stxref{datum}
+@stxdef{array-literal-header} @stxlit{#} @var{rank} @stxref{vectag} @arbno{@stxref{array-bound}} 
+@stxdef{array-bound} [@stxlit{@@}@var{lower}]@stxlit{:}@var{length} | @stxlit{@@}@var{lower}
+@stxdef{vectag} @stxlit{a} | @stxref{uniform-tag}
+@end display
+
+The @var{vectag} specifies the type of the elements of the array.
+
+Following the @var{vectag} you can optionally include information
+about the shape: For each dimension you can optionally specify
+the lower bounds (after the character @code{"@@"}),
+followed by the length of the dimension (after the character @code{":"}).
+The shape information is required if a lower bound is non-zero,
+or any length is zero.
+
+The @stxref{datum} contains the elements in a nested-list format:
+a rank-1 array (i.e. vector) uses a single list,
+a rank-2 array uses a list-of-listrs, and so on.
+The elements are in lexicographic order.
+
+A uniform u32 array of rank 2 with index ranges 2..3 and 3..4:
+@example
+#2u32@@2@@3((1 2) (2 3))
+@end example
+
+This syntax follow Common Lisp with
+@uref{https://www.gnu.org/software/guile/manual/html_node/Array-Syntax.html,Guile
+extensions}.  (Note that Guile prints rank-0 arrays with an extra
+set of parentheses.  Kawa follows Common Lisp in not doing so.)
+
+When an array is printed with the @code{write} function,
+the result is an @code{array-literal}.
+Printing with @code{display} formats the array in a rectangular grid
+using the @code{format-array} procedure.
+(Note that @code{format-array} is only used when the output is in column 0,
+because Kawa has very limited support for printing rectangles.)
+
+@deffn Procedure format-array value [element-format]
+Produce a nice ``pretty'' display for @var{value}, which is usually an array.
+
+The top line includes an @code{array-literal-header}.
+The lower bound are only printed if non-zero.
+The dimension lengths are printed if there is zoom, or if one of them is zero.
+@example
+#|kawa:34|# (! arr (array [[1 <=: 2] [1 <=: 3]]
+#|.....35|#   #2a((1 2) (3 4)) 9 #2a((3 4) (5 6))
+#|.....36|#   [42 43] #2a:1:3((8 7 6)) #2a((90 91) (100 101))))
+#|kawa:37|# arr
+╔#2a@@1:2@@1:3════╤═════════╗
+║#2a═╗  │      9│#2a═╗    ║
+║║1│2║  │       │║3│4║    ║
+║╟─┼─╢  │       │╟─┼─╢    ║
+║║3│4║  │       │║5│6║    ║
+║╚═╧═╝  │       │╚═╧═╝    ║
+╟───────┼───────┼─────────╢
+║╔#1a:2╗│#2a:1:3│╔#2a:2:2╗║
+║║42│43║│║8│7│6║│║ 90│ 91║║
+║╚══╧══╝│╚═╧═╧═╝│╟───┼───╢║
+║       │       │║100│101║║
+║       │       │╚═══╧═══╝║
+╚═══════╧═══════╧═════════╝
+@end example
+If @var{element-format} is specified, it is a format string used
+for format each non-array:
+@example
+#|kawa:38|# (format-array arr "~4,2f")
+╔#2a@@1:2@@1:3══╤════════════════╤═══════════════╗
+║╔#2a:2:2══╗  │            9.00│╔#2a:2:2══╗    ║
+║║1.00│2.00║  │                │║3.00│4.00║    ║
+║╟────┼────╢  │                │╟────┼────╢    ║
+║║3.00│4.00║  │                │║5.00│6.00║    ║
+║╚════╧════╝  │                │╚════╧════╝    ║
+╟─────────────┼────────────────┼───────────────╢
+║╔#1a:2╤═════╗│╔#2a:1:3══╤════╗│╔#2a:2:2══════╗║
+║║42.00│43.00║│║8.00│7.00│6.00║│║ 90.00│ 91.00║║
+║╚═════╧═════╝│╚════╧════╧════╝│╟──────┼──────╢║
+║             │                │║100.00│101.00║║
+║             │                │╚══════╧══════╝║
+╚═════════════╧════════════════╧═══════════════╝
+@end example
+If the rank is more than 2, then each ``layer''
+is printed separated by double lines.
+@example
+#|kawa:42|# (array-reshape [1 <=: 24] [3 2 4])
+╔#3a:3:2:4══╗
+║ 1│ 2│ 3│ 4║
+╟──┼──┼──┼──╢
+║ 5│ 6│ 7│ 8║
+╠══╪══╪══╪══╣
+║ 9│10│11│12║
+╟──┼──┼──┼──╢
+║13│14│15│16║
+╠══╪══╪══╪══╣
+║17│18│19│20║
+╟──┼──┼──┼──╢
+║21│22│23│24║
+╚══╧══╧══╧══╝
+@end example
+@end deffn
 
 @subsection Array construction
 
@@ -12437,11 +13148,20 @@ If there is no @var{value}, the initial contents of each element is
 unspecified.  (Actually, it is the @code{#!null}.)
 The array does not retain a reference to @var{shape}.
 
+@example
+#|kawa:16|# @kbd{(make-array [2 4] 1 2 3 4 5)}
+╔#2a:2:4╗
+║1│2│3│4║
+╟─┼─┼─┼─╢
+║5│1│2│3║
+╚═╧═╧═╧═╝
+@end example
+
 @CompatibilityNote{} Guile has an incompatible @code{make-array} procedure.
 @end deffn
 
 @deffn Procedure build-array shape procedure
-Construct a ``virtual array'' of teh given @var{shape},
+Construct a ``virtual array'' of the given @var{shape},
 which uses no storage for the elements.
 Instead, elements are calculated on-demand by calling @var{procedure},
 which takes a single argument, an index vector.
@@ -12450,9 +13170,9 @@ There is no caching or memoization.
 
 @example
 #|kawa:1|# @kbd{(build-array [[10 <: 12] 3]}
-#|(---:2|# @kbd{  (lambda (ind)}
-#|(---:3|# @kbd{    (let ((x (ind 0)) (y (ind 1)))}
-#|(---:4|# @kbd{      (- x y))))}
+#|....:2|# @kbd{  (lambda (ind)}
+#|....:3|# @kbd{    (let ((x (ind 0)) (y (ind 1)))}
+#|....:4|# @kbd{      (- x y))))}
 #2a@@10:2:3
 ║10│ 9│8║
 ╟──┼──┼─╢
@@ -12466,16 +13186,44 @@ Return a new immutable array of the specified @var{shape}
 where each element is the corresponding row-major index.
 Same as @code{(array-reshape [0 <: @var{size}] @var{shape})}
 where @var{size} is the @code{array-size} of the resulting array.
+
+@example
+#|kawa:1|# @kbd{(index-array [[1 <: 3] [2 <: 6]])}
+#2a@@1:2@@2:4
+║0│1│2│3║
+╟─┼─┼─┼─╢
+║4│5│6│7║
+╚═╧═╧═╧═╝
+@end example
+
 @end deffn
 
 @subsection Array indexing
+
+If you ``call'' an array as it it were a function,
+it is equivalent to using @code{array-index-ref},
+which is generalization of @code{array-ref}.
+For example, given a rank-2 array @var{arr} with integer indexes @var{i}
+and @var{j}, the following all get the element of @var{arr}
+at index @code{[@var{i} @var{j}]}.
+@example
+(@var{arr} @var{i} @var{j})
+(array-index-ref @var{arr} @var{i} @var{j})
+(array-ref @var{arr} @var{i} @var{j})
+(array-ref @var{arr} [@var{i} @var{j}])
+@end example
+
+Using function-call notation or @code{array-index-ref}
+(but not plain @code{array-ref}) you can do generalized APL-style
+slicing and indirect indexing.
+See under @code{array-index-ref} for examples.
 
 @deffn Procedure array-ref array k ...
 @deffnx Procedure array-ref array index
 Returns the contents of the element of @var{array} at index @var{k} ....
 The sequence @var{k} ... must be a valid index to @var{array}.
-In the second form, @var{index} must be either a vector or a
-0-based 1-dimensional array containing @var{k} ....
+In the second form, @var{index} must be either a vector
+(a 0-based 1-dimensional array) containing @var{k} ....
 @example
 (array-ref (array [2 3]
               'uno 'dos 'tres
@@ -12494,6 +13242,119 @@ Returns @code{(3 1 4)}.
 @end deffn
 
 @deffn Procedure array-index-ref array index ...
+Generalized APL-style array indexing, where each @var{index}
+can be either an array or an integer.
+
+If each @var{index} is an integer, then the result is the same as @code{array-ref}.
+
+Otherwise, the result is an immutable array whose rank is the sum of the ranks of
+each @var{index}.  An integer is treated as rank-0 array.
+
+If @var{marr} is the result of @code{(array-index-ref @var{arr} @var{M@sub{1}} @var{M@sub{2}} ...)} then:
+@example
+(@var{marr} @var{i@sub{11}} @var{i@sub{12}} ... @var{i@sub{21}} @var{i@sub{22}} ...)
+@end example
+is defined as:
+@example
+(@var{arr} (@var{M@sub{1}} @var{i@sub{11}} @var{i@sub{12}} ...) (@var{M@sub{2}} @var{i@sub{21}} @var{i@sub{22}} ...) ...)
+@end example
+Each @var{M@sub{k}} gets as many indexes as its rank.
+If @var{M@sub{k}} is an integer, then it we use
+it directly without any indexing.
+
+Here are some examples, starting with simple indexing.
+@example
+#|kawa:1|# (define arr (array #2a((1 4) (0 4))
+#|.....2|#                    10 11 12 13 20 21 22 23 30 31 32 33))
+#|kawa:3|# arr
+╔#2a@@1:3:4══╗
+║10│11│12│13║
+╟──┼──┼──┼──╢
+║20│21│22│23║
+╟──┼──┼──┼──╢
+║30│31│32│33║
+╚══╧══╧══╧══╝
+#|kawa:4|# (arr 2 3)
+23
+@end example
+If one index is a vector and the rest are scalar integers,
+then the result is a vector:
+@example
+#|kawa:5|# (arr 2 [3 1])
+#(23 21)
+@end example
+You can select a ``sub-matrix'' when all indexes are vectors:
+@example
+#|kawa:6|# (arr [2 1] [3 1 3])
+╔#2a:2:3═╗
+║23│21│23║
+╟──┼──┼──╢
+║13│11│13║
+╚══╧══╧══╝
+@end example
+Using ranges for index vectors selects a rectangular sub-matrix.
+@example
+#|kawa:7|# (arr [1 <: 3] [1 <: 4])
+╔#2a:2:3═╗
+║11│12│13║
+╟──┼──┼──╢
+║21│22│23║
+╚══╧══╧══╝
+@end example
+You can add new dimensions:
+@example
+#|kawa:8|# (arr [2 1] #2a((3 1) (3 2)))
+#3a╤══╗
+║23│21║
+╟──┼──╢
+║23│22║
+╠══╪══╣
+║13│11║
+╟──┼──╢
+║13│12║
+╚══╧══╝
+@end example
+The pseudo-range @code{[<:]} can be used to select all the indexes
+along a dimension.  To select row 2 (1-origin):
+@example
+#|kawa:9|# (arr 2 [<:])
+#(20 21 22 23)
+@end example
+To reverse the order use @code{[>:]}:
+@example
+#|kawa:10|# (arr 2 [>:])
+#(23 22 21 20)
+@end example
+To select column 3:
+@example
+#|kawa:11|# (arr [<:] 3)
+#(13 23 33)
+@end example
+If you actually want a column matrix (i.e. with shape @code{[3 1]}
+you can write can place the index in a single-element vector:
+@example
+#|kawa:12|# (arr [<:] [3])
+#2a╗
+║13║
+╟──╢
+║23║
+╟──╢
+║33║
+╚══╝
+@end example
+To expand that column to 5 colums you can repeat the column index:
+@example
+#|kawa:13|# [3 by: 0 size: 5]
+#(3 3 3 3 3)
+#|kawa:14|# (arr [<:] [3 by: 0 size: 5])
+╔#2a:3:5═╤══╤══╗
+║13│13│13│13│13║
+╟──┼──┼──┼──┼──╢
+║23│23│23│23│23║
+╟──┼──┼──┼──┼──╢
+║33│33│33│33│33║
+╚══╧══╧══╧══╧══╝
+@end example
 @end deffn
 
 @subsection Modifying arrays
@@ -12564,10 +13425,44 @@ This is a general mechanism for creating a view.
 The result is a new array with the given @var{shape}.
 Accessing this new array is implemented by calling the @var{transform}
 function on the index vector, which must return a new index vector
-valid for indexing the orifinal @var{array}.
+valid for indexing the original @var{array}.
+Here is an example (using the same @code{arr} as in
+the @code{array-index-ref} example):
+@example
+#|kawa:1|# (define arr (array #2a((1 4) (0 4))
+#|.....2|#                    10 11 12 13 20 21 22 23 30 31 32 33))
+#|kawa:14|# (array-transform arr #2a((0 3) (1 3) (0 2))
+#|.....15|#   (lambda (ix) (let ((i (ix 0)) (j (ix 1)) (k (ix 2)))
+#|.....16|#                  [(+ i 1)
+#|.....17|#                   (+ (* 2 (- j 1)) k)])))
+#3a:3@@1:2:2
+║10│11║
+╟──┼──╢
+║12│13║
+╠══╪══╣
+║20│21║
+╟──┼──╢
+║22│23║
+╠══╪══╣
+║30│31║
+╟──┼──╢
+║32│33║
+╚══╧══╝
+@end example
+
+The @code{array-transform} is generalization of @code{share-array},
+in that it does not require the @var{transform} to be affine.
+Also note the different calling conversions for the @var{tranform}:
+@code{array-transform} takes a single argument (a vector of indexes),
+and returns a single result (a vector of indexes);
+@code{share-array} takes one argument for each index, and returns
+one value for each index.  The difference is historical.
 @end deffn
 
 @deffn Procedure array-index-share array index ...
+This does the same generalized APL-style indexing
+as @code{array-index-ref}.  However, the resulting array
+is a modifiable view into argument @var{array}.
 @end deffn
 
 @deffn Procedure array-reshape array shape
@@ -12614,6 +13509,15 @@ by setting each index in turn to 1 and others to 0,
 and all to 0 for the constant term; the composition can then be compiled
 away, together with any complexity that the user introduced in their
 procedure.
+
+Here is an example where the @var{array} is a uniform vector:
+@example
+(share-array
+  (f64vector 1.0 2.0 3.0 4.0 5.0 6.0)
+  (shape 0 2 0 3)
+  (lambda (i j) (+ (* 2 i) j)))
+  @result{}  #2f64((1.0 2.0 3.0) (4.0 5.0 6.0))
+@end example
 @end deffn
 
 @deffn Procedure array-flatten array
@@ -12624,7 +13528,12 @@ in row-major-order.
 The result of @code{array-flatten} is fresh (mutable) copy, not a view.
 The result of @code{array->vector} is a view: If @var{array} is mutable,
 then modifying @var{array} changes the flattened result and vice versa.
-@ c If @var{array} is ``simple'',  @code{array->vector} returns the original vector.
+
+If @var{array} is ``simple'',  @code{array->vector} returns the original vector.
+Specifically, if @var{vec} is a vector then:
+@example
+(eq? @var{vec} (array->vector (array-reshape @var{vec} @var{shape})))
+@end example
 @end deffn
 
 @subsection Miscellaneous
@@ -13493,6 +14402,7 @@ A powerful pretty-printer.
 * Reading and writing whole files::
 * Ports::
 * Format:: Formatted Output (Common-Lisp-style)
+* Pretty-printing::
 * Resources::
 @end menu
 
@@ -14327,7 +15237,7 @@ return character, or a sequence of a carriage return character
 followed by a linefeed character.
 @end deffn
 
-@deffn Pocedure eof-object? obj
+@deffn Procedure eof-object? obj
 Returns @code{#t} if @var{obj} is an end-of-file object,
 otherwise returns @code{#f}.
 
@@ -14488,6 +15398,8 @@ omitted it defaults to the value returned by @code{(current-output-port)}.
 while R6RS added @code{flush-output-port}. They have the same effect.)
 @end deffn
 
+@anchor{Prompts}
+@cindex prompts
 @subsection Prompts for interactive consoles (REPLs)
 
 When an interactive input port is used for a read-eval-print-loop (REPL
@@ -14510,20 +15422,30 @@ used for subsequent ``continuation'' lines.
 
 The following placeholders are handled:
 @table @asis
-@item @code{%%}
+@item @stxlit{%%}
 A literal @samp{%}.
-@item @code{%@var{N}}
+@item @stxlit{%}@var{N}
 The current line number.  This is @code{(+ 1 (port-line @var{port}))}.
-@item @code{%@var{N}P@var{c}}
+@item @stxlit{%}@var{N}P@var{c}
 Insert padding at this possion, repeating the following
   character @code{@var{c}} as needed to bring the total number of columns
 of the prompt to that specified by the digits @code{@var{N}}.
-@item @code{%P@var{c}}
+@item @stxlit{%}P@var{c}
 Same as @code{%@var{N}P@var{c}}, but @code{@var{N}} defaults to the number
 of columns in the initial prompt from the expansion of @code{input-prompt1}.
 This is only meaningful when expanding @code{input-prompt2} for
 contiuation lines.
-@item @code{%@var{M}}
+@item @stxlit{%}@stxlitlbrace{}@var{hidden}@stxlit{%@}}
+Same as @var{hidden}, but the characters of @var{hidden}
+are assumed to have zero visible width.  Can be used for
+@uref{https://en.wikipedia.org/wiki/ANSI_escape_code,ANSI escape sequences}
+to change color or style:
+@example
+(set! input-prompt1 "%@{\e[48;5;51m%@}@{Kawa:%N@} %@{\e[0m%@}")
+@end example
+The above changes both the text and the background color
+(to a pale blue).
+@item @stxlit{%}@var{M}
 Insert a ``message'' string.
 Not normally used by Kawa, but supported by JLine.
 @end table
@@ -14535,6 +15457,13 @@ not specified, languages-specific defaults are used.
 For example for Scheme the default value of @code{input-prompt1}
 is @code{"#|kawa:%N|# "} and @code{input-prompt2} is @code{"#|$P.%N| "}.
 These have the form of Scheme comments, to make it easier to cut-and-paste.
+
+If @code{input-prompt1} (respectively @code{input-prompt2}) does not contain
+an escape sequence (either @code{"%@{} or the escape character @code{"\e"})
+then ANSI escape sequences are added to to highlight the prompt.
+(Under DomTerm this sets the @code{prompt} style, which can be customised
+with CSS but defaults to a light green background;
+if using JLine the background is set to light green.)
 @end defvar
 
 For greater flexibility, you can also set a prompter procedure.
@@ -15068,6 +15997,158 @@ be processed by @code{read}.
 may also print number strings, i.e. passing a number as a string and
 format it accordingly.
 @end table
+
+@node Pretty-printing
+@section Pretty-printing
+
+Pretty-printing is displaying a data structure as text,
+by adding line-breaks and indenttaion so that the visual
+structure of the output corresponds to the logical structure of
+data structure.  This makes it easier to read and understand.
+Pretty-printing takes into account the column width of the output
+so as to avoid using more lines than needed.
+
+Pretty-printing of standard sequences types such as lists and
+vectors is done by default.  For example:
+@example
+#|kawa:11|# @kbd{(set! *print-right-margin* 50)}
+#|kawa:12|# @kbd{'(ABCDEF (aa bb cc dd) (x123456789}
+#|.....13|# @kbd{y123456789 z123456789) ABCDEFG HIJKL)}
+(ABCDEF (aa bb cc dd)
+ (x123456789 y123456789 z123456789) ABCDEFG HIJK)
+@end example
+Setting @code{*print-right-margin*} to 50
+causes output to be limited to 50 columns.
+Notice the top-level list has to be split,
+but sub-lists @code{(aa bb cc dd)}
+and @code{(x123456789 y123456789 z123456789)}
+don't need to be split.
+
+When outputting to a DomTerm REPL,
+then @code{*print-right-margin*} is ignored,
+and the line-breaking is actually handled by DomTerm.
+If you change the window width, DomTerm will dynamically
+re-calculate the line-breaks of previous pretten output.
+This works even in the case of a session saved to an HTML
+file, as long as JavaScript is enabled.
+
+The concepts and terminology are
+based on those of @uref{https://www.cs.cmu.edu/Groups/AI/html/cltl/clm/node253.html,Common Lisp}.
+
+@subsection Pretty-printing Scheme forms
+
+Scheme and Lisp code is traditionally pretty-printed
+slightly differently than plain lists.
+The @code{pprint} procedure assumes the argument
+is a Scheme form, and prints its accordingly.
+For example the special form @code{(let ...)} is printed
+differently from a regular function call @code{(list ...)}.
+
+@deffn Procedure pprint obj [out]
+Assume @var{obj} is a Scheme form, and pretty-print it
+in traditional Scheme format.  For example:
+@example
+#|kawa:1|# @kbd{(import (kawa pprint))}
+#|kawa:2|# @kbd{(define fib-form}
+#|.....3|# @kbd{  '(define (fibonacci n)}
+#|.....4|# @kbd{     (let loop ((i0 0) (i1 1) (n n))}
+#|.....5|# @kbd{       (if (<= n 0) i0}
+#|.....6|# @kbd{           (loop i1 (+ i0 i1) (- n 1))))))}
+#|kawa:7|# @kbd{(set! *print-right-margin* 80)}
+#|kawa:8|# @kbd{(pprint fib-form)}
+(define (fibonacci n)
+  (let loop ((i0 0) (i1 1) (n n)) (if (<= n 0) i0 (loop i1 (+ i0 i1) (- n 1)))))
+#|kawa:9|# @kbd{(set! *print-right-margin* 40)}
+#|kawa:10|# @kbd{(pprint fib-form)}
+(define (fibonacci n)
+  (let loop ((i0 0) (i1 1) (n n))
+    (if (<= n 0)
+        i0
+        (loop i1 (+ i0 i1) (- n 1)))))
+@end example
+
+The @code{pprint} special-cases forms that start with
+@code{define}, @code{if}, @code{lambda}, @code{let},
+and a few more, and formats them with ``traditional'' indentation.
+However, it is not as complete or polished as it should be.
+(It should also use a programmable dispatch table,
+rather than having these special cases hard-wired.
+That is an improvemet for another day.)
+@end deffn
+
+@subsection Generic pretty-printing functions
+
+The following procedures are used to indicate logical blocks,
+and optional newlines.
+
+To access them do:
+@example
+(import (kawa pprint))
+@end example
+
+In the following, @var{out} is the output port, which
+defaults to @code{(current-output-port)}.
+
+@deffn Syntax pprint-logical-block @var{options} @arbno{@stxref{statement}}
+
+Evaluate the @var{statement}s within the context of a new ``logical block''.
+
+
+The @var{options} are one or more of the following:
+@table @asis
+@item @stxlit{prefix:} @var{prefix}
+@itemx @stxlit{per-line:} @var{per-line-prefix}
+Emit @var{prefix} or @var{per-line-prefix} (only one of them can be specified) before the start of the logical block.
+If @var{per-line-prefix} is provided, it is also print for each
+line within the logical block, indented the same.
+These are strings and default to @code{""}.
+@item @stxlit{suffix:} @var{suffix}
+Emit @var{suffix} after the end of the logical block.
+@item @stxlit{out:} @var{out}
+The output file.
+@end table
+
+For example to print a list you might do:
+@example
+(pprint-logical-block prefix: "(" suffix: ")"
+   @i{print contents of list})
+@end example
+
+This macro is equivalent to:
+@example
+(pprint-start-logical-block @var{prefix} @var{is-per-line} @var{suffix} @var{out})
+(try-finally
+  (begin @arbno{@var{statement}})
+  (pprint-end-logical-block @var{suffix} @var{out}))
+@end example
+@end deffn
+
+@deffn Procedure pprint-start-logical-block prefix is-per-line suffix out
+Start a logical block.
+The @var{is-per-line} argument is a boolean to specifiy
+of @var{prefix} is a per-line-prefix or a plain prefix.
+@end deffn
+@deffn Procedure pprint-end-logical-block suffix out
+End a logical block.
+@end deffn
+
+@deffn Procedure pprint-newline kind [out]
+Print a conditional newline, where @var{kind} is one of the
+symbols @code{'fill}, @code{'linear}, @code{'mandatory},
+or @code{'miser}.
+Usually follows printing of a space, as nothing is printed
+if the line is not broken here.
+@end deffn
+
+@deffn Procedure pprint-ident mode amount [out]
+Change how much following lines are indented
+(with the current logical block).
+The @var{amount} is the size of the indentation, in characters.
+The @var{mode} is either @code{'current} (if the
+@var{amount} is relative to the current position),
+or @code{'block} (if the @var{amount} is relative to the
+start (after any @var{prefix}) of the current logical block).
+@end deffn
 
 @node Resources
 @section Resources
@@ -15614,7 +16695,7 @@ For example:
 @end table
 
 The scope of the @var{body} of a method includes the @var{field-decl}s
-and @var{field-decl}s of the body, including those inherited from
+and @var{method-decl}s of the class, including those inherited from
 superclasses and implemented interfaces.
 
 If the @var{method-body} is the special form @code{#!abstract},
@@ -19483,6 +20564,7 @@ They run in separate threads.
 @end deffn
 
 @menu
+* Composable pictures::
 * Building JavaFX applications::
 * Building for Android::  Building for Android devices
 * Android view construction::
@@ -19491,6 +20573,658 @@ They run in separate threads.
 * Time-related functions::
 * Low-level functions:: Deprecated low-level functions
 @end menu
+
+@node Composable pictures
+@section Composable pictures
+
+The @code{(kawa pictures)} library lets you create geometric shapes
+and images, and combine them in interesting ways.
+The @ref{Tutorial - Pictures,tutorial} gives an introduction.
+
+The easiest way to use and learn the @code{pictures} library
+is with a suitable REPL.  You can use the old Swing-based console
+or any @ref{Using DomTerm,DomTerm}-based terminal emulator.
+You can create a suitable window either by starting @code{kawa}
+with the @code{-w} flag, or by running the @code{kawa} command
+inside an existing DomTerm-based terminal emulator.
+The screenshot below is of the latter,
+using the @code{qtdomterm} terminal emulator.
+
+@image{images/domterm-pictures-1}
+
+After @code{(import (kawa swing))} you can use @code{show-picture}
+to display a picture in a Swing window.
+
+A @dfn{picture} is an object that can be displayed on a screen,
+web-page, or printed page, and combined with other pictures.
+
+A picture has a method printing itself in a graphical context.
+It also has various properties.
+
+An important property of a picture is its @dfn{bounding box}.
+This is a rectangle (with edges parallel to the axes) that
+surrounds the contents of the picture.
+Usually the entire visible part of the picture is inside the
+bounding box, but in some cases part of the picture may stick
+outside the bounding box.
+For example when a circle is drawn (stroked) with a ``pen'',
+the bounding box is that of the infinitely-thin mathematical circle, so
+``ink'' from the pen that is outside the circle may be outside the bounding box.
+
+A picture has an origin point corresponding to the (0 0) cordinates.
+The origin is commonly but not always inside the bounding box.
+Certain operations (for example @code{hbox}) combine pictures by putting
+them ``next to'' each other, where ``next to'' is defined in
+terms of the bounding box and origin point.
+
+@c The Racket language has a @uref{https://docs.racket-lang.org/pict/,Pict}
+@c library, with a lot more functionality;
+@c it is used by the @uref{https://docs.racket-lang.org/quick/,Racket tutorial}.
+@c Racket also has a @uref{https://docs.racket-lang.org/teachpack/2htdpimage-guide.html,@code{2htdp/image} library} which should also be studied.
+
+@subsection Coordinates - points and dimensions
+
+The library works with a two-dimensional grid,
+where each position has an x cordinate and y coordinate.
+Normally, x values increase as you move right on the screen/page,
+while y values increase as you move @emph{down}.
+This convention matches that used by Java 2D, SVG, and many other
+graphics library.  However, note that this is different from the traditional
+mathematical convention of y values increasing as you go up.
+
+By default, one unit is one ``pixel''.  (More precisely,
+it is the @code{px} unit in the CSS specification.)
+
+@deffn Type Point
+A point is a pair consisting of an x and a y coordinate.
+@end deffn
+
+@deftypefn Literal {} &P@stxlit{[} @var{x} @var{y} @stxlit{]}
+Construct a point value with the specified @var{x} and @var{y} values.
+Both @var{x} and @var{y} are expressions that evaluate to real numbers:
+@example
+&P[(+ old-right 10) baseline]
+@end example
+@end deftypefn
+
+@deffn Type Dimension
+A dimension value is a pair of a width and a height.
+It is used for the size of pictures in the two dimensions.
+
+In a context that expects a point, a dimension is treated
+as an offset relative to some other point.
+@end deffn
+
+@deftypefn Literal {} &D@stxlit{[} @var{width} @var{height} @stxlit{]}
+Construct a dimension value with the specified @var{width}
+and @var{height} values, which are both expressions that
+evaluate to real numbers.
+@end deftypefn
+
+@subsection Shapes
+
+A shape is a collection of lines and curves.
+Examples include lines, circles, and polygons.
+A shape can be @dfn{stroked}, which you can think of as
+being drawn by a very fancy calligraphic pen that
+follows the lines and curves of the shape.
+
+A @dfn{closed shape} is a shape that is continuous and ends up where it
+started.  This includes circles and polygons.
+A closed shape can be filled, which means the entire ``interior''
+is painted with some color or texture.
+
+A shape is represented by the Java @code{java.awt.Shape} interface.
+The @code{picture} library only provides relatively simple shapes,
+but you can use any methods that create a @code{java.awt.Shape} object.
+
+@dfn{Shape} is effectively a sub-type of @dfn{picture},
+though they're represented using using disjoint classes:
+If you use a shape where a picture is required,
+the shape is automatically converted to a picture,
+as if using the @code{draw} procedure.
+
+@deffn Procedure line p1 [p2 ...]
+In the simple case two points are specified, and the result
+is a line that goes from point @var{p1} to @var{p2}.
+If @var{n} points are specied, the result is a @dfn{polyline}:
+a path consisting of @var{n-1} line segments, connecting adjacent arguments.
+(If only a single point is specified, the result is degenerate
+single-point shape.)
+
+All of the points except the first can optionally be specified
+using a dimension, which is treated an an offset from the previous point:
+@example
+(line &P[30 40] &D[10 5] &D[10 -10])
+@end example
+is the same as:
+@example
+(line &P[30 40] &P[40 45] &P[50 35])
+@end example
+@end deffn
+
+@deffn Procedure polygon p1 [p2 ...]
+Constructs a closed shape from line segments.
+This is the same as calling @code{line} with the same arguments,
+with the addition of a final line segment from the last point
+back to the first point.
+@end deffn
+
+@deffn Procedure rectangle p1 [p2]
+A rectangle is closed polygon of 4 line segments that are
+alternatively parallel to the x-axis and the y-axis.
+I.e. if you rotate a rectangle it is no longer a rectangle by
+this definition, though of course it still has a rectangular shape.
+If @var{p2} is not specified, constructs a rectangle whose upper-left corner
+is @code{&P[0 0]} and whose lower-right corner is @var{p1}.
+If @var{p2} is specified, constructs a rectangle whose upper-left corner
+is @var{p1} and whose lower-right corner is @var{p2}.
+If @var{p2} is a dimension it is considered a relative offset from @var{p1},
+just like for @code{polygon}.
+@end deffn
+
+@deffn Procedure circle radius [center]
+Creates a circle with the specified @var{radius}.
+If the @var{center} is not specified, it defaults to @code{&P[0 0]}.
+@end deffn
+
+@subsection Colors and paints
+
+A @dfn{paint} is a color pattern used to fill part of the canvas.
+A paint can be a color, a texture (a replicated pattern), or a gradiant
+(a color that gradually fades to some other color).
+
+A @dfn{color} is defined by red, green, and blue values.
+It may also have an alpha component, which specifies transparency.
+
+@deffn Procedure ->paint value
+Converts @var{value} to a color - or more general a paint.
+Specificlly, the return type is @code{java.awt.Paint}.
+The @var{value} can be any one of:
+@itemize
+@item
+A @code{java.awt.Paint}, commonly a @code{java.awt.Color}.
+@item
+A 24-bit integer value is converted to a color.
+Assume the integer is equal
+to a hexadecimal literal of the form @code{#xRRGGBB}.
+Then @code{RR} (bits 16-23) is the intensity of the red component;
+@code{GG} (bits 8-15) is the intensity of the green component; and
+@code{RR} (bits 0-7) is the intensity of the red component.
+@item
+One of the standard HTML/CSS/SVG color names, as a string or symbol.
+See the table in @code{gnu/kawa/models/StandardColor.java} source file.
+Case is ignored, and you can optionally use hyphens to separate words.
+For example @code{'hot-pink}, @code{'hotpink}, and @code{'hotPink}
+are all the same sRGB color @code{#xFF69B4}.
+@end itemize
+@end deffn
+
+@deffn Procedure with-paint paint picture
+Create a new picture that is the ``same'' as @var{picture}
+but use @var{paint} as the default paint.
+For @var{paint} you can use any valid argument to @code{->paint}.
+The default paint (which is the color black if none is specified)
+is used for both @code{fill} (paint interior) and @code{draw} (stroke outline).
+
+@example
+#|kawa:1|# @kbd{(! circ1 (circle 20 &P[20 20]))}
+#|kawa:2|# @kbd{(hbox (fill circ1) (draw circ1))}
+@image{images/paint-circ-1}
+#|kawa:3|# @kbd{(with-paint 'hot-pink (hbox (fill circ1) (draw circ1)))}
+@image{images/paint-circ-2}
+@end example
+Above we use @code{with-paint} to create a cloned picture, which is
+the same as the original @code{hbox}, except for the default paint,
+in this case the color @code{hot-pink}.
+@example
+#|kawa:4|# @kbd{(! circ2 (hbox (fill circ1) (with-paint 'hot-pink (fill circ1))))}
+#|kawa:5|# @kbd{circ2}
+@image{images/paint-circ-3}
+#|kawa:6|# @kbd{(with-paint 'lime-green circ2)}
+@image{images/paint-circ-4}
+@end example
+Here @code{circ2} is an @code{hbox} of two filled circles,
+one that has unspecified paint, and one that is @code{hot-pink}.
+Printing @code{circ2} directly uses black for the
+circle with unspecified color,
+but if we wrap @code{circ2} in another @code{with-paint}
+that provides a default that is used for the first circle.
+@end deffn
+
+@subsection Filling a shape with a color
+
+@deffn Procedure fill shape
+@deffnx Procedure fill paint shape
+
+Fill the ``inside'' of @var{shape}.
+If no @var{paint} is specified, uses the current default paint.
+Otherwise, @code{(fill @var{paint} @var{shape})}
+is the same @code{(with-paint @var{paint} (file @var{shape}))}.
+@end deffn
+
+@subsection Stroking (outlining) a shape
+
+@deffn Procedure draw @arbno{option} @atleastone{shape}
+
+Returns a picture that draws the outline of the @var{shape}.
+This is called @dfn{stroking}.
+An @var{option} may be one of:
+@itemize
+@item
+A @code{Paint} or @code{Color} object, which is used to draw the shape.
+@item
+A standard color name, such as @code{'red} or @code{'medium-slate-blue}.
+This is mapped to a @code{Color}.
+@item
+A join-specifier, which is a symbol specifying how each curve of the shape is
+connected to the next one.
+The options are @code{'miter-join}, @code{'round-join}, and @code{'bevel-join}.
+The default if none is specified is @code{'miter-join}.
+@item
+A end-cap-specifier, which is a symbol specifying how each end of the
+shape is terminated.
+The options are @code{'square-cap}, @code{'round-cap}, or @code{'butt-cap}.
+The default is @code{'butt-cap}.
+(This follows SVG and HTML Canvas.
+The default in plain Java AWT is a square cap.)
+@item
+A real number specifies the thickness of the stroke.
+@item
+A @code{java.awt.Stroke} object.
+This combines join-specifier, end-cap-specifier, thickness, and more
+in a single object.  The @code{BasicStroke} class can specify dashes,
+though that is not yet supported for SVG output; only AWT or image output.
+@end itemize
+
+Let us illustrate with a sample line @code{lin}
+and a helper macro @code{show-draw}, which adds a border around a shape,
+then draws the given shape with some options, and finally
+re-draws the shape in plain form.
+@example
+#|kawa:10|# @kbd{(define lin (line &P[0 0] &P[300 40] &P[200 100] &P[50 70]))}
+#|kawa:11|# @kbd{(define-syntax show-draw}
+#|....:12|# @kbd{  (syntax-rules ()}
+#|....:13|# @kbd{    ((_ options ... shape)}
+#|....:14|# @kbd{     (border 12 'bisque (zbox (draw options ... shape) shape)))))}
+#|....:15|# @kbd{(show-draw 8 'lime lin)}
+@image{images/show-draw-1}
+#|....:16|# @kbd{(show-draw 8 'lime 'round-cap 'round-join lin)}
+@image{images/show-draw-2}
+#|....:17|# @kbd{(show-draw 8 'lime 'square-cap 'bevel-join lin)}
+@image{images/show-draw-3}
+@end example
+@end deffn
+Notice how the different cap and join styles change the drawing.
+Also note how the stroke (color lime) extends beyond its bounding box,
+into the surrounding border (color bisque).
+@subsection Affine transforms
+
+A 2D affine transform is a linear mapping from coordinates to
+coordinates.  It generalizes translation, scaling, flipping, shearing,
+and their composition.  An affine transform maps straight parallel lines
+into other straight parallel lines, so it is only a subset of possible
+mappings - but a very useful subset.
+
+@deffn Procedure affine-transform xx xy yx yy x0 y0
+@deffnx Procedure affine-transform px py p0
+Creates a new affine transform.
+The result of applying @code{(affine-transform @var{x@sub{x}} @var{x@sub{y}} @var{y@sub{x}} @var{y@sub{y}} @var{x@sub{0}} @var{y@sub{0}})}
+to the point @code{&P[@var{x} @var{y}]}
+is the transformed point
+@example
+&P[(+ (* @var{x} @var{x@sub{x}}) (* @var{y} @var{y@sub{x}}) @var{x@sub{0}})
+   (+ (* @var{x} @var{x@sub{y}}) (* @var{y} @var{y@sub{y}}) @var{y@sub{0}})]
+@end example
+
+If using point arguments,
+@code{(affine-transform &P[@var{x@sub{x}} @var{x@sub{y}}] &P[@var{y@sub{x}} @var{y@sub{y}}] &P[@var{x@sub{0}} @var{y@sub{0}}])}
+is equivalent to:
+@code{(affine-transform @var{x@sub{x}} @var{x@sub{y}} @var{y@sub{x}} @var{y@sub{y}} @var{x@sub{0}} @var{y@sub{0}})}.
+@end deffn
+
+@deffn Procedure with-transform transform picture
+@deffnx Procedure with-transform transform shape
+Creates a transformed picture.
+
+If the argument is a @var{shape}, then the result is also a shape.
+@end deffn
+
+@deffn Procedure with-transform transform point
+Apply a transform to a single point, yielding a new point.
+@end deffn
+
+@deffn Procedure with-transform transform1 transform2
+Combine two transforms, yielding the composed transform.
+@end deffn
+
+@deffn Procedure rotate angle
+@deffnx Procedure rotate angle picture
+The one-argument variant creates a new affine transform that rotates
+a picture about the origin by the specified @var{angle}.
+A positive @var{angle} yields a clockwise rotation.
+The @var{angle} can be either a quantity (with a unit of
+either @code{rad} radians, @code{deg} (degrees), or @code{grad} (gradians)),
+or it can be a unit-less real number (which is treated as degrees).
+
+The two-argument variant applies the resulting transform to
+the specified picture.  It is equivalent to:
+@example
+(with-transform (rotate @var{angle}) @var{picture})
+@end example
+@end deffn
+
+@deffn Procedure scale factor
+@deffnx Procedure scale factor picture
+Scales the @var{picture} by the given @var{factor}.
+The @var{factor} can be a real number.
+The @var{factor} can also be a point or a dimension, in which case
+the two cordinates are scaled by a different amount.
+
+The two-argument variant applies the resulting transform to
+the specified picture.  It is equivalent to:
+@example
+(with-transform (scale @var{factor}) @var{picture})
+@end example
+@end deffn
+
+@deffn Procedure translate offset
+@deffnx Procedure translate offset picture
+
+The single-argument variant creates a transform
+that adds the @var{offset} to each point.
+The @var{offset} can be either a point or a dimension (which
+are treated quivalently).
+
+The two-argument variant applies the resulting transform to
+the specified picture.  It is equivalent to:
+@example
+(with-transform (translate @var{offset}) @var{picture})
+@end example
+@end deffn
+
+@subsection Combining pictures
+
+@deffn Procedure hbox [spacing] picture ...
+@deffnx Procedure vbox [spacing] picture ...
+@deffnx Procedure zbox picture ...
+Make a combined picture from multiple sub-pictures drawn
+either ``next to'' or ``on top of'' each other.
+
+The case of @code{zbox} is simplest: The sub-pictures are drawn
+in argument order at the same position (origin).  The ``@code{z}'' refers to
+the idea that the pictures are stacked on top of each other along
+the ``Z-axis'' (the one perpendicular to the screen).
+
+The @code{hbox} and @code{vbox} instead place the sub-pictures
+next to each other, in a row or column.
+If @var{spacing} is specified, if must be a real number.
+That much extra spacing is added between each sub-picture.
+
+More precisely: @code{hbox} shifts each sub-picture except the first
+so its left-origin control-point
+(see discussion at @code{re-center}) has the same position
+as the right-origin control point of the previous picture
+@var{plus} the amount of @var{spacing}.
+Similarly, @code{vbox} shifts each sub-picture except the first
+so its top-origin control point has the same position
+as the bottom-origin point of the previous picture, plus @var{spacing}.
+
+The bounding box of the result is the smallest rectangle that
+includes the bounding boxes of the (shifted) sub-pictures.
+The origin of the result is that of the first picture.
+@end deffn
+
+@deffn Procedure border [size [paint]] picture
+Return a picture that combines @var{picture}
+with a rectangular border (frame) around @var{picture}'s bounding box.
+The @var{size} specifies the thickness of the border:
+it can be real number, in which it is the thickness on all four sides;
+it can be a Dimension, in which case the width is the left and right
+thickness, while the height is the top and bottom thickness;
+or it can be a Rectangle, in which case it is the new bounding box.
+If @var{paint} is specified it is used for the border;
+otherwise the default paint is used.
+The border is painted before (below) the @var{picture} painted.
+The bounding box of the result is that of the border, while
+the origin point is that of the original @var{picture}.
+@example
+#|kawa:2|# @kbd{(with-paint 'blue (border &D[8 5] (fill 'pink (circle 30))))}
+@image{images/border-1}
+@end example
+@end deffn
+
+@deffn Procedure padding width [background] picture
+This is similar to @code{border},
+but it just adds extra space around @var{picture},
+without painting it.  The @var{size} is specified the same way.
+If @var{background} is specified,
+it becomes the background paint for the entire padded
+rectangle (both @var{picture} and the extra padding).
+@example
+#|kawa:3|# @kbd{(define circ1 (fill 'teal (circle 25)))}
+#|kawa:4|# @kbd{(zbox (line &P[-30 20] &P[150 20])}
+#|kawa:5|# @kbd{  (hbox circ1 (padding 6 'yellow circ1) (padding 6 circ1)))}
+@image{images/padding-1}
+@end example
+This shows a circle drawn three ways:
+as-is; with padding and a background color;
+with padding and a transparent background.
+A line is drawn before (below) the circles to contrast
+the yellow vs transparent backgrounds.
+@end deffn
+
+@deffn Procedure re-center [xpos] [ypos] picture
+Translate the @var{picture} such that the point specified by @var{xpos}
+and @var{ypos} is the new origin point, adjusting the bounding box to match.
+If the @var{picture} is a shape, so is the result.
+
+The @var{xpos} can have four possible values, all of which are symbols:
+@code{'left} (move the origin to the left edge of the bounding box);
+@code{'right} (move the origin to the left edge of the bounding box);
+@code{'center} (or @code{'centre}) (move the origin to halfway between the left and right edges);
+or @code{'origin} (don't change the location along the x-axis).
+The @var{ypos} can likewise have four possible values:
+@code{'top} (move the origin to the top edge of the bounding box);
+@code{'bottom} (move the origin to the bottom edge of the bounding box);
+@code{'center} (or @code{'centre}) (move the origin to halfway between the
+top and bottom edges);
+or @code{'origin} (don't change the location along the y-axis).
+
+A single @code{'center} argument
+is the same as specifying @code{'center} for both axis; this is the default.
+A single @code{'origin} argument
+is the same as specifying @code{'origin} for both axis;
+this is the same as just @var{picture}.
+
+The 16 control points are shown below, relative to a picture's
+bounding box and the X- and Y-axes.
+The abbreviations have the obvious values, for example
+@code{LC} means @code{'left 'center}.
+@example
+LT    OT  CT      RT
+  ┌────┬──────────┐
+  │    │          │
+  │    │          │
+LC│   OC  C       │RC
+LO├────O──CO──────┤RO
+  │    │          │
+  └────┴──────────┘
+LB    OB  CB       RB   
+@end example
+The result of (for example) @code{(re-center 'left 'center @var{P})}
+is @var{P} translated so the origin is at control point @code{LC}.
+
+@example
+#|kawa:1|# @kbd{(define D (fill 'light-steel-blue (polygon &P[-20 0] &P[0 -20] &P[60 0] &P[0 40])))}
+#|kawa:2|# @kbd{(zbox D (draw 'red (circle 5)))}
+@image{images/re-center-1}
+@end example
+Above we defined @code{D} as a vaguely diamond-shaped quadrilateral.
+A small red circle is added to show the origin point.
+Below we display 5 versions of @code{D} in a line (an @code{hbox}),
+starting with the original @code{D} and 4 calls to @code{re-center}.
+@example
+#|kawa:3|# @kbd{(zbox (hbox D (re-center 'top D) (re-center 'bottom D)}
+#|....:4|# @kbd{              (re-center 'center D) (re-center 'origin D))}
+#|....:5|# @kbd{  (line &P[0 0] &P[300 0]))}
+@image{images/re-center-2}
+@end example
+The line at @var{y=0} shows the effects of @code{re-center}.
+@end deffn
+
+@subsection Images
+
+An image is a picture represented as a rectangular grid of color values.
+An image file is some encoding (usually compressed) of an image,
+and mostly commonly has the extensions @code{png}, @code{gif},
+or @code{jpg}/@code{jpeg}.
+
+A ``native image'' is an instance of @code{java.awt.image.BufferedImage},
+while a ``picture image'' is an instance of @code{gnu.kawa.models.DrawImage}.
+(Both classes implement the @code{java.awt.image.RenderedImage} interface.)
+A @code{BufferedImage} is automatically converted to a @code{DrawImage}
+when needed.
+
+@deffn Procedure image bimage
+@deffnx Procedure image picture
+@deffnx Procedure image src: path
+
+Creates a picture image, using either an existing native image @var{bimage},
+or an image file specified by @var{path}.
+
+Writing @code{(image src: @var{path})} is roughly the same
+as @code{(image (read-image @var{path}))} except that the former
+has the @var{path} associated with the resulting picture image.
+This can make a difference when the image is used or displayed.
+
+If the argument is a @var{picture}, it is converted to an image
+as if by @code{->image}.
+@end deffn
+
+@deffn Procedure image-read path
+Read an image file from the specified @var{path},
+and returns a native image object (a @code{BufferedImage}).
+@example
+#|kawa:10|# @kbd{(define img1 (image-read "http://pics.bothner.com/2013/Cats/06t.jpg"))}
+#|kawa:11|# @kbd{img1}
+@image{images/image-cat-1a}
+#|kawa:12|# @kbd{(scale 0.6 (rotate 30 img1))}
+@image{images/image-cat-1b}
+@end example
+@end deffn
+
+Note that while @code{img1} above is a (native) image,
+the scaled rotated image is not an image object.
+It is a picture - a more complex value that @emph{contains} an image.
+
+@deffn Procedure image-write picture path
+The @var{picture} is converted to an image
+(as if by using @code{->image}) and then it is written
+to the specified @var{path}.
+The format used depends on (the lower-cased string value of) the path:
+A JPG file if the name ends with @code{".jpg"} or @code{".jpeg"};
+a GIF file if the name ends with @code{".gif"};
+a PNG file if the name ends with @code{".png"}.
+(Otherwise, the defalt is PNG, but that might change.)
+@end deffn
+
+@deffn Procedure image-width image
+@deffnx Procedure image-height image
+Return the width or height of the given @var{image}, in pixels.
+@end deffn
+
+@deffn Procedure ->image picture
+Convert @var{picture} to an image (a @code{RenderedImage}).
+If the @var{picture} is an image, return as-is.
+Otherwise, create an empty image (a @code{BufferedImage} whose size is the
+@var{picture}'s bounding box), and ``paint'' the @var{picture} into it.
+@example
+#|kawa:1|# @kbd{(define c (fill (circle 10)))}
+#|kawa:2|# @kbd{(scale 3 (hbox c (->image c)))}
+@image{images/image-scaled-1}
+@end example
+Here we take a circle @code{c}, and convert it to an image.
+Note how when the image is scaled, the pixel artifacts are very noticable.
+Also note how the origin of the image is the top-level corner,
+while the origin of the original circle is its center.
+@end deffn
+
+@subsection Compositing - Controlling how pictures are combined
+
+@deffn Procedure with-composite [[compose-op] picture] ...
+Limited support - SVG and DomTerm output has not been implemented.
+@end deffn
+
+@subsection Displaying and exporting pictures 
+
+@subsubsection Export to SVG
+
+@deffn Procedure picture-write-svg picture path [headers]
+Writes the @var{picture} to the file specified @var{path},
+in SVG (Structered Vector Graphics) format.
+If @var{headers} is true (which is the default)
+first write out the XML and DOCTYPE declarations
+that should be in a well-formed standaline SVG file.
+Otherwise, just write of the @code{<svg>} element.
+(Modern browers should be able to display a file
+consisting of just the @code{<svg>} element,
+as long as it has extension @code{.svg}, @code{.xml}, or @code{.html};
+the latter may add some extra padding.)
+@end deffn
+
+@deffn Procedure picture->svg-node picture
+Returns a SVG representation of @code{picture},
+in the form of an @code{<svg>} element,
+similar to those discussed in @ref{Creating XML nodes}.
+If you convert the @code{<svg>} element to a string,
+you get formatted XML;
+if you @code{write} the @code{<svg>} element
+you get an @ref{XML literals,XML literal} of form @code{"#<svg>...</svg>"}.
+If you @code{display} the @code{<svg>} element
+in a DomTerm terminal you get the picture (as a picture).
+This works because when you display an element in DomTerm
+it gets inserted into the display.
+@end deffn
+
+@subsubsection Display in Swing
+
+These procedures require @code{(import (kawa swing))} in addition to
+@code{(import (kawa pictures))}.
+
+The convenience function @code{show-picture} is useful
+for displaying a picture in a new (Swing) window.
+
+@deffn Procedure show-picture picture
+If this is the first call to @code{show-pictures},
+displays @var{picture} in a new top-level window (using the Swing toolkit).
+Sequenent calls to  @code{show-picture} will reuse the window.
+@example
+#|kawa:1|# @kbd{(import (kawa swing) (kawa pictures))}
+#|kawa:2|# @kbd{(show-picture @var{some-picture})}
+#|kawa:3|# @kbd{(set-frame-size! &D[200 200])} ; Adjust window size
+#|kawa:4|# @kbd{(show-picture @var{some-other-picture})}
+@end example
+@end deffn
+
+@deffn Procedure picture->jpanel picture
+Return a @code{JPanel} that displays @var{picture}.
+You can change the displayed picture by:
+@example
+(set! @var{panel}:picture @var{some-other-picture})
+@end example
+@end deffn
+
+@deffn Procedure set-frame-size! size [frame]
+If @var{frame} is specified, set its size.
+Otherwise, remember the size for future @code{show-picture} calls;
+if there is already a @code{show-picture} window, adjust its size.
+@end deffn
+
+@subsubsection Convert to image
+
+You can convert a picture to an image using the @code{->image} procedure,
+or write it to a file using the @code{image-write} procedure.
 
 @node Building JavaFX applications
 @section Building JavaFX applications
@@ -20456,6 +22190,7 @@ you can use @code{out-to: 'inherit}:
 @end example
 @end deffn
 
+@anchor{Exiting the current process}
 @subsection Exiting the current process
 
 @deffn Procedure exit [code]
@@ -21083,11 +22818,10 @@ notice of modification.  This work is provided as is, with
 no warranty of any kind.
 @end quotation
 
-
 @c I'd prefer to call this node plain "Index", but that causes a clash
 @c with index.html when generating HTML on case-insenstive file systems.
 @node Overall Index,  , License, Top
-@unnumbered Index
+@appendix Index
 @printindex cp
 
 @bye

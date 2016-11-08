@@ -1,3 +1,18 @@
+2016-11-05  Per Bothner  <per@bothner.com>
+
+	* kawa.sh.in: Set kawa.home property.
+	* kawa.bat.in: Likewise.
+	Also kawa.jar no longer has a version number in the name.
+
+2016-11-03  Sudarshan S Chawathe <chaw@eip10.org>
+
+	* kawa.sh.in: Tweak so ./kawa works, even when kawa is not a symlink.
+
+2016-08-14  Per Bothner  <per@bothner.com>
+
+	* Makefile.am: Remove version number in jar file names.
+	* build.xml: Likewise.
+
 2016-07-11  Per Bothner  <per@bothner.com>
 
 	* browse-kawa-manual.in: Update to use frameset version of manual.

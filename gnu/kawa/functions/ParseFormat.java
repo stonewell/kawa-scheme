@@ -2,12 +2,12 @@ package gnu.kawa.functions;
 import java.text.ParseException;
 import java.text.Format;
 import java.util.ArrayList;
+import gnu.kawa.format.*;
 import gnu.kawa.io.CharArrayInPort;
 import gnu.kawa.io.InPort;
 import gnu.mapping.*;
 import gnu.math.FixedRealFormat;
 import gnu.lists.*;
-import gnu.text.*;
 
 public class ParseFormat extends Procedure1
 {
@@ -244,7 +244,7 @@ public class ParseFormat extends Procedure1
 	      where = -1;
 	    else
 	      where = 0;
-	    format = new gnu.text.PadFormat(format, width, padChar, where);
+	    format = new PadFormat(format, width, padChar, where);
 	  }
 	// FIXME handle re-positioning
 	//fbuf.append('{');

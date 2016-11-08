@@ -1,3 +1,18 @@
+2016-09-08  Per Bothner  <per@bothner.com>
+
+	* LispLanguage.java (parse): Fix handling of unquoted literal #!eof.
+
+2016-09-02  Per Bothner  <per@bothner.com>
+
+	* LispReader.java (readGeneralArray): Allow specifying only
+	the lower bounds without specify lengths - as Guile also allows.
+
+2016-08-31  Per Bothner  <per@bothner.com>
+
+	Handle Common Lisp reader syntax for bitvectors.
+	* ReaderDispatchMisc.java (read): Handle "#*".
+	* ReaderDispatch.java (create): Bind "#*".
+
 2016-06-02  Per Bothner  <per@bothner.com>
 
 	* LispLanguage.java (parse): Skip ending newline.

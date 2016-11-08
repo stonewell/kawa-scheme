@@ -8,7 +8,7 @@ import gnu.mapping.WrappedException;
 import java.net.URL;
 
 public class DrawImage extends Model
-    implements Paintable, java.io.Serializable, RenderedImage
+    implements Picture, java.io.Serializable, RenderedImage
 {
   BufferedImage image;
   Path src;
@@ -59,7 +59,7 @@ public class DrawImage extends Model
     return new Rectangle2D.Float(0, 0, w, h);
   }
 
-  public Paintable transform (AffineTransform tr)
+  public Picture transform (AffineTransform tr)
   {
     return new WithTransform(this, tr);
   }
@@ -179,5 +179,19 @@ public class DrawImage extends Model
         }
         return names;
     }
-}
+    public void visit(PictureVisitor visitor) {
+        visitor.visitDrawImage(this);
+    }
 
+    // FIXME doesn't belong here
+    public static Picture toPictureOrNull(Object value) {
+        if (value instanceof Shape)
+            return new DrawShape((Shape) value);
+        else if (value instanceof BufferedImage)
+            return new DrawImage((BufferedImage) value);
+        else if (value instanceof Picture)
+            return (Picture) value;
+        else
+            return null;
+    }
+}

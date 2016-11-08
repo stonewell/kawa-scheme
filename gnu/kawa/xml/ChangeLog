@@ -1,3 +1,18 @@
+2016-10-29  Per Bothner  <per@bothner.com>
+
+	* KNode.java (toString): Default to "xhtml" style.
+
+2016-08-14  Per Bothner  <per@bothner.com>
+
+	* HttpPrinter.java (writeoBject): Special handling of Blob.
+	This fixes doc/+default+.
+
+2016-08-12  Per Bothner  <per@bothner.com>
+
+	* HttpPrinter.java: Extend PrintConsumer rather than FilterConsumer.
+
+	* Nodes.java (NodeVector.consumePosRange): Fix logic bug.
+
 2016-06-25  Per Bothner  <per@bothner.com>
 
 	* HttpPrinter.java (ignoring): Handle case when base is null.

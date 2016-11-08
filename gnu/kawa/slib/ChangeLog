@@ -1,3 +1,21 @@
+2016-10-23  Per Bothner  <per@bothner.com>
+
+	* swing.scm: Update export 'picture-jpanel' to 'picture->jpanel'.
+
+2016-09-29  Per Bothner  <per@bothner.com>
+
+	* gui.scm (process-keywords): Moved to new library file
+	kawa/lib/kawa/process-keywords.scm.
+	* swing.scm (frame): Moved to kawa/lib/kawa/swing.scm.
+
+2016-08-11  Marc Nieper-Wißkirchen <marc@nieper-wisskirchen.de>
+
+	* testing.scm: Fix cond-expand syntax problem.
+
+2016-07-22  Per Bothner  <per@bothner.com>
+
+	* gui.scm (with-transform, with-composite): Moved to pictures.
+
 2016-07-18  Per Bothner  <per@bothner.com>
 
 	* gui.scm (with-paint): Moved to (kawa pictures).

@@ -145,7 +145,7 @@ html {
 span.ignore { display: none }
 
 div.navcol { 
-  background: #ab7;
+  background: #F4FCFF;
 }
 
 /* Local navigation menu, along the left or right side */
@@ -177,7 +177,7 @@ list-style-type: none;
 div.navcol li { margin: 0 ; }
 div.navbar ul ul, div.navcol ul ul { margin-left: 0.6em; }
 
-div.navbar li { background-color: lightblue;  padding: 0px 4px;}
+div.navbar li { padding: 0px 4px;}
 div.navbar a { display: block; }
 
 div.navcol a {  text-decoration: none; }
@@ -219,6 +219,8 @@ div.logo img { border: none; padding: 10px }
 
 code[class="literal"] strong { color: purple }
 p[class="synopsis"] code strong { color: purple }
+/* Kludge to work around weird texinfo formatting for e.g. &P[x y] */
+p.synopsis span.type span.bold strong { color: purple; font-family: monospace }
 p[class="synopsis"] code[class="function"] { color: purple }
 p[class="synopsis"] code[class="varname"] { color: purple }
 
@@ -240,5 +242,9 @@ p.synopsis > code { font-weight: bold; }
 blockquote { margin-left: 40px; margin-right: 40px }
 
 div[class="navcol"] div > ul > li { font-size: larger }
+
+strong.userinput { background-color: #FFFFD0 } /* a pale yellow */
+span.userinput { background-color: #FFFFD0 } /* a pale yellow */
+span.prompt { background-color: #E0FFE0 } /* a pale green */
 
 /* *[accesskey]:after {content:' [' attr(accesskey) ']'} */

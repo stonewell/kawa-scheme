@@ -1,5 +1,5 @@
 ;; -*- coding: utf-8 -*-
-(test-begin "arrays" 204)
+(test-begin "arrays" 228)
 
 ;;; array test
 ;;; 2001 Jussi Piitulainen
@@ -480,8 +480,8 @@
 ║10│ 9│8║
 ╟──┼──┼─╢
 ║11│10│9║
-╚══╧══╧═╝
-} (format-array
+╚══╧══╧═╝}
+  (format-array
    (build-array [[10 <: 12] 3]
                 (lambda (ind)
                   (let ((x (ind 0)) (y (ind 1)))
@@ -492,24 +492,24 @@
 ║12│3│ 4║
 ╟──┼─┼──╢
 ║ 5│9│11║
-╚══╧═╧══╝
-} (format-array #2a((12 3 4) (5 9 11))))
+╚══╧═╧══╝}
+  (format-array #2a((12 3 4) (5 9 11))))
 
 (test-equal &{&-
 ╔#2a:2:4╤═══╗
 ║ab│c│d │e  ║
 ╟──┼─┼──┼───╢
 ║f │g│hi│jkl║
-╚══╧═╧══╧═══╝
-} (format-array #2a((ab c d e) (f g hi jkl))))
+╚══╧═╧══╧═══╝}
+  (format-array #2a((ab c d e) (f g hi jkl))))
 
 (test-equal &{&-
 ╔#2s8:2:3═══╗
 ║012│003│004║
 ╟───┼───┼───╢
 ║005│-09│011║
-╚═══╧═══╧═══╝
-} (format-array #2S8((12 3 4) (5 -9 11)) "~3,'0d"))
+╚═══╧═══╧═══╝}
+  (format-array #2S8((12 3 4) (5 -9 11)) "~3,'0d"))
 
 (test-equal &{&-
 ╔#3a:2:2:3╗
@@ -520,8 +520,8 @@
 ║i │j  │k ║
 ╟──┼───┼──╢
 ║lm│nop│q ║
-╚══╧═══╧══╝
-} (format-array #3a(((ab c d) (e f gh)) ((i j k) (lm nop q)))))
+╚══╧═══╧══╝}
+  (format-array #3a(((ab c d) (e f gh)) ((i j k) (lm nop q)))))
 
 (test-equal &{&-
 ╔#2a:2:3═══╤═════════╗
@@ -534,8 +534,8 @@
 ║     │hi  │╟─┼──╢   ║
 ║     │    │║3│14║   ║
 ║     │    │╚═╧══╝   ║
-╚═════╧════╧═════════╝
-} (format-array
+╚═════╧════╧═════════╝}
+  (format-array
    #2a((334 4545 #2f32((5 6))) (78987 "abc\ndefg\nhi" #2A((1 2) (3 14))))))
 
 (test-equal "#0a -02" (format-array #0a -2 "~3,'0d"))
@@ -549,4 +549,50 @@
 (test-equal &{#2a@1:2:3((a -9 "c") (d 153 "ef"))}
             (format "~w" #2a@1:2:3((a -9 "c") (d 153 "ef"))))
 
+(test-equal [2 5] [2 by: 3 <: 8])
+(test-equal [2 5 8] [2 by: 3 <=: 8])
+(test-equal [2 5 8] [2 by: 3 <: 9])
+(test-equal [2 5 8 11] [2 by: 3 <=: 11])
+(test-equal [2 5 8 11] [2 by: 3 <=: 13])
+(test-equal ([1 by: 2 ] [1 <: 10]) [3 5 7 9 11 13 15 17 19])
+(test-equal [20 20 20 20 20] ([20 by: 0] [0 <: 5]))
+(test-equal [3.0 3.5 4.0 4.5 5.0 5.5 6.0] [3.0 by: 0.5 <=: 6])
+(test-equal [4.0 3.5 3.0] [4.0 by: -0.5 >=: 3.0])
+(test-error [20 by: 2 >: 30])
+(test-error [20 by: -2 <=: 10])
+
+(define arr1 (array #2a((1 4) (0 4))
+                    10 11 12 13 20 21 22 23 30 31 32 33))
+(test-equal #2a@1:3:4((10 11 12 13) (20 21 22 23) (30 31 32 33))
+            arr1)
+(test-equal 23 (arr1 2 3))
+(test-equal #(23 21) (arr1 2 [3 1]))
+(test-equal #2a((23 21 23) (13 11 13))
+            (arr1 [2 1] [3 1 3]))
+(test-equal #2a((11 12 13) (21 22 23))
+            (arr1 [1 <: 3] [1 <: 4]))
+(test-equal #(23 22 21 20)
+            (arr1 2 [>:]))
+(test-equal #(12 22 32)
+            (arr1 [<:] 2))
+(test-equal #2a((10 11 12 13) (20 21 22 23) (30 31 32 33))
+            (arr1 [<:] [<:]))
+(test-equal #3a(((23 21) (23 22)) ((13 11) (13 12)))
+            (arr1 [2 1] #2a((3 1) (3 2))))
+(test-equal #2a((13) (23) (33))
+            (arr1 [<:] [3]))
+(test-equal #2a((13 13 13 13 13) (23 23 23 23 23) (33 33 33 33 33))
+            (arr1 [<:] [3 by: 0 size: 5]))
+(test-equal #3a:3@1:2:2(((10 11) (12 13)) ((20 21) (22 23)) ((30 31) (32 33)))
+            (array-transform arr1 #2a((0 3) (1 3) (0 2))
+                             (lambda (ix) (let ((i (ix 0)) (j (ix 1)) (k (ix 2)))
+                                            [(+ i 1)
+                                             (+ (* 2 (- j 1)) k)]))))
+(test-equal &{&-
+#2u32@2:2@3:2
+║001│002║
+╟───┼───╢
+║002│003║
+╚═══╧═══╝}
+  (format-array  #2u32@2@3((1 2) (2 3)) "~3,'0d"))      
 (test-end)

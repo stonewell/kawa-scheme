@@ -234,35 +234,20 @@ public class QuoteExp extends Expression
     return "QuoteExp["+value+"]";
   }
 
-  public void print (OutPort out)
-  {
-    out.startLogicalBlock("(Quote", ")", 2);
-    out.writeSpaceLinear();
-    Object val = this.value;
-    if (val instanceof Expression)
-      val = val.toString(); // To avoid cycles.
-    gnu.lists.AbstractFormat saveFormat = out.objectFormat;
-    try
-      {
-	out.objectFormat = Language.getDefaultLanguage().getFormat(true);
-	out.print(val);
-        if (type != null)
-          {
-            out.print(" ::");
+    public void print(OutPort out) {
+        out.startLogicalBlock("(Quote", ")", 2);
+        out.writeSpaceFill();
+        Object val = this.value;
+        if (val instanceof Expression)
+            val = val.toString(); // To avoid cycles.
+        gnu.kawa.format.AbstractFormat format =
+            Language.getDefaultLanguage().getFormat(true);
+        format.format(val, out);
+        if (type != null) {
+            out.writeSpaceFill();
+            out.print("::");
             out.print(type.getName());
-          }
-        /*
-        if (value != null)
-          {
-            out.print(" ::");
-            out.print(value.getClass().getName());
-          }
-        */
-      }
-    finally
-      {
-	out.objectFormat = saveFormat;
-      }
-    out.endLogicalBlock(")");
-  }
+        }
+        out.endLogicalBlock(")");
+    }
 }

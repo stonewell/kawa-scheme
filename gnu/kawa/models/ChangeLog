@@ -1,3 +1,112 @@
+2016-10-29  Per Bothner  <per@bothner.com>
+
+	* DisplayFormat.java: Only compile Pictures support #ifdef use:java.awt.
+        This fixes Savannah bug #49432 "Android: Failed resolving ...".
+
+2016-10-23  Per Bothner  <per@bothner.com>
+
+	* StandardColor.java (transparent): Fix alpha value.  This fixes
+	Savannah bug #49369 "(kawa pictures) padding not transparent?".
+	* FillShape.java (paint): Optimization - do nothing if
+	paint is StandardColor.transparent.
+	* PictureToSvg.java (visitFillShape, visitDrawShape): Likewise.
+
+2016-10-16  Per Bothner  <per@bothner.com>
+
+	* SVGUtils.java (toSVG): Add missing space in DOCTYPE header.
+	Fixes bug reported by Sudarshan S Chawathe.
+
+2016-10-05  Per Bothner  <per@bothner.com>
+
+	* DrawShape.java: Explicitly set default endcap to CAP_BUTT.
+	This matches SVG and HTML Canvas, but is different from Java2D.
+	* Pictures.java (toImage): Likewise.
+	* SwingPicture.java (paintComponent): Likewise.
+
+2016-10-03  Per Bothner  <per@bothner.com>
+
+	* PBox.java (spacing): New field, for additional separation.
+	(<init>): New strucor with 'spacing' parameter.
+	(init): Take spacing into account.
+	(makeBox): New factory method.
+	(makeHBox, makeVBox, makeZBox): Remove factory methods.
+
+2016-10-01  Per Bothner  <per@bothner.com>
+
+	* SVGUtils.java (toSVG, toSVGNode): New static procedures.
+	* PictureToSvg.java (writeAttribute): Create Symbol.
+
+2016-09-29  Per Bothner  <per@bothner.com>
+
+	* Pictures.java (toImage): New static method.
+	(borderShape): Generalize to also work for 'padding'.
+	* StandardColor.java (transparent): New pseudo-color.
+
+	* DDimension.java: New class, extends Dimension.
+
+2016-09-28  Per Bothner  <per@bothner.com>
+
+	* PBox.java (sPicture, asPictureAll): Move to ..
+	* Pictures.java: New helper class.
+	(borderShape): New static method.
+
+2016-09-26  Per Bothner  <per@bothner.com>
+
+	* PictureToSvg.java (writePaint): Remove '-' from StandardColor name.
+
+2016-09-23  Per Bothner  <per@bothner.com>
+
+	* PictureVisitor.java (PictureVisitor): Fix logic errors.
+
+2016-09-09  Per Bothner  <per@bothner.com>
+
+	* DrawImage.java (toPictureOrNull): New utility method.
+
+2016-07-28  Per Bothner  <per@bothner.com>
+
+	Adjust bounding box for stroke width.
+	* PictureVisitor.java (class TrackingState): New class.
+	* SVGUtils.java (toSVG): Adjust bounds for stroke width.
+	(class AdjustBounds): New class, extends TrackingState.
+
+2016-07-26  Per Bothner  <per@bothner.com>
+
+	Support setting Stroke properties and their use by DrawShape.
+	* DrawShape.java (makeDraw): Factory method from creating
+	DrawShape possibly wrapped in WithPaint.
+	* PBox.java (combine): Convenience method.
+	* PictureToSvg.java: Convert Stroke properties to SVG properties.
+	* WithPaint.java (stroke, propertiesSet): New fields for
+	noting which Stroke-related proprties are set and which inherited.
+	(paint): Handle also updating/merging Stroke.
+
+2016-07-26  Per Bothner  <per@bothner.com>
+
+	Rename Paintable to Picture.
+
+2016-07-26  Per Bothner  <per@bothner.com>
+
+	Re-implement conversion to SVG without using external library.
+	* PictureVisitor.java: New visitor class.
+	* PictureToSvg.java: New class, extends PictureVisitor.
+	* SVGUtils.java: Simplify to use PictureToSvg.
+	* Paintable.java (visit): New abstract method.
+	* DrawImage.java (visit): New visit method.
+	* DrawShape.java (visit): Likewise.
+	* FillShape.java (visit): Likewise.
+	* PBox.java (visit): Likewise.
+	* WithComposite.java (visit): Likewise.
+	* WithPaint.java (visit): Likewise.
+	* WithTransform.java (visit): Likewise.
+	* FillShape.java (getShape): New method.
+	* PBox.java (paintables): Rename field to children.
+	* WithComposite.java (paintables): Rename to children.
+	* StandardColor.java (getName): New method.
+
+2016-07-22  Per Bothner  <per@bothner.com>
+
+	* WithComposite.java: Use symbol as shorthand for standard Composites.
+
 2016-07-19  Per Bothner  <per@bothner.com>
 
 	* StandardColor.java: Don't hyphenate or camel-case goldenrod.

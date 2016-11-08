@@ -1,3 +1,56 @@
+2016-10-15  Per Bothner  <per@bothner.com>
+
+	* PrimVector.template: Fix incorrect edits in generated files by making here instead.
+	(FVector.makConstant, FVector.replaceAll, ByteVector.writeTo): New methods.
+	* ByteVector.java: Re-generated.
+	* FVector.java: Re-generated.
+
+2016-10-11  Per Bothner  <per@bothner.com>
+
+	* PrintConsumer.java (writeBreak): Make public.
+
+2016-09-21  Per Bothner  <per@bothner.com>
+
+	* Strings.java (toJson): New method.
+	(printQuoted): Some tweaks.
+
+2016-09-03  Per Bothner  <per@bothner.com>
+
+	* AbstractFormat.java: Moved to gnu/kawa/format.
+
+	* AbstractFormat.java (format): Fix logic for non-OutPort case.
+
+2016-09-02  Per Bothner  <per@bothner.com>
+
+	Add support for pseudo-ranges, with unspecified start *and* end.
+	* Range.java (isUnspecifiedStart): New method.
+	(upto, downto): New factor methods - logic moded from RangeUtils.
+	* ComposedArray.java: Resolve pseudo-ranges.
+
+2016-09-01  Per Bothner  <per@bothner.com>
+
+	* ComposedArray.java: Restructured the logic a bit.
+
+2016-08-31  Per Bothner  <per@bothner.com>
+
+	* Range.java: Move factory method to java/kawa/functions/RangeUtils.java.
+	(isUnbounded): Move public.
+
+2016-08-14  Per Bothner  <per@bothner.com>
+
+	* Blob.java: Don't implement Consumble.
+	(consume): Remove method.
+	* ByteVector.java (writeTo): Add one-argument overload
+
+2016-08-12  Per Bothner  <per@bothner.com>
+
+	A cleaner format/consumer model.
+	* AbstractFormat.java (class FormatConsumer): New static class.
+	(makeConsumer): New method.
+	(getPassThroughOutPort): New static method.
+	* PrintConsumer.java: Add a bucnh of of methods, include
+	some moved from OutPort or PrettyWriter.
+
 2016-07-17  Per Bothner  <per@bothner.com>
 
 	* IntSequence.java: Implement AVector rather than List *and* Array.

@@ -72,6 +72,13 @@ public class JLineInPort extends TtyInPort
         this.terminal = terminal;
     }
 
+    @Override
+    public void setInDomTerm(boolean v) {
+        super.setInDomTerm(v);
+        if (v)
+            jlreader.setOpt(LineReader.Option.DELAY_LINE_WRAP);
+    }
+
     public ParsedLine parse(String line, int cursor,
                             ParseContext context) throws SyntaxError {
         if (context == ParseContext.COMPLETE)
@@ -86,6 +93,8 @@ public class JLineInPort extends TtyInPort
                 language.parse(lexer,
                                Language.PARSE_FOR_EVAL|Language.PARSE_INTERACTIVE_MODULE,
                                null);
+            if (comp == null)
+                throw new EndOfFileException();
             if (comp.getState() == Compilation.ERROR_SEEN && cin.eofSeen()) {
                 messages.clear();
                 throw new EOFError(-1, -1, "unexpected end-of-file", "");
@@ -180,6 +189,22 @@ public class JLineInPort extends TtyInPort
     }
 
     @Override
+    public String promptTemplate1() {
+        return maybeColorizePrompt(super.promptTemplate1());
+    }
+
+    @Override
+    public String promptTemplate2() {
+        return maybeColorizePrompt(super.promptTemplate2());
+    }
+
+    public String maybeColorizePrompt(String prompt) {
+        if (prompt.indexOf('\033') < 0 && prompt.indexOf("%{") < 0)
+            prompt = "\033[48;5;194m" + prompt + "\033[0m";
+        return prompt;
+    }
+
+    @Override
     public void emitPrompt(String prompt) throws java.io.IOException {
         this.prompt = prompt;
     }
@@ -209,6 +234,7 @@ public class JLineInPort extends TtyInPort
             this.comp = comp;
             this.source = source;
             this.cursor = cursor;
+            this.word = "";
         }
 
         public KawaParsedLine(JLineInPort inp, CommandCompleter ex, String source, int cursor) {

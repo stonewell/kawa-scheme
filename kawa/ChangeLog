@@ -1,3 +1,31 @@
+2016-09-21  Per Bothner  <per@bothner.com>
+
+	* repl.java (checkDomTerm): Also setDomTerm on system error.
+	* DomTermBackend.java: Likewise.
+
+2016-09-09  Per Bothner  <per@bothner.com>
+
+	* ReplPaneOutPort.java: Fix handling of Pictures etc to
+	use new GenericFormat framework.
+
+2016-09-07  Per Bothner  <per@bothner.com>
+
+	* Shell.java (run): Improve interrupt (ctrl-c) handling.
+
+2016-09-03  Per Bothner  <per@bothner.com>
+
+	* standard/IfFeature.java (coreFeatures): Update for new Java 9
+	versioning scheme.
+
+2016-08-12  Per Bothner  <per@bothner.com>
+
+	* Shell.java: Change handling of output-consumer so we never
+	change the OutPort itself.  Instead we get a new new PrintConsumer.
+
+2016-07-22  Per Bothner  <per@bothner.com>
+
+	* ReplPane.java (PaintableView.paint): Fix translation.
+
 2016-07-01  Per Bothner  <per@bothner.com>
 
 	* Shell.java (defaultPrompter): New static instance of Prompter.

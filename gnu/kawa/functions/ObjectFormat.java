@@ -1,9 +1,10 @@
 package gnu.kawa.functions;
 import gnu.text.*;
 import gnu.mapping.*;
+import gnu.kawa.format.AbstractFormat;
+import gnu.kawa.format.ReportFormat;
 import gnu.kawa.io.CharArrayOutPort;
 import gnu.kawa.io.OutPort;
-import gnu.lists.AbstractFormat;
 import kawa.standard.Scheme;
 import java.text.*;
 import java.io.Writer;
@@ -59,21 +60,17 @@ public class ObjectFormat extends ReportFormat
   private static void print (Object obj, OutPort out,
 			     boolean readable)
   {
-    boolean saveReadable = out.printReadable;
-    AbstractFormat saveFormat = out.objectFormat;
+    AbstractFormat format
+        = readable ? DisplayFormat.schemeWriteFormat
+        : DisplayFormat.schemeDisplayFormat;
+    Object save = out.pushFormat(format);
     try
       {
-	out.printReadable = readable;
-	AbstractFormat format
-            = readable ? DisplayFormat.schemeWriteFormat
-            : DisplayFormat.schemeDisplayFormat;
-	out.objectFormat = format;
 	format.writeObject(obj, (gnu.lists.Consumer) out);
       }
     finally
       {
-	out.printReadable = saveReadable;
-	out.objectFormat = saveFormat;
+        out.popFormat(save);
       }
   }
 

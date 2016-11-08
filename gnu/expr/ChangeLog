@@ -1,3 +1,44 @@
+2016-10-30  Per Bothner  <per@bothner.com>
+
+	* Compilation.java (process): Don't set state to ERROR_SEEN
+	if resolve failed. This partially fixes Savannah bug #49431
+	"Missing define-constant and define-early-constant in (kawa base)".
+
+2016-09-21  Per Bothner  <per@bothner.com>
+
+	* QuoteExp.java (print): Some pretty-printing tweaks.
+
+2016-09-07  Per Bothner  <per@bothner.com>
+
+	* QuoteExp.java (print): Simplify - use AbstractFormat.format.
+
+2016-09-03  Per Bothner  <per@bothner.com>
+
+	* Compilation.java (defaultClassFileVersion): Handle JAVA9.
+
+2016-08-12  Per Bothner  <per@bothner.com>
+
+	Minor changes for format/PrintConsumer re-write.
+
+2016-08-12  Per Bothner  <per@bothner.com>
+
+	* Keyword.java: Don't implement Printable.
+	(print): Remove method.
+	* Symbols.java (print): Remove method.
+
+2016-07-28  Per Bothner  <per@bothner.com>
+
+	* Language.java (eval): Call setEvalName before it's too late.
+	(parse, getCompilation): Some re-structuring.
+	This fixes Savannah bug #48652 "Cannot run Scheme.eval multiple times".
+
+	* Compilation.java (mangleSymbolic): Change interface, so we don't
+	mangle '<' or '>' except for method names.
+
+2016-07-25  Per Bothner  <per@bothner.com>
+
+	* GenericProc.java (addAtEnd): Fix error in computing maxArgs.
+
 2016-07-17  Per Bothner  <per@bothner.com>
 
 	* Language.java (parse): Catch SyntaxException.

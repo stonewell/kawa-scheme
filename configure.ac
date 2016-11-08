@@ -1,11 +1,11 @@
 qdnl Process this with autoconf to create configure
-AC_INIT([kawa],[2.1.9_invoke]) dnl Also update bin/configure.ac and build.xml.
+AC_INIT([kawa],[2.1.91_invoke]) dnl Also update bin/configure.ac and build.xml.
 AC_CONFIG_SRCDIR([doc/kawa.texi])
 
-AM_MAINTAINER_MODE
+AM_MAINTAINER_MODE([enable])
 AC_CANONICAL_HOST
 
-AM_INIT_AUTOMAKE
+AM_INIT_AUTOMAKE([info-in-builddir])
 
 dnl AC_ARG_WITH(classpath,[  --with-classpath          Path to Java classes], classpath=$withval, classpath=$$CLASSPATH)
 AC_ARG_ENABLE(kawa-frontend,
@@ -20,18 +20,12 @@ AC_ARG_WITH(servlet,
   AS_HELP_STRING(--with-servlet@<:@=servlet-api.jar@:>@,Build support for generating servlets))
 WITH_SERVLET_ARG="${with_servlet}"
 
-AC_ARG_WITH(vectorgraphics2d)
-WITH_VECTORGRAPHICS2D_ARG="${with_vectorgraphics2d}"
-
 AC_ARG_WITH(android,
   AS_HELP_STRING(--with-android@<:@=android.jar@:>@,Build for the Android platform))
 
 AC_ARG_WITH(javafx,
   AS_HELP_STRING(--with-javafx@<:@=jfxrt.jar@:>@,Enable support for JavaFX))
 WITH_JAVAFX_ARG="${with_javafx}"
-
-AC_ARG_WITH(jline2,
- AS_HELP_STRING(--with-jline2=<:@=jline2.jar@:>@,Build support JLine2 input editing))
 
 AC_ARG_WITH(domterm,
  AS_HELP_STRING(--with-domterm=<:@=domterm.jar@:>@,Build support for DomTerm))
@@ -78,6 +72,8 @@ AC_ARG_WITH(java-source,
 
 test -z "${with_java_source}" -a -n "${with_android}" \
   && with_java_source=android
+test -z "${with_swing}" -a "$with_awt" == "no" \
+  && with_swing=no
 
 with_java_source=`echo ${with_java_source} | tr A-Z a-z`
 # Java 7 is the (current) default
@@ -103,13 +99,15 @@ case "/${with_java_source}/" in
     JAVA_SOURCE=7; JAVA_SOURCE_SELECTOR='%java7' ;;
   /8/|/1.8*/) # Java 8
     JAVA_SOURCE=8; JAVA_SOURCE_SELECTOR='%java8' ;;
+  /9/|/1.9*/) # Java 9
+    JAVA_SOURCE=9; JAVA_SOURCE_SELECTOR='%java9' ;;
   /android*/)
         JAVA_SOURCE=android; JAVA_SOURCE_SELECTOR='%android'
         test -z "$with_swing" && with_swing="no"
         test -z "$with_awt" && with_awt="no"
         ;;
   /*/) AC_MSG_ERROR([Invalid version for --with-java-version.
-  (Must be 1, 2, 5, 6, 7, 8, or a JDK version such as 1.5.)]) ;;
+  (Must be 1, 2, 5, 6, 7, 8, 9, or a JDK version such as 1.5.)]) ;;
 esac
 AC_SUBST(JAVA_SOURCE)
 AC_SUBST(JAVA_SOURCE_SELECTOR)
@@ -122,13 +120,13 @@ fi
 
 if test -z "$with_javax_script"; then
   case "$JAVA_SOURCE" in
-  6compat5|6|7|8) with_javax_script="yes";;
+  6compat5|6|7|8|9) with_javax_script="yes";;
   esac
 fi
 
 if test -z "$with_httpserver"; then
   case "$JAVA_SOURCE" in
-  6compat5|6|7|8)
+  6compat5|6|7|8|9)
     test "$with_android" != "" -a "$with_android" != "no" \
       || with_httpserver="yes";;
   esac
@@ -175,10 +173,6 @@ AM_CONDITIONAL(ENABLE_XML, test "$enable_xml" = "yes")
 AM_CONDITIONAL(ENABLE_SERVLET,
   test "$enable_servlet" != "" -a "$enable_servlet" != "no")
 AM_CONDITIONAL(WITH_SWING, test "$with_swing" != "no")
-AM_CONDITIONAL(WITH_VECTORGRAPHICS2D,
-  test "$with_vectorgraphics2d" != "" -a "$with_vectorgraphics2d" != "no")
-AM_CONDITIONAL(WITH_JLINE2,
-  test "$with_jline2" != "" -a "$with_jline2" != "no" || test "$with_jline3" != "" -a "$with_jline3" != "no")
 AM_CONDITIONAL(WITH_JLINE3,
   test "$with_jline3" != "" -a "$with_jline3" != "no")
 AM_CONDITIONAL(WITH_DOMTERM,
@@ -196,8 +190,6 @@ AM_CONDITIONAL(ON_WINDOWS, test "$CLASSPATH_SEPARATOR" = ";")
 
 if test "$with_jline3" != "" -a "$with_jline3" != "no"
 then WITH_JLINE_PATH="${with_jline3}"
-elif test "$with_jline2" != "" -a "$with_jline2" != "no"
-then WITH_JLINE_PATH="${with_jline2}"
 fi
 
 JEMACS_VERSION=`echo $VERSION | sed  -e 's/^1/0/'`
@@ -220,9 +212,7 @@ AC_SUBST(CLASSPATH_SEPARATOR)
 AC_SUBST(pathsep)
 AC_SUBST(filesep)
 AC_SUBST(WITH_SERVLET_ARG)
-AC_SUBST(WITH_VECTORGRAPHICS2D_ARG)
 AC_SUBST(WITH_JAVAFX_ARG)
-AC_SUBST(WITH_JLINE2)
 AC_SUBST(WITH_JLINE3)
 AC_SUBST(WITH_JLINE_PATH)
 AC_SUBST(WITH_DOMTERM_ARG)

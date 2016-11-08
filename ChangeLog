@@ -1,3 +1,61 @@
+2016-11-02  Per Bothner  <per@bothner.com>
+
+	* configure.in (AC_INIT): Set version to 2.1.91.
+	* bin/configure.in (AC_INIT): Likewise.
+	* build.xml (version.release): Likewise.
+
+2016-11-01  Per Bothner  <per@bothner.com>
+
+	* configure.ac: Remove obsolete --with-jline2 option.
+	* Makefile.am: Update accordingly.
+	* source-list: Update accordingly.
+
+2016-10-29  Per Bothner  <per@bothner.com>
+
+	* source-list: Don't build gnu.kawa.models unless WITH_AWT.
+	* Makefile.am (PREPROCESS_AWT): Set (or not) use:java.awt PreProcess
+	option, depending on WITH_AWT.
+	* configure.ac: Option --with-swing defaults to no if --without-awt.
+
+2016-10-16  Per Bothner  <per@bothner.com>
+
+	* configure.ac: Make maintainer-mode the default.
+	Put info files in builddir.
+	* Makefile.am (tmp-sources1.list): Also depend on Makefile.am.
+
+2016-10-16  Jamison Hope  <jrh@theptrgroup.com>
+
+	* build.xml (generate-simplevector-files)
+	(clean-generated-simplevector-files): New targets to generate and
+	clean PrimVector.template-based source files.
+
+2016-10-13  Jamison Hope  <jrh@theptrgroup.com>
+
+	* build.xml (lib-scm-classes): Update for new libraries (kawa
+	process-keywords) and (kawa swing).
+
+2016-09-03  Per Bothner  <per@bothner.com>
+
+	* configure.ac: Recognize --with-java-source=9.
+
+2016-08-14  Per Bothner  <per@bothner.com>
+
+	* Makefile.am: Remove version number for jar file names.
+	* kawa.sh.in: Likewise.
+	* kawa.sh.in: Use JAVA_HOME if it is set.
+
+2016-07-26  Per Bothner  <per@bothner.com>
+
+	Re-implement conversion to SVG without using external library.
+	* configure.ac, config.classpath: Remove --with-vectorgraphics2d option.
+	* Makefile.am, bin/kawa.bat.in: Remove use of VectorGraphics2D.
+
+2016-07-20  Jamison Hope  <jrh@theptrgroup.com>
+
+	* build.xml (script-factory-scheme, script-factory-xquery): Make
+	sure META-INF/services directory exists before writing to
+	META-INF/services/javax.script.ScriptEngineFactory file.
+
 2016-07-13  Per Bothner  <per@bothner.com>
 
 	Replace use of JFreeSVG with VectorGraphics2D library.

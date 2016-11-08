@@ -1,3 +1,52 @@
+2016-10-29  Per Bothner  <per@bothner.com>
+
+	* DisplayFormat.java (writeKNode): Force xhtml style for KNode.
+
+2016-09-10  Per Bothner  <per@bothner.com>
+
+	* ParseFormat.java: Remove unneeded import.
+	Fixes Savannah bug #49048 "r8947 broken the build on ParseFormat.java".
+
+2016-09-09  Per Bothner  <per@bothner.com>
+
+	* DisplayFormat.java: Update for new GenericFormat API.
+
+2016-09-07  Per Bothner  <per@bothner.com>
+
+	* DisplayFormat.java (writeRange): Fix thinko.
+
+2016-09-05  Per Bothner  <per@bothner.com>
+
+	* DisplayFormat.java: Restructure to use GenericFormat.
+	Also add DomTerm support for Shape and BufferedImage.
+
+2016-09-02  Per Bothner  <per@bothner.com>
+
+	* RangeUtils.java (upto, downto): Move IntRange-constructing
+	logic back to Range.java,
+	* DisplayFormat.java: Print pseudo-ranges '[<:]' and '[>:]'.
+
+2016-08-31  Per Bothner  <per@bothner.com>
+
+	* ArrayPrint.java (putLine): Don't emit newline at end.
+	This fixes a problem with "word" separators and extra spaces.
+
+	* DisplayFormat.java (writeObjectRaw): Write BitVector
+	in Common Lisp format.
+
+	* RangeUtils.java: New file - partly based on factory methods in Range.
+	* DisplayFormat.java: Better readable printing of Range objects.
+	* DivideOp.java: Re-factor to add apply method.
+	(iceil): New constant, for QUOTIENT_EXACT and CEILING.
+
+2016-08-12  Per Bothner  <per@bothner.com>
+
+	A cleaner format/consumer model.
+	* DisplayFormat.java: Numerous updates.
+	* LispFormat.java (LispObjectFormat:format): Simplify.
+	Sharing/cycle detection is now initialized in DisplayFormat.
+	* RunProcess.java: Changes to logic for when we can inherit output.
+
 2016-07-13  Per Bothner  <per@bothner.com>
 
 	* DisplayFormat.java (writeObjectRaw): No longer depend on

@@ -1,4 +1,126 @@
-2016-07-18  Per Bothner  <per@bothner.com>
+2016-10-30  Per Bothner  <per@bothner.com>
+
+	* kawa/base.scm (define-constant define-early-constant): Export.
+	This fixes Savannah bug #49431 "Missing define-constant and
+	define-early-constant in (kawa base)".
+
+2016-10-29  Per Bothner  <per@bothner.com>
+
+	* Makefile.am: Don't build kawa/pictures.scm unless WITH_AWT.
+
+	* files.scm (make-temporary-file): Force #\~ to string. Fixes Savannah
+	bug #49475 "make-temporary-file does not interpret ~d properly".
+
+	* kawa/base.scm: Also export generate-temporaries datum->syntax syntax->datum.
+	This fixes Savannah bug #49430 "warning - no declaration seen for
+	generate-temporaries, datum->syntax, syntax->datum".
+
+2016-10-28  Per Bothner  <per@bothner.com>
+
+	* kawa/pictures.scm (re-center): Return shape if argument is a shape.
+	This is a fix for part of Savannah bug #49471
+	"(kawa pictures) filling a re-centered picture not OK?".
+
+2016-10-23  Per Bothner  <per@bothner.com>
+
+	* kawa/swing.scm (picture->panel): Rename to ...
+	(picture->jpanel): new name, which matches documentation.
+	Fixes one of the issues in Savannah bug #49368
+	"very minor typos etc. in (kawa pictures) documentation".
+
+	* kawa/pictures.scm (image-write): Coerce DrawImage to BufferedImage.
+	This is more efficient, and a work-around for Savannah bug #49367
+	"(kawa pictures) image-write gives exception on pictures".
+
+2016-10-22  Per Bothner  <per@bothner.com>
+
+	* std_syntax.scm: Explicitly import 'syntax' and 'syntax-case'.
+	This fixes Savannah bug #49416
+	"Error macro-expanding with-syntax with ... patterns".
+
+	* kawa/base.scm: Also export 'with-syntax'.
+	This fixes a secondary issue reported in Savannah bug #49416
+	"Error macro-expanding with-syntax with ... patterns".
+
+2016-10-12  Per Bothner  <per@bothner.com>
+
+	* kawa/pprint.scm (pprint-let): Fix missing parens in cond.
+
+2016-10-11  Per Bothner  <per@bothner.com>
+
+	* kawa/pprint.scm: Add pretty-printing API,
+	simmilar to Common Lisp and Clojure.
+	* Makefile.am: Update accordingly.
+
+2016-10-05  Per Bothner  <per@bothner.com>
+
+	* kawa/pictures.scm (translate, scale): Allow dimension argument.
+
+2016-10-03  Per Bothner  <per@bothner.com>
+
+	Support optional 'spacing' between hbox/vbox children.
+	* kawa/pictures.scm (hbox, vbox, zbox):  Use new factory methods.
+
+2016-10-01  Per Bothner  <per@bothner.com>
+
+	* kawa/pictures.scm (picture-write-svg, picture->svg-node):
+	New procedures.
+
+2016-09-29  Per Bothner  <per@bothner.com>
+
+	* kawa/pictures.scm (padding, image-write, ->image): New procedures.
+	Add add and use some type aliases.
+
+	* kawa/swing.scm: New (kawa swing) library.
+	(frame): moved from gnu/kawa/slib/swing.scm.
+	(current-frame: New parameter.
+	(set-frame-size!, show-picture: New procedures.
+	* kawa/process-keywords.scm: New library.
+	* Makefile.am: Update accordingly.
+
+	* kawa/pictures.scm (Dimension): Remove class definition.
+	(make-Dimension): Use new DDimension class instead.
+
+2016-09-28  Per Bothner  <per@bothner.com>
+
+	* kawa/pictures.scm (border, border-shape, re-center): New functions.
+
+	* kawa/pictures.scm (rectangle): Fix logic bug.
+
+2016-09-03  Per Bothner  <per@bothner.com>
+
+	* kawa/regex.scm (regex-replace*): Add cast needed on Java 9.
+
+2016-09-02  Per Bothner  <per@bothner.com>
+
+	* syntax.scm: Implement pseudo-ranges [<:] and [>:].
+
+2016-08-31  Per Bothner  <per@bothner.com>
+
+	* syntax.scm: Add more options for range syntax.
+
+2016-08-25  Per Bothner  <per@bothner.com>
+
+	* prim_imports.scm: Add import of 'syntax-error'.  This fixes
+	Savannah bug #48888 "warning - no declaration seen for syntax-error".
+
+2016-08-12  Per Bothner  <per@bothner.com>
+
+	* ports.java(write, display, etc): Don't initailize sharing/cycle
+	table here - it noew happens automatically in DisplayFormat.
+
+2016-07-26  Per Bothner  <per@bothner.com>
+
+	* kawa/pictures.scm (draw): Generalize by using DrawShape:makeDraw.
+
+	* kawa/pictures.scm (image): New procedure.
+
+2016-07-22  Per Bothner  <per@bothner.com>
+
+	* kawa/pictures.scm (rectangle, with-transform,
+	rotate, scale, translate, affine-transform): New procedures.
+
+(2016-07-18  Per Bothner  <per@bothner.com>
 
 	* kawa/pictures.scm (with-paint): Moved from gui.scm.
 	 (picture-bounds, zbox, ->paint, ->picture): New procedures.

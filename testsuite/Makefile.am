@@ -2,8 +2,8 @@
 
 SUFFIXES = .java .class .scm .el .lisp
 
-KAWALIB = ../lib/kawa-$(VERSION).jar
-KAWARTLIB = ../lib/kawart-$(VERSION).jar
+KAWALIB = ../lib/kawa.jar
+KAWARTLIB = ../lib/kawart.jar
 KAWA = ../bin/kawa.sh
 CPJAVA = CLASSPATH="..$(CLASSPATH_SEPARATOR)@conf_classpath@.$(CLASSPATH_SEPARATOR)$$CLASSPATH" $(JAVA)
 CPKAWA = CLASSPATH="@conf_classpath@.$(CLASSPATH_SEPARATOR)$$CLASSPATH" $(KAWA)
@@ -705,6 +705,7 @@ LARCENY_TEST_FILES =\
     larceny-tests/tests/scheme/load-test1.scm \
     larceny-tests/tests/scheme/load-test2.scm \
     larceny-tests/tests/scheme/load-test3.scm \
+  larceny-tests/run/process-context.sps larceny-tests/tests/scheme/process-context.sld \
   larceny-tests/run/read.sps larceny-tests/tests/scheme/read.sld \
   larceny-tests/run/repl.sps larceny-tests/tests/scheme/repl.sld\
     larceny-tests/tests/scheme/repl-test2.scm \
@@ -739,7 +740,8 @@ SCRIPTS_TO_RUN = case-warnings.scm uninit1.scm \
   sva40077.scm sva40494.scm sva40649.scm sva40729.scm sva40814.scm \
   sva42377.scm sva42382.scm sva42689.scm sva42722.scm sva43131.scm \
   sva43750.scm sva47412.scm sva46728.scm sva47651.scm sva47725.scm \
-  sva47863.scm
+  sva47863.scm sva48938.scm sva49416.scm
+
 # Files needed for SCRIPTS_TO_RUN
 AUX_FOR_SCRIPTS_TO_RUN = aux-libs.scm sva46728x.scm sva46728z.scm
 BUILD_BEFORE_SCRIPTS_TO_RUN = sva46728x.class sva46728z.class

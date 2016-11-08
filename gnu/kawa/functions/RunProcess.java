@@ -4,6 +4,8 @@
 package gnu.kawa.functions;
 
 import gnu.expr.Keyword;
+import gnu.kawa.format.AbstractFormat;
+import gnu.kawa.format.DelimitSubstitutionFormat;
 import gnu.kawa.io.BinaryInPort;
 import gnu.kawa.io.BinaryOutPort;
 import gnu.kawa.io.FilePath;
@@ -14,7 +16,6 @@ import gnu.lists.ByteVector;
 import gnu.lists.Consumer;
 import gnu.lists.Strings;
 import gnu.mapping.*;
-import gnu.text.DelimitSubstitutionFormat;
 import java.io.*;
 import java.util.*;
 import java.util.Map;
@@ -280,7 +281,12 @@ public class RunProcess extends ProcedureN {
             errRedirect = OutPort.errDefault();
         }
         /* #ifdef JAVA7 */
-        if (outRedirect == OutPort.getSystemOut()) {
+        BinaryOutPort sysOut = OutPort.getSystemOut();
+        if (outRedirect == null
+            && OutPort.getPassThroughOutPort(consumer) == sysOut)
+            outRedirect = Redirect.INHERIT;
+        if (outRedirect == sysOut
+            && OutPort.getPassThroughOutPort(sysOut) == sysOut) {
             outRedirect = Redirect.INHERIT;
         }
         if (errRedirect == OutPort.getSystemErr()) {
@@ -324,19 +330,19 @@ public class RunProcess extends ProcedureN {
         }
         if (returnBlob) {
             LProcess lproc = new LProcess(proc);
-            if (consumer instanceof OutPort
-                && isDisplayConsumer(consumer)) {
+            OutPort pout = OutPort.getPassThroughOutPort(consumer);
+            if (pout != null) {
                 InputStream in = proc.getInputStream();
-                if (consumer instanceof BinaryOutPort) {
-                    BinaryOutPort bout = (BinaryOutPort) consumer;
+                if (pout instanceof BinaryOutPort) {
+                    BinaryOutPort bout = (BinaryOutPort) pout;
                     byte[] buffer = new byte[2048];
                     for (;;) {
                         int cnt = in.read(buffer, 0, buffer.length);
                         if (cnt < 0)
                             break;
                         bout.writeBytes(buffer, 0, cnt);
-                        bout.flush();
                     }
+                    bout.flush();
                     in.close();
                 }
                 else {
@@ -347,9 +353,9 @@ public class RunProcess extends ProcedureN {
                         int cnt = inr.read(buffer, 0, buffer.length);
                         if (cnt < 0)
                             break;
-                        consumer.write(buffer, 0, cnt);
-                        ((OutPort) consumer).flush();
+                        pout.write(buffer, 0, cnt);
                     }
+                    pout.flush();
                     inr.close();
                 }
             }
@@ -359,17 +365,6 @@ public class RunProcess extends ProcedureN {
         else {
             consumer.writeObject(proc);
         }
-    }
-
-    public static boolean isDisplayConsumer(Consumer out) {
-        if (out instanceof OutPort) {
-            OutPort outp = (OutPort) out;
-            if (outp.objectFormat instanceof DisplayFormat) {
-                return ! ((DisplayFormat) outp.objectFormat)
-                    .getReadableOutput();
-            }
-        }
-        return false;
     }
 
     /** Parse strings into token, handling substitution marks.

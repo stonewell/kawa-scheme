@@ -3,23 +3,32 @@ package gnu.kawa.models;
 import java.awt.Graphics2D;
 import java.awt.Shape;
 import java.awt.geom.*;
-import java.awt.image.BufferedImage;
+import java.util.List;
 
-/** Used to compose Paintables "next to" each other.
+/** Used to compose Pictures "next to" each other.
  * They be put in a row (X-axis), in a column (Y-axis),
  * or on top of each other with same origin (Z-axis).
  */
 
-public class PBox implements Paintable {
+public class PBox implements Picture {
     char axis; // X, Y, or Z
-    Paintable[] paintables;
+    Picture[] children;
     Rectangle2D bounds;
 
     double[] translations;
+    /** Extra spacing between sub-pictures. */
+    double spacing;
 
-    private PBox(char axis, Paintable[] paintables) {
+    private PBox(char axis, Picture[] children) {
         this.axis = axis;
-        this.paintables = paintables;
+        this.children = children;
+        init();
+    }
+
+    private PBox(char axis, double spacing, Picture[] children) {
+        this.axis = axis;
+        this.children = children;
+        this.spacing = spacing;
         init();
     }
 
@@ -28,10 +37,10 @@ public class PBox implements Paintable {
     }
 
     void init() {
-        int n = paintables.length;
+        int n = children.length;
         if (n == 0)
             return;
-        Rectangle2D prevBounds = paintables[0].getBounds2D();
+        Rectangle2D prevBounds = children[0].getBounds2D();
         double minX = prevBounds.getMinX();
         double maxX = prevBounds.getMaxX();
         double minY = prevBounds.getMinY();
@@ -39,15 +48,16 @@ public class PBox implements Paintable {
         double deltaX = 0, deltaY = 0;
         translations = new double[n];
         for (int i = 1; i < n; i++) {
-            Rectangle2D curBounds = paintables[i].getBounds2D();
-            double delta = 0;
+            Rectangle2D curBounds = children[i].getBounds2D();
+            double delta;
             if (axis == 'X') {
-                delta = prevBounds.getMaxX() - curBounds.getMinX();
+                delta = spacing + prevBounds.getMaxX() - curBounds.getMinX();
                 deltaX += delta;
             } else if (axis == 'Y') {
-                delta = prevBounds.getMaxY() - curBounds.getMinY();
+                delta = spacing + prevBounds.getMaxY() - curBounds.getMinY();
                 deltaY += delta;
-            }
+            } else
+                delta = 0;
             translations[i] = delta + translations[i-1];
             double cminX = curBounds.getMinX() + deltaX;
             if (cminX < minX)
@@ -69,7 +79,7 @@ public class PBox implements Paintable {
     public void paint (Graphics2D graphics) {
         AffineTransform saved = graphics.getTransform();
         try {
-            int n = paintables.length;
+            int n = children.length;
             double prevOffset = 0;
             for (int i = 0; i < n; i++) {
                 double offset = translations[i];
@@ -81,37 +91,39 @@ public class PBox implements Paintable {
                         graphics.translate(0, delta);
                 }
                 prevOffset = offset;
-                paintables[i].paint(graphics);
+                children[i].paint(graphics);
             }
         } finally {
             graphics.setTransform(saved);
         }
     }
 
-    public Paintable transform(AffineTransform tr) {
+    public Picture transform(AffineTransform tr) {
         return new WithTransform(this, tr);
     }
-    public static PBox makeHBox(Object... args) {
-        return new PBox('X', asPaintableAll(args));
+
+    public void visit(PictureVisitor visitor) {
+        visitor.visitPBox(this);
     }
-    public static PBox makeVBox(Object... args) {
-        return new PBox('Y', asPaintableAll(args));
+
+    public static PBox makeBox(char axis, Object... args) {
+        int nargs = args.length;
+        int start = 0;
+        double spacing = 0;
+        if (nargs > 0 && args[0] instanceof Number) {
+            start = 1;
+            spacing = ((Number) args[0]).doubleValue();
+        }
+        Picture[] pictures = new Picture[nargs-start];
+        for (int i = start; i < nargs; i++)
+            pictures[i-start] = Pictures.asPicture(args[i]);
+        return new PBox(axis, spacing, pictures);
     }
-    public static PBox makeZBox(Object... args) {
-        return new PBox('Z', asPaintableAll(args));
-    }
-    public static Paintable asPaintable(Object arg) {
-        if (arg instanceof BufferedImage)
-            return new DrawImage((BufferedImage) arg);
-        if (arg instanceof Shape)
-            return new DrawShape((Shape) arg);
-        return (Paintable) arg;
-    }
-    public static Paintable[] asPaintableAll(Object[] args) {
-        int np = args.length;
-        Paintable[] p = new Paintable[np];
-        for (int i = 0; i < np; i++)
-            p[i] = asPaintable(args[i]);
-        return p;
+
+    public static Picture combine(List parts) {
+        int nparts = parts.size();
+        Picture[] pics = new Picture[nparts];
+        parts.toArray(pics);
+        return nparts == 1 ? pics[0] : new PBox('Z', pics);
     }
 }

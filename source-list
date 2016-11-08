@@ -139,7 +139,6 @@ GNU_JEMACS_SWT_JSOURCES =\
 
 GNU_LISTS_JSOURCES = \
   gnu/lists/AbstractCharVector.java \
-  gnu/lists/AbstractFormat.java \
   gnu/lists/AbstractSequence.java \
   gnu/lists/Array.java \
   gnu/lists/Arrays.java \
@@ -309,28 +308,32 @@ GNU_Q2_LANG_JSOURCES = \
   gnu/q2/lang/Q2Translator.java
 
 GNU_TEXT_JSOURCES = \
-  gnu/text/CaseConvertFormat.java \
   gnu/text/Char.java \
-  gnu/text/CompoundFormat.java \
-  gnu/text/DelimitSubstitutionFormat.java \
-  gnu/text/EnglishIntegerFormat.java \
-  gnu/text/FlushFormat.java \
-  gnu/text/IntegerFormat.java \
   gnu/text/Lexer.java \
-  gnu/text/LiteralFormat.java \
   gnu/text/NamedCharTable.java \
   gnu/text/Options.java \
-  gnu/text/PadFormat.java \
-  gnu/text/Printable.java \
-  gnu/text/ReportFormat.java \
   gnu/text/ResourceStreamHandler.java \
-  gnu/text/RomanIntegerFormat.java \
   gnu/text/SourceLocator.java \
   gnu/text/SourceError.java \
   gnu/text/SourceMessages.java \
   gnu/text/StandardNamedChars.java \
   gnu/text/StringCursor.java \
   gnu/text/SyntaxException.java
+
+GNU_KAWA_FORMAT_JSOURCES = \
+  gnu/kawa/format/AbstractFormat.java \
+  gnu/kawa/format/CaseConvertFormat.java \
+  gnu/kawa/format/CompoundFormat.java \
+  gnu/kawa/format/DelimitSubstitutionFormat.java \
+  gnu/kawa/format/EnglishIntegerFormat.java \
+  gnu/kawa/format/FlushFormat.java \
+  gnu/kawa/format/GenericFormat.java \
+  gnu/kawa/format/IntegerFormat.java \
+  gnu/kawa/format/LiteralFormat.java \
+  gnu/kawa/format/PadFormat.java \
+  gnu/kawa/format/Printable.java \
+  gnu/kawa/format/ReportFormat.java \
+  gnu/kawa/format/RomanIntegerFormat.java
 
 GNU_KAWA_FUNCTIONS_JSOURCES = \
   gnu/kawa/functions/AddOp.java \
@@ -378,6 +381,7 @@ GNU_KAWA_FUNCTIONS_JSOURCES = \
   gnu/kawa/functions/Not.java \
   gnu/kawa/functions/NumberCompare.java \
   gnu/kawa/functions/NumberPredicate.java \
+  gnu/kawa/functions/RangeUtils.java \
   gnu/kawa/functions/RunProcess.java \
   gnu/kawa/functions/SetNamedPart.java \
   gnu/kawa/functions/Setter.java \
@@ -502,6 +506,7 @@ GNU_KAWA_MODELS_JSOURCES = \
   gnu/kawa/models/Box.java \
   gnu/kawa/models/Button.java \
   gnu/kawa/models/Column.java \
+  gnu/kawa/models/DDimension.java \
   gnu/kawa/models/Display.java \
   gnu/kawa/models/DrawImage.java \
   gnu/kawa/models/DrawShape.java \
@@ -510,7 +515,10 @@ GNU_KAWA_MODELS_JSOURCES = \
   gnu/kawa/models/Model.java \
   gnu/kawa/models/ModelListener.java \
   gnu/kawa/models/MenuItem.java \
-  gnu/kawa/models/Paintable.java \
+  gnu/kawa/models/Picture.java \
+  gnu/kawa/models/Pictures.java \
+  gnu/kawa/models/PictureToSvg.java \
+  gnu/kawa/models/PictureVisitor.java \
   gnu/kawa/models/PBox.java \
   gnu/kawa/models/Row.java \
   gnu/kawa/models/Spacer.java \
@@ -529,7 +537,7 @@ GNU_KAWA_SWINGVIEWS_JSOURCES =\
   gnu/kawa/swingviews/SwingContent.java \
   gnu/kawa/swingviews/SwingDisplay.java \
   gnu/kawa/swingviews/SwingFrame.java \
-  gnu/kawa/swingviews/SwingPaintable.java
+  gnu/kawa/swingviews/SwingPicture.java
 
 GNU_KAWA_SWTVIEWS_JSOURCES =\
   gnu/kawa/swtviews/SwtDisplay.java
@@ -804,12 +812,12 @@ sources_gnu_core = \
   $(GNU_MAPPING_JSOURCES) \
   $(GNU_MATH_JSOURCES) \
   $(GNU_EXPR_JSOURCES) \
+  $(GNU_KAWA_FORMAT_JSOURCES) \
   $(GNU_KAWA_IO_JSOURCES) \
   $(GNU_KAWA_UTIL_JSOURCES) \
   $(GNU_KAWA_REFLECT_JSOURCES) \
   $(GNU_KAWA_FUNCTIONS_JSOURCES) \
   $(GNU_KAWA_LISPEXPR_JSOURCES) \
-  $(GNU_KAWA_MODELS_JSOURCES) \
   $(GNU_ECMASCRIPT_JSOURCES)
 
 sources_gnu_misc = \
@@ -829,7 +837,7 @@ endif
 if WITH_SWT
 sources_gnu_selected += $(GNU_KAWA_SWTVIEWS_JSOURCES)
 endif
-if WITH_JLINE2
+if WITH_JLINE3
 sources_gnu_selected += $(GNU_KAWA_IO_JLINE_JSOURCES)
 endif
 if ENABLE_XML
@@ -863,7 +871,7 @@ sources_gnu_selected += $(GNU_JEMACS_SWT_JSOURCES)
 endif
 endif
 if WITH_AWT
-sources_kawa_selected += $(KAWA_WITH_AWT_JSOURCES)
+sources_kawa_selected += $(KAWA_WITH_AWT_JSOURCES) $(GNU_KAWA_MODELS_JSOURCES)
 endif
 if WITH_DOMTERM
 sources_kawa_selected += $(KAWA_WITH_DOMTERM)
@@ -878,6 +886,7 @@ dist_jsources = \
   $(GNU_JEMACS_BUFFER_JSOURCES) \
   $(GNU_JEMACS_SWING_JSOURCES) \
   $(GNU_JEMACS_SWT_JSOURCES) \
+  $(GNU_KAWA_MODELS_JSOURCES) \
   $(GNU_KAWA_SWINGVIEWS_JSOURCES) \
   $(GNU_KAWA_SWINGVIEWS_JSOURCES) \
   $(GNU_KAWA_SWTVIEWS_JSOURCES) \

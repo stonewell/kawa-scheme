@@ -1,3 +1,76 @@
+2016-11-05  Per Bothner  <per@bothner.com>
+
+	* Path.java (probeContentType): Make a bit more general and robust.
+	Since URLConnection.guessContentTypeFromName doesn't understand
+	"jar:" scheme, add special hack for it.
+	Hardwire in some extensions not recognized by guessContentTypeFromName.
+
+2016-11-02  Per Bothner  <per@bothner.com>
+
+	* JLineInPort.java (setInDomTerm): New method.
+	Set DELAY_LINE_WRAP option to JLine3 (personal fork).
+
+2016-11-01  Per Bothner  <per@bothner.com>
+
+	* JLineInPort.java (KawaParsedLine): Initialize 'word' field to "".
+	This avoids a NullPointerException.
+
+2016-10-31  Per Bothner  <per@bothner.com>
+
+	* PrettyWriter.java: Change DomTerm support to be more like default.
+	Specifically, maybeOutput may do output even if not flushing.
+	While a lineLength limit isn't relevant, it's good writing
+	things out when we can.  It also avoids a bug with setSharing.
+
+2016-10-30  Per Bothner  <per@bothner.com>
+
+	* JLineInPort.java (maybeColorizePrompt): Colorize default prompts.
+	(promptTemplate1, promptTemplate2): Override.
+
+2016-10-27  Per Bothner  <per@bothner.com>
+
+	* PrettyWriter.java (outputLine): Fix handling of NEWLINE_DUMMY.
+
+2016-10-12  Per Bothner  <per@bothner.com>
+
+	* PrettyWriter.java: Define NEWLINE_DUMMY newline type.
+	This prints nothing, but is used to end "sections".
+
+2016-10-11  Per Bothner  <per@bothner.com>
+
+	* PrettyWriter.java: Fix two small bugs.
+	* OutPort.java (setPrettyPrinting): New method.
+	* PrettyWriter.java: Make some members private. Tweak logging.
+
+2016-09-23  Per Bothner  <per@bothner.com>
+
+	* PrettyWriter.java (maybeOutput): Emit plain newline rather than
+	a "required" newline, when not inside a block.
+
+2016-09-21  Per Bothner  <per@bothner.com>
+
+	* PrettyWriter.java: If DomTerm, don't do line-breaking.
+	Instead send DomTerm-speific escape sequences, so DomTerm
+	can do the line-breaking dynamically.
+	* OutPort.java (setDomTerm): Also setDomTerm on PrettyWriter bout.
+
+2016-09-08  Per Bothner  <per@bothner.com>
+
+	* JLineInPort.java (parse): Check if Language.parse returned null.
+
+2016-09-07  Per Bothner  <per@bothner.com>
+
+	* OutPort.java (formatter): Make non-public.
+	(pushConsumer, popConsumer): Remove unused methods.
+	(getPassThroughOutPort): Moved from AbstractFormat.
+
+2016-08-12  Per Bothner  <per@bothner.com>
+
+	A cleaner format/consumer model.
+	* OutPort.java: Replace 'objectFormat' and 'numberFormat' fields
+	by new 'formatter', initially the PrettyPrinter.
+	* PrettyWriter.java: Change to extend PrintConsumer.
+
 2016-07-18  Per Bothner  <per@bothner.com>
 
 	* WriterManager.java (run): Call flush rather than finalize on ports.

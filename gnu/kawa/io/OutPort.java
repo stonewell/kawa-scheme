@@ -2,7 +2,8 @@ package gnu.kawa.io;
 import java.io.*;
 import gnu.mapping.Environment;
 import gnu.mapping.ThreadLocation;
-import gnu.text.Printable;
+import gnu.kawa.format.Printable;
+import gnu.kawa.format.AbstractFormat;
 import gnu.lists.*;
 
 /**
@@ -11,6 +12,11 @@ import gnu.lists.*;
 
 public class OutPort extends PrintConsumer implements Printable
 {
+    /** Output gets forwarded to the value of this field.
+     * It is initially a PrettyWriter, but other PrintConsumer object
+     * can be interjected for custom formatting or other processing. */
+    PrintConsumer formatter;
+
   Path path;
   protected Writer base;
   static final int FLUSH_ON_FINALIZE = 1;
@@ -31,8 +37,9 @@ public class OutPort extends PrintConsumer implements Printable
 
   protected OutPort(Writer base, PrettyWriter out, boolean autoflush)
   {
-    super(out, autoflush);
+    super((Consumer) out, autoflush);
     this.bout = out;
+    this.formatter = bout;
     this.base = base;
     if (closeOnExit())
       unregisterRef = WriterManager.instance.register(this);
@@ -93,8 +100,6 @@ public class OutPort extends PrintConsumer implements Printable
     this.path = path;
   }
 
-  public boolean printReadable;
-
     static BinaryOutPort outInitial
         = BinaryOutPort.makeStandardPort(System.out, "/dev/stdout");
     static { outInitial.flags = FLUSH_ON_FINALIZE; }
@@ -131,10 +136,6 @@ public class OutPort extends PrintConsumer implements Printable
   {
     errLocation.set(e);
   }
-
-    public PrettyWriter getPrettyWriter() {
-        return bout;
-    }
 
     public boolean isPrettyPrinting() { return bout.isPrettyPrinting(); }
 
@@ -211,56 +212,34 @@ public class OutPort extends PrintConsumer implements Printable
     return Character.isJavaIdentifierPart(ch) || ch == '-' || ch == '+';
   }
 
-  //  java.text.FieldPosition fieldPosition;
-
-  /** If non-null, use this to print numbers. */
-  java.text.NumberFormat numberFormat;
-
-  public AbstractFormat objectFormat;
-
   @Override
   public void print(int v)
   {
-    if (numberFormat == null)
-      super.print(v);
-    else
-      print(numberFormat.format((long) v));
+    formatter.writeInt(v);
   }
 
   @Override
   public void print(long v)
   {
-    if (numberFormat == null)
-      super.print(v);
-    else
-      print(numberFormat.format(v));
+    formatter.writeLong(v);
   }
 
   @Override
   public void print(double v)
   {
-    if (numberFormat == null)
-      super.print(v);
-    else
-      print(numberFormat.format(v));
+    formatter.writeDouble(v);
   }
 
   @Override
   public void print(float v)
   {
-    if (numberFormat == null)
-      super.print(v);
-    else
-      print(numberFormat.format((double) v));
+    formatter.writeFloat(v);
   }
 
   @Override
   public void print(boolean v)
   {
-    if (objectFormat == null)
-      super.print(v);
-    else
-      objectFormat.writeBoolean(v, this);
+    formatter.writeBoolean(v);
   }
 
   @Override
@@ -272,12 +251,7 @@ public class OutPort extends PrintConsumer implements Printable
   @Override
   public void print(Object v)
   {
-    if (objectFormat != null)
-      objectFormat.writeObject(v, this);
-    else if (v instanceof Consumable)
-      ((Consumable) v).consume(this);
-    else
-      super.print(v == null ? "null" : v);
+    formatter.writeObject(v);
   }
 
   public void print (Consumer out)
@@ -291,25 +265,26 @@ public class OutPort extends PrintConsumer implements Printable
     out.write('>');
   }
 
-  @Override
+    @Override
+    public void startDocument() {
+        formatter.startDocument();
+    }
+
+    @Override
+    public void endDocument() {
+        formatter.endDocument();
+    }
+
+   @Override
   public void startElement (Object type)
   {
-    if (objectFormat != null)
-      objectFormat.startElement(type, this);
-    else
-      {
-	print('(');
-	print(type);
-      }
+    formatter.startElement(type);
   }
 
   @Override
   public void endElement ()
   {
-    if (objectFormat != null)
-      objectFormat.endElement(this);
-    else
-      print(')');
+    formatter.endElement();
   }
 
   /** Write a attribute for the current element.
@@ -317,30 +292,60 @@ public class OutPort extends PrintConsumer implements Printable
   @Override
   public void startAttribute (Object attrType)
   {
-    if (objectFormat != null)
-      objectFormat.startAttribute(attrType, this);
-    else
-      {
-        print(' ');
-        print(attrType);
-        print(": ");
-      }
+    formatter.startAttribute(attrType);
   }
 
   /** No more attributes in this element. */
   @Override
   public void endAttribute()
   {
-    if (objectFormat != null)
-      objectFormat.endAttribute(this);
-    else
-      print(' ');
+    formatter.endAttribute();
   }
 
-  /** Note the end of a "word".  See {@link #writeWordStart}. */
+    public void write(char[] str, int start, int count) {
+        formatter.write(str, start, count);
+    }
+
+    public void write(String str) {
+        formatter.write(str, 0, str.length());
+    }
+
+    public void write(String str, int start, int count) {
+        formatter.write(str, start, count);
+    }
+
+    public void write(CharSequence str, int start, int count) {
+        formatter.write(str, start, count);
+    }
+
+    public void writeObject(Object v) {
+        formatter.writeObject(v);
+    }
+
+    public void writeComment(char[] chars, int offset, int length) {
+        formatter.writeComment(chars, offset, length);
+    }
+
+    public void writeProcessingInstruction(String target, char[] content,
+                                           int offset, int length) {
+        formatter.writeProcessingInstruction(target, content, offset, length);
+    }
+
+    public void writeCDATA(char[] chars, int offset, int length) {
+        formatter.writeCDATA(chars, offset, length);
+    }
+
+    public void beginEntity (Object baseUri) {
+        formatter.beginEntity(baseUri);
+    }
+    public void endEntity() {
+        formatter.endEntity();
+    }
+
+    /** Note the end of a "word".  See {@link #writeWordStart}. */
   public void writeWordEnd ()
   {
-    bout.writeWordEnd();
+    formatter.writeWordEnd();
   }
 
   /** Maybe write a word-separating space.
@@ -349,8 +354,17 @@ public class OutPort extends PrintConsumer implements Printable
    */
   public void writeWordStart ()
   {
-    bout.writeWordStart();
+    formatter.writeWordStart();
   }
+
+    public Object pushFormat(AbstractFormat format) {
+        Object old = formatter;
+        formatter = format.makeConsumer(formatter);
+        return old;
+    }
+    public void popFormat(Object old) {
+        formatter = (PrintConsumer) old;
+    }
 
   public void freshLine()
   {
@@ -406,6 +420,31 @@ public class OutPort extends PrintConsumer implements Printable
     public void setDomTerm(boolean v) {
         if (v) flags |= IS_DOMTERM;
         else flags &= ~IS_DOMTERM;
+        bout.isDomTerm = v;
+    }
+
+    /** Return an OutPort equivalent to the argumement for text output.
+     * I.e. writing CharSequences or characters to either is the same.
+     * Used to optimize process output.
+     */
+    public static OutPort getPassThroughOutPort(Consumer out) {
+        OutPort port = null;
+        for (;;) {
+            if (out instanceof OutPort) {
+                port = (OutPort) out;
+                PrintConsumer formatter = port.formatter;
+                if (formatter instanceof PrettyWriter)
+                    return port;
+                out = formatter;
+            } else if (out instanceof AbstractFormat.FormatConsumer) {
+                AbstractFormat.FormatConsumer fcons = (AbstractFormat.FormatConsumer) out;
+                if (!  fcons.getFormat().textIsCopied())
+                    return null;
+                out = fcons.getBase();
+            }
+            else
+                return port;
+        }
     }
 
   @Override
@@ -453,11 +492,14 @@ public class OutPort extends PrintConsumer implements Printable
     WriterManager.instance.run();
   }
 
-  public void startLogicalBlock (String prefix, boolean perLine,
-				 String suffix)
-  {
-    bout.startLogicalBlock(prefix, perLine, suffix);
-  }
+    public void setPrettyPrinting (boolean mode) {
+        bout.setPrettyPrinting(mode);
+    }
+
+    public void startLogicalBlock(String prefix, boolean perLine,
+                                  String suffix) {
+        bout.startLogicalBlock(prefix, perLine, suffix);
+    }
 
     public void startLogicalBlock(String prefix, String suffix,
                                   int indent) {
@@ -469,47 +511,24 @@ public class OutPort extends PrintConsumer implements Printable
         }
     }
 
-  public void endLogicalBlock (String suffix)
-  {
-    bout.endLogicalBlock(suffix);
-  }
-
-  public void writeBreak(int kind)
-  {
-    bout.writeBreak(kind);
-  }
-
-    public void writeSpaceLinear() {
-        synchronized(lock) {
-            write(' ');
-            writeBreak(PrettyWriter.NEWLINE_LINEAR);
-        }
+    public void endLogicalBlock(String suffix) {
+        bout.endLogicalBlock(suffix);
     }
 
-  /** Write a new-line iff the containing section cannot be printed
-   * on one line.  Either all linear-style newlines in a logical
-   * block becomes spaces (if it all fits in a line), or none
-   * of them do. */
-  public void writeBreakLinear()
-  {
-    writeBreak(PrettyWriter.NEWLINE_LINEAR);
-  }
+    public void writeBreak(int kind) {
+        bout.writeBreak(kind);
+    }
 
     /** Write a new-line if needed, space otherwise. */
-    public void writeSpaceFill() {
+    public void writeSpace(int kind) {
         synchronized (lock) {
             write(' ');
-            writeBreak(PrettyWriter.NEWLINE_FILL);
+            writeBreak(kind);
         }
     }
 
-  public void writeBreakFill()
-  {
-    writeBreak(PrettyWriter.NEWLINE_FILL);
-  }
-
-  public void setIndentation(int amount, boolean current)
-  {
-    bout.addIndentation(amount, current);
-  }
+    @Override
+    public void setIndentation(int amount, boolean current) {
+        bout.addIndentation(amount, current);
+    }
 }

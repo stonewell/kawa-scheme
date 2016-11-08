@@ -16,11 +16,20 @@ public class StandardColor extends Color {
         super(rgb);
         this.name = name;
     }
+    private StandardColor(String name, int r, int g, int b, int alpha) {
+        super(r, g, b, alpha);
+        this.name = name;
+    }
     private static StandardColor add(String name, int rgb) {
         StandardColor color = new StandardColor(name, rgb);
         map.put(name.replace("-", ""), color);
         return color;
     }
+    private static StandardColor add(StandardColor color) {
+        map.put(color.name.replace("-", ""), color);
+        return color;
+    }
+    public String getName() { return name; }
 
     public static final StandardColor aliceBlue = add("alice-blue", 0xF0F8FF);
     public static final StandardColor antiqueWhite = add("antique-white", 0xFAEBD7);
@@ -169,6 +178,8 @@ public class StandardColor extends Color {
     public static final StandardColor whiteSmoke = add("white-smoke", 0xF5F5F5);
     public static final StandardColor yellow = add("yellow", 0xFFFF00);
     public static final StandardColor yellowGreen = add("yellow-green", 0x9ACD32);
+    public static final StandardColor transparent =
+        add(new StandardColor("transparent", 0, 0, 0, 0));
 
     public static StandardColor valueOf(String name) {
         String cname = name.toLowerCase().replace("-", "");

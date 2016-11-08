@@ -1,4 +1,4 @@
-// Copyright (c) 2001, 2004, 2006  Per M.A. Bothner.
+// Copyright (c) 2001, 2004, 2006, 2016  Per M.A. Bothner.
 // This is free software;  for terms and warranty disclaimer see ./COPYING.
 
 package gnu.kawa.io;
@@ -6,6 +6,8 @@ import gnu.kawa.util.IntHashTable;
 import java.io.*;
 import gnu.mapping.ThreadLocation;
 import gnu.lists.LList;
+import gnu.lists.PrintConsumer;
+import gnu.lists.Strings;
 
 /** 
  * A pretty printer.
@@ -70,10 +72,8 @@ import gnu.lists.LList;
  * @author Charles Turner
  */
 
-public class PrettyWriter extends java.io.Writer
+public class PrettyWriter extends PrintConsumer
 {
-  protected Writer out;
-
   /**
    * Construct a PrettyWriter with {@code prettyPrintingMode = 1}
    * @param out The output to write to
@@ -81,10 +81,9 @@ public class PrettyWriter extends java.io.Writer
    */
   public PrettyWriter(java.io.Writer out)
   {
-    this.out = out;
+    super(out);
     setPrettyPrintingMode(1);
   }
-
   /**
    * Construct a PrettyWriter which breaks on a given line length.
    * If {@code lineLength} is strictly greater than one, 
@@ -96,7 +95,7 @@ public class PrettyWriter extends java.io.Writer
    */
   public PrettyWriter(java.io.Writer out, int lineLength)
   {
-    this.out = out;
+    super(out);
     this.lineLength = lineLength;
     setPrettyPrintingMode(lineLength > 1 ? 1 : 0);
   }
@@ -109,7 +108,7 @@ public class PrettyWriter extends java.io.Writer
    */
   public PrettyWriter(java.io.Writer out, boolean prettyPrintingMode)
   {
-    this.out = out;
+    super(out);
     setPrettyPrintingMode(prettyPrintingMode ? 1 : 0);
   }
 
@@ -125,6 +124,9 @@ public class PrettyWriter extends java.io.Writer
    *  3) is an example of a miser-style printing.
    */
   int miserWidth = 40;
+
+    boolean isDomTerm;
+    public boolean isDomTerm() { return isDomTerm; }
 
   /**
    * This variable is used to determine how the queueInts array should be
@@ -165,11 +167,13 @@ public class PrettyWriter extends java.io.Writer
   
   private IntHashTable idhash;
 
-  public void initialiseIDHash ()
-  {
-    Object share = isSharing.get(null);
-    idhash = new IntHashTable();
-  }
+    public boolean initialiseIDHash() {
+        Object share = isSharing.get(null); // FIXME ???
+        if (idhash != null)
+            return false;
+        idhash = new IntHashTable();
+        return true;
+    }
 
   public void clearIDHash()
   {
@@ -181,10 +185,10 @@ public class PrettyWriter extends java.io.Writer
         writeEndOfExpression();
         resolveBackReferences();
         flush();
+        idhash = null;
     }
 
   public int IDHashLookup(Object obj) {
-    if (idhash == null) initialiseIDHash();
     return idhash.lookup(obj);
   }
 
@@ -227,7 +231,7 @@ public class PrettyWriter extends java.io.Writer
    */
   public void setPrettyPrinting (boolean mode)
   {
-    setPrettyPrintingMode(mode ? 0 : 1);
+    setPrettyPrintingMode(mode ? 1 : 0);
   }
 
     /** Should we write directly to out without using buffer?
@@ -349,7 +353,7 @@ public class PrettyWriter extends java.io.Writer
   /** Index in queueInts and queueStrings of oldest enqueued operation. */
   int queueTail;
   /** Number of elements (in queueInts and queueStrings) in use. */
-  int queueSize;
+  private int queueSize;
   /** If >= 0, index (into queueInts) of current unclosed begin-block node.
    * This is a head of a linked linked of queued BLOCK_START for which
    * we haven't seen the matching BLOCK_END  */
@@ -406,6 +410,9 @@ public class PrettyWriter extends java.io.Writer
   public static final int NEWLINE_SPACE = 'S';
   public static final int NEWLINE_MISER = 'M';
   public static final int NEWLINE_MANDATORY = 'R';  // "required"
+  /** Treat like NEWLINE_LITERAL in terms of ending sections,
+   * but don't actually print anything. */
+  public static final int NEWLINE_DUMMY = 'D';
 
   static final int QITEM_INDENTATION_TYPE = 3;
   static final int QITEM_INDENTATION_SIZE = QITEM_BASE_SIZE + 2;
@@ -567,10 +574,10 @@ public class PrettyWriter extends java.io.Writer
     wordEndSeen = false;
   }
 
-  public void clearWordEnd ()
-  {
-    wordEndSeen = false;
-  }
+    @Override
+    protected void clearWordEnd () {
+        wordEndSeen = false;
+    }
 
   /**
    * Write a character to the buffer. If we're pretty printing and the character
@@ -731,6 +738,7 @@ public class PrettyWriter extends java.io.Writer
 
     private void writeToBase(char[] buf, int start, int count) {
         try {
+            //log("writeToBase: "+ gnu.lists.Strings.toJson(new String(buf,start,count)));
             out.write(buf, start, count);
         } catch (IOException ex) {
             throw new RuntimeException(ex);
@@ -739,6 +747,7 @@ public class PrettyWriter extends java.io.Writer
     
     private void writeToBase(String str, int start, int count) {
         try {
+            //log("writeToBase: "+ gnu.lists.Strings.toJson(str.substring(start,start+count)));
             out.write(str, start, count);
         } catch (IOException ex) {
             throw new RuntimeException(ex);
@@ -748,8 +757,10 @@ public class PrettyWriter extends java.io.Writer
     private void writeToBase(String str) {
         writeToBase(str, 0, str.length());
     }
+
     private void writeToBase(int ch) {
         try {
+            //log("writeToBase: "+ gnu.lists.Strings.toJson(String.valueOf((char) ch))+"="+ch);
             out.write(ch);
         } catch (IOException ex) {
             throw new RuntimeException(ex);
@@ -911,7 +922,7 @@ public class PrettyWriter extends java.io.Writer
     return scaled > enough ? scaled : enough;
   }
 
-  public void setIndentation (int column)
+  private void setIndentation(int column)
   {
     char[] prefix = this.prefix;
     int prefixLen = prefix.length;
@@ -985,9 +996,9 @@ public class PrettyWriter extends java.io.Writer
             System.arraycopy(queueStrings, 0, newStrings, 0, queueStrings.length);
           }
         else // shift the old items to the top, and insert from the front of a doubled array
-          {            
+          {
             //log("non-sharing expand: oldLength="+oldLength+" newLength="+newLength+" queueTail="+queueTail);
-            
+
             int queueHead = queueTail + queueSize - oldLength;
             if (queueHead > 0)
               { // Wraps around.
@@ -1063,13 +1074,22 @@ public class PrettyWriter extends java.io.Writer
 	entry += size;
       }
     if (!sharing) //!!
-      maybeOutput (kind == NEWLINE_LITERAL || kind == NEWLINE_MANDATORY, false);
+      maybeOutput (kind == NEWLINE_LITERAL || kind == NEWLINE_MANDATORY || kind == NEWLINE_DUMMY, false);
   }
 
   public final void writeBreak(int kind)
   {
     if (prettyPrintingMode > 0 || sharing) //!!
       enqueueNewline(kind);
+  }
+
+  /** Write a new-line iff the containing section cannot be printed
+   * on one line.  Either all linear-style newlines in a logical
+   * block becomes spaces (if it all fits in a line), or none
+   * of them do. */
+  public void writeBreakLinear()
+  {
+    writeBreak(PrettyWriter.NEWLINE_LINEAR);
   }
 
   public int enqueueIndent (char kind, int amount)
@@ -1112,7 +1132,7 @@ public class PrettyWriter extends java.io.Writer
         Object indent = indentLoc.get(null);
         // if (indent == null || indent ...
       }
-    if (prefix != null)
+    if (prefix != null && ! (perLine && isDomTerm()))
       write(prefix);
     if (prettyPrintingMode == 0)
       return;
@@ -1352,9 +1372,9 @@ public class PrettyWriter extends java.io.Writer
     int available = length - fillPtr;
     if (available > 0)
       return available;
-    else if (out != null && fillPtr > lineLength && !sharing)
+    else if (out != null && fillPtr > lineLength && !sharing && ! isDomTerm())
       {
-	if (! maybeOutput(false, false))
+        if (! maybeOutput(false, false))
 	  outputPartialLine();
 	return ensureSpaceInBuffer(want);
       }
@@ -1381,7 +1401,7 @@ public class PrettyWriter extends java.io.Writer
   boolean maybeOutput(boolean forceNewlines, boolean flushing)
   {
     boolean outputAnything = false;
-    //log("maybeOutput("+forceNewlines+"):");  dumpQueue();
+    //log("maybeOutput("+forceNewlines+","+flushing+"):");  dumpQueue();
   loop:
     while (queueSize > 0)
       {
@@ -1389,6 +1409,55 @@ public class PrettyWriter extends java.io.Writer
 	  queueTail = 0;
 	int next = queueTail;
 	int type = getQueueType(next);
+        if (isDomTerm()) {
+            if (bufferFillPointer > 0 && type != QITEM_NEWLINE_TYPE && type != QITEM_NOP_TYPE) {
+                int count = posnIndex(queueInts[next+QITEM_POSN]);
+                if (count > 0) {
+                    writeToBase(buffer, 0, count);
+                    System.arraycopy(buffer, count, buffer, 0, bufferFillPointer-count);
+                    bufferOffset += count;
+                    bufferFillPointer -= count;
+                    bufferStartColumn += count;
+                }
+            }
+	switch (type)
+	  {
+	  case QITEM_NEWLINE_TYPE:
+            outputAnything = true;
+            outputLine(next, flushing);
+	    break;
+	  case QITEM_INDENTATION_TYPE:
+            if (! isMisering())
+	      {
+		int kind = queueInts[next+QITEM_INDENTATION_KIND];
+		int indent = queueInts[next+QITEM_INDENTATION_AMOUNT];
+                boolean blockRelative = kind == QITEM_INDENTATION_BLOCK;
+                writeToBase("\033]"
+                            +(blockRelative ? "113" : "112")
+                            + ";" + indent + "\007");
+	      }
+	    break;
+	  case QITEM_BLOCK_START_TYPE:
+            String prefix = queueStrings[next + QITEM_BLOCK_START_PREFIX];
+            StringBuilder sbuf = new StringBuilder("\033]110;");
+            if (prefix != null)
+                Strings.printJson(prefix, sbuf);
+            sbuf.append("\007");
+            writeToBase(sbuf.toString());
+            pushLogicalBlock(posnColumn(queueInts[next + QITEM_POSN]),
+                             0, 0, 0, 0);
+            break;
+	  case QITEM_BLOCK_END_TYPE:
+              writeToBase("\033]111\007");
+              blockDepth -= LOGICAL_BLOCK_LENGTH;  // Pop
+              break;
+	  case QITEM_TAB_TYPE:
+            // if (isDomTerm()) ??? FIXME
+	    expandTabs(next);
+	    break;
+	  }
+        }
+        else
 	switch (type)
 	  {
 	  case QITEM_NEWLINE_TYPE:
@@ -1396,7 +1465,7 @@ public class PrettyWriter extends java.io.Writer
             int fits = -1;
 	    switch (queueInts[next+QITEM_NEWLINE_KIND])
 	      {
-	      default: // LINEAR, LITERAL, or MANDATORY:
+	      default: // LINEAR, LITERAL, DUMMY, or MANDATORY:
 		cond = true;
 		break;
 	      case NEWLINE_MISER:
@@ -1435,15 +1504,15 @@ public class PrettyWriter extends java.io.Writer
 		if (flushing && fits == 0)
                   outputPartialLine();
                 else
-                  outputLine(next);
+                  outputLine(next, flushing);
 	      }
 	    break;
 	  case QITEM_INDENTATION_TYPE:
-	    if (! isMisering())
+            if (! isMisering())
 	      {
 		int kind = queueInts[next+QITEM_INDENTATION_KIND];
 		int indent = queueInts[next+QITEM_INDENTATION_AMOUNT];
-		if (kind == QITEM_INDENTATION_BLOCK)
+                if (kind == QITEM_INDENTATION_BLOCK)
 		  indent += getStartColumn();
 		else
 		  indent += posnColumn(queueInts[next+QITEM_POSN]);
@@ -1485,7 +1554,7 @@ public class PrettyWriter extends java.io.Writer
 	    break;
 	  case QITEM_BLOCK_END_TYPE:
 	    //log("reallyEndLogicalBlock: "+blockDepth+" at:"+next);
-	    reallyEndLogicalBlock();
+            reallyEndLogicalBlock();
 	    break;
 	  case QITEM_TAB_TYPE:
 	    expandTabs(next);
@@ -1550,14 +1619,15 @@ public class PrettyWriter extends java.io.Writer
   /** Output a new line.
    * @param newline index of a newline queue item
    */
-  void outputLine (int newline)
+  private void outputLine (int newline, boolean flushing)
   {
+    //log("outputLine newline:"+newline+" flushing:"+flushing);
     char[] buffer = this.buffer;
     int kind = queueInts[newline + QITEM_NEWLINE_KIND];
     boolean isLiteral = kind == NEWLINE_LITERAL;
     int amountToConsume = posnIndex(queueInts[newline + QITEM_POSN]);
     int amountToPrint;
-    if (isLiteral)
+    if (isLiteral || kind == NEWLINE_DUMMY || isDomTerm())
       amountToPrint = amountToConsume;
     else
       {
@@ -1578,7 +1648,6 @@ public class PrettyWriter extends java.io.Writer
       }
     writeToBase(buffer, 0, amountToPrint);
     int lineNumber = this.lineNumber;
-    //log("outputLine#"+lineNumber+": \""+new String(buffer, 0, amountToPrint)+"\" curBlock:"+currentBlock);
     lineNumber++;
     if (! printReadably())
       {
@@ -1598,8 +1667,32 @@ public class PrettyWriter extends java.io.Writer
 	  }
       }
     this.lineNumber = lineNumber;
-    writeToBase('\n');
-    bufferStartColumn = 0;
+    if (kind ==  NEWLINE_DUMMY) {
+        // emit nothing
+    } else if (isDomTerm()) {
+        String cmd;
+        switch (kind) {
+        case NEWLINE_FILL:
+        case NEWLINE_SPACE:
+            cmd = "\033]115\007"; break;
+        case NEWLINE_LINEAR:
+            cmd = "\033]116\007"; break;
+        case NEWLINE_MISER:
+            cmd = "\033]117\007"; break;
+        case NEWLINE_LITERAL:
+            if (blockDepth == LOGICAL_BLOCK_LENGTH) {
+                cmd = "\n";
+                break;
+            }
+            // else fall through
+        default:
+            cmd = "\033]118\007"; break;
+        }
+        writeToBase(cmd);
+    } else {
+        writeToBase('\n');
+    }
+    bufferStartColumn = kind != NEWLINE_DUMMY ? 0 : getColumnNumber();
     int fillPtr = bufferFillPointer;
     int prefixLen = isLiteral ? getPerLinePrefixEnd() : getPrefixLength();
     int shift = amountToConsume - prefixLen;
@@ -1785,6 +1878,7 @@ public class PrettyWriter extends java.io.Writer
 
   public void forcePrettyOutput ()
   {
+    enqueueNewline(NEWLINE_DUMMY);
     maybeOutput(false, true);
     if (bufferFillPointer > 0)
       outputPartialLine();
@@ -1810,12 +1904,12 @@ public class PrettyWriter extends java.io.Writer
       }
   }
 
-  public void close()  throws IOException
+  public void close()
   {
     if (out != null)
-      { 
+      {
 	forcePrettyOutput();
-        out.close();
+        super.close();
         out = null;
       }
     buffer = null;
@@ -2072,6 +2166,7 @@ public class PrettyWriter extends java.io.Writer
 	      {
 	      case NEWLINE_LINEAR:    skind = "linear";    break;
 	      case NEWLINE_LITERAL:   skind = "literal";   break;
+	      case NEWLINE_DUMMY:     skind = "dummy";   break;
 	      case NEWLINE_FILL:      skind = "fill";      break;
 	      case NEWLINE_SPACE:     skind = "space";      break;
 	      case NEWLINE_MISER:     skind = "miser";     break;

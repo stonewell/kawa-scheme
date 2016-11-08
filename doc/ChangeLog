@@ -1,3 +1,166 @@
+2016-11-05  Per Bothner  <per@bothner.com>
+
+	* style/kawa-ebook.js: Use '#' (hash) rather than '?' (query) to
+	control sidebar.  This seems to work better with the "jar:" scheme
+	and generally is more robust.
+	* with-frames.html (setHash): Use to visibly update location bar.
+	(framesetUnloaded): Send message to server on window-close.
+	* style/kawa-ebook.java (onUnload): Likewise.
+
+2016-11-02  Per Bothner  <per@bothner.com>
+
+	* style/kawa-ebook.js: Minor fixes to sidebar generation.
+	Generate sidebar even if "Table of Contents" is in main window.
+
+	* style/kawa-epub.xsl (toc-ref): Override to ToC.xhtml.
+
+2016-11-01  Per Bothner  <per@bothner.com>
+
+	Numerous tweaks to sidebar styling and links.
+	* kawa.texi (Overall Index): Make @appendix, to force outside @part.
+	* Makefile.am: Rename bk01-toc.html to Toc.html.
+	* with-frames.html: Likewise.
+	* style/docbook-to-html.xsl: Add Toc and Index links.
+	* style/kawa.css: Change sidebar color.
+	* style/kawa-ebook.css: Likewise.
+	* style/kawa-ebook.js: Add ToC link.  Enable sidebar styling.
+	* style/kawa-epub.xsl: Remove unused onload/onunload attributes.
+
+	* style/docbook-to-html.xsl: Include 'part' (i.e. the Reference Manual)
+	in navfooter.
+
+	* kawa.texi (Source distribution): Document --with-domterm option.
+	Update --with-jline2 options to --with-jline3.
+
+2016-10-30  Per Bothner  <per@bothner.com>
+
+	* kawa.texi (Prompts): Small enhancements.
+
+2016-10-28  Per Bothner  <per@bothner.com>
+
+	* kawa.texi (Composable pictures): Some small improvements.
+
+2016-10-23  Sudarshan S Chawathe <chaw@eip10.org>
+
+	* kawa.texi (Composable pictures): Various fixes.
+	This fixes Savannah bug #49368
+	"very minor typos etc. in (kawa pictures) documentation".
+
+2016-10-16  Per Bothner  <per@bothner.com>
+
+	* kawa.texi: Document need for running autogen.sh.
+	* news.texi: Fix old typo.
+
+2016-10-14  Sudarshan S Chawathe <chaw@eip10.org>
+            Per Bothner  <per@bothner.com>
+
+	* kawa.texi (Defining new classes): Fix typos.
+
+2016-10-13  Per Bothner  <per@bothner.com>
+
+	* kawa.texi: Document domterm-load-stylesheet. Other changes.
+
+	* Makefile.am (MOSTLYCLEANFILES): Add some TeX temporaries.
+
+	* kawa.texi: Multiple small improvements.
+	* news.texi: Likewise.
+
+2016-10-12  Per Bothner  <per@bothner.com>
+
+	* kawa.texi (Pretty-printing): New section.
+	* news.texi: Various updates.
+
+2016-10-11  Per Bothner  <per@bothner.com>
+
+	* kawa.texi (Tutorial - Picture): More fleshed out.
+
+2016-10-05  Per Bothner  <per@bothner.com>
+
+	* kawa.texi (Composable pictures): More text and examples.
+
+2016-10-01  Per Bothner  <per@bothner.com>
+
+	* kawa.texi (Composable pictures): Document procedures
+	picture-write-svg and picture->svg-node.
+	* kawa.texi: Add @contents for tex output.
+
+2016-09-29  Per Bothner  <per@bothner.com>
+
+	* kawa.texi (Composable pictures): Document Swing features.
+	Document 'padding', 'image-write', and '->image'. Fix typos.
+
+2016-09-28  Per Bothner  <per@bothner.com>
+
+	* kawa.texi: More documentation of 'pictures' library.
+	* images/*.png: More screenshots.
+
+2016-09-23  Per Bothner  <per@bothner.com>
+
+	* Makefile.am: Changes to support images in manual.
+	* doc/images/logo-image-1.png: new screetshot.
+	* kawa.texi: Improved documentation for pictures and for REPL.
+
+	* style/kawa.xsl (html.script, body.attributes): Move to ...
+	* style/kawa-epub.xsl: .. as they are only used with the epub manual.
+
+2016-09-09  Per Bothner  <per@bothner.com>
+
+	* kawa.texi (REPL Console): New section.
+	(New-Window): Merge node into new section.
+
+	Add styling (colors) to doc REPL examples.
+	* Makefile.am (kawa.xml): Insert <prompt> element before <userinput>.
+	* style/docbook-to-html.xsl: Process prompt style.
+	* style/kawa.css: Add actual styles.
+
+2016-09-08  Per Bothner  <per@bothner.com>
+
+	* kawa.texi (Exiting): Update about ctrl-D, which now should work.
+
+2016-09-02  Per Bothner  <per@bothner.com>
+
+	* kawa.texi (Arrays): More array documentation.
+
+2016-08-31  Per Bothner  <per@bothner.com>
+
+	* kawa.texi (Ranges): New section.
+
+2016-08-14  Per Bothner  <per@bothner.com>
+
+	* +default+: No longer need to add "?sidebar" to the URL.
+
+	* Makefile.am (kawa_TEXINFOS): Make sure news.texi is distibuted.
+
+	* kawa.texi (Binary distribution): Rewrite for new zip distribution.
+
+	* style/kawa-ebook.js: More flexible sidebar control.
+
+2016-08-13  Per Bothner  <per@bothner.com>
+
+	* doc/style/kawa-ebook.js: Set target="_blank" for non-retaive links.
+
+	Include News page in the actual Kawa manual.
+	* news.texi: New file. Converted from htl using pandoc.
+	* kawa.texi: Include news.texi.
+	* style/kawa.xsl: Removing adding extra link to news page.
+	* Makefile.am (kawa.xml): Tweak filename for news page.
+
+2016-08-06  Per Bothner  <per@bothner.com>
+
+	* kawa.texi (Composable pictures): New section.
+
+2016-07-30  Per Bothner  <per@bothner.com>
+
+	* kawa-ebook.js: Avoid cross-frame accesses, at least in iframe mode.
+	These accesses are dis-allowed for file: URLs on Chrome.
+
+	* +default+: Fix content-type for html and png files.
+
+2016-07-28  Per Bothner  <per@bothner.com>
+
+	* kawa.texi (Objects): Fix two typos. This fixes Savannah bug #48584
+	"Typos on https://www.gnu.org/software/kawa/tutorial/Objects.html".
+
 2016-07-11  Per Bothner  <per@bothner.com>
 
 	Generate navigation sidebar for epub manual using JavaScript.

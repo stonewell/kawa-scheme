@@ -32,7 +32,9 @@ public class Range<E> extends AbstractSequence<E> implements AVector<E> {
     @Override
     public int size() { return size; }
 
-    boolean isUnbounded() { return size == -1; }
+    public boolean isUnbounded() { return size < 0; }
+    public boolean isUnspecifiedStart() { return size == -2; }
+    public boolean isUnspecifiedLast() { return isUnbounded(); }
 
     public static class IntRange extends Range<Integer>
         implements IntSequence, Externalizable {
@@ -52,6 +54,7 @@ public class Range<E> extends AbstractSequence<E> implements AVector<E> {
         }
 
         public int getStartInt() { return istart; }
+        public int getLastInt() { return istart + (size - 1) * istep; }
         public int getStepInt() { return istep; }
 
         public int getInt(int index) {
@@ -126,75 +129,37 @@ public class Range<E> extends AbstractSequence<E> implements AVector<E> {
 
     public static final IntRange zeroAndUp = new IntRange(0, 1);
 
-    public static Range<?> valueOfUnbounded(Object start) {
-        IntNum iistart = IntNum.asIntNumOrNull(start);
-        if (iistart != null && iistart.inIntRange()) {
-             int istart = iistart.intValue();
-             return new IntRange(istart, 1);
-        }
-        return new Range<Object>(start, IntNum.one(), -1);
+    public static IntRange upto(IntNum iistart, IntNum iistep, IntNum iiend, boolean orEqual) {
+        int istart = iistart.intValue();
+        int istep = iistep.intValue();
+        IntNum size = IntNum.sub(iiend, iistart);
+        if (istep != 1)
+            size = IntNum.quotient(size, iistep,
+                                   orEqual ? IntNum.TRUNCATE : IntNum.CEILING);
+        int isize;
+        if (size.sign() < 0)
+            isize = 0;
+        else if (IntNum.compare(size, Integer.MAX_VALUE - (orEqual ? 1 : 0)) > 0)
+            throw new IndexOutOfBoundsException("size too large");
+        else
+            isize = size.intValue() + (orEqual ? 1 : 0);
+        return new IntRange(istart, istep, isize);
     }
-
-    public static Range<?> valueOfLT(Object start, Object end) {
-        IntNum iistart = IntNum.asIntNumOrNull(start);
-        IntNum iiend = IntNum.asIntNumOrNull(end);
-        if (iistart != null && iiend != null
-            && iistart.inIntRange() && iiend.inIntRange()) {
-            int istart = iistart.intValue();
-            int iend = iiend.intValue();
-            if (iend >= istart)
-                return new IntRange(istart, 1, iend-istart);
-        } else {
-            int size = ((Number) AddOp.$Mn(end, start)).intValue();
-            if (size >= 0)
-                return new Range<Object>(start, IntNum.one(), size);
-        }
-        throw new IndexOutOfBoundsException("start index "+start+" is greater than end index "+end);
-    }
-
-    public static Range<?> valueOfLE(Object start, Object end) {
-        IntNum iistart = IntNum.asIntNumOrNull(start);
-        IntNum iiend = IntNum.asIntNumOrNull(end);
-        if (iistart != null && iiend != null
-            && iistart.inIntRange() && iiend.inIntRange()
-            && iiend.intValue() != Integer.MAX_VALUE) {
-            int istart = iistart.intValue();
-            int iend = iiend.intValue() + 1;
-            if (iend >= istart)
-                return new IntRange(istart, 1, iend-istart);
-        } else {
-            int size = ((Number) AddOp.$Mn(end, start)).intValue() + 1;
-            if (size >= 0)
-                return new Range<Object>(start, IntNum.one(), size);
-        }
-        throw new IndexOutOfBoundsException("size (end-start+1 or "+end+"-"+start+"+1) is negative");
-    }
-
-    public static Range<?> valueOfGT(Object start, Object end) {
-        if (start instanceof Integer && end instanceof Integer) {
-            int istart = (Integer) start;
-            int iend = (Integer) end;
-            if (iend <= istart)
-                return new IntRange(istart, -1, iend-istart);
-        } else {
-            int size = ((Number) AddOp.$Mn(start, end)).intValue();
-            if (size >= 0)
-                return new Range<Object>(start, IntNum.minusOne(), size);
-        }
-        throw new IndexOutOfBoundsException("start index "+start+" is less than end index "+end);
-    }
-
-    public static Range<?> valueOfGE(Object start, Object end) {
-        if (start instanceof Integer && end instanceof Integer) {
-            int istart = (Integer) start;
-            int iend = (Integer) end;
-            if (iend <= istart)
-                return new IntRange(istart, -1, iend-istart+1);
-        } else {
-            int size = ((Number) AddOp.$Mn(start, end)).intValue() + 1;
-            if (size >= 0)
-                return new Range<Object>(start, IntNum.minusOne(), size);
-        }
-        throw new IndexOutOfBoundsException("size (start-end+1 or "+start+"-"+end+"+1) is negative");
+    public static IntRange downto(IntNum iistart, IntNum iistep, IntNum iiend, boolean orEqual) {
+        int istart = iistart.intValue();
+        int istep = iistep.intValue();
+        IntNum size = IntNum.sub(iistart, iiend);
+        if (istep != -1)
+            size = IntNum.quotient(size, IntNum.neg(iistep),
+                                   orEqual ? IntNum.TRUNCATE : IntNum.CEILING);
+        int isize;
+        if (size.sign() < 0)
+            isize = 0;
+        else if (IntNum.compare(size, Integer.MAX_VALUE - (orEqual ? 1 : 0)) > 0)
+            throw new IndexOutOfBoundsException("size too large");
+        else
+            isize = size.intValue() + (orEqual ? 1 : 0);
+        return new IntRange(istart, istep, isize);
     }
 }
+
