@@ -33,8 +33,16 @@ public class Strings
         }
         return ch1;
     }
+    public static int indexByCodePoints(CharSequence str, int index) {
+        if (str instanceof IString)
+            return ((IString) str).indexByCodePoints(index);
+        index = Character.offsetByCodePoints(str, 0, index);
+        return Character.codePointAt(str, index);
+    }
 
     public static int sizeInCodePoints(CharSequence str) {
+        if (str instanceof IString)
+            return ((IString) str).lengthByCodePoints();
         int len = str.length();
         int nsurr = 0;
         for (int i = 0; i < len;  ) {

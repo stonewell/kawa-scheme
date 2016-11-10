@@ -63,9 +63,7 @@
   (gnu.lists.Strings:sizeInCodePoints str))
 
 (define (string-ref (str ::java.lang.CharSequence) (k ::int)) ::character
- (as character (java.lang.Character:codePointAt
-                str
-                (java.lang.Character:offsetByCodePoints str 0 k))))
+ (as character (gnu.lists.Strings:indexByCodePoints str k)))
 
 (define (string-set! str::abstract-string k::int char::character)
   ::void

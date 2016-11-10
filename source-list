@@ -168,6 +168,7 @@ GNU_LISTS_JSOURCES = \
   gnu/lists/FVector.java \
   gnu/lists/GeneralArray.java \
   gnu/lists/GeneralArray1.java \
+  gnu/lists/IString.java \
   gnu/lists/ItemPredicate.java \
   gnu/lists/ImmutablePair.java \
   gnu/lists/IndirectIndexedSeq.java \
