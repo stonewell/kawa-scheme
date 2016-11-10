@@ -1758,15 +1758,19 @@ public class LambdaExp extends ScopeExp {
             }
             Expression defaultArg = decl.getInitValue();
             if (defaultArg != null)
-                out.print('(');
+                out.startLogicalBlock("(", false, ")");
             if (decl.getFlag(Declaration.IS_SUPPLIED_PARAMETER)
                 && ! decl.getFlag(Declaration.IS_PARAMETER))
                 out.print("supplied:");
             decl.printInfo(out);
-            if (defaultArg != null && defaultArg != QuoteExp.falseExp) {
-                out.print(" default: ");
-                defaultArg.print(out);
-                out.print(')');
+            if (defaultArg != null) {
+                if (defaultArg != QuoteExp.falseExp) {
+                    out.writeSpaceFill();
+                    out.print("default:");
+                    out.writeSpaceFill();
+                    defaultArg.print(out);
+                }
+                out.endLogicalBlock(")");
             }
             prevMode = mode;
         }
