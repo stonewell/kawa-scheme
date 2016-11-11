@@ -31,11 +31,7 @@ public class StringUtils
     if ((arg == Values.empty || arg == null) && onEmpty != ERROR_VALUE)
       return onEmpty;
     if (arg instanceof UntypedAtomic 
-        /* #ifdef use:java.lang.CharSequence */
         || arg instanceof CharSequence
-        /* #else */
-        // || arg instanceof String
-        /* #endif */
         /* #ifdef use:java.net.URI */
         || arg instanceof java.net.URI
         /* #endif */
@@ -122,20 +118,24 @@ public class StringUtils
     return s.substring(i1, i2);
   }
 
-  public static Object stringLength (Object str)
-  {
-    String s = coerceToString(str, "string-length", 1, "");
-    int slen = s.length();
-    int len = 0;
-    for (int i = 0;  i < slen; )
-      {
-        char ch = s.charAt(i++);
-        if (ch >= 0xD800 && ch < 0xDC00 && i < slen)
-          i++;
-        len++;
-      }
-    return IntNum.make(len);
-  }
+    public static Object stringLength(Object str) {
+        int len;
+        if (str instanceof IString)
+            len = ((IString) str).lengthByCodePoints();
+        else {
+            String s = coerceToString(str, "string-length", 1, "");
+            int slen = s.length();
+            len = 0;
+            for (int i = 0;  i < slen; ) {
+                char ch = s.charAt(i++);
+                if (ch >= 0xD800 && ch < 0xDC00 && i < slen)
+                    i++;
+                len++;
+            }
+        }
+        return IntNum.make(len);
+    }
+        
 
   public static Object substringBefore (Object str, Object find)
   {
