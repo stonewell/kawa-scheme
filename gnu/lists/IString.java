@@ -50,6 +50,12 @@ public class IString implements CharSequence, Externalizable {
     public int indexByCodePoints(int i) {
         if (offsets == null)
             return (int) str.charAt(i);
+        return str.codePointAt(offsetByCodePoints(i));
+    }
+
+    public int offsetByCodePoints(int i) {
+        if (offsets == null)
+            return i;
         if (i < 0 || i >= cplength)
             throw new StringIndexOutOfBoundsException(); // FIXME
         int step = i>>INDEX_STEP_LOG;
@@ -65,15 +71,14 @@ public class IString implements CharSequence, Externalizable {
             ihi = cplength;
             chi = str.length();
         }
-
         // Optimization: all characters in [ilo..ihi)  are in BMP
         if (chi - clo == ihi - ilo)
-            return (int) str.charAt(clo + restStep(i));
+            return clo + restStep(i);
         // Optimization: no characters in range are in BMP
         if (chi - clo == 2 * (ihi - ilo))
-            return str.codePointAt(clo + 2 * restStep(i));
+            return clo + 2 * restStep(i);
         // scan linearly from pos, at most INDEX_STEP-1 characters forward:
-        return str.codePointAt(str.offsetByCodePoints(clo, restStep(i)));
+        return str.offsetByCodePoints(clo, restStep(i));
     }
 
     /* used for string-length */

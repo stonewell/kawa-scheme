@@ -40,7 +40,19 @@ public class Strings
         return Character.codePointAt(str, index);
     }
 
-    public static int sizeInCodePoints(CharSequence str) {
+    /** Like offsetByCodePoints, but optimize if an IString.
+     * @param number of code points beyond start index.
+     * @param cuStart start index in code units (Java chars)
+     * @param cpStart start index in Unicode code points
+     */
+    public static int offsetByCodePoints(CharSequence str, int offset,
+                                         int cuStart, int cpStart) {
+        if (str instanceof IString)
+            return ((IString) str).indexByCodePoints(cpStart+offset);
+        return Character.offsetByCodePoints(str, cuStart, offset);
+    }
+
+   public static int sizeInCodePoints(CharSequence str) {
         if (str instanceof IString)
             return ((IString) str).lengthByCodePoints();
         int len = str.length();

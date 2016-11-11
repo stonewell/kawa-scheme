@@ -34,14 +34,14 @@
 (define-syntax with-start-end
   (syntax-rules ()
     ((_ str (start end) (cstart cend) . body)
-     (let* ((cstart (java.lang.Character:offsetByCodePoints str 0 start))
+     (let* ((cstart (gnu.lists.Strings:offsetByCodePoints str start 0 0))
             (cend (cond ((= end -1) (str:length))
                         ((< end start)
                          (primitive-throw
                           (java.lang.StringIndexOutOfBoundsException)))
                         (else
-                         (java.lang.Character:offsetByCodePoints
-                          str cstart (- end start))))))
+                         (gnu.lists.Strings:offsetByCodePoints
+                          str (- end start) cstart start)))))
        . body))))
 
 (define (string? x) :: <boolean>
