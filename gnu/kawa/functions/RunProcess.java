@@ -24,6 +24,8 @@ import java.lang.ProcessBuilder.Redirect;
 /* #endif */
 /* #ifdef use:java.lang.invoke */
 import java.lang.invoke.*;
+/* #else */
+// import gnu.mapping.CallContext.MethodHandle; 
 /* #endif */
 
 /** The Kawa run-process command builds and runs a Process.

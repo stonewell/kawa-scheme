@@ -6,6 +6,8 @@ import gnu.mapping.*;
 import gnu.kawa.reflect.Invoke;
 /* #ifdef use:java.lang.invoke */
 import java.lang.invoke.*;
+/* #else */
+// import gnu.mapping.CallContext.MethodHandle; 
 /* #endif */
 import gnu.lists.*;
 import java.util.List;

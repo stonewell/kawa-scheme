@@ -12,6 +12,8 @@ import gnu.kawa.functions.*;
 import gnu.kawa.reflect.OccurrenceType;
 /* #ifdef use:java.lang.invoke */
 import java.lang.invoke.*;
+/* #else */
+// import gnu.mapping.CallContext.MethodHandle; 
 /* #endif */
 
 /** Implements XPath path expression.

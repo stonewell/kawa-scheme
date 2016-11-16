@@ -4,7 +4,9 @@ import gnu.bytecode.*;
 import gnu.mapping.*;
 import gnu.expr.*;
 /* #ifdef use:java.lang.invoke */
-import java.lang.invoke.*;
+import java.lang.invoke.MethodHandle;
+/* #else */
+// import gnu.mapping.CallContext.MethodHandle; 
 /* #endif */
 
 /**
@@ -15,15 +17,9 @@ import java.lang.invoke.*;
 
 public class CallCC extends MethodProc implements Inlineable
 {
-    public static final MethodHandle applyToConsumerCC;
-    static {
-        MethodHandles.Lookup lookup = MethodHandles.lookup();
-        try {
-            applyToConsumerCC = lookup.findStatic(CallCC.class, "applyToConsumerCC", applyMethodType);
-        } catch (Exception ex) {
-            throw new RuntimeException(ex);
-        }
-    }
+    public static final MethodHandle applyToConsumerCC
+        = lookupApplyHandle(CallCC.class , "applyToConsumerCC");
+
     public static final CallCC callcc = new CallCC();
 
     CallCC() {

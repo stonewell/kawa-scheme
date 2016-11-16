@@ -5,7 +5,9 @@ package gnu.expr;
 import gnu.mapping.*;
 import gnu.bytecode.Type;
 /* #ifdef use:java.lang.invoke */
-import java.lang.invoke.*;
+import java.lang.invoke.MethodHandle;
+/* #else */
+// import gnu.mapping.CallContext.MethodHandle; 
 /* #endif */
 
 /** A collection of MethodProcs;  one is chosen at apply time. */
@@ -181,13 +183,6 @@ public class GenericProc extends MethodProc
 
     return result;
   }
-    public static final MethodHandle applyToConsumerGP;
-    static {
-        MethodHandles.Lookup lookup = MethodHandles.lookup();
-        try {
-            applyToConsumerGP = lookup.findStatic(GenericProc.class, "applyToConsumerGP", applyMethodType);
-        } catch (Exception ex) {
-            throw new RuntimeException(ex);
-        }
-    }
+    public static final MethodHandle applyToConsumerGP
+        = lookupApplyHandle(GenericProc.class, "applyToConsumerGP");
 }

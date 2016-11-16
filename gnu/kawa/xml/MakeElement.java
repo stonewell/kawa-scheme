@@ -9,6 +9,8 @@ import gnu.expr.*;
 import gnu.xml.*;
 /* #ifdef use:java.lang.invoke */
 import java.lang.invoke.*;
+/* #else */
+// import gnu.mapping.CallContext.MethodHandle; 
 /* #endif */
 
 public class MakeElement extends NodeConstructor {

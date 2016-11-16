@@ -4,6 +4,8 @@ import gnu.mapping.*;
 import java.lang.reflect.Array;
 /* #ifdef use:java.lang.invoke */
 import java.lang.invoke.*;
+/* #else */
+// import gnu.mapping.CallContext.MethodHandle; 
 /* #endif */
 
 /** Implement the standard Scheme function "apply".

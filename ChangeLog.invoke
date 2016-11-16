@@ -1,3 +1,9 @@
+2016-11-15  Per Bothner  <per@bothner.com>
+
+	Implement an alternative to MethodHandle for Java6 and Android.
+	* gnu/mapping/CallContext.java (class MethodHandle): New member class.
+	(class ReflectMethodHandle): MethodHandle "shim" using reflection.
+
 For kawa/ChangeLog:
 
 2015-08-10  Per Bothner  <per@bothner.com>

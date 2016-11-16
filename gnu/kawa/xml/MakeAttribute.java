@@ -8,6 +8,8 @@ import gnu.expr.*;
 import gnu.bytecode.*;
 /* #ifdef use:java.lang.invoke */
 import java.lang.invoke.*;
+/* #else */
+// import gnu.mapping.CallContext.MethodHandle; 
 /* #endif */
 
 public class MakeAttribute extends NodeConstructor

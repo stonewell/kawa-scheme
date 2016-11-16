@@ -5,7 +5,9 @@ package gnu.expr;
 import gnu.mapping.*;
 import java.lang.reflect.*;
 /* #ifdef use:java.lang.invoke */
-import java.lang.invoke.*;
+import java.lang.invoke.MethodHandle;
+/* #else */
+// import gnu.mapping.CallContext.MethodHandle; 
 /* #endif */
 
 public class CompiledProc extends MethodProc {

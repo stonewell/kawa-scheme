@@ -2,6 +2,8 @@ package gnu.mapping;
 
 /* #ifdef use:java.lang.invoke */
 import java.lang.invoke.*;
+/* #else */
+// import gnu.mapping.CallContext.MethodHandle; 
 /* #endif */
 
 /**
@@ -61,13 +63,6 @@ public abstract class Procedure2 extends Procedure
         return ctx;
     }
 
-    public static final MethodHandle applyToObject;
-    static {
-        try {
-            applyToObject = MethodHandles.lookup()
-                .findStatic(Procedure2.class, "applyToObject", applyMethodType);
-        } catch (Exception ex) {
-            throw new RuntimeException(ex);
-        }
-    }
+    public static final MethodHandle applyToObject
+        = lookupApplyHandle(Procedure2.class, "applyToObject");
 }

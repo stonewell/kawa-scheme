@@ -11,7 +11,9 @@ import gnu.kawa.io.OutPort;
 import gnu.kawa.util.IdentityHashTable;
 import gnu.kawa.reflect.OccurrenceType;
 /* #ifdef use:java.lang.invoke */
-import java.lang.invoke.*;
+import java.lang.invoke.MethodHandle;
+/* #else */
+// import gnu.mapping.CallContext.MethodHandle; 
 /* #endif */
 
 /**

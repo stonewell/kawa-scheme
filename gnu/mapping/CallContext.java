@@ -9,6 +9,8 @@ import gnu.expr.Special;
 import gnu.kawa.util.HeapSort;
 /* #ifdef use:java.lang.invoke */
 import java.lang.invoke.*;
+/* #else */
+// import gnu.mapping.CallContext.MethodHandle; 
 /* #endif */
 
 /** A procedure activation stack (when compiled with explicit stacks). */
@@ -711,6 +713,27 @@ public class CallContext // implements Runnable
     public final void popArgState() {
         vstack.popArgState(this);
     }
+
+    /* #ifndef use:java.lang.invoke */
+    // /** A fake "shim" for MethodHandle, as for Procedure application. */
+    // public static abstract class MethodHandle {
+    //     public abstract Object invokeExact(Procedure proc, CallContext ctx) throws Throwable;
+    // }
+    // /** A implementation of "fake MethodHandle" using reflection. */
+    // public static class ReflectMethodHandle extends MethodHandle {
+    //     java.lang.reflect.Method method;
+    //     public ReflectMethodHandle(java.lang.reflect.Method method) {
+    //         this.method = method;
+    //     }
+    //     public Object invokeExact(Procedure proc, CallContext ctx) throws Throwable {
+    //         try {
+    //             return method.invoke(null, proc, ctx);
+    //         } catch (java.lang.reflect.InvocationTargetException ex) {
+    //             throw ex.getCause();
+    //         }
+    //     }
+    // }
+    /* #endif */
 }
 
 /* CPS:

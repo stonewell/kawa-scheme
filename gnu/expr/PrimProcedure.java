@@ -5,6 +5,8 @@ package gnu.expr;
 
 /* #ifdef use:java.lang.invoke */
 import java.lang.invoke.*;
+/* #else */
+// import gnu.mapping.CallContext.MethodHandle; 
 /* #endif */
 import gnu.bytecode.*;
 import gnu.mapping.*;
@@ -1295,14 +1297,6 @@ public class PrimProcedure extends MethodProc {
     ps.print ('>');
   }
 
-    public static final MethodHandle applyToConsumer;
-    static {
-        MethodHandles.Lookup lookup = MethodHandles.lookup();
-        try {
-            applyToConsumer = lookup.findStatic(PrimProcedure.class, "applyToConsumer", applyMethodType);
-        } catch (Exception ex) {
-            throw new RuntimeException(ex);
-        }
-    }
-
+    public static final MethodHandle applyToConsumer
+        = lookupApplyHandle(PrimProcedure.class, "applyToConsumer");
 }

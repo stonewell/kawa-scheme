@@ -7,6 +7,8 @@ import gnu.mapping.*;
 import java.io.*;
 /* #ifdef use:java.lang.invoke */
 import java.lang.invoke.*;
+/* #else */
+// import gnu.mapping.CallContext.MethodHandle; 
 /* #endif */
 
 /** Abstract class that scans part of a node tree.

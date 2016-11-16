@@ -20,6 +20,8 @@ import gnu.lists.U8Vector;
 import java.util.*;
 /* #ifdef use:java.lang.invoke */
 import java.lang.invoke.*;
+/* #else */
+// import gnu.mapping.CallContext.MethodHandle; 
 /* #endif */
 
 /** A wrapper around a class type.

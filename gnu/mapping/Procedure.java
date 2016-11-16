@@ -5,8 +5,9 @@ package gnu.mapping;
 
 /* #ifdef use:java.lang.invoke */
 import java.lang.invoke.*;
+/* #else */
+// import gnu.mapping.CallContext.MethodHandle; 
 /* #endif */
-
 /**
  * The abstract parent for all Scheme functions.
  * @author  Per Bothner
@@ -101,7 +102,6 @@ public class Procedure extends PropertySet
         setName(n);
     }
 
-    /* #ifdef use:java.lang.invoke */
     public Procedure(boolean resultGoesToConsumer, MethodHandle applyMethod) {
         if (resultGoesToConsumer) {
             applyToConsumerMethod = applyMethod;
@@ -115,7 +115,6 @@ public class Procedure extends PropertySet
         this(resultGoesToConsumer, applyMethod);
         setName(n);
     }
-    /* #endif */
 
     public void checkBadCode(CallContext ctx) {
         int code = 0; // FIXME
@@ -274,15 +273,25 @@ public class Procedure extends PropertySet
 
     public static MethodHandle lookupApplyHandle(Class clas, String mname) {
         try {
+            /* #ifdef use:java.lang.invoke */
             return MethodHandles.lookup()
                 .findStatic(clas, mname, applyMethodType);
+            /* #else */
+            // return new CallContext.ReflectMethodHandle(clas.getDeclaredMethod(mname, applyMethodType));
+            /* #endif */
         } catch (Exception ex) {
             throw new RuntimeException(ex);
         }
     }
 
+    /* #ifdef use:java.lang.invoke */
     public static final MethodType applyMethodType =
         MethodType.methodType(Object.class, Procedure.class, CallContext.class); 
+    /* #else */
+    // public static final Class[] applyMethodType =
+    // { Procedure.class, CallContext.class }; 
+    /* #endif */
+
     public static final MethodHandle applyToObjectDefault
         = lookupApplyHandle(Procedure.class, "applyToObjectDefault");
     public static final MethodHandle applyToConsumerDefault

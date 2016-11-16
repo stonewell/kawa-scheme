@@ -2,6 +2,8 @@ package gnu.mapping;
 
 /* #ifdef use:java.lang.invoke */
 import java.lang.invoke.*;
+/* #else */
+// import gnu.mapping.CallContext.MethodHandle; 
 /* #endif */
 
 /**
@@ -11,7 +13,6 @@ import java.lang.invoke.*;
 
 public abstract class ProcedureN extends Procedure
 {
-    /* #ifdef use:java.lang.invoke */
     public ProcedureN() {
         super(false, ProcedureN.applyToObject);
     }
@@ -32,7 +33,6 @@ public abstract class ProcedureN extends Procedure
     public ProcedureN(MethodHandle applyMethod, String n) {
         super(false, applyMethod, n);
     }
-    /* #endif */
 
     public static final Object[] noArgs = new Object[0];
 

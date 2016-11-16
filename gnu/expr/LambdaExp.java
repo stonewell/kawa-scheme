@@ -12,6 +12,8 @@ import java.util.*;
 import java.lang.annotation.ElementType;
 /* #ifdef use:java.lang.invoke */
 import java.lang.invoke.*;
+/* #else */
+// import gnu.mapping.CallContext.MethodHandle; 
 /* #endif */
 
 /**
@@ -1919,7 +1921,7 @@ public class LambdaExp extends ScopeExp {
         return calledInit;
     }
 
-    static class Closure extends MethodProc {
+    public static class Closure extends MethodProc {
         Object[][] evalFrames;
         LambdaExp lambda;
 
@@ -2075,14 +2077,7 @@ public class LambdaExp extends ScopeExp {
         }
     }
 
-    public static final MethodHandle applyToConsumer;
-    static {
-        MethodHandles.Lookup lookup = MethodHandles.lookup();
-        try {
-            applyToConsumer = lookup.findStatic(Closure.class, "applyToConsumer", applyMethodType);
-        } catch (Exception ex) {
-            throw new RuntimeException(ex);
-        }
-    }
+    public static final MethodHandle applyToConsumer
+        = lookupApplyHandle(Closure.class , "applyToConsumer");
 
 }

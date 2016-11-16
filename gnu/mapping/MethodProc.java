@@ -7,6 +7,8 @@ import gnu.bytecode.ArrayType;
 import gnu.expr.PrimProcedure;
 /* #ifdef use:java.lang.invoke */
 import java.lang.invoke.*;
+/* #else */
+// import gnu.mapping.CallContext.MethodHandle; 
 /* #endif */
 
 /** Similar to a CLOS method.
@@ -225,13 +227,6 @@ public abstract class MethodProc extends ProcedureN
         return null;
         */
     }
-    public static final MethodHandle applyToConsumerDefaultMP;
-    static {
-        MethodHandles.Lookup lookup = MethodHandles.lookup();
-        try {
-            applyToConsumerDefaultMP = lookup.findStatic(MethodProc.class, "applyToConsumerDefaultMP", applyMethodType);
-        } catch (Exception ex) {
-            throw new RuntimeException(ex);
-        }
-    }
+    public static final MethodHandle applyToConsumerDefaultMP
+        = lookupApplyHandle(MethodProc.class, "applyToConsumerDefaultMP");
 }

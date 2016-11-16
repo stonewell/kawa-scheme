@@ -6,6 +6,11 @@ public class ProcInitializer extends Initializer
 {
     LambdaExp proc;
 
+    /* #ifndef use:java.lang.invoke */
+    static final Method lookupApplyHandleMethod =
+        Compilation.typeProcedure.getDeclaredMethod("lookupApplyHandle", 2);
+    /* #endif */
+
     public ProcInitializer(LambdaExp lexp, Compilation comp, Field field) {
         this.field = field;
         proc = lexp;
@@ -90,7 +95,13 @@ public class ProcInitializer extends Initializer
             }
             code.emitLoad(comp.moduleInstanceVar);
         }
-        code.emitPushMethodHandle(proc.checkMethod);
+        /* #ifdef use:java.lang.invoke */
+        // code.emitPushMethodHandle(proc.checkMethod);
+        /* #else */
+        comp.loadClassRef(proc.checkMethod.getDeclaringClass());
+        code.emitPushString(proc.checkMethod.getName());
+        code.emitInvokeStatic(lookupApplyHandleMethod);
+        /* #endif */
         comp.compileConstant(pname, Target.pushObject);
         // If there are keyword arguments, we treat that as "unlimited" maxArgs,
         // so that ModuleBody.matchX methods call matchN.  A kludge, I guess.

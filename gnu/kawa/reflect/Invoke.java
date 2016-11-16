@@ -9,7 +9,9 @@ import gnu.kawa.lispexpr.ClassNamespace; // FIXME
 import gnu.kawa.lispexpr.LangObjType;
 import java.lang.reflect.Array;
 /* #ifdef use:java.lang.invoke */
-import java.lang.invoke.*;
+import java.lang.invoke.MethodHandle;
+/* #else */
+// import gnu.mapping.CallContext.MethodHandle; 
 /* #endif */
 
 public class Invoke extends Procedure

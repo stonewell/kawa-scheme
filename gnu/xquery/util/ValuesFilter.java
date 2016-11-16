@@ -13,6 +13,8 @@ import gnu.kawa.functions.NumberCompare;
 import gnu.kawa.functions.ValuesMap;
 /* #ifdef use:java.lang.invoke */
 import java.lang.invoke.*;
+/* #else */
+// import gnu.mapping.CallContext.MethodHandle; 
 /* #endif */
 
 public class ValuesFilter extends MethodProc implements Inlineable

@@ -27,6 +27,8 @@ import java.lang.reflect.Proxy;
 import java.lang.annotation.ElementType;
 /* #ifdef use:java.lang.invoke */
 import java.lang.invoke.*;
+/* #else */
+// import gnu.mapping.CallContext.MethodHandle; 
 /* #endif */
 
 /**
