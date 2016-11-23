@@ -255,6 +255,7 @@ install-binSCRIPTS: $(bin_SCRIPTS)
 	test -z "$(bindir)" || $(mkdir_p) "$(DESTDIR)$(bindir)"
 	$(INSTALL_SCRIPT) bin/qexo $(DESTDIR)$(bindir)/qexo
 if ! ENABLE_KAWA_FRONTEND
+	-rm -f $(DESTDIR)$(bindir)/kawa
 	cd $(DESTDIR)$(bindir) && \
 	  $(LN_S) $(datadir)/kawa/bin/kawa kawa
 endif
@@ -271,14 +272,17 @@ install-jar:
 	$(INSTALL_DATA) lib/kawa.jar \
 	  $(DESTDIR)$(datadir)/kawa/lib/$(KAWAJAR)
 if WITH_DOMTERM
+	-rm -f $(DESTDIR)$(datadir)/kawa/lib/domterm.jar
 	cd $(DESTDIR)$(datadir)/kawa/lib && \
 	  $(LN_S) @WITH_DOMTERM_ARG@ domterm.jar
 endif
 if ENABLE_SERVLET
+	-rm -f $(DESTDIR)$(datadir)/kawa/lib/servlet.jar
 	cd $(DESTDIR)$(datadir)/kawa/lib && \
 	  $(LN_S) @WITH_SERVLET_ARG@ servlet.jar
 endif
 if WITH_JLINE3
+	-rm -f $(DESTDIR)$(datadir)/kawa/lib/jline.jar
 	cd $(DESTDIR)$(datadir)/kawa/lib && \
 	  $(LN_S) @WITH_JLINE_PATH@ jline.jar
 endif

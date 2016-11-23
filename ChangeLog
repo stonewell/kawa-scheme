@@ -1,3 +1,7 @@
+2016-11-22  Per Bothner  <per@bothner.com>
+
+	* Makefile.am: Fixes so 'make install' twice in a row works.
+
 2016-11-20  Per Bothner  <per@bothner.com>
 
 	* configure.in (AC_INIT): Set version to 2.2.1.
