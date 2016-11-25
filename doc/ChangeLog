@@ -1,6 +1,6 @@
 2016-11-24  Per Bothner  <per@bothner.com>
 
-	Improve sidebar top of manual.
+	Improve top of sidebar of manual.
 	* doc/Makefile.am: Copy kawa-logo.png to kawa-manual.epub.
 	* doc/style/kawa-ebook.css: Float logo next to manual title.
 	* doc/style/kawa-ebook.js: Improve sidebar to match statically
