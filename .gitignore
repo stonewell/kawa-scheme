@@ -37,3 +37,11 @@ doc/web
 kawa/Version.java
 lib/
 testsuite/scribble.html
+testsuite/testing.zip
+testsuite/tmp*
+testsuite/HelloCgi?
+testsuite/knucleotide-input.txt
+testsuite/regexdna-input.txt
+testsuite/revcomp-input.txt
+gnu/xquery/testsuite/tmp*
+**/testsuite/*.log
