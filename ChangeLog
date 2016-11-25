@@ -1,3 +1,8 @@
+2016-11-25  Per Bothner  <per@bothner.com>
+
+	* configure.ac: Add --with-docbook-stylesheets option.
+	* doc/Makefile.am: Make use of it.
+
 2016-11-22  Per Bothner  <per@bothner.com>
 
 	* Makefile.am: Fixes so 'make install' twice in a row works.

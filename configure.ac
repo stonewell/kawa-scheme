@@ -7,6 +7,9 @@ AC_CANONICAL_HOST
 
 AM_INIT_AUTOMAKE([info-in-builddir])
 
+AC_ARG_WITH(docbook-stylesheets,
+  AS_HELP_STRING(--with-docbook-stylesheets=path,Building icely-formatted documentation))
+
 dnl AC_ARG_WITH(classpath,[  --with-classpath          Path to Java classes], classpath=$withval, classpath=$$CLASSPATH)
 AC_ARG_ENABLE(kawa-frontend,
   [  --enable-kawa-frontend  Build "kawa" front-end program using readline],
@@ -184,9 +187,17 @@ AM_CONDITIONAL(WITH_AWT, test "$with_awt" != "no")
 AM_CONDITIONAL(WITH_SAX2, test "$with_sax2" != "no")
 AM_CONDITIONAL(WITH_JAVAX_SCRIPT, test "$with_javax_script" = "yes")
 AM_CONDITIONAL(WITH_HTTPSERVER, test "$with_httpserver" = "yes")
+AM_CONDITIONAL(WITH_DOCBOOK_STYLESHEETS, test "$with_docbook_stylesheets" != "" -a "$with_docbook_stylesheets" != "no")
 AM_CONDITIONAL(WITH_XQTS, test "$with_XQTS" != "" -a "$with_XQTS" != "no")
 AM_CONDITIONAL(ENABLE_KAWA_FRONTEND, test "$enable_kawa_frontend" = "yes")
 AM_CONDITIONAL(ON_WINDOWS, test "$CLASSPATH_SEPARATOR" = ";")
+
+if test "$with_docbook_stylesheets" == "" -o "$with_docbook_stylesheets" == "no" -o  "$with_docbook_stylesheets" == "yes"
+then
+DOCBOOK_STYLESHEETS_PATH='$(TOP_BUILDDIR)/docbook-xsl'
+else
+DOCBOOK_STYLESHEETS_PATH="${with_docbook_stylesheets}"
+fi
 
 if test "$with_jline3" != "" -a "$with_jline3" != "no"
 then WITH_JLINE_PATH="${with_jline3}"
@@ -205,6 +216,7 @@ esac
 
 XQTS_PATH=${with_XQTS:-XQTS}
 AC_SUBST(XQTS_PATH)
+AC_SUBST(DOCBOOK_STYLESHEETS_PATH)
 AC_SUBST(SAX2_PREPROCESS)
 AC_SUBST(conf_classpath)
 AC_SUBST(run_classpath)

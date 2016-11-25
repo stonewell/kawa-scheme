@@ -2,6 +2,10 @@ SUFFIXES = .pdf
 # We cannot build kawa.dvi because of the png-only images
 DVIS =
 
+if WITH_DOCBOOK_STYLESHEETS
+all-local: kawa-manual.epub
+endif
+
 kawa.txt:  $(srcdir)/kawa.texi version.texi
 	$(MAKEINFO) -I$(srcdir) \
 	    --no-split --no-headers --paragraph-indent=asis $< -o - \
@@ -112,8 +116,8 @@ kawa.xml: $(srcdir)/kawa.texi
 
 XSLT = xsltproc
 HTML_TARGET_DIRECTORY = $(builddir)/web
-# Either override this, or set up a symlink to the DocBook XSL stylesheets.
-DOCBOOK_XSL_DIR = ../../docbook-xsl
+
+DOCBOOK_XSL_DIR = @DOCBOOK_STYLESHEETS_PATH@
 
 $(HTML_TARGET_DIRECTORY)/index.html: kawa.xml Makefile
 	sed \
