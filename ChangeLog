@@ -1,5 +1,8 @@
 2016-11-25  Per Bothner  <per@bothner.com>
 
+	* README.md: Convert to Markdown from README.
+	This is better for the gitlab Kawa home page.
+
 	* Makefile.am: Update --version output for git.
 
 	* configure.ac: Add --with-docbook-stylesheets option.
