@@ -309,11 +309,11 @@ uninstall-bytecode-jar:
 	  $(DESTDIR)$(javadir)/bytecode.jar
 
 kawa/Version.java: $(srcdir)/kawa/Version.java.in $(srcdir)/configure.ac
-	test -f $(srcdir)/.svn/wc.db \
-	&& SVN_REVISION=`cd $(srcdir) && svnversion 2>/dev/null` \
-	&& test -n "$$SVN_REVISION" \
-	&& SVN_REVISION=" (revision $${SVN_REVISION})"; \
-	sed -e 's|VERSION|@VERSION@'"$$SVN_REVISION|" <$(srcdir)/kawa/Version.java.in >$@
+	test -d $(srcdir)/.git \
+	&& GIT_REVISION=`cd $(srcdir) && git describe --always --dirty --long --tags 2>/dev/null` \
+	&& test -n "$$GIT_REVISION" \
+	&& GIT_REVISION=" (git describe: $${GIT_REVISION})"; \
+	sed -e 's|VERSION|@VERSION@'"$$GIT_REVISION|" <$(srcdir)/kawa/Version.java.in >$@
 
 all-recursive:  kawa/Version.java selected-java-source $(GENERATED_SIMPLEVECTOR_FILES)
 all: lib/kawa.jar lib/kawart.jar $(JLINE_LINK) $(DOMTERM_LINK) $(SERVLET_LINK)

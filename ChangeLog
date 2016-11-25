@@ -1,5 +1,7 @@
 2016-11-25  Per Bothner  <per@bothner.com>
 
+	* Makefile.am: Update --version output for git.
+
 	* configure.ac: Add --with-docbook-stylesheets option.
 	* doc/Makefile.am: Make use of it.
 
