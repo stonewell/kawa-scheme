@@ -56,7 +56,7 @@
       <xsl:with-param name="target.pathname" select="Community.html"/>
     </xsl:call-template>
   </xsl:variable>
-<div class="logo"><a href="{$href}index.html" title="Kawa Home"><img src="{$href}style/kawa-logo.png"/></a></div>
+<div class="logo"><a href="{$href}index.html" title="Kawa Home"><div><img src="{$href}style/kawa-logo.png"/><span>The Kawa Scheme language</span></div></a></div>
 </xsl:template>
 
 </xsl:stylesheet>

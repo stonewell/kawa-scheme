@@ -176,6 +176,7 @@ kawa-manual.epub: kawa.xml Makefile
 	rm ebook/OEBPS/bk01-toc.xhtml
 	cp style/kawa-ebook.css ebook/OEBPS/kawa.css
 	cp style/kawa-ebook.js ebook/OEBPS/kawa-ebook.js
+	cp style/kawa-logo.png ebook/OEBPS/kawa-logo.png
 	cp with-frames.html ebook/OEBPS/with-frames.html
 	mkdir -p ebook/OEBPS/images
 	cp $(DOC_IMAGES) ebook/OEBPS/images/

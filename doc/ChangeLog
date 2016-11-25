@@ -1,3 +1,14 @@
+2016-11-24  Per Bothner  <per@bothner.com>
+
+	Improve sidebar top of manual.
+	* doc/Makefile.am: Copy kawa-logo.png to kawa-manual.epub.
+	* doc/style/kawa-ebook.css: Float logo next to manual title.
+	* doc/style/kawa-ebook.js: Improve sidebar to match statically
+	generated one, including clickable logo and title.
+	* doc/style/kawa-l.css: Various fixes.
+	* doc/style/kawa.css: Resie logo to fit.
+	* doc/style/kawa.xsl: Add title along logo in sidebar.
+
 2016-11-13  Jamison Hope  <jrh@theptrgroup.com>
 
 	* kawa.texi (Quaternions): Fix description of z coordinate.

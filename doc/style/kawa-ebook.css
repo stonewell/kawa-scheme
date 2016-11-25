@@ -37,6 +37,16 @@ iframe {
     border: none
 }
 
+body.toc-sidebar div img {
+    border: none;
+    padding: 4px;
+    float: right;
+    width: 40%;
+    height: auto
+}
+body.toc-sidebar header {
+    font-size: xx-large;
+}
 div.toc ul[toc-detail] {
     display: none
 }
@@ -53,22 +63,22 @@ div.toc li {
   list-style: none }     /* Remove triangle from H2 */
 div.toc ul
 {
-margin: 0;
-padding: 0;
-list-style-type: none;
+    margin: 0px;
+    padding: 0px;
+    list-style-type: none;
 }
-body.toc-sidebar { background-color: #F4FCFF }
+body.toc-sidebar div { padding: 0.4ex; overflow: auto }
+body.toc-sidebar { background-color: #F4FCFF; margin: 0pt }
+body.toc-sidebar a { text-decoration: none }
 div.toc { background-color: #F4FCFF }
 div.toc li { padding: 0px 4px;}
 div.toc li { margin: 0 ; }
-div.toc a { display: block; text-decoration: none }
 
 div.toc nav {padding: 0; margin: 0 }
 div.toc ul {padding: 0; margin: 0 }
 
 div.toc ul ul, div.toc ul ul { margin-left: 1em; }
-div.toc a:hover
-{
-color: #fff;
-background-color: #69C;
+body.toc-sidebar a:hover, body.toc-sidebar a:hover div {
+    color: #fff;
+    background-color: #69C;
 }
