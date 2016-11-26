@@ -1496,7 +1496,7 @@ it enables nicer-looking and more functional documentation.)
 
 The stylesheets are found using @var{path};
 the file @code{@var{path}/epub3/chunk.xsl}.
-(For example, on Fedora 25 @var{path} can be @code{/usr/share/sgml/docbook/xsl-ns-stylesheets-1.79.1}.)
+(For example, on Fedora 25 @var{path} can be @code{/usr/share/sgml/docbook/xsl-ns-stylesheets}.)
 
 @item @code{--with-domterm}
 @itemx @code{--with-domterm=@var{domterm.jar}}

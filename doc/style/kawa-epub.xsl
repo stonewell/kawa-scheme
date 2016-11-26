@@ -1,4 +1,5 @@
 <xsl:stylesheet xmlns:xsl="http://www.w3.org/1999/XSL/Transform"
+                xmlns:d="http://docbook.org/ns/docbook"
                 version="1.0">
 <!--<xsl:import href="html/chunktoc.xsl"/>-->
 <xsl:import href="chunk.xsl"/>
