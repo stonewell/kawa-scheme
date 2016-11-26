@@ -230,9 +230,9 @@
     list on a single line.  Let's put each term in a separate <dt>. -->
 <xsl:template match="d:varlistentry">
     <xsl:call-template name="anchor"/>
-    <xsl:apply-templates select="term"/>
+    <xsl:apply-templates select="d:term"/>
   <dd>
-    <xsl:apply-templates select="listitem"/>
+    <xsl:apply-templates select="d:listitem"/>
   </dd>
 </xsl:template>
 <xsl:template match="d:varlistentry/d:term">
