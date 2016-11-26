@@ -255,6 +255,7 @@ install-binSCRIPTS: $(bin_SCRIPTS)
 	test -z "$(bindir)" || $(mkdir_p) "$(DESTDIR)$(bindir)"
 	$(INSTALL_SCRIPT) bin/qexo $(DESTDIR)$(bindir)/qexo
 if ! ENABLE_KAWA_FRONTEND
+	-rm -f $(DESTDIR)$(bindir)/kawa
 	cd $(DESTDIR)$(bindir) && \
 	  $(LN_S) $(datadir)/kawa/bin/kawa kawa
 endif
@@ -271,14 +272,17 @@ install-jar:
 	$(INSTALL_DATA) lib/kawa.jar \
 	  $(DESTDIR)$(datadir)/kawa/lib/$(KAWAJAR)
 if WITH_DOMTERM
+	-rm -f $(DESTDIR)$(datadir)/kawa/lib/domterm.jar
 	cd $(DESTDIR)$(datadir)/kawa/lib && \
 	  $(LN_S) @WITH_DOMTERM_ARG@ domterm.jar
 endif
 if ENABLE_SERVLET
+	-rm -f $(DESTDIR)$(datadir)/kawa/lib/servlet.jar
 	cd $(DESTDIR)$(datadir)/kawa/lib && \
 	  $(LN_S) @WITH_SERVLET_ARG@ servlet.jar
 endif
 if WITH_JLINE3
+	-rm -f $(DESTDIR)$(datadir)/kawa/lib/jline.jar
 	cd $(DESTDIR)$(datadir)/kawa/lib && \
 	  $(LN_S) @WITH_JLINE_PATH@ jline.jar
 endif
@@ -305,11 +309,11 @@ uninstall-bytecode-jar:
 	  $(DESTDIR)$(javadir)/bytecode.jar
 
 kawa/Version.java: $(srcdir)/kawa/Version.java.in $(srcdir)/configure.ac
-	test -f $(srcdir)/.svn/wc.db \
-	&& SVN_REVISION=`cd $(srcdir) && svnversion 2>/dev/null` \
-	&& test -n "$$SVN_REVISION" \
-	&& SVN_REVISION=" (revision $${SVN_REVISION})"; \
-	sed -e 's|VERSION|@VERSION@'"$$SVN_REVISION|" <$(srcdir)/kawa/Version.java.in >$@
+	test -d $(srcdir)/.git \
+	&& GIT_REVISION=`cd $(srcdir) && git describe --always --dirty --long --tags 2>/dev/null` \
+	&& test -n "$$GIT_REVISION" \
+	&& GIT_REVISION=" (git describe: $${GIT_REVISION})"; \
+	sed -e 's|VERSION|@VERSION@'"$$GIT_REVISION|" <$(srcdir)/kawa/Version.java.in >$@
 
 all-recursive:  kawa/Version.java selected-java-source $(GENERATED_SIMPLEVECTOR_FILES)
 all: lib/kawa.jar lib/kawart.jar $(JLINE_LINK) $(DOMTERM_LINK) $(SERVLET_LINK)

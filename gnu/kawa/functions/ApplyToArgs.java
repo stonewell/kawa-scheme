@@ -61,6 +61,10 @@ public class ApplyToArgs extends ProcedureN
             return ComposedArray.generalIndex((Array) proc, false,
                                               1, args.length-1, args);
         }
+        if (proc instanceof gnu.lists.Array) {
+            return ComposedArray.generalIndex((Array) proc, false,
+                                              1, args.length-1, args);
+        }
         if (proc instanceof List) {
             if (args.length != 2)
                 throw new WrongArguments(this, args.length); // FIXME

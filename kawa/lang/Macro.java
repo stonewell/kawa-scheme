@@ -181,25 +181,17 @@ public class Macro extends Syntax implements Printable, Externalizable
             Object result;
             if (! isHygienic()) {
                 form = Quote.quote(form, tr);
-                int nargs = Translator.listLength(form) - 1;
-                if (nargs < 0)
+                int nargs = Translator.listLength(form);
+                if (nargs <= 0)
                     return tr.syntaxError("invalid macro argument list to "+this);
-                CallContext ctx = CallContext.getInstance();
-                ctx.setupApply(pr);
-                form = ((Pair) form).getCdr();
+                Object[] args = new Object[nargs-1];
                 for (int i = 0;  i < nargs;  i++) {
                     Pair pair = (Pair) form;
-                    Object arg = pair.getCar();
-                    if (arg instanceof Keyword && i + 1 < nargs) {
-                        String key = ((Keyword) arg).getName();
-                        pair = (Pair) pair.getCdr();
-                        ctx.addKey(key, pair.getCar());
-                        i++;
-                    } else
-                        ctx.add(arg);
+                    if (i > 0)
+                        args[i-1] = pair.getCar();
                     form = pair.getCdr();
                 }
-                result = ctx.runUntilValue();
+                result = pr.applyN(args);
             }
             else
                 result = pr.apply1(form);

@@ -8,17 +8,12 @@ body {
   border: 0;
 }
 
-div.navbar {
+div.navcol {
   position: absolute;
-  top: 112px; right: 0.2em; bottom: 0em; left: 0.2em;
-  height: auto;
   overflow: auto;
-}
-
-div.navcol { 
-  position: absolute;
   width: 25%;
   top: 0em; right: 0em; bottom: 0em; left: 0em;
+  overflow: auto;
  }
 
 /* The child selectors are a hack to hide these rules from WinIE6,

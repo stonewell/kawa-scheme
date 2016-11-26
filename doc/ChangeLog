@@ -1,3 +1,37 @@
+2016-11-26  Per Bothner  <per@bothner.com>
+
+	* style/kawa-ebook.css: Add some missing styling.
+	* style/kawa-l.css: Fix navcol styling.
+	* style/kawa.css: Remove extra overflow - which loses on Firefox.
+
+2016-11-25  Per Bothner  <per@bothner.com>
+
+	* kawa.texi: Update due to move to git and gitlab.
+
+2016-11-24  Per Bothner  <per@bothner.com>
+
+	Improve top of sidebar of manual.
+	* doc/Makefile.am: Copy kawa-logo.png to kawa-manual.epub.
+	* doc/style/kawa-ebook.css: Float logo next to manual title.
+	* doc/style/kawa-ebook.js: Improve sidebar to match statically
+	generated one, including clickable logo and title.
+	* doc/style/kawa-l.css: Various fixes.
+	* doc/style/kawa.css: Resie logo to fit.
+	* doc/style/kawa.xsl: Add title along logo in sidebar.
+
+2016-11-13  Jamison Hope  <jrh@theptrgroup.com>
+
+	* kawa.texi (Quaternions): Fix description of z coordinate.
+	This fixes Savannah bug #49596.
+
+2016-11-12  Per Bothner  <per@bothner.com>
+
+	* news.html: Update to reference "Kawa 2.2".
+
+	* Makefile.am (check): Remove rule - fails with 'make distcheck'.
+
+	* Makefile.am: Add -q to zip command, for more diff'able logs.
+
 2016-11-07  Per Bothner  <per@bothner.com>
 
 	* Makefile.am (check): Don't build kawa.pdf - too many warnings.

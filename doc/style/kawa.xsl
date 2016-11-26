@@ -1,4 +1,5 @@
 <xsl:stylesheet xmlns:xsl="http://www.w3.org/1999/XSL/Transform"
+                xmlns:d="http://docbook.org/ns/docbook"
                 version="1.0">
   <!--<xsl:import href="html/chunktoc.xsl"/>-->
 <xsl:import href="chunkfast.xsl"/>
@@ -41,8 +42,8 @@
       <xsl:value-of select="$object/@xml:id"/>
     </xsl:when>
     <!-- If $object has a title child, use that. -->
-    <xsl:when test="$object/title">
-      <xsl:value-of select="translate($object/title,' ','-')"/>
+    <xsl:when test="$object/d:title">
+      <xsl:value-of select="translate($object/d:title,' ','-')"/>
     </xsl:when>
     <xsl:otherwise>
       <xsl:value-of select="generate-id($object)"/>
@@ -56,7 +57,7 @@
       <xsl:with-param name="target.pathname" select="Community.html"/>
     </xsl:call-template>
   </xsl:variable>
-<div class="logo"><a href="{$href}index.html" title="Kawa Home"><img src="{$href}style/kawa-logo.png"/></a></div>
+<div class="logo"><a href="{$href}index.html" title="Kawa Home"><div><img src="{$href}style/kawa-logo.png"/><span>The Kawa Scheme language</span></div></a></div>
 </xsl:template>
 
 </xsl:stylesheet>

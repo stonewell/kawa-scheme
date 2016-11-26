@@ -82,9 +82,39 @@ function updateSidebarForFrameset() {
     var mainFilename = sideWindow.filename(mainWindow.location);
     var sideBody = sideWindow.document.getElementsByTagName("body")[0];
     mainWindow.clearTocStyles(sideBody);
-    mainWindow.scanToc1(sideBody, mainFilename.replace('*', '#'));
+    mainWindow.scanToc(sideBody, mainFilename);
 }
 
+function scanToc(node, current) {
+    scanToc1(node.getElementsByTagName("ul")[0], current.replace('*', '#'));
+}
+function addSidebarHeader(sidebarDoc) {
+    var li = sidebarDoc.getElementsByTagName("li")[0];
+    if (li && li.firstElementChild && li.firstElementChild.tagName == "a"
+        && li.firstElementChild.getAttribute("href") == "index.xhtml")
+        li.parentNode.removeChild(li);
+    var header = sidebarDoc.getElementsByTagName("header")[0];
+    var h1 = sidebarDoc.getElementsByTagName("h1")[0];
+    if (header && h1) {
+        var a = sidebarDoc.createElement("a");
+        a.setAttribute("href", "index.xhtml");
+        a.setAttribute("target", mainTarget);
+        header.appendChild(a);
+        var div = sidebarDoc.createElement("div");
+        a.appendChild(div);
+        var img = sidebarDoc.createElement("img");
+        img.setAttribute("src", "kawa-logo.png");
+        div.appendChild(img);
+        var span = sidebarDoc.createElement("span");
+        span.appendChild(h1.firstChild);
+        div.appendChild(span);
+        h1.parentNode.removeChild(h1);
+    }
+}
+
+/** Scan ToC entries to see which should be hidden.
+* Return 2 if node matches current; 1 if node is ancestor of current; else 0.
+ */
 function scanToc1(node, current) {
     if (node.tagName == "a") { // lowercase "A" for xhtml
         var href = node.getAttribute("href");
@@ -119,8 +149,7 @@ function scanToc1(node, current) {
             break;
         }
     }
-    if (ancestor) {
-    if (ancestor.parentNode && ancestor.parentNode.parentNode) {
+    if (ancestor && ancestor.parentNode && ancestor.parentNode.parentNode) {
         var pparent = ancestor.parentNode.parentNode;
         for (var sib = pparent.firstElementChild; sib; sib = sib.nextElementSibling) {
             if (sib != ancestor.parentNode) {
@@ -129,7 +158,6 @@ function scanToc1(node, current) {
                 }
             }
         }
-    }
     }
     return ancestor ? 1 : 0;
 }
@@ -141,14 +169,16 @@ function onSidebarLoad(evt) {
         top.sidebarLoaded = true;
         if (top.mainLoaded)
             updateSidebarForFrameset();
+        addSidebarHeader(document);
     } else {
         var search = location.hash;
         var mainFilename = search.startsWith("#main=") // FIXME use regex
             ? search.substring(6) : null;
-        if (mainFilename)
-            scanToc1(body,
-                     mainFilename == "ToC.xhtml" ? "index.xhtml"
-                     : mainFilename.replace('*', '#'));
+        if (mainFilename) {
+            scanToc(body,
+                    mainFilename == "ToC.xhtml" ? "index.xhtml" : mainFilename);
+            addSidebarHeader(document);
+        }
     }
     var links = document.getElementsByTagName("a");
     for (var i = links.length; --i >= 0; ) {
@@ -187,9 +217,14 @@ function onSidebarLoad(evt) {
 
 var clickSeen = false;
 function onClick(evt) {
-    if (evt.target
-        && evt.target.nodeName == "a"
-        && evt.target.getAttribute("target") != "_blank")
+    var target = evt.target;
+    if (target.parentNode && target.parentNode.nodeName == "div") // as added by scanTac
+        target = target.parentNode.parentNode;
+    if (target.nodeName == "div")
+        target = target.parentNode;
+    if (target
+        && target.nodeName == "a"
+        && target.getAttribute("target") != "_blank")
         top.clickSeen = true;
 };
 

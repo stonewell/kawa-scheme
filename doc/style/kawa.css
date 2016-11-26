@@ -206,16 +206,24 @@ div.navheader {  border: 2px red } }
 div.navheader a { 
   display: block;
   text-decoration: underline;
- }
+}
 
-div.navcol *.logo { 
-  font-size: xx-large
-}
 div.logo {
-  width:138px;
-  margin:0px auto;
+    padding: 0px;
+    margin: 0px;
 }
-div.logo img { border: none; padding: 10px }
+div.logo a div { padding: 0.4ex; overflow: auto }
+
+div.navcol *.logo span { 
+    font-size: xx-large;
+}
+div.logo img {
+    border: none;
+    padding: 4px;
+    float: right;
+    width: 40%;
+    height: auto
+}
 
 code[class="literal"] strong { color: purple }
 p[class="synopsis"] code strong { color: purple }

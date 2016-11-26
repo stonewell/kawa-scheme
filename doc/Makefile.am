@@ -2,6 +2,10 @@ SUFFIXES = .pdf
 # We cannot build kawa.dvi because of the png-only images
 DVIS =
 
+if WITH_DOCBOOK_STYLESHEETS
+all-local: kawa-manual.epub
+endif
+
 kawa.txt:  $(srcdir)/kawa.texi version.texi
 	$(MAKEINFO) -I$(srcdir) \
 	    --no-split --no-headers --paragraph-indent=asis $< -o - \
@@ -88,8 +92,9 @@ install-html:
 kawa.xml: $(srcdir)/kawa.texi
 	$(MAKEINFO) -I=$(srcdir) --docbook $(srcdir)/kawa.texi -o - | \
 	sed \
+	-e '/<!DOCTYPE book/,/^\]>/d' \
 	-e 's|_002d|-|g' \
-	-e 's|<book id="-" lang="en">|<book id="book" lang="en"><?dbhtml filename="top.html"?>|' \
+	-e 's|<book id="-" lang="en">|<book id="book" xmlns="http://docbook.org/ns/docbook" lang="en"><?dbhtml filename="top.html"?>|' \
 	-e 's|<chapter label="" id="Top">|<chapter label="Top" id="Top"><?dbhtml filename="index.html"?>|' \
 	-e 's|<chapter label="1" id="News">|<chapter label="1" id="News"><?dbhtml filename="news.html"?>|' \
 	-e 's|id="Tutorial">|\0<?dbhtml filename="tutorial/index.html"?>|' \
@@ -112,8 +117,8 @@ kawa.xml: $(srcdir)/kawa.texi
 
 XSLT = xsltproc
 HTML_TARGET_DIRECTORY = $(builddir)/web
-# Either override this, or set up a symlink to the DocBook XSL stylesheets.
-DOCBOOK_XSL_DIR = ../../docbook-xsl
+
+DOCBOOK_XSL_DIR = @DOCBOOK_STYLESHEETS_PATH@
 
 $(HTML_TARGET_DIRECTORY)/index.html: kawa.xml Makefile
 	sed \
@@ -176,9 +181,8 @@ kawa-manual.epub: kawa.xml Makefile
 	rm ebook/OEBPS/bk01-toc.xhtml
 	cp style/kawa-ebook.css ebook/OEBPS/kawa.css
 	cp style/kawa-ebook.js ebook/OEBPS/kawa-ebook.js
+	cp style/kawa-logo.png ebook/OEBPS/kawa-logo.png
 	cp with-frames.html ebook/OEBPS/with-frames.html
 	mkdir -p ebook/OEBPS/images
 	cp $(DOC_IMAGES) ebook/OEBPS/images/
-	cd ebook && zip -r -X ../kawa-manual.epub mimetype META-INF OEBPS
-
-check: kawa-manual.epub
+	cd ebook && zip -r -q -X ../kawa-manual.epub mimetype META-INF OEBPS

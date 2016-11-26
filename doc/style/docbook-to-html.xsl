@@ -4,34 +4,34 @@
 <!ENTITY lowercase "'abcdefghijklmnopqrstuvwxyz'">
 <!ENTITY uppercase "'ABCDEFGHIJKLMNOPQRSTUVWXYZ'">
 
-<!ENTITY primary   'normalize-space(concat(primary/@sortas, primary[not(@sortas)]))'>
-<!ENTITY secondary 'normalize-space(concat(secondary/@sortas, secondary[not(@sortas)]))'>
-<!ENTITY tertiary  'normalize-space(concat(tertiary/@sortas, tertiary[not(@sortas)]))'>
+<!ENTITY primary   'normalize-space(concat(d:primary/@sortas, d:primary[not(@sortas)]))'>
+<!ENTITY secondary 'normalize-space(concat(d:secondary/@sortas, d:secondary[not(@sortas)]))'>
+<!ENTITY tertiary  'normalize-space(concat(d:tertiary/@sortas, d:tertiary[not(@sortas)]))'>
 
-<!ENTITY section   '(ancestor-or-self::set
-                     |ancestor-or-self::book
-                     |ancestor-or-self::part
-                     |ancestor-or-self::reference
-                     |ancestor-or-self::partintro
-                     |ancestor-or-self::chapter
-                     |ancestor-or-self::appendix
-                     |ancestor-or-self::preface
-                     |ancestor-or-self::article
-                     |ancestor-or-self::section
-                     |ancestor-or-self::sect1
-                     |ancestor-or-self::sect2
-                     |ancestor-or-self::sect3
-                     |ancestor-or-self::sect4
-                     |ancestor-or-self::sect5
-                     |ancestor-or-self::refentry
-                     |ancestor-or-self::refsect1
-                     |ancestor-or-self::refsect2
-                     |ancestor-or-self::refsect3
-                     |ancestor-or-self::simplesect
-                     |ancestor-or-self::bibliography
-                     |ancestor-or-self::glossary
-                     |ancestor-or-self::index
-                     |ancestor-or-self::webpage)[last()]'>
+<!ENTITY section   '(ancestor-or-self::d:set
+                     |ancestor-or-self::d:book
+                     |ancestor-or-self::d:part
+                     |ancestor-or-self::d:reference
+                     |ancestor-or-self::d:partintro
+                     |ancestor-or-self::d:chapter
+                     |ancestor-or-self::d:appendix
+                     |ancestor-or-self::d:preface
+                     |ancestor-or-self::d:article
+                     |ancestor-or-self::d:section
+                     |ancestor-or-self::d:sect1
+                     |ancestor-or-self::d:sect2
+                     |ancestor-or-self::d:sect3
+                     |ancestor-or-self::d:sect4
+                     |ancestor-or-self::d:sect5
+                     |ancestor-or-self::d:refentry
+                     |ancestor-or-self::d:refsect1
+                     |ancestor-or-self::d:refsect2
+                     |ancestor-or-self::d:refsect3
+                     |ancestor-or-self::d:simplesect
+                     |ancestor-or-self::d:bibliography
+                     |ancestor-or-self::d:glossary
+                     |ancestor-or-self::d:index
+                     |ancestor-or-self::d:webpage)[last()]'>
 
 <!ENTITY section.id 'generate-id(&section;)'>
 <!ENTITY sep '" "'>
@@ -40,6 +40,7 @@
                 (string-length($role) = 0 and string-length($type) = 0))'>
 ]>
 <xsl:stylesheet xmlns:xsl="http://www.w3.org/1999/XSL/Transform"
+                xmlns:d="http://docbook.org/ns/docbook"
                 version="1.0">
 
 <xsl:param name="top.name">Home</xsl:param>
@@ -84,9 +85,9 @@
 <xsl:template name="extra.footer.navigation">
 </xsl:template>
 
-<xsl:template match="setindex
-                     |book/index
-                     |article/index">
+<xsl:template match="d:setindex
+                     |d:book/d:index
+                     |d:article/d:index">
   <!-- some implementations use completely empty index tags to indicate -->
   <!-- where an automatically generated index should be inserted. so -->
   <!-- if the index is completely empty, skip it. -->
@@ -103,7 +104,7 @@
 </xsl:template>
 
 <!-- value-of $primary moved to mode="reference" -->
-<xsl:template match="indexterm" mode="index-primary">
+<xsl:template match="d:indexterm" mode="index-primary">
   <xsl:param name="scope" select="."/>
   <xsl:param name="role" select="''"/>
   <xsl:param name="type" select="''"/>
@@ -122,7 +123,7 @@
   </xsl:element>
   </xsl:template>
 
-<xsl:template match="indexterm" mode="reference">
+<xsl:template match="d:indexterm" mode="reference">
   <xsl:param name="scope" select="."/>
   <xsl:param name="role" select="''"/>
   <xsl:param name="type" select="''"/>
@@ -131,7 +132,7 @@
       <xsl:element name="a" namespace="{$html.namespace}">
         <xsl:variable name="title">
           <xsl:choose>
-            <xsl:when test="&section;/titleabbrev and $index.prefer.titleabbrev != 0">
+            <xsl:when test="&section;/d:titleabbrev and $index.prefer.titleabbrev != 0">
               <xsl:apply-templates select="&section;" mode="titleabbrev.markup"/>
             </xsl:when>
             <xsl:otherwise>
@@ -143,7 +144,7 @@
         <xsl:attribute name="href">
           <xsl:call-template name="href.target">
             <xsl:with-param name="object" select="."/>
-            <xsl:with-param name="context" select="//index[&scope;][1]"/>
+            <xsl:with-param name="context" select="//d:index[&scope;][1]"/>
           </xsl:call-template>
         </xsl:attribute>
 
@@ -151,12 +152,12 @@
 	  <xsl:value-of select="local-name()"/>
         </xsl:attribute>
 
-	<xsl:value-of select="primary"/>
+	<xsl:value-of select="d:primary"/>
       </xsl:element><xsl:value-of select="$separator"/>
       <xsl:element name="a" namespace="{$html.namespace}">
         <xsl:variable name="title">
           <xsl:choose>
-            <xsl:when test="&section;/titleabbrev and $index.prefer.titleabbrev != 0">
+            <xsl:when test="&section;/d:titleabbrev and $index.prefer.titleabbrev != 0">
               <xsl:apply-templates select="&section;" mode="titleabbrev.markup"/>
             </xsl:when>
             <xsl:otherwise>
@@ -169,7 +170,7 @@
           <xsl:call-template name="href.target">
             <xsl:with-param name="object" select="."/>
             <xsl:with-param name="object" select="&section;"/>
-            <xsl:with-param name="context" select="//index[&scope;][1]"/>
+            <xsl:with-param name="context" select="//d:index[&scope;][1]"/>
           </xsl:call-template>
         </xsl:attribute>
 
@@ -191,25 +192,25 @@
       </xsl:if>
 </xsl:template>
 
-<xsl:template match="prompt">
+<xsl:template match="d:prompt">
   <xsl:element name="span" namespace="{$html.namespace}"><xsl:attribute name="class">prompt</xsl:attribute><xsl:apply-templates/></xsl:element>
 </xsl:template>
 
-<xsl:template match="synopsis">
-  <xsl:element name="p" namespace="{$html.namespace}"><xsl:attribute name="class"><xsl:value-of select="name(.)"/></xsl:attribute><xsl:attribute name="kind"><xsl:value-of select="phrase[@role='category']/emphasis"/></xsl:attribute>
-    <!--kind="phrase[@role='category']/emphasis">-->
+<xsl:template match="d:synopsis">
+  <xsl:element name="p" namespace="{$html.namespace}"><xsl:attribute name="class"><xsl:value-of select="name(.)"/></xsl:attribute><xsl:attribute name="kind"><xsl:value-of select="d:phrase[@role='category']/d:emphasis"/></xsl:attribute>
+    <!--kind="d:phrase[@role='category']/d:emphasis">-->
 <!--
     <xsl:if test="@role">
       <span class="kind"><xsl:value-of select="@role"/></span><span class="ignore">: </span>
     </xsl:if>
 -->
-    <xsl:if test="phrase[@role='category']">
-      <xsl:element name="span" namespace="{$html.namespace}"><xsl:attribute name="class">kind</xsl:attribute><xsl:value-of select="phrase[@role='category']/emphasis"/></xsl:element><xsl:element name="span" namespace="{$html.namespace}"><xsl:attribute name="class">ignore</xsl:attribute>: </xsl:element>
+    <xsl:if test="d:phrase[@role='category']">
+      <xsl:element name="span" namespace="{$html.namespace}"><xsl:attribute name="class">kind</xsl:attribute><xsl:value-of select="d:phrase[@role='category']/d:emphasis"/></xsl:element><xsl:element name="span" namespace="{$html.namespace}"><xsl:attribute name="class">ignore</xsl:attribute>: </xsl:element>
     </xsl:if>
     <xsl:apply-templates/>
   </xsl:element>
 </xsl:template>
-<xsl:template match="synopsis/phrase[@role='category']">
+<xsl:template match="d:synopsis/d:phrase[@role='category']">
 </xsl:template>
 
 <!--
@@ -227,14 +228,14 @@
 
 <!--The distributed stylesheets emit the <term>s as a comma-separate
     list on a single line.  Let's put each term in a separate <dt>. -->
-<xsl:template match="varlistentry">
+<xsl:template match="d:varlistentry">
     <xsl:call-template name="anchor"/>
     <xsl:apply-templates select="term"/>
   <dd>
     <xsl:apply-templates select="listitem"/>
   </dd>
 </xsl:template>
-<xsl:template match="varlistentry/term">
+<xsl:template match="d:varlistentry/d:term">
   <dt class="term">
     <xsl:call-template name="anchor"/>
     <xsl:apply-templates/>
@@ -247,11 +248,11 @@
 
   <div class="toc">
     <ul>
-      <xsl:apply-templates select="/book/part|/book/chapter|/book/appendix" mode="chunk-toc">
+      <xsl:apply-templates select="/d:book/d:part|/d:book/d:chapter|/d:book/d:appendix" mode="chunk-toc">
 	<xsl:with-param name="toc-context" select="$toc-context"/>
 	<xsl:with-param name="context-depth" select="count(ancestor::*)"/>
       </xsl:apply-templates>
-      <li><a href="ToC.html">Table of Contents</a></li>
+      <li><a href="ToC.{$html.ext}">Table of Contents</a></li>
       </ul>
   </div>
 </xsl:template>
@@ -302,7 +303,7 @@
   <xsl:param name="depth" select="count(ancestor::*)"/>
   <xsl:param name="context-depth" select="1"/>
   <li>
-    <xsl:variable name="children" select="part|chapter|sect1|sect2|sect3"/>
+    <xsl:variable name="children" select="d:part|d:chapter|d:sect1|d:sect2|d:sect3"/>
     <xsl:call-template name="toc.xline">
       <xsl:with-param name="toc-context" select="$toc-context"/>
     </xsl:call-template>
@@ -329,15 +330,15 @@
 
   <!--<xsl:variable name="home" select="/*[1]"/>-->
   <xsl:variable name="root" select="/*[1]"/>
-  <xsl:variable name="home" select="/*[1]/chapter[1]"/>
+  <xsl:variable name="home" select="/*[1]/d:chapter[1]"/>
   <xsl:variable name="up" select="parent::*"/>
 
-  <xsl:variable name="children" select="chapter|sect1|sect2|sect3"/>
-  <xsl:variable name="xnext" select="(following-sibling::chapter|following-sibling::sect1)[1]"/>
-  <xsl:variable name="xprev" select="(preceding-sibling::chapter|preceding-sibling::sect1)[last()]"/>
+  <xsl:variable name="children" select="d:chapter|d:sect1|d:sect2|d:sect3"/>
+  <xsl:variable name="xnext" select="(following-sibling::d:chapter|following-sibling::d:sect1)[1]"/>
+  <xsl:variable name="xprev" select="(preceding-sibling::d:chapter|preceding-sibling::d:sect1)[last()]"/>
 <!--
-  <xsl:variable name="rnext" select="(child::chapter|child::sect1|following::chapter|following::sect1)[1]"/>
-  <xsl:variable name="rprev" select="(parent::chapter|parent::sect1|preceding::chapter|preceding::sect1)[last()]"/>
+  <xsl:variable name="rnext" select="(child::d:chapter|child::d:sect1|following::d:chapter|following::d:sect1)[1]"/>
+  <xsl:variable name="rprev" select="(parent::d:chapter|parent::d:sect1|preceding::d:chapter|preceding::d:sect1)[last()]"/>
 -->
 
   <xsl:variable name="row1" select="count($prev) &gt; 0
@@ -354,17 +355,17 @@
   <div class="navfooter">
     <xsl:if test="$children">
       <ul>
-	<xsl:apply-templates select="part|chapter|sect1|sect2|sect3" mode="footer.toc">
+	<xsl:apply-templates select="d:part|d:chapter|d:sect1|d:sect2|d:sect3" mode="footer.toc">
 	  <xsl:with-param name="toc-context" select="."/>
 	</xsl:apply-templates>
       </ul>
     </xsl:if>
     <xsl:if test="generate-id($home) = generate-id(.)">
       <ul>
-	<xsl:apply-templates select="$home/following-sibling::chapter|$root/part" mode="footer.toc">
+	<xsl:apply-templates select="$home/following-sibling::d:chapter|$root/d:part" mode="footer.toc">
 	  <xsl:with-param name="toc-context" select="."/>
 	</xsl:apply-templates>
-        <li><b class="toc"><a href="ToC.html">Table of Contents</a></b></li>
+        <li><b class="toc"><a href="ToC.{$html.ext}">Table of Contents</a></b></li>
       </ul>
     </xsl:if>
 

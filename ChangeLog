@@ -1,3 +1,30 @@
+2016-11-25  Per Bothner  <per@bothner.com>
+
+	* README.md: Convert to Markdown from README.
+	This is better for the gitlab Kawa home page.
+	* configure.ac: Change automake style to 'foreign' due to missing README.
+
+	* Makefile.am: Update --version output for git.
+
+	* configure.ac: Add --with-docbook-stylesheets option.
+	* doc/Makefile.am: Make use of it.
+
+2016-11-22  Per Bothner  <per@bothner.com>
+
+	* Makefile.am: Fixes so 'make install' twice in a row works.
+
+2016-11-20  Per Bothner  <per@bothner.com>
+
+	* configure.in (AC_INIT): Set version to 2.2.1.
+	* bin/configure.in (AC_INIT): Likewise.
+	* build.xml (version.release): Likewise.
+
+2016-11-12  Per Bothner  <per@bothner.com>
+
+	* configure.in (AC_INIT): Set version to 2.2.
+	* bin/configure.in (AC_INIT): Likewise.
+	* build.xml (version.release): Likewise.
+
 2016-11-07  Per Bothner  <per@bothner.com>
 
 	* bin/browse-kawa-manual.in: Move to doc/browse-kawa-manual.

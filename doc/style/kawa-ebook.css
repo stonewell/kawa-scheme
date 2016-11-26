@@ -24,6 +24,10 @@ p.synopsis span.kind:after { content: "]" }
 p.synopsis > code { font-weight: bold; }
 blockquote { margin-left: 40px; margin-right: 40px }
 
+strong.userinput { background-color: #FFFFD0 } /* a pale yellow */
+span.userinput { background-color: #FFFFD0 } /* a pale yellow */
+span.prompt { background-color: #E0FFE0 } /* a pale green */
+
 body.mainbar {
     background: #fffff5;
     padding-left: 25%;
@@ -37,6 +41,16 @@ iframe {
     border: none
 }
 
+body.toc-sidebar div img {
+    border: none;
+    padding: 4px;
+    float: right;
+    width: 40%;
+    height: auto
+}
+body.toc-sidebar header {
+    font-size: xx-large;
+}
 div.toc ul[toc-detail] {
     display: none
 }
@@ -53,15 +67,16 @@ div.toc li {
   list-style: none }     /* Remove triangle from H2 */
 div.toc ul
 {
-margin: 0;
-padding: 0;
-list-style-type: none;
+    margin: 0px;
+    padding: 0px;
+    list-style-type: none;
 }
-body.toc-sidebar { background-color: #F4FCFF }
+body.toc-sidebar div { padding: 0.4ex; overflow: auto }
+body.toc-sidebar { background-color: #F4FCFF; margin: 0pt }
+body.toc-sidebar a { text-decoration: none }
 div.toc { background-color: #F4FCFF }
 div.toc li { padding: 0px 4px;}
 div.toc li { margin: 0 ; }
-div.toc a { display: block; text-decoration: none }
 
 div.toc nav {padding: 0; margin: 0 }
 div.toc ul {padding: 0; margin: 0 }
@@ -71,4 +86,9 @@ div.toc a:hover
 {
 color: #fff;
 background-color: #69C;
+=======
+body.toc-sidebar a:hover, body.toc-sidebar a:hover div {
+    color: #fff;
+    background-color: #69C;
+>>>>>>> master
 }
