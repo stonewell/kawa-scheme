@@ -1,3 +1,7 @@
+2016-11-25  Per Bothner  <per@bothner.com>
+
+	* kawa.texi: Update due to move to git and gitlab.
+
 2016-11-24  Per Bothner  <per@bothner.com>
 
 	Improve top of sidebar of manual.

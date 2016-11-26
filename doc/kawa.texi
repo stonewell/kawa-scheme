@@ -1202,27 +1202,15 @@ The most recent snapshot is
 @uref{ftp://ftp.gnu.org/pub/gnu/kawa/kawa-latest.zip}.
 Instructions for using either are @ref{Binary distribution,here}.
 
-@subsection Getting the development sources using SVN
+@subsection Getting the development sources using Git
 
 The Kawa sources are managed using a
-@uref{http://subversion.apache.org/,Subversion (svn)} repository.
+@uref{https://gitlab.com/kashell/Kawa,git} repository.
 If you want the very latest version grab
-@uref{http://subversion.apache.org/download/,an svn client},
+@uref{https://git-scm.com/downloads,a git client},
 and then check out the source using this command:
 @example
-svn -q checkout svn://sourceware.org/svn/kawa/trunk kawa
-@end example
-
-Some corporate firewalls may block outgoing Subversion
-connections.  If that case you should be able to access the
-Kawa Subversion repository using HTTP.  (If you need
-to use an HTTP proxy, you can edit
-@code{http-proxy-host} and @code{http-proxy-port}
-in @code{~/.subversion/servers} as described
-@uref{http://subversion.apache.org/faq.html#proxy, here}.)
-Use this command instead:
-@example
-svn -q checkout http://sourceware.org/svn/kawa/trunk kawa
+git clone https://gitlab.com/kashell/Kawa.git
 @end example
 
 After a checkout you will need to run:
@@ -1231,10 +1219,10 @@ After a checkout you will need to run:
 @end example
 before proceding with instructions for @ref{Source distribution,building the source distribution}.
 
-Once you have it checked out, you can keep it up-to-date with @code{svn update}.
+Once you have it checked out, you can keep it up-to-date with @code{git pull}.
 
 You can also
-@uref{http://sourceware.org/viewvc/kawa/,browse the svn archive} via viewvc.
+@uref{https://gitlab.com/kashell/Kawa/tree/master,browse the git archive} online.
 
 @node Running Java, Binary distribution, Getting Kawa, Installation
 @section Getting and running Java
@@ -1404,7 +1392,7 @@ tar xzf kawa-@value{VERSION}.tar.gz
 cd kawa-@value{VERSION}
 @end example
 
-If you're building from the Subversion repository, you need to
+If you're building from the Git repository, you need to
 generate @code{configure} and some other files. This is
 easiest done with the @code{autogen.sh} script:
 @example
@@ -1499,21 +1487,16 @@ like @uref{http://retroweaver.sourceforge.net/, Retroweaver}
 on the Kawa @code{.jar} to fix up Java 5 dependencies.
 Contact the Kawa author if you want to be a tester for this.
 
-@item @code{--enable-kawa-frontend}
-If you have the GNU @samp{readline} library installed, you might try
-adding the @samp{--enable-kawa-frontend} flag.  This will build the
-@samp{kawa} front-end program, which provides input-line editing
-and an input history.  You can get @samp{readline} from archives
-of GNU programs, including @uref{ftp://www.gnu.org/}.
+@item @code{--with-docbook-stylesheet[=@var{path}]}
+Build the documentation (this manual) as an electronic book
+(in ebook format) or a website, using
+the DocBook xslt stylesheets.
+(You can build the documentation without DocBook, but using
+it enables nicer-looking and more functional documentation.)
 
-If so, you may need to specify to @code{make} where to find
-the @code{readline} include files (with @code{READLINE_INCLUDE_PATH})
-and the library (with @code{READINE_LIB_PATH}).
-For example on OS/X you need to do:
-@example
-make READLINE_INCLUDE_PATH=-I/usr/local/unix/readline/include \
-     READLINE_LIB_PATH=-L/usr/local/unix/readline/lib
-@end example
+The stylesheets are found using @var{path};
+the file @code{@var{path}/epub3/chunk.xsl}.
+(For example, on Fedora 25 @var{path} can be @code{/usr/share/sgml/docbook/xsl-ns-stylesheets-1.79.1}.)
 
 @item @code{--with-domterm}
 @itemx @code{--with-domterm=@var{domterm.jar}}
@@ -1573,6 +1556,26 @@ For JDK 7 you need to specify @code{@var{javafx-jar}}
 @item @code{--with-android=@var{android-jar}}
 Build for the Android platform.
 This requires @ref{Building for Android,special instructons}.
+
+@item @code{--enable-kawa-frontend}
+If you have the GNU @samp{readline} library installed, you might try
+adding the @samp{--enable-kawa-frontend} flag.
+This will build the
+@samp{kawa} front-end program, which provides input-line editing
+and an input history.  You can get @samp{readline} from archives
+of GNU programs, including @uref{ftp://www.gnu.org/}.
+
+Note that using JLine, enabled by @code{--with-jline3},
+is now recommended instead of using the @code{readline} frontend.
+
+You may need to specify to @code{make} where to find
+the @code{readline} include files (with @code{READLINE_INCLUDE_PATH})
+and the library (with @code{READINE_LIB_PATH}).
+For example on OS/X you need to do:
+@example
+make READLINE_INCLUDE_PATH=-I/usr/local/unix/readline/include \
+     READLINE_LIB_PATH=-L/usr/local/unix/readline/lib
+@end example
 @end table
 
 @anchor{building-on-Windows-with-make}
@@ -1598,7 +1601,7 @@ recognizes Cygwin, and modifies the classpath to use Windows-style
 path separators.
 
 Beyond the base packages, you probably want to install @code{autoconf},
-@code{automake}, @code{subversion}, @code{texinfo}, @code{groff},
+@code{automake}, @code{git}, @code{texinfo}, @code{groff},
 @code{make}, and @code{diffutils}.
 
 Cygwin (unlike MinGW) has a current version of @code{makeinfo}, but
@@ -2806,7 +2809,8 @@ You can specify multiple @samp{-w} options, and also use @samp{-s}.
 Prints out some help.
 @item --version
 Prints out the Kawa version number, and then exits.
-
+If Kawa was built with a @code{.git} repository present,
+also prints the result of @code{git describe}.
 @anchor{browse-manual-option}
 @item --browse-manual
 @itemx --browse-manual=@var{command}
