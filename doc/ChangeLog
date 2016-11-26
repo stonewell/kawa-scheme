@@ -1,3 +1,9 @@
+2016-11-26  Per Bothner  <per@bothner.com>
+
+	* style/kawa-ebook.css: Add some missing styling.
+	* style/kawa-l.css: Fix navcol styling.
+	* style/kawa.css: Remove extra overflow - which loses on Firefox.
+
 2016-11-25  Per Bothner  <per@bothner.com>
 
 	* kawa.texi: Update due to move to git and gitlab.

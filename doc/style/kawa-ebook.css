@@ -24,6 +24,10 @@ p.synopsis span.kind:after { content: "]" }
 p.synopsis > code { font-weight: bold; }
 blockquote { margin-left: 40px; margin-right: 40px }
 
+strong.userinput { background-color: #FFFFD0 } /* a pale yellow */
+span.userinput { background-color: #FFFFD0 } /* a pale yellow */
+span.prompt { background-color: #E0FFE0 } /* a pale green */
+
 body.mainbar {
     background: #fffff5;
     padding-left: 25%;
