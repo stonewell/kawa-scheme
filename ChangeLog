@@ -2,6 +2,7 @@
 
 	* README.md: Convert to Markdown from README.
 	This is better for the gitlab Kawa home page.
+	* configure.ac: Change automake style to 'foreign' due to missing README.
 
 	* Makefile.am: Update --version output for git.
 

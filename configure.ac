@@ -5,7 +5,7 @@ AC_CONFIG_SRCDIR([doc/kawa.texi])
 AM_MAINTAINER_MODE([enable])
 AC_CANONICAL_HOST
 
-AM_INIT_AUTOMAKE([info-in-builddir])
+AM_INIT_AUTOMAKE([info-in-builddir foreign])
 
 AC_ARG_WITH(docbook-stylesheets,
   AS_HELP_STRING(--with-docbook-stylesheets=path,Building icely-formatted documentation))
