@@ -252,7 +252,7 @@
 	<xsl:with-param name="toc-context" select="$toc-context"/>
 	<xsl:with-param name="context-depth" select="count(ancestor::*)"/>
       </xsl:apply-templates>
-      <li><a href="ToC.{$html.ext}">Table of Contents</a></li>
+      <li><a href="ToC{$html.ext}">Table of Contents</a></li>
       </ul>
   </div>
 </xsl:template>
@@ -365,7 +365,7 @@
 	<xsl:apply-templates select="$home/following-sibling::d:chapter|$root/d:part" mode="footer.toc">
 	  <xsl:with-param name="toc-context" select="."/>
 	</xsl:apply-templates>
-        <li><b class="toc"><a href="ToC.{$html.ext}">Table of Contents</a></b></li>
+        <li><b class="toc"><a href="ToC{$html.ext}">Table of Contents</a></b></li>
       </ul>
     </xsl:if>
 
