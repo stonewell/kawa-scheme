@@ -1,5 +1,12 @@
 2016-11-26  Per Bothner  <per@bothner.com>
 
+	Update to use DocBook 5.0 and xsl-ns-stylesheets.
+	* Makefile.am (kawa.xml): Convert kawa.xml to DocBook 5.
+	* kawa.texi: Update for building documentation.
+	* style/kawa.xsl: Add namespaces.
+	* style/docbook-to-html.xsl: Likewise.
+	* style/kawa-epub.xsl: Likewise.
+
 	* style/kawa-ebook.css: Add some missing styling.
 	* style/kawa-l.css: Fix navcol styling.
 	* style/kawa.css: Remove extra overflow - which loses on Firefox.

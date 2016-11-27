@@ -1497,7 +1497,7 @@ the DocBook xslt stylesheets.
 it enables nicer-looking and more functional documentation.)
 
 The stylesheets are found using @var{path};
-the file @code{@var{path}/epub3/chunk.xsl}.
+the file @code{@var{path}/epub3/chunk.xsl} needs to exist.
 (For example, on Fedora 25 @var{path} can be @code{/usr/share/sgml/docbook/xsl-ns-stylesheets}.)
 
 @item @code{--with-domterm}

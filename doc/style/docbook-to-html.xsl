@@ -230,9 +230,9 @@
     list on a single line.  Let's put each term in a separate <dt>. -->
 <xsl:template match="d:varlistentry">
     <xsl:call-template name="anchor"/>
-    <xsl:apply-templates select="term"/>
+    <xsl:apply-templates select="d:term"/>
   <dd>
-    <xsl:apply-templates select="listitem"/>
+    <xsl:apply-templates select="d:listitem"/>
   </dd>
 </xsl:template>
 <xsl:template match="d:varlistentry/d:term">
@@ -252,7 +252,7 @@
 	<xsl:with-param name="toc-context" select="$toc-context"/>
 	<xsl:with-param name="context-depth" select="count(ancestor::*)"/>
       </xsl:apply-templates>
-      <li><a href="ToC.{$html.ext}">Table of Contents</a></li>
+      <li><a href="ToC{$html.ext}">Table of Contents</a></li>
       </ul>
   </div>
 </xsl:template>
@@ -365,7 +365,7 @@
 	<xsl:apply-templates select="$home/following-sibling::d:chapter|$root/d:part" mode="footer.toc">
 	  <xsl:with-param name="toc-context" select="."/>
 	</xsl:apply-templates>
-        <li><b class="toc"><a href="ToC.{$html.ext}">Table of Contents</a></b></li>
+        <li><b class="toc"><a href="ToC{$html.ext}">Table of Contents</a></b></li>
       </ul>
     </xsl:if>
 
