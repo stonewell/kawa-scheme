@@ -238,18 +238,22 @@ public class CompileNamedPart
     return exp;
   }
 
-  public static String combineName (Expression part1, Expression part2)
-  {
-    String name1;
-    Object name2;
-    if ((name2 = part2.valueIfConstant()) instanceof SimpleSymbol
-        && ((part1 instanceof ReferenceExp
-             && (name1 = ((ReferenceExp) part1).getSimpleName()) != null)
-            || (part1 instanceof GetNamedExp
-                && (name1 = ((GetNamedExp) part1).combinedName) != null)))
-      return (name1+':'+name2).intern();
-    return null;
-  }
+    public static String combineName(Expression part1, Expression part2) {
+        String name1 = null;
+        Object value1;
+        Object name2;
+        if ((name2 = part2.valueIfConstant()) instanceof SimpleSymbol) {
+            if (part1 instanceof ReferenceExp)
+                name1 = ((ReferenceExp) part1).getSimpleName();
+            else if (part1 instanceof GetNamedExp)
+                name1 = ((GetNamedExp) part1).combinedName;
+            else if ((value1 = part1.valueIfConstant()) instanceof Class)
+                name1 = ((Class) value1).getName();
+            if (name1 != null)
+                return (name1+':'+name2).intern();
+        }
+        return null;
+    }
 
   public static Expression makeExp (Expression clas, String member)
   {

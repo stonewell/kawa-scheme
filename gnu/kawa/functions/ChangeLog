@@ -1,5 +1,8 @@
 2016-11-27  Per Bothner  <per@bothner.com>
 
+	* CompileNamedPart.java (combineName): Handle case when prefix
+	matches the name of an existing class.
+
 	* CompileArith.java: Optimization for ADD and SUB.
 	When types are unknown, call AddOp.apply2 rather than Procedure.apply2.
 
