@@ -1,3 +1,9 @@
+2016-11-27  Per Bothner  <per@bothner.com>
+
+	* CompileInvoke.java: Fix two bugs relating to splices.
+	(validateNamedInvoke): Fix adjustment of splice start.
+	Also, call PrimProcedure.canCompile to check if we can.
+
 2016-04-21  Per Bothner  <per@bothner.com>
 
 	* ClassMethods.java (removeRedundantMethods): Use new Type.isSame.

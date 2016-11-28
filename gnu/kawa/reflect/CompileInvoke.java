@@ -356,6 +356,8 @@ public class CompileInvoke {
             if (objIndex >= 0) {
                 if (exp.firstSpliceArg == objIndex)
                     spdelta = -objIndex;
+                else
+                    spdelta++;
                 margs[dst++] = args[objIndex];
             }
             for (int src = argsStartIndex; 
@@ -366,7 +368,8 @@ public class CompileInvoke {
             ApplyExp e = new ApplyExp(method, margs);
             e.adjustSplice(exp, spdelta);
             e.setLine(exp);
-            return visitor.visitApplyOnly(e, required);
+            if (method.canCompile(e))
+                return visitor.visitApplyOnly(e, required);
         }
         exp.visitArgs(visitor);
         return exp;
