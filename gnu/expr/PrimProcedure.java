@@ -637,7 +637,7 @@ public class PrimProcedure extends MethodProc {
       }
   }
 
-    public boolean compile(ApplyExp exp, Compilation comp, Target target) {
+    public boolean canCompile(ApplyExp exp) {
         if (exp.firstKeywordArgIndex != 0)
             return false;
         // We can optimize splice arguments if they're in the "varargs"
@@ -645,6 +645,12 @@ public class PrimProcedure extends MethodProc {
         if (exp.firstSpliceArg >= 0
             && (! takesVarArgs() || minArgs() > exp.firstSpliceArg))
             return false;
+        return true;
+    }
+
+  public boolean compile(ApplyExp exp, Compilation comp, Target target) {
+    if (! canCompile(exp))
+        return false;
 
     gnu.bytecode.CodeAttr code = comp.getCode();
     ClassType mclass = getDeclaringClass();
