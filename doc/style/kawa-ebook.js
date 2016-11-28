@@ -217,15 +217,15 @@ function onSidebarLoad(evt) {
 
 var clickSeen = false;
 function onClick(evt) {
-    var target = evt.target;
-    if (target.parentNode && target.parentNode.nodeName == "div") // as added by scanTac
-        target = target.parentNode.parentNode;
-    if (target.nodeName == "div")
-        target = target.parentNode;
-    if (target
-        && target.nodeName == "a"
-        && target.getAttribute("target") != "_blank")
-        top.clickSeen = true;
+    for (var target = evt.target;
+         target != null;
+         target = target.parentNode) {
+        if  (target.nodeName == "a"
+             && target.getAttribute("target") != "_blank") {
+            top.clickSeen = true;
+            return;
+        }
+    }
 };
 
 function onUnload(evt) {
