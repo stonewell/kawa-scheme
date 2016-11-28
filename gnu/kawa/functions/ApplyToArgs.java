@@ -41,6 +41,32 @@ public class ApplyToArgs extends ProcedureN
         }
     }
 
+    public Object apply1(Object arg1,Object arg2) throws Throwable {
+        if (arg1 instanceof Procedure)
+            return ((Procedure) arg1).apply0();
+        return super.apply1(arg1);
+    }
+
+    public Object apply2(Object arg1, Object arg2) throws Throwable {
+        if (arg1 instanceof Procedure)
+            return ((Procedure) arg1).apply1(arg2);
+        return super.apply2(arg1, arg2);
+    }
+
+    public Object apply3(Object arg1, Object arg2, Object arg3)
+            throws Throwable {
+        if (arg1 instanceof Procedure)
+            return ((Procedure) arg1).apply2(arg2, arg3);
+        return super.apply3(arg1, arg2, arg3);
+    }
+
+    public Object apply4(Object arg1, Object arg2, Object arg3, Object arg4)
+            throws Throwable {
+        if (arg1 instanceof Procedure)
+            return ((Procedure) arg1).apply3(arg2, arg3, arg4);
+        return super.apply4(arg1, arg2, arg3, arg4);
+    }
+
     public Object applyN (Object[] args) throws Throwable {
         Object proc = Promise.force(args[0]);
         if (proc instanceof Procedure) {

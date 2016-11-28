@@ -19,6 +19,11 @@ For kawa/ChangeLog:
 
 For gnu/mapping/ChangeLog:
 
+2016-11-27  Per Bothner  <per@bothner.com>
+
+	* ApplyToArgs.java (apply1, apply2, apply3, apply4): New methods.
+	Optimize the simple case when operator is a Procedure.
+
 2015-08-02  Per Bothner  <per@bothner.com>
 
 	* CallContext.java (getRestPlainArray): New method.
