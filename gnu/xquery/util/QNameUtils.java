@@ -14,7 +14,7 @@ public class QNameUtils
     if (qname == Values.empty || qname == null)
       return qname;
     if (qname instanceof Values
-        || ! (qname instanceof String || qname instanceof UntypedAtomic))
+        || ! (qname instanceof CharSequence || qname instanceof UntypedAtomic))
       throw new RuntimeException("bad argument to QName");
     String name = TextUtils.replaceWhitespace(qname.toString(), true);
     int colon = name.indexOf(':');
@@ -60,7 +60,7 @@ public class QNameUtils
     if (qname instanceof Symbol)
       return qname;
     if (qname instanceof Values
-        || ! (qname instanceof String || qname instanceof UntypedAtomic))
+        || ! (qname instanceof CharSequence || qname instanceof UntypedAtomic))
       throw new RuntimeException("bad argument to QName");
     String name = TextUtils.replaceWhitespace(qname.toString(), true);
     int colon = name.indexOf(':');

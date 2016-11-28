@@ -333,7 +333,7 @@ public class XDataType extends Type implements TypeValue
           return value;
         return valueOf(value.toString());
       }
-    if (value instanceof String)
+    if (value instanceof CharSequence)
       return valueOf(value.toString());
     switch (typeCode)
       {

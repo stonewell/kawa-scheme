@@ -25,6 +25,7 @@ import gnu.kawa.reflect.SingletonType;
 import gnu.kawa.functions.AppendValues;
 import gnu.kawa.functions.Convert;
 import gnu.lists.FString;
+import gnu.lists.IString;
 import gnu.lists.LList;
 import gnu.text.Lexer;
 import gnu.text.SourceError;
@@ -2966,7 +2967,9 @@ public class XQParser extends Lexer
         break;
 
       case STRING_TOKEN:
-	exp = new QuoteExp(new String(tokenBuffer, 0, tokenBufferLength).intern());
+        // Possible FUTURE:
+        //exp = new QuoteExp(new IString(new String(tokenBuffer, 0, tokenBufferLength)));
+        exp = new QuoteExp(new String(tokenBuffer, 0, tokenBufferLength).intern());
         break;
 
       case INTEGER_TOKEN:
