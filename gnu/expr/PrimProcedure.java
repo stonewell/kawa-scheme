@@ -117,7 +117,7 @@ public class PrimProcedure extends MethodProc {
     /** Support passing an explicit array to a varargs function.
      * This is a kludge inherited from Java to support backwards
      * compatibility after various methods were converte to take varargs.
-     * If Java5-style VARARS we allow both a variable-length argument list,
+     * If Java5-style VARARGS we allow both a variable-length argument list,
      * or if the last argument already is an array we can use it as is.
      * The tricky part is we sometimes have to distinguish these cases
      * at run-time - see the logic for createVarargsArrayIfNeeded in
@@ -126,7 +126,7 @@ public class PrimProcedure extends MethodProc {
      * create a varargs array - even if the actual argument is an array.
      * People should now use splices instead.
      */
-    public static boolean explicitArrayAsVarArgsAllowed = true;
+    public static boolean explicitArrayAsVarArgsAllowed = false;
 
     public int isApplicable(Type[] argTypes, Type restType) {
         int app = super.isApplicable(argTypes, restType);

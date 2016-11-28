@@ -1,3 +1,10 @@
+2016-11-28  Per Bothner  <per@bothner.com>
+
+	No longer allow a non-spliced argument array to a Java varargs method.
+	* inlining-test.scm (varargs2, varargs3): UUse splice operator.
+	* inlining.expected: Update.
+	* sva48938.scm: Fix incorrect expected output.
+
 2016-11-27  Per Bothner  <per@bothner.com>
 
 	* inlining.expected: Update for improved '+' code generatation.

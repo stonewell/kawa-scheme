@@ -1,3 +1,8 @@
+2016-11-28  Per Bothner  <per@bothner.com>
+
+	No longer allow a non-spliced argument array to a Java varargs method.
+	* PrimProcedure.java (explicitArrayAsVarArgsAllowed): Change to false.
+
 2016-11-27  Per Bothner  <per@bothner.com>
 
 	* PrimProcedure (canCompile): New method.

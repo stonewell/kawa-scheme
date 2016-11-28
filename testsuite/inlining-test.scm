@@ -138,9 +138,9 @@
   (invoke gnu.math.IntNum 'getMethod "valueOf"
  java.lang.String java.lang.Integer:TYPE))
 (define (varargs2 (argtypes :: java.lang.Class[]))
-  (invoke gnu.math.IntNum 'getMethod "valueOf" argtypes))
+  (invoke gnu.math.IntNum 'getMethod "valueOf" @argtypes))
 (define (varargs3 argtypes)
-  (invoke gnu.math.IntNum 'getMethod "valueOf" argtypes))
+  (invoke gnu.math.IntNum 'getMethod "valueOf" @argtypes))
 
 
 (define (top-level-recurse1 x::pair)

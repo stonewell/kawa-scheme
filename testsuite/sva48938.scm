@@ -16,4 +16,4 @@
    (sorted (lambda (a b) (- b a)))
    (toArray)))
 
-;; Output: out:5
+;; Output: out:[5 4 3 2 1]
