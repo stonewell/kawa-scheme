@@ -134,6 +134,26 @@ public class CompileArith implements Inlineable
       }
   }
 
+    public void compileGeneric(ApplyExp exp, Compilation comp, Target target) {
+        Expression[] args = exp.getArgs();
+        int len = args.length;
+        CodeAttr code = comp.getCode();
+        if (len == 2) {
+            switch (op) {
+            case ADD:
+            case SUB:
+                code.emitPushInt(op==ADD ? 1 : -1);
+                args[0].compile(comp, Target.pushObject);
+                args[1].compile(comp, Target.pushObject);
+                code.emitInvoke(ClassType.make("gnu.kawa.functions.AddOp")
+                                .getDeclaredMethod("apply2", 3));
+                target.compileFromStack(comp, Type.objectType);
+                return;
+            }
+        }
+        ApplyExp.compile(exp, comp, target);
+    }
+
   public void compile (ApplyExp exp, Compilation comp, Target target)
   {
     Expression[] args = exp.getArgs();
@@ -146,7 +166,7 @@ public class CompileArith implements Inlineable
     if (len == 1 || target instanceof IgnoreTarget)
       {
 	// FIXME implement optimization for unary
-	ApplyExp.compile(exp, comp, target);
+	compileGeneric(exp, comp, target);
 	return;
       }
     // We know len >= 2 from above.
@@ -157,7 +177,7 @@ public class CompileArith implements Inlineable
     Type type = Arithmetic.kindType(kind);
     if (kind == 0 || len != 2 /* just in case */)
       {
-	ApplyExp.compile(exp, comp, target);
+	compileGeneric(exp, comp, target);
 	return;
       }
     Type targetType = target.getType();
@@ -219,7 +239,7 @@ public class CompileArith implements Inlineable
           ;
         else
           {
-            ApplyExp.compile(exp, comp, target);
+            compileGeneric(exp, comp, target);
             return;
           }
       }
@@ -313,7 +333,7 @@ public class CompileArith implements Inlineable
       }
     else
       {
-        ApplyExp.compile(exp, comp, target);
+        compileGeneric(exp, comp, target);
         return;
       }
     target.compileFromStack(comp, wtype);
