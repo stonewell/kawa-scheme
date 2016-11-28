@@ -174,7 +174,7 @@ InliningTest.indexStr1(java.lang.CharSequence,int)int: 6 bytes
 InliningTest.indexStr2(java.lang.CharSequence,int)java.lang.Object: 12 bytes
 InliningTest.indexStr3(java.lang.CharSequence,int)java.lang.Object: 25 bytes
 InliningTest.indexGarr1(gnu.lists.Array,int,int)java.lang.Object: 9 bytes
-InliningTest.indexGarr2(gnu.lists.Array,int,int)java.lang.Object: 18 bytes
+InliningTest.indexGarr2(gnu.lists.Array,int,int)java.lang.Object: 16 bytes
 InliningTest.indexGarr3(gnu.lists.Array,int,int)double: 16 bytes
 InliningTest.indexGarr4(gnu.lists.Array,int,int)long: 20 bytes
 InliningTest.indexGarr5(gnu.lists.Array,int,int)double: 16 bytes

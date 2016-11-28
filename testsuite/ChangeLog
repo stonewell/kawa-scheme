@@ -1,3 +1,7 @@
+2016-11-27  Per Bothner  <per@bothner.com>
+
+	* inlining.expected: Update for improved '+' code generatation.
+
 2016-11-05  Per Bothner  <per@bothner.com>
 
 	* webtest/README: New file - helps test http serving of static files.

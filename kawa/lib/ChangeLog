@@ -1,3 +1,7 @@
+2016-11-27  Per Bothner  <per@bothner.com>
+
+	* lists.scm (reverse): Optimize by inlining car and cdr.
+
 2016-10-30  Per Bothner  <per@bothner.com>
 
 	* kawa/base.scm (define-constant define-early-constant): Export.

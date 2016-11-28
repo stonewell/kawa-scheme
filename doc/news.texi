@@ -4,8 +4,21 @@ most recent changes first.
 See also the list of @uref{../qexo/news.html,Qexo (XQuery)-specific
 changes}.
 
-@c @subheading In Subversion repository since last release
-@c @anchor{#in-subversion-repository-since-last-release}
+@subheading In Git repository (master branch) since last release
+@c @anchor{#in-git-repository-since-last-release}
+@itemize
+@item
+Moved Kawa's source code repository (version control system)
+to use git, hosted at @uref{https://gitlab.com/kashell/Kawa,gitmap}.
+@item
+New @code{with-docbook-stylesheets} to make it easier to build
+the documentation with better functionality and look.
+@item
+In the REPL if JLine is used then you can use the
+mouse to move the cursor on xterm-like terminals.  This conflicts with
+making a select for copying text; use shift-drag to access the
+terminal's builtin mouse handling, including text selection.
+@end itemize
 
 @subheading Kawa 2.2 (November 12, 2016)
 

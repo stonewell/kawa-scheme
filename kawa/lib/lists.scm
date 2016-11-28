@@ -99,8 +99,8 @@
 (define (reverse (list :: <list>)) :: <list>
   (let loop ((arg list) (result '()))
     (if (null? arg) result
-	(let ((pair :: <pair> arg))
-	  (loop (cdr pair) (cons (car pair) result))))))
+	(let ((p ::pair arg))
+	  (loop p:cdr (cons p:car result))))))
 
 (define (list-tail list (count :: <int>))
   (let loop ((lst list))
