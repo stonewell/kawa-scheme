@@ -1,3 +1,7 @@
+2016-11-28  Per Bothner  <per@bothner.com>
+
+	* style/kawa-ebook.js (onClick): Make more general.
+
 2016-11-27  Per Bothner  <per@bothner.com>
 
 	* news.texi: Some updates.
