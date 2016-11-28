@@ -89,10 +89,11 @@ public class let extends Syntax {
                 binding_cdr = init.getCdr();
 
                 Expression initExp = tr.rewrite_car(init, false);
-                decl.setInitValue(initExp);
-                if (initExp != QuoteExp.undefined_exp)
-                    decl.noteValueFromLet(let);
-
+                if (decl != null) { // paranoia
+                    decl.setInitValue(initExp);
+                    if (initExp != QuoteExp.undefined_exp)
+                        decl.noteValueFromLet(let);
+                }
                 if (init.getCdr() != LList.Empty) {
                     Object saveLoc2 = tr.pushPositionOf(init.getCdr());
                     tr.error('e', "junk after initializer");
