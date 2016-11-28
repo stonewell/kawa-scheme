@@ -1,3 +1,7 @@
+2016-11-27  Per Bothner  <per@bothner.com>
+
+	* AbstractSequence.java: Trivial inlining.
+
 2016-10-15  Per Bothner  <per@bothner.com>
 
 	* PrimVector.template: Fix incorrect edits in generated files by making here instead.

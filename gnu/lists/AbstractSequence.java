@@ -315,7 +315,7 @@ public abstract class AbstractSequence<E>
 
   public final Enumeration<E> elements()
   {
-    return getIterator();
+    return getIterator(0);
   }
 
   public final SeqPosition<E, AbstractSequence<E>> getIterator()
@@ -335,7 +335,7 @@ public abstract class AbstractSequence<E>
 
   public final Iterator<E> iterator()
   {
-    return getIterator();
+    return getIterator(0);
   }
 
   public final ListIterator<E> listIterator()
