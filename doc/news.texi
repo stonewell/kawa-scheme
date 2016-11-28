@@ -4,7 +4,33 @@ most recent changes first.
 See also the list of @uref{../qexo/news.html,Qexo (XQuery)-specific
 changes}.
 
-@subheading In Git repository (master branch) since last release
+@subheading In Git repository (invoke branch) since last release
+@itemize
+@item
+Most places that where you coulod declare a new identifier
+binding have been generalied to accept @ref{Variables and Patterns,patterns}.
+@item
+The internal calling convention used for ``apply'' (ie. calling
+an unknown-at-compile-time procedure) has been completely changed.
+@item
+@emph{Incompatible change:} Kawa traditionally followed Java in allowing you
+to pass an array with the "rest" arguments to a varargs method.
+For example, you could write:
+
+@verbatim
+(define args (Object[] 3 "cm"))
+(java.lang.String:format "length:%s%s" args)
+@end verbatim
+
+This is no longer allowed. Instead,
+use the splice operator:
+
+@verbatim
+(java.lang.String:format "length:%s%s" @args)
+@end verbatim
+@end itemize
+
+@subheading In Git repository since last release
 @c @anchor{#in-git-repository-since-last-release}
 @itemize
 @item
