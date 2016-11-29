@@ -1,3 +1,10 @@
+2016-11-28  Per Bothner  <per@bothner.com>
+
+	* IString.java: Implement Comparable.
+	(compareTo): New method.
+	(hashCode, equals): New methods.
+	* Strings.java (offsetByCodePoints): Fix logic bug.
+
 2016-11-27  Per Bothner  <per@bothner.com>
 
 	* AbstractSequence.java: Trivial inlining.

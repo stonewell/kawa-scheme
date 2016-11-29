@@ -10,7 +10,8 @@ import java.io.*;
 /** A string implementation with contant-time codepoint indexing.
  * Suitable for SRFI-135 or SRFI-140.
  */
-public class IString implements CharSequence, Externalizable {
+public class IString
+    implements CharSequence, Externalizable, Comparable<IString> {
     String str;
     int cplength; // number of codepoints
 
@@ -99,5 +100,16 @@ public class IString implements CharSequence, Externalizable {
     public void readExternal(ObjectInput in)
         throws IOException, ClassNotFoundException {
         init((String) in.readObject());
+    }
+
+    public int hashCode() { return str.hashCode(); }
+
+    public boolean equals(Object other) {
+        return other instanceof IString
+            && str.equals(((IString) other).str);
+    }
+
+    public int compareTo(IString other) {
+        return str.compareTo(other.str);
     }
 }

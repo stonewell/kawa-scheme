@@ -48,7 +48,7 @@ public class Strings
     public static int offsetByCodePoints(CharSequence str, int offset,
                                          int cuStart, int cpStart) {
         if (str instanceof IString)
-            return ((IString) str).indexByCodePoints(cpStart+offset);
+            return ((IString) str).offsetByCodePoints(cpStart+offset);
         return Character.offsetByCodePoints(str, cuStart, offset);
     }
 
