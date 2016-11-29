@@ -1066,12 +1066,12 @@ public abstract class Language
       return t2;
     if (t2 == Type.neverReturnsType)
       return t1;
+    if (t1 == t2)
+      return t1;
     if (t1 == Type.toStringType)
       t1 = Type.javalangStringType;
     if (t2 == Type.toStringType)
       t2 = Type.javalangStringType;
-    if (t1 == t2)
-      return t1;
     if (t1.isVoid() || t2.isVoid())
         return Type.objectType;
     if (t1.isSubtype(t2))

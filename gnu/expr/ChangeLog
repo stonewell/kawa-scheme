@@ -1,5 +1,7 @@
 2016-11-28  Per Bothner  <per@bothner.com>
 
+	* Language.java (unionType): Rearrange logic for equal types.
+
 	No longer allow a non-spliced argument array to a Java varargs method.
 	* PrimProcedure.java (explicitArrayAsVarArgsAllowed): Change to false.
 
