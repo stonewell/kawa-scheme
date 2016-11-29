@@ -1,3 +1,7 @@
+2016-11-28  Per Bothner  <per@bothner.com>
+
+	* defs.scm: Add missing splice operators.
+
 2016-06-26  Per Bothner  <per@bothner.com>
 
 	* MakeScene.scm (MakeScene): Don't create Group until actually needed.

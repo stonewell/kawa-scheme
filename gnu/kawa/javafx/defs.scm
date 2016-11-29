@@ -56,9 +56,9 @@
   ((run-scene)::void #!void)
   ((run ctx::gnu.mapping.CallContext)::void #!abstract)
   ((run)::void
-   (javafx.application.Application:launch ((this):getClass) gnu.expr.ApplicationMainSupport:commandLineArgArray))
+   (javafx.application.Application:launch ((this):getClass) @gnu.expr.ApplicationMainSupport:commandLineArgArray))
   ((runAsMain)::void
-   (javafx.application.Application:launch ((this):getClass) gnu.expr.ApplicationMainSupport:commandLineArgArray))
+   (javafx.application.Application:launch ((this):getClass) @gnu.expr.ApplicationMainSupport:commandLineArgArray))
   ((start (stage ::javafx.stage.Stage))::void
    (set! *stage* stage)
    (let ((ctx (gnu.mapping.CallContext:getInstance)))
