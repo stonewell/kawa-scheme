@@ -1,5 +1,7 @@
 2016-12-03  Per Bothner  <per@bothner.com>
 
+	* MakeAnnotation.java (validate):  Use language-type for annotaton value.
+
 	* CompileReflect.java: Use CharSequence instead of String-orFString.
 	* SlotGet.java: Likewise.
 	* SlotSet.java: Likewise.
