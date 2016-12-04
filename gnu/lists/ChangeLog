@@ -1,3 +1,8 @@
+2016-12-03  Per Bothner  <per@bothner.com>
+
+	* IString.java (valueOf): New factory method.
+	(toCharArray, getBytes(String)): New method.
+
 2016-11-28  Per Bothner  <per@bothner.com>
 
 	* IString.java: Implement Comparable.

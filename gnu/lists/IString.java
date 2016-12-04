@@ -33,6 +33,14 @@ public class IString
     public IString(String str) {
         init(str);
     }
+
+    public static IString valueOf(CharSequence str) {
+        if (str instanceof IString)
+            return (IString) str;
+        else
+            return new IString(str.toString());
+    }
+
     private void init(String str) {
         this.str = str;
         cplength = Strings.sizeInCodePoints(str);
@@ -101,6 +109,12 @@ public class IString
         throws IOException, ClassNotFoundException {
         init((String) in.readObject());
     }
+
+    public char[] toCharArray() { return str.toCharArray(); }
+
+    public byte[] getBytes(String charsetName)
+        throws java.io.UnsupportedEncodingException
+    { return str.getBytes(charsetName); }
 
     public int hashCode() { return str.hashCode(); }
 
