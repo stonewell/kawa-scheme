@@ -1,3 +1,9 @@
+2016-12-03  Per Bothner  <per@bothner.com>
+
+	* InlineCalls.java (maybeInline): Allow method specifier to
+	be general CharSequence, not just String.
+	* ApplyExp.java (inlineCompile): Likewise.
+
 2016-11-27  Per Bothner  <per@bothner.com>
 
 	* PrimProcedure (canCompile): New method.
