@@ -1,3 +1,8 @@
+2016-12-03  Per Bothner  <per@bothner.com>
+
+	* vectors.scm (vector-map): Minor optimiation/inlining.
+	* vectors.scm (vector-set!): Use cheaper AbstractVector.setAt method.
+
 2016-11-27  Per Bothner  <per@bothner.com>
 
 	* lists.scm (reverse): Optimize by inlining car and cdr.

@@ -1,3 +1,7 @@
+2016-12-03  Per Bothner  <per@bothner.com>
+
+	* AbstractSequence.java (setAt): New method - more efficient than set.
+
 2016-11-27  Per Bothner  <per@bothner.com>
 
 	* AbstractSequence.java: Trivial inlining.
