@@ -1,3 +1,8 @@
+2016-12-03  Per Bothner  <per@bothner.com>
+
+	* CompileMisc.java (validateApplyFormat): Generalize optimitation
+	for literal format string.
+
 2016-11-27  Per Bothner  <per@bothner.com>
 
 	* CompileArith.java: Optimization for ADD and SUB.

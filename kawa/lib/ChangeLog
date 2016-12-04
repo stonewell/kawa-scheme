@@ -1,5 +1,12 @@
 2016-12-03  Per Bothner  <per@bothner.com>
 
+	Make more robust for new string representations.
+	* compile_misc.scm: Use string=? to match for strings.
+	This ignores String vs IString differences.
+	(valuesValidateApply): Optimize 0-argument values.
+	* files.scm (directory-files): Remove bogus constructor.
+	* ports.scm (read-line): Fix symbol-to-string conversion.
+
 	* vectors.scm (vector-map): Minor optimiation/inlining.
 	* vectors.scm (vector-set!): Use cheaper AbstractVector.setAt method.
 
