@@ -130,7 +130,7 @@
 
 ;; In Scsh and Gambit.
 (define (directory-files (dir :: filepath))
-  (let ((files ((java.io.File (dir:toFile)):list)))
+  (let ((files ((dir:toFile):list)))
      (if (eq? files #!null) #f
          (gnu.lists.LList:makeList files 0)))) 
 
@@ -141,11 +141,11 @@
   (path filename))
   
 (define (%file-separator)
-  (invoke-static <java.lang.System> 'getProperty 'file.separator))
+  (invoke-static <java.lang.System> 'getProperty "file.separator"))
 
 (define (system-tmpdir)
   (let ((name :: <java.lang.String> ; Java2 only
-	 (invoke-static <java.lang.System> 'getProperty 'java.io.tmpdir)))
+	 (invoke-static <java.lang.System> 'getProperty "java.io.tmpdir")))
     (if (not (eq? name #!null))
 	name
 	(let ((sep (%file-separator)))
