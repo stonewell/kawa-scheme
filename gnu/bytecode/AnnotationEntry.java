@@ -94,7 +94,7 @@ implements java.lang.reflect.InvocationHandler
         if (sig.equals("Ljava/lang/String;"))
           {
             kind = 's';
-            val = (String) val;
+            val = ((CharSequence) val).toString();
           }
         else if (sig.equals("Ljava/lang/Class;"))
           {
