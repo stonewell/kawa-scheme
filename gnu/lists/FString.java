@@ -37,31 +37,6 @@ public class FString extends AbstractCharVector<Char>
     data = values;
   }
 
-  public FString (String str)
-  {
-    data = str.toCharArray();
-  }
-
-    public FString (StringBuilder buffer) {
-        this(buffer, 0, buffer.length());
-    }
-
-    public FString (StringBuilder buffer, int offset, int length) {
-        data = new char[length];
-        if (length > 0)
-            buffer.getChars(offset, offset+length, data, 0);
-    }
-
-    public FString (StringBuffer buffer) {
-        this(buffer, 0, buffer.length());
-    }
-
-    public FString (StringBuffer buffer, int offset, int length) {
-        data = new char[length];
-        if (length > 0)
-            buffer.getChars (offset, offset+length, data, 0);
-    }
-
   /** This constructor makes a copy. */
   public FString (char[] buffer, int offset, int length)
   {
@@ -83,8 +58,12 @@ public class FString extends AbstractCharVector<Char>
         char[] data = new char[length];
         if (seq instanceof CharSeq)
             ((CharSeq) seq).getChars(offset, offset+length, data, 0);
-        else if (seq instanceof String)
-            ((String) seq).getChars(offset, offset+length, data, 0);
+        else if (seq instanceof String || seq instanceof IString)
+            seq.toString().getChars(offset, offset+length, data, 0);
+        else if (seq instanceof StringBuilder)
+            ((StringBuilder) seq).getChars(offset, offset+length, data, 0);
+        else if (seq instanceof StringBuffer)
+            ((StringBuffer) seq).getChars(offset, offset+length, data, 0);
         else {
             for (int i = length; --i >= 0; )
                 data[i] = seq.charAt(offset+i);

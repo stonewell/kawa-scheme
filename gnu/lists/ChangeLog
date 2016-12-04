@@ -1,7 +1,9 @@
 2016-12-03  Per Bothner  <per@bothner.com>
 
+	* FString.java: Simplify set of constructors.
+
 	* IString.java (valueOf): New factory method.
-	(toCharArray, getBytes(String)): New method.
+	(toCharArray, getBytes(String)): New methods.
 
 2016-11-28  Per Bothner  <per@bothner.com>
 
