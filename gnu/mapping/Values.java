@@ -57,7 +57,7 @@ public abstract class Values<E>
         }
     }
     public static <E> Values<E> makeFromArray(E... vals) {
-        return new FromArray<E>(vals);  
+        return new FromArray<E>(vals);
     }
 
     /** Create a value for each element of a list.
