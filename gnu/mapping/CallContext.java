@@ -183,7 +183,7 @@ public class CallContext // implements Runnable
                 }
                 throw new IllegalArgumentException(mbuf.toString());
             }
-            throw new WrongType(proc, arg, arg > 0 ? getArgAsObject(arg-1) : null);
+            throw new WrongType(proc, arg, arg >= 0 ? getArgAsObject(arg) : null);
 	}
         if (matchState == MATCH_CHECK || matchState == MATCH_CHECK_ONLY)
             matchState = code;
