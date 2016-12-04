@@ -38,8 +38,7 @@ public class SlotSet extends Procedure3 implements Inlineable
     String name;
     String fname;
     Class clas;
-    if (member instanceof String
-        || member instanceof FString
+    if (member instanceof CharSequence
         || member instanceof SimpleSymbol) {
       name = member.toString();
       fname = gnu.expr.Compilation.mangleNameIfNeeded(name);

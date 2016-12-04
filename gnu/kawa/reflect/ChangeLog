@@ -1,5 +1,9 @@
 2016-12-03  Per Bothner  <per@bothner.com>
 
+	* CompileReflect.java: Use CharSequence instead of String-orFString.
+	* SlotGet.java: Likewise.
+	* SlotSet.java: Likewise.
+
 	* CompileInvoke.java (validateNamedInvoke): Handle parameterized List type.
 
 2016-11-27  Per Bothner  <per@bothner.com>
