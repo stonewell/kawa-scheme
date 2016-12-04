@@ -234,7 +234,7 @@ public class LangObjType extends SpecialObjectType implements TypeValue
 
     @Override
     public int isCompatibleWithValue(Type valueType) {
-        if (this == valueType)
+        if (Type.isSame(this, valueType))
             return 2;
         switch (typeCode) {
         case SEQUENCE_TYPE_CODE:
@@ -244,7 +244,7 @@ public class LangObjType extends SpecialObjectType implements TypeValue
                 return 1;
             break;
         case DYNAMIC_TYPE_CODE:
-            return 2;
+            return valueType instanceof ObjectType ? 2 : 1;
         }
         return getImplementationType().isCompatibleWithValue(valueType);
     }
@@ -253,6 +253,8 @@ public class LangObjType extends SpecialObjectType implements TypeValue
   {
     if (other instanceof LazyType)
       other = ((LazyType) other).getValueType();
+    if (Type.isSame(this, other))
+        return 0;
     if (other == nullType)
       return 1;
     switch (typeCode)

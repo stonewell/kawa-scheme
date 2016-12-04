@@ -1,5 +1,7 @@
 2016-12-03  Per Bothner  <per@bothner.com>
 
+	* MultValuesType.java (isCompatibleWithValue): Use Type.isSame.
+
 	* MakeAnnotation.java (validate):  Use language-type for annotaton value.
 
 	* CompileReflect.java: Use CharSequence instead of String-orFString.

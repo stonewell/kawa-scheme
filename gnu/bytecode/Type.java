@@ -450,13 +450,17 @@ public abstract class Type
   }
 
     /** If this is the target type, is a given source type compatible?
-     * Return -1 if no; 1 if yes; 0 if need to check at run-time.
      * @return -1 if not compatible; 0 if need to check at run-time;
      *   1 if compatible; 2 if compatible and no conversion or cast needed.
+     *   We also return 0 for some "narrowing" conversions even if we know
+     *   they will always succeed, so as to make such conversions less
+     *   preferred when doing method overloading.
      */
     public int isCompatibleWithValue(Type valueType) {
+        if (Type.isSame(this, valueType))
+            return 2;
         if (this == toStringType)
-            return valueType == javalangStringType ? 2 : 1;
+            return valueType == javalangStringType ? 2 : 0;
         // Hack for LangPrimType.charType.
         if (this == charType && valueType.getImplementationType()== this)
             return 2;
@@ -464,8 +468,6 @@ public abstract class Type
     }
 
     public static int isCompatibleWithValue(Type targetType, Type valueType) {
-        if (targetType == valueType)
-            return 2;
         int comp = targetType.compare(valueType);
         return comp >= 0 ? 1 : comp == -3 ? -1 : 0;
     }

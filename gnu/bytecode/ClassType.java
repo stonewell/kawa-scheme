@@ -1383,7 +1383,7 @@ public class ClassType extends ObjectType
     public int isCompatibleWithValue(Type valueType) {
         if (this == objectType && valueType instanceof ObjectType)
             return 2;
-        if (valueType == Type.nullType)
+        if (valueType == Type.nullType || Type.isSame(this, valueType))
             return 2;
         if (isInterface()) {
             Type rawType = valueType.getRawType();

@@ -79,7 +79,7 @@ public class SeqSizeType extends LangObjType {
 
     @Override
     public int isCompatibleWithValue(Type valueType) {
-        return Type.isCompatibleWithValue(this, valueType);
+        return Type.isSame(this, valueType) ? 2 : Type.isCompatibleWithValue(this, valueType);
     }
    
     @Override

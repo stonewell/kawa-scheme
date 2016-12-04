@@ -1,3 +1,11 @@
+2016-12-03  Per Bothner  <per@bothner.com>
+
+	* LangObjType.java (isCompatibleWithValue): Use Type.isSame.
+	For 'dynamic' only return 2 if if incoming type is non-primitive.
+	* LangPrimType.java (isCompatibleWithValue): Change return value
+	for converting anything to boolean.
+	* SeqSizeType.java (Type.isCompatibleWithValue): Add Type.isSame test.
+
 2016-09-08  Per Bothner  <per@bothner.com>
 
 	* LispLanguage.java (parse): Fix handling of unquoted literal #!eof.

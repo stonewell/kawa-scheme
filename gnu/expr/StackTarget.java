@@ -93,8 +93,8 @@ public class StackTarget extends Target
   {
     CodeAttr code = comp.getCode();
     stackType = forceLazyIfNeeded(comp, stackType, type);
-
-    if (type == stackType || ! code.reachableHere())
+    if (type.isCompatibleWithValue(stackType) == 2
+        || ! code.reachableHere())
       return true;
     if (stackType.isVoid())
       {

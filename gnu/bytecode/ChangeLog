@@ -1,5 +1,11 @@
 2016-12-03  Per Bothner  <per@bothner.com>
 
+	* Type.java (isCompatibleWithValue): Slight change to return value-
+	return 0 when a "narrowing is needed, evenf if always compatible.
+	Also start by calling Type.isSame.
+	(static isCompatibleWithValue): Don't need equality test.
+	* ClassType.java (isCompatibleWithValue): Check Type.isSame.
+
 	* AnnotationEntry.java (asAnnotationValue): Generalize String
 	value to allow allow any CharSequence.
 
