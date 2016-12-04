@@ -10,7 +10,7 @@
   (invoke x 'size))
 
 (define (vector-set! (vector ::vector) (k ::int) obj) :: <void>
-  (invoke vector 'set k obj))
+  (invoke vector 'setAt k obj))
 
 (define-procedure vector-ref
   setter: vector-set!
@@ -89,17 +89,19 @@
   validate-apply: "kawa.lib.compile_map:vectorMapValidateApply"
   (define (vector-map-simple proc::procedure vec::java.util.List) :: vector
     (let* ((len :: int (vec:size))
-           (r :: vector (make-vector len)))
+           (r (object[] length: len)))
       (do ((i :: int 0 (+ i 1)))
-          ((= i len) r)
-        (vector-set! r i (proc (vec:get i))))))
+          ((= i len) (gnu.lists.FVector r))
+        (set! (r i) (proc (vec:get i))))))
   (define (vector-map-one proc vec) :: vector
     (if (and (? fp::procedure proc) (? vlist::gnu.lists.SimpleVector vec))
         (vector-map-simple fp vlist)
-        (let* ((r :: vector (make-vector 0))
+        (let* ((r (object[] length: (gnu.lists.Sequences:getSize vec)))
                (it (gnu.lists.Sequences:getIterator vec)))
-          (do ((i :: int 0 (+ i 1))) ((not (it:hasNext)) r)
-            (vector-set! r i (proc (it:next)))))))
+          (do ((i :: int 0 (+ i 1)))
+              ((not (it:hasNext))
+               (gnu.lists.FVector r))
+            (set! (r i) (proc (it:next)))))))
 
   (if (= 0 vecs:length)
       (vector-map-one proc vec1)

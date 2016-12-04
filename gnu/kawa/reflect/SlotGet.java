@@ -67,13 +67,7 @@ public class SlotGet extends Procedure2
           isName = mname;
         fname = null;
       }
-    else if (arg2 instanceof SimpleSymbol
-             /* #ifdef use:java.lang.CharSequence */
-             || arg2 instanceof CharSequence
-             /* #else */
-             // || arg2 instanceof gnu.lists.CharSeq || arg2 instanceof String
-             /* #endif */
-             )
+    else if (arg2 instanceof SimpleSymbol || arg2 instanceof CharSequence)
       {
         name = arg2.toString();
         fname = gnu.expr.Compilation.mangleNameIfNeeded(name);

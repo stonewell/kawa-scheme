@@ -905,8 +905,8 @@ public class InlineCalls extends ExpExpVisitor<Type> {
                 inliner = proc.getProperty(Procedure.validateXApplyKey, null);
                 if (inliner == null && exp.firstSpliceArg < 0)
                     inliner = proc.getProperty(Procedure.validateApplyKey, null);
-                if (inliner instanceof String) {
-                    inliner = resolveInliner(proc, (String) inliner,
+                if (inliner instanceof CharSequence) {
+                    inliner = resolveInliner(proc, inliner.toString(),
                                              inlinerMethodType);
                     if (inliner == null) {
                         error('e', "inliner property string for "+proc+" is not of the form CLASS:METHOD");

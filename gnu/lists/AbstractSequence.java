@@ -215,6 +215,11 @@ public abstract class AbstractSequence<E>
         return old;
     }
 
+    public void setAt(int index, E value) {
+        checkCanWrite();
+        setRaw(effectiveIndex(index), value);
+    }
+
   public void fill(E value)
   {
     for (int i = startPos(); (i = nextPos(i)) != 0; )

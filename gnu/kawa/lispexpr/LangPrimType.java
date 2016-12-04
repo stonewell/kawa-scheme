@@ -349,11 +349,12 @@ public class LangPrimType extends PrimType implements TypeValue {
 
     @Override
     public int isCompatibleWithValue(Type valueType) {
-        if (getSignature().charAt(0) == 'Z')
-            return 1;
         if (this == charType && valueType == Type.charType)
             return 2;
-        return super.isCompatibleWithValue(valueType);
+        int r = super.isCompatibleWithValue(valueType);
+        if (r < 0 && getSignature().charAt(0) == 'Z')
+            r = 0;
+        return r;
     }
 
     public static void emitTestIfNumber(Variable incoming, Declaration decl,

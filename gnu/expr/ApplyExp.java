@@ -781,8 +781,9 @@ public class ApplyExp extends Expression
         if (proc instanceof PrimProcedure)
             return ((PrimProcedure) proc).compile(exp, comp, target);
         Object propval = proc.getProperty(Procedure.compilerXKey, null);
-        if (propval instanceof String) {
-            Object method = InlineCalls.resolveInliner(proc, (String) propval,
+        if (propval instanceof CharSequence) {
+            Object method = InlineCalls.resolveInliner(proc,
+                                                       propval.toString(),
                                                        compilerMethodType);
             if (method != null)
                 propval = method;

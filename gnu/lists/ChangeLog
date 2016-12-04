@@ -12,6 +12,8 @@
 	(hashCode, equals): New methods.
 	* Strings.java (offsetByCodePoints): Fix logic bug.
 
+	* AbstractSequence.java (setAt): New method - more efficient than set.
+
 2016-11-27  Per Bothner  <per@bothner.com>
 
 	* AbstractSequence.java: Trivial inlining.

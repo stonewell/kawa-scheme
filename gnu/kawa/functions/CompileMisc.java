@@ -82,6 +82,12 @@ public class CompileMisc
         if (f == Boolean.FALSE || ftype.isSubtype(LangObjType.stringType))
           {
             int skip = f == Boolean.FALSE ? 1 : 0;
+            if (skip > 0 && args.length > 1)
+                 f = args[1].valueIfConstant();
+            if (f instanceof CharSequence && ! (f instanceof String)) {
+                f = f.toString();
+                args[skip] = QuoteExp.getInstance(f);
+            }
             Expression[] xargs = new Expression[args.length+1-skip];
             xargs[0] = new QuoteExp(Integer.valueOf(0), Type.intType);
             System.arraycopy(args, skip, xargs, 1, xargs.length-1);
@@ -90,8 +96,8 @@ public class CompileMisc
             ae.setType(Type.javalangStringType);
             return ae;
           }
-        if (f == Boolean.TRUE
-            || ftype.isSubtype(ClassType.make("java.io.Writer")))
+        if ((f == Boolean.TRUE || ftype.isSubtype(ClassType.make("java.io.Writer")))
+            && args.length > 1)
           {
             if (f == Boolean.TRUE)
               {
@@ -100,6 +106,11 @@ public class CompileMisc
                 System.arraycopy(args, 1, xargs, 1, args.length-1);
                 args = xargs;
               }
+            f = args[1].valueIfConstant();
+            if (f instanceof CharSequence && ! (f instanceof String)) {
+                f = f.toString();
+                args[1] = QuoteExp.getInstance(f);
+            }
             ApplyExp ae = new ApplyExp(typeFormat.getDeclaredMethod("formatToWriter", 3), args);
             ae.setLine(exp);
             ae.setType(Type.voidType);

@@ -44,7 +44,7 @@ public class MultValuesType extends OccurrenceType {
     public int isCompatibleWithValue(Type valueType) {
         if (valueType instanceof LazyType)
             valueType = ((LazyType) valueType).getValueType();
-        if (this == valueType)
+        if (Type.isSame(this, valueType))
             return 2;
         if (valueType instanceof MultValuesType) {
             Type[] items = itemTypes;

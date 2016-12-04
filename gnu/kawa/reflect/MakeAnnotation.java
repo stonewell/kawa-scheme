@@ -132,7 +132,7 @@ public class MakeAnnotation extends ProcedureN
                 aentry = null;
               }
             else
-              eltype = method.getReturnType();
+                eltype = comp.getLanguage().getLangTypeFor(method.getReturnType());
           }
 
         int ecount = messages.getErrorCount();

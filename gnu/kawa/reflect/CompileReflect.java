@@ -107,9 +107,7 @@ public class CompileReflect
     Expression arg1 = args[1];
     Object val1 = arg1.valueIfConstant();
     String name = null;
-    if (val1 instanceof String
-        || val1 instanceof FString
-        || val1 instanceof Symbol)
+    if (val1 instanceof CharSequence || val1 instanceof Symbol)
       name = val1.toString();
     else
       return exp;
@@ -276,8 +274,7 @@ public class CompileReflect
     String name = null;
     Compilation comp = visitor.getCompilation();
     ClassType caller = comp.curClass != null ? comp.curClass : comp.mainClass;
-    if (val1 instanceof String
-        || val1 instanceof FString
+    if (val1 instanceof CharSequence
         || val1 instanceof SimpleSymbol)
       {
         name = val1.toString();

@@ -199,8 +199,9 @@ public class CompileInvoke {
             if (type == LangObjType.constVectorType) {
                 Method defcons;
                 ClassType creq;
-                if (tailArgs == 0 && required instanceof ClassType
-                    && (creq = (ClassType) required).isSubclass(Compilation.typeList)
+                if (tailArgs == 0
+                    && (required instanceof ClassType || required instanceof ParameterizedType)
+                    && (creq = (ClassType) required.getRawType()).isSubclass(Compilation.typeList)
                     && (defcons = creq.getDefaultConstructor()) != null
                     && exp.isSimple()) {
                     ctype = creq;
@@ -211,6 +212,14 @@ public class CompileInvoke {
                     tailArgs = nargs-1;
                     methods[0] = new PrimProcedure(defcons, iproc.language);
                     args[0] = new QuoteExp(ctype.getReflectClass());
+                    if (required instanceof ParameterizedType) {
+                        Type[] paramTypes = ((ParameterizedType) required).getTypeArgumentTypes();
+                        if (paramTypes.length == 1) {
+                            for (int i = args.length; --i > 0; ) {
+                                args[i] = Compilation.makeCoercion(args[i], paramTypes[0]);
+                            }
+                        }
+                    }
                 }
             }
             if (type instanceof TypeValue) {

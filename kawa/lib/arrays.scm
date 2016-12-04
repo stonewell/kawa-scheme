@@ -34,10 +34,10 @@
   (invoke-static  <gnu.kawa.functions.Arrays> 'shareArray array shape mapper))
 
 (define (array-index-ref (arr ::<array>) #!rest (indexes ::object[]))
-  (gnu.lists.ComposedArray:generalIndex arr #f @indexes))
+  (gnu.lists.ComposedArray:generalIndex arr #f @indexes)) ;; FIXME should inline
 
 (define (array-index-share (arr ::<array>) #!rest (indexes ::object[]))
-  (gnu.lists.ComposedArray:generalIndex arr #t @indexes))
+  (gnu.lists.ComposedArray:generalIndex arr #t @indexes)) ;; FIXME should inline
 
 (define (array-flatten (arr ::<array>))
   (gnu.lists.Arrays:flattenCopy arr #t))

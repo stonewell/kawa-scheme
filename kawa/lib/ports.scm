@@ -376,7 +376,7 @@
 (define (read-line #!optional
 		   (port ::input-port (current-input-port))
 		   (handling :: <symbol> 'trim))
-  (kawa.standard.read_line:apply port handling))
+  (kawa.standard.read_line:apply port (handling:toString)))
 
 (define (transcript-on filename) :: <void>
   (invoke-static <output-port> 'setLogFile (invoke filename 'toString)))
