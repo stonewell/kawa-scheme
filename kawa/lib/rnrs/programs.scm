@@ -18,12 +18,13 @@
                       ;; Try looking at entire command line.
                       (let* ((raw1 (java.lang.System:getProperty
                                     "kawa.command.line"))
-                             (raw (if (eq? raw1 #!null)
+                             (raw ::java.lang.String
+                                  (if (eq? raw1 #!null)
                                       (let ((raw2
                                              (java.lang.System:getProperty
                                               "sun.java.command")))
                                         (if (eq? raw2 #!null) #!null
-                                            ("java ":concat raw2)))
+                                            &{java &[raw2]}))
                                       raw1)))
                         (if (eq? raw #!null) #!null
                             ;; Strip off the tail of the property value that

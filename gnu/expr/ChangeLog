@@ -1,3 +1,12 @@
+2016-12-04  Per Bothner  <per@bothner.com>
+
+	Various changes to support IString for imutable strings.
+	* Language.java (getTypeFor(Object,boolean)): Tweak and make non-final.
+	(getTypeFor(Expression,boolean)): Defer Class-handling to above.
+	* PrimProcedure.java (compileRestArg): Better handing of splice
+	with var/rest args using isCompatibleWithValue.
+	(getVerboseName): Add a null-check for paranoia.
+
 2016-12-03  Per Bothner  <per@bothner.com>
 
 	* StackTarget.java (compileFromStack0): Better "type-compatible" test.

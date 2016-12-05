@@ -1003,7 +1003,8 @@ public class Translator extends Compilation
         else {
             if (exp instanceof Keyword && ! keywordsAreSelfEvaluating())
                 error('w', "keyword should be quoted if not in argument position");
-
+            if (exp instanceof String)
+                exp = new IString((String) exp);
             return QuoteExp.getInstance(Quote.quote(exp, this), this);
         }
     }

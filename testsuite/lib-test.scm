@@ -113,7 +113,7 @@
 (test-equal '("loc1" "uri1" "pre")
             (symbol-parts (symbol "loc1" "uri1" "pre")))
 (test-equal '("loc2" "uri2" "pre")
-            (symbol-parts (symbol 'loc2 'uri2 'pre)))
+            (symbol-parts (symbol "loc2" "uri2" "pre")))
 (test-equal '("loc3" "uri3" "pre")
             (symbol-parts (apply symbol (list "loc3" "uri3" "pre"))))
 (test-equal '("loc4" "uri4" "")

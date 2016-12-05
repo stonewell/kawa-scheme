@@ -1,3 +1,7 @@
+2016-12-04  Per Bothner  <per@bothner.com>
+
+	* MethodProc.java (isApplicable): Use Type.isCompatibleWithValue.
+
 2016-10-28  Per Bothner  <per@bothner.com>
 
 	* WrappedException.java: Add test against null.

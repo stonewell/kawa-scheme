@@ -317,7 +317,7 @@
   (define-syntax %symbol->construct
     (syntax-rules ()
       ((%symbol->construct sym)
-       (symbol sym $construct$)))))
+       (symbol (sym:toString) $construct$)))))
  (else
   ;; In a Scheme without namespaces (i.e. colon not special)
   ;; construct a regular symbol.

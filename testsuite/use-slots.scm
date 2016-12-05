@@ -13,7 +13,7 @@
     (test-equal "slot-ref with literal" "field value"
 		(slot-ref a 'target-axis-name))
     ;; slot-set! with literal
-    (slot-set! a 'target-axis-name 'still-from-field)
+    (slot-set! a 'target-axis-name "still-from-field")
     ;; slot-ref with runtime symbol
     (test-equal "still-from-field" (slot-ref a slot-name))
     ;; slot-set! with runtime symbol
@@ -41,11 +41,11 @@
     (test-equal "slot-ref with literal" "field value"
 		(slot-ref a 'target-axis-name))
     ;; slot-set! with literal
-    (slot-set! a 'target-axis-name 'still-from-field)
+    (slot-set! a 'target-axis-name "still-from-field")
     ;; slot-ref with runtime symbol
     (test-equal "still-from-field" (slot-ref a slot-name))
     ;; slot-set! with runtime symbol
-    (slot-set! a slot-name 'still-still-from-field)
+    (slot-set! a slot-name "still-still-from-field")
     (test-end))
 
   (let ((a :: <A2> (make <A2>)))
@@ -55,11 +55,11 @@
     (test-equal "slot-ref with literal" "field value"
 		(slot-ref a 'target-axis-name))
     ;; slot-set! with literal
-    (slot-set! a 'target-axis-name 'still-from-field)
+    (slot-set! a 'target-axis-name "still-from-field")
     ;; slot-ref with runtime symbol
     (test-equal "still-from-field" (slot-ref a slot-name))
     ;; slot-set! with runtime symbol
-    (slot-set! a slot-name 'still-still-from-field)
+    (slot-set! a slot-name "still-still-from-field")
     (test-end))
                         
   ;; We assume getTimeZoneOffset is always a multiple of 30.

@@ -46,21 +46,12 @@ public abstract class MethodProc extends ProcedureN
         for (int i = 0;  ; i++ )  {
             if (i >= argCount && (restType == null || i >= min))
                 break;
-            Type ptype = getParameterType(i);
-            boolean toStringTypeHack = ptype == Type.toStringType;
-            // Treat Type.toString as if it might need a narrowing cast, even
-            // though it always succeeds, so as to prefer methods that don't
-            // require the toString converstion.
-            if (toStringTypeHack)
-                ptype = Type.javalangStringType;
-            int code = ptype.compare(i < argCount ? argTypes[i] : restType);
-            if (code == -3) {
-                if (toStringTypeHack)
-                    result = 0;
-                else
-                    return -1;
+            Type argType = i < argCount ? argTypes[i] : restType;
+            int code =  getParameterType(i).isCompatibleWithValue(argType);
+            if (code < 0) {
+                return -1;
             }
-            else if (code < 0)
+            else if (code == 0)
                 result = 0;
         }
         return result;

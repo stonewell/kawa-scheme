@@ -1,6 +1,6 @@
 (module-compile-options warn-as-error: #t)
 
-(define (my-member (key::String) (strings::java.util.List[String]))
+(define (my-member (key::String) (strings::java.util.List[java.lang.String]))
   (let ((iter (strings:iterator)))
     (let loop ()
       (if (iter:hasNext)
@@ -10,7 +10,7 @@
 		(loop)))
 	  #f))))
 
-(define strlist ::java.util.List[String]
+(define strlist ::java.util.List[java.lang.String]
   ["ab" "cd" "ef"])
 (format #t "~s~%" strlist)
 ;; Output: #("ab" "cd" "ef")

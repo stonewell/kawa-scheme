@@ -15,6 +15,7 @@ import gnu.kawa.reflect.Invoke;
 import gnu.kawa.reflect.LazyType;
 import gnu.lists.Blob;
 import gnu.lists.FVector;
+import gnu.lists.IString;
 import gnu.lists.Sequences;
 import gnu.lists.U8Vector;
 import java.util.*;
@@ -64,6 +65,8 @@ public class LangObjType extends SpecialObjectType implements TypeValue
   private static final int DYNAMIC_TYPE_CODE = 30;
   private static final int ARGLIST_TYPE_CODE = 31;
   private static final int ARGVECTOR_TYPE_CODE = 32;
+  private static final int JSTRING_TYPE_CODE = 33;
+  private static final int ISTRING_TYPE_CODE = 34;
 
   public static final LangObjType pathType =
     new LangObjType("path", "gnu.kawa.io.Path",
@@ -161,6 +164,16 @@ public class LangObjType extends SpecialObjectType implements TypeValue
     new LangObjType("string", "java.lang.CharSequence",
                     STRING_TYPE_CODE);
 
+    /** Wrapper for java.lang.String, with extra coercions. */
+    public static final LangObjType jstringType =
+        new LangObjType("java.lang.String", "java.lang.String",
+                        JSTRING_TYPE_CODE);
+
+    /** Immutuable string, implemented using IString */
+    public static final LangObjType istringType =
+        new LangObjType("istring", "gnu.lists.IString",
+                    ISTRING_TYPE_CODE);
+
   public static final LangObjType listType =
     new LangObjType("list", "gnu.lists.LList",
                     LIST_TYPE_CODE);
@@ -198,6 +211,8 @@ public class LangObjType extends SpecialObjectType implements TypeValue
     }
 
     public static LangObjType getInstanceFromClass(String name) {
+        if ("gnu.lists.IString".equals(name))
+            return LangObjType.istringType;
         if ("gnu.math.IntNum".equals(name))
             return LangObjType.integerType;
         if ("gnu.math.DFloNum".equals(name))
@@ -260,7 +275,17 @@ public class LangObjType extends SpecialObjectType implements TypeValue
             break;
         case DYNAMIC_TYPE_CODE:
             return valueType instanceof ObjectType ? 2 : 1;
-        }
+        case ISTRING_TYPE_CODE:
+        case JSTRING_TYPE_CODE:
+            Type vt = valueType.getImplementationType();
+            if (vt == getImplementationType())
+                return 2;
+            if (vt instanceof ClassType
+                && (((ClassType) vt)
+                  .implementsInterface(Compilation.typeCharSequence)))
+                return 1;
+            break;
+       }
         return getImplementationType().isCompatibleWithValue(valueType);
     }
 
@@ -310,6 +335,8 @@ public class LangObjType extends SpecialObjectType implements TypeValue
     switch (typeCode)
       {
       case STRING_TYPE_CODE:
+      case ISTRING_TYPE_CODE:
+      case JSTRING_TYPE_CODE:
       case LIST_TYPE_CODE:
       case VECTOR_TYPE_CODE:
       case S8VECTOR_TYPE_CODE:
@@ -619,7 +646,22 @@ public class LangObjType extends SpecialObjectType implements TypeValue
         CodeAttr code = comp.getCode();
         if (incoming != null)
             code.emitLoad(incoming);
-        if (emitCoercionOrNull(code)) {
+        if (this == jstringType) {
+            Label beforeStore = new Label();
+            code.emitIfNull();
+            code.emitPushNull();
+            code.emitGoto(beforeStore);
+            code.emitFi();
+            code.emitLoad(incoming);
+            code.emitInstanceof(Compilation.typeCharSequence);
+            code.emitIfIntNotZero();
+            code.emitLoad(incoming);
+            code.emitCheckcast(Compilation.typeCharSequence);
+            code.emitInvoke(Type.toString_method);
+            beforeStore.define(code);
+            decl.compileStore(comp);
+        }
+        else if (emitCoercionOrNull(code)) {
             if (decl != null) {
                 code.emitDup();
                 decl.compileStore(comp);
@@ -668,6 +710,10 @@ public class LangObjType extends SpecialObjectType implements TypeValue
           return Sequences.coerceToSequence(obj);
       case CONST_VECTOR_TYPE_CODE:
           return coerceToConstVector(obj);
+      case JSTRING_TYPE_CODE:
+          return obj == null ? null : ((CharSequence) obj).toString();
+      case ISTRING_TYPE_CODE:
+          return IString.valueOf((CharSequence) obj);
       case VECTOR_TYPE_CODE:
       case S8VECTOR_TYPE_CODE:
       case U8VECTOR_TYPE_CODE:
@@ -802,6 +848,16 @@ public class LangObjType extends SpecialObjectType implements TypeValue
       case ARGVECTOR_TYPE_CODE:
         code.emitCheckcast(implementationType);
         break;
+      case ISTRING_TYPE_CODE:
+          // Allow any CharSequence - but *not* null
+          code.emitInvoke(implementationType.getDeclaredMethod("valueOf", 1));
+          break;
+      case JSTRING_TYPE_CODE:
+          // Allow any CharSequence *or* null
+          // (unlike toStringType which allows any Object or null).
+          code.emitCheckcast(Compilation.typeCharSequence);
+          toStringType.emitCoerceFromObject(code);
+          break;
       default:
         code.emitInvoke(coercionMethod());
       }

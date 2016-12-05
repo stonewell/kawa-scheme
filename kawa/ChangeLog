@@ -1,3 +1,7 @@
+2016-12-04  Per Bothner  <per@bothner.com>
+
+	* lang/Translator.java (rewrite): Convert literal string to IString.
+
 2016-11-27  Per Bothner  <per@bothner.com>
 
 	* standard/let.java (rewrite): Add a null test - just in case.

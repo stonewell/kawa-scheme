@@ -1,3 +1,8 @@
+2016-12-04  Per Bothner  <per@bothner.com>
+
+	* syntax.scm (%symbol->construct): Update for string literal change.
+	* rnrs/programs.scm (command-line): Likewise.
+
 2016-12-03  Per Bothner  <per@bothner.com>
 
 	Make more robust for new string representations.

@@ -514,12 +514,7 @@ public class PrimProcedure extends MethodProc {
             if (spliceType instanceof ArrayType && arg_type instanceof ArrayType) {
                 Type spliceElType = ((ArrayType) spliceType).getComponentType();
                 Type argElType = ((ArrayType) arg_type).getComponentType();
-                if (spliceElType == argElType
-                    || (argElType == Type.objectType
-                        && spliceElType instanceof ObjectType)
-                    || (argElType instanceof ClassType
-                        && spliceElType instanceof ClassType
-                        && spliceElType.isSubtype(argElType))) {
+                if (argElType.isCompatibleWithValue(spliceElType) == 2) {
                     spliceArg.compileWithPosition(comp, Target.pushObject);
                     return;
                 }
@@ -1261,31 +1256,28 @@ public class PrimProcedure extends MethodProc {
     return name;
   }
 
-  public String getVerboseName()
-  {
-    StringBuffer buf = new StringBuffer(100);
-    if (method == null)
-      {
-	buf.append("<op ");
-	buf.append(op_code);
-	buf.append('>');
-      }
-    else
-      {
-	buf.append(getDeclaringClass().getName());
-	buf.append('.');
-	buf.append(method.getName());
-      }
-    buf.append('(');
-    for (int i = 0; i < argTypes.length; i++)
-      {
-	if (i > 0)
-	  buf.append(',');
-	buf.append(argTypes[i].getName());
-      }
-    buf.append(')');
-    return buf.toString();
-  }
+    public String getVerboseName() {
+        StringBuilder buf = new StringBuilder(100);
+        if (method == null) {
+            buf.append("<op ");
+            buf.append(op_code);
+            buf.append('>');
+        } else {
+            buf.append(getDeclaringClass().getName());
+            buf.append('.');
+            buf.append(method.getName());
+        }
+        if (argTypes != null) {
+            buf.append('(');
+            for (int i = 0; i < argTypes.length; i++) {
+                if (i > 0)
+                    buf.append(',');
+                buf.append(argTypes[i].getName());
+            }
+            buf.append(')');
+        }
+        return buf.toString();
+    }
 
   public String toString()
   {

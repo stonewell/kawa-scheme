@@ -1,3 +1,10 @@
+2016-12-04  Per Bothner  <per@bothner.com>
+
+	* LangObjType.java (istringType, istringType): New Types.
+	* LispLanguage.java (getTypeFor): Map java.lang.String to
+	LangObjType.jstringType rather than Type.toStringType.
+	Also handle arrays.
+
 2016-12-03  Per Bothner  <per@bothner.com>
 
 	* LangObjType.java (isCompatibleWithValue): Use Type.isSame.

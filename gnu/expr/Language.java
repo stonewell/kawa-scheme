@@ -12,7 +12,6 @@ import gnu.kawa.io.CharArrayInPort;
 import gnu.kawa.io.CheckConsole;
 import gnu.kawa.io.InPort;
 import gnu.kawa.io.OutPort;
-import gnu.kawa.io.TtyInPort;
 import gnu.kawa.reflect.*;
 import gnu.kawa.format.AbstractFormat;
 import gnu.kawa.functions.GetNamedPart;
@@ -843,26 +842,34 @@ public abstract class Language
         return t;
     }
 
-  public final Type getTypeFor (Object spec, boolean lenient)
-  {
-    if (spec instanceof Type)
-      return (Type) spec;
-    if (spec instanceof Class)
-      return getTypeFor((Class) spec);
-    if (lenient
-        && (spec instanceof FString
-            || spec instanceof String
-            || (spec instanceof Symbol && ((Symbol) spec).hasEmptyNamespace())
-            || spec instanceof CharSeq))
-      return getTypeFor(spec.toString());
-    if (spec instanceof Namespace)
-      {
-        String uri = ((Namespace) spec).getName();
-        if (uri != null && uri.startsWith("class:"))
-          return getLangTypeFor(getTypeFor(uri.substring(6)));
-      }
-    return null;
-  }
+    /** Convert a "type value" to a Type.
+     * This is used to process types from source code.
+     * Normally, an identifier that resolves to a class name
+     * should resolve to the raw ClassType, rather than a language
+     * specific class (which might e.g. use a different constructor).
+     * These may be exceptions: specifically,  given java.lang.String,
+     * we do want to use language-specific conversion to String.
+     */
+    public Type getTypeFor(Object spec, boolean lenient) {
+        if (spec instanceof Type)
+            return (Type) spec;
+        if (spec instanceof Class) {
+            Class clas = (Class) spec;
+            if (clas.isArray())
+                return ArrayType.make(getTypeFor(clas.getComponentType(), lenient));
+            return Type.make(clas);
+        }
+        if (lenient
+            && (spec instanceof CharSequence
+                || spec instanceof SimpleSymbol))
+            return getTypeFor(spec.toString());
+        if (spec instanceof Namespace) {
+            String uri = ((Namespace) spec).getName();
+            if (uri != null && uri.startsWith("class:"))
+                return getLangTypeFor(getTypeFor(uri.substring(6)));
+        }
+        return null;
+    }
 
     /** Encode this type as a parseable string.
      * Stored in SourceType or SourceMethodType annotations.
@@ -951,8 +958,6 @@ public abstract class Language
         Object value = ((QuoteExp) exp).getValue();
         if (value instanceof Type)
           return (Type) value;
-        if (value instanceof Class)
-          return Type.make((Class) value);
         return getTypeFor(value, lenient);
       }
     else if (exp instanceof ReferenceExp)

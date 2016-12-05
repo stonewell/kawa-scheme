@@ -266,7 +266,8 @@ public abstract class LispLanguage extends Language
             types.put("pair", ClassType.make("gnu.lists.Pair"));
             types.put("pair-with-position",
                       ClassType.make("gnu.lists.PairWithPosition"));
-            types.put("constant-string", ClassType.make("java.lang.String"));
+            // FIXME should be UNION(java.lang.String, gnu.lists.IString)
+            types.put("constant-string", ClassType.make("java.lang.CharSequence"));
             types.put("abstract-string", ClassType.make("gnu.lists.CharSeq"));
             types.put("vector", LangObjType.vectorType);
             types.put("string", LangObjType.stringType);
@@ -330,17 +331,24 @@ public abstract class LispLanguage extends Language
         return (type != null) ? type : getPackageStyleType(name);
     }
 
-    // FIXME: Would be better and little fuss to use a perfect hash
-    // function for this.
+    public Type getTypeFor (Object spec, boolean lenient) {
+        if (spec == String.class)
+            return LangObjType.jstringType;
+        else
+            return super.getTypeFor(spec, lenient);
+    }
+
     public Type getTypeFor(Class clas) {
         String name = clas.getName();
         if (clas.isPrimitive())
             return getNamedType(name);
+        if (clas.isArray())
+            return ArrayType.make(getTypeFor(clas.getComponentType()))
         /* #ifdef JAVA7 */
         ; // FIXME - FUTURE: Use a switch with string keys.
         /* #endif */
-        if ("java.lang.String".equals(name))
-            return Type.toStringType;
+        if ("java.lang.String".equals(name)) // ???
+            return LangObjType.jstringType;
         Type t = LangObjType.getInstanceFromClass(name);
         if (t != null)
             return t;

@@ -1,3 +1,12 @@
+2016-12-04  Per Bothner  <per@bothner.com>
+
+	* fasta.scm: Update since string literals are now IString.
+	* sva36853.scm: Likewise - but we now have smarter constructors.
+	* lib-test.scm: Update since there is no longer automatic conversion
+	from symbol to java.lang.String.
+	* use-slots.scm: Likewise.
+	* inlining.expected: Update.
+
 2016-11-28  Per Bothner  <per@bothner.com>
 
 	No longer allow a non-spliced argument array to a Java varargs method.
