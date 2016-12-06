@@ -1339,7 +1339,7 @@ public class Declaration
               {
                 if (val instanceof gnu.text.Char)
                   val = gnu.math.IntNum.make(((gnu.text.Char) val).intValue());
-                    getField().setConstantValue(val, frameType);
+                getField().setConstantValue(val, frameType);
                 return;
               }
           }
