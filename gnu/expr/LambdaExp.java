@@ -888,7 +888,7 @@ public class LambdaExp extends ScopeExp {
                 && this == ((ClassExp) outer).clinitMethod)
                 nameBuf.append("<clinit>");
             else if (getSymbol() != null)
-                nameBuf.append(Compilation.mangleName(name));
+                nameBuf.append(Mangling.mangleName(name));
             primMethodName = nameBuf.toString();
         }
         return primMethodName;
