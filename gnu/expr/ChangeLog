@@ -1,3 +1,8 @@
+2016-12-06  Per Bothner  <per@bothner.com>
+
+	* Mangling.java: New file, for mangling-related static methods.
+	* Compilation.java: Move a bunch of methods here.
+
 2016-12-03  Per Bothner  <per@bothner.com>
 
 	* StackTarget.java (compileFromStack0): Better "type-compatible" test.

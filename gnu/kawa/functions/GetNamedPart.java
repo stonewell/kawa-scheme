@@ -2,7 +2,7 @@ package gnu.kawa.functions;
 import gnu.bytecode.*;
 import gnu.mapping.*;
 import gnu.kawa.reflect.*;
-import gnu.expr.Compilation;
+import gnu.expr.Mangling;
 import gnu.expr.Language;
 
 /** Procedure to get the value of a named component of an object. */
@@ -118,7 +118,7 @@ public class GetNamedPart extends Procedure2 implements HasSetter
         // FIXME!
       }
     MethodProc methods = ClassMethods.apply((ObjectType) ClassType.make(container.getClass()),
-                                            Compilation.mangleName(name), '\0',
+                                            Mangling.mangleName(name), '\0',
                                             Language.getDefaultLanguage());
     if (methods != null)
       return new NamedPart(container, name, 'M', methods);

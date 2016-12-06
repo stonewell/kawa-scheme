@@ -1103,7 +1103,7 @@ public abstract class Language
             // FIXME move this to demangleName
             if (externalAccess)
                 fname = fname.substring(Declaration.PRIVATE_PREFIX.length());
-            fdname = Compilation.demangleName(fname, true).intern();
+            fdname = Mangling.demangleName(fname, true).intern();
         }
         try {
             SourceName sourceName = fld.getAnnotation(SourceName.class);

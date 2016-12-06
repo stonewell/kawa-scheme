@@ -238,7 +238,7 @@ public class CompileReflect
           comp.error('w', "no slot `"+name+"' in "+ctype.getName());
       }
 
-    String fname = gnu.expr.Compilation.mangleNameIfNeeded(name);
+    String fname = Mangling.mangleNameIfNeeded(name);
     // So we can quickly check for "class" or "length".
     // The name gets interned anyway when compiled.
     fname = fname.intern();

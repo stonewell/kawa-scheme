@@ -126,7 +126,7 @@ public class ValuesMap extends MethodProc implements Inlineable
       param.allocateVariable(code);
     else
     {
-      String pname = Compilation.mangleNameIfNeeded(param.getName());
+      String pname = Mangling.mangleNameIfNeeded(param.getName());
       param = new Declaration(code.addLocal(paramType.getImplementationType(), pname));
     }
     Expression[] args;

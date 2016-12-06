@@ -183,7 +183,7 @@ public abstract class ClassMemberLocation<T> extends Location<T>
     boolean isFinal = (rModifiers & Access.FINAL) != 0;
     Object fdname = (isFinal && (fvalue instanceof Named && ! isAlias)
 		     ? ((Named) fvalue).getSymbol()
-		     : Compilation.demangleName(rfield.getName(), true));
+		     : Mangling.demangleName(rfield.getName(), true));
     Symbol sym;
     if (fdname instanceof Symbol)
       sym = (Symbol) fdname;

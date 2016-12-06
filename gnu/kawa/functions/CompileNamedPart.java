@@ -74,7 +74,7 @@ public class CompileNamedPart
         ObjectType otype = (ObjectType) typeval;
         PrimProcedure[] methods
           = ClassMethods.getMethods(otype,
-                                    Compilation.mangleName(mname),
+                                    Mangling.mangleName(mname),
                                     '\0', caller, language);
         if (methods != null && methods.length > 0)
           {
@@ -111,7 +111,7 @@ public class CompileNamedPart
       {
         ObjectType otype = (ObjectType) type;
         PrimProcedure[] methods
-          = ClassMethods.getMethods(otype, Compilation.mangleName(mname),
+          = ClassMethods.getMethods(otype, Mangling.mangleName(mname),
                                     'V', caller, language);
         if (methods != null && methods.length > 0)
           {

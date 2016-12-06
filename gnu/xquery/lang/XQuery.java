@@ -992,7 +992,7 @@ public class XQuery extends Language
     int dot = source.lastIndexOf('.');
     if (dot >= 0)
       source = source.substring(0, dot);
-    return Compilation.mangleNameIfNeeded(source);
+    return Mangling.mangleNameIfNeeded(source);
   }
 
   public static Object getExternal (Symbol name, Object type)
