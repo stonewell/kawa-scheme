@@ -1237,7 +1237,7 @@ public class Translator extends Compilation
             else {
                 if (cname.indexOf('.') < 0)
                     cname = (tr.classPrefix
-                             + Compilation.mangleNameIfNeeded(cname));
+                             + Mangling.mangleNameIfNeeded(cname));
                 if (rank == 0) {
                     ModuleManager mmanager = ModuleManager.getInstance();
                     ModuleInfo typeInfo = mmanager.searchWithClassName(cname);

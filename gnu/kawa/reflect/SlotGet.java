@@ -51,7 +51,7 @@ public class SlotGet extends Procedure2
     if (arg2 instanceof gnu.bytecode.Field)
       {
         fname = ((gnu.bytecode.Field) arg2).getName();
-        name = Compilation.demangleName(fname, true);
+        name = Mangling.demangleName(fname, true);
       }
     else if (arg2 instanceof gnu.bytecode.ClassType)
       {
@@ -60,7 +60,7 @@ public class SlotGet extends Procedure2
     else if (arg2 instanceof gnu.bytecode.Method)
       {
         String mname = ((gnu.bytecode.Method) arg2).getName();
-        name = Compilation.demangleName(mname, false);
+        name = Mangling.demangleName(mname, false);
         if (mname.startsWith("get"))
           getName = mname;
         else if (mname.startsWith("is"))
@@ -70,7 +70,7 @@ public class SlotGet extends Procedure2
     else if (arg2 instanceof SimpleSymbol || arg2 instanceof CharSequence)
       {
         name = arg2.toString();
-        fname = gnu.expr.Compilation.mangleNameIfNeeded(name);
+        fname = Mangling.mangleNameIfNeeded(name);
       }
     else
       throw new WrongType(this, 2, arg2, "string");
@@ -217,7 +217,7 @@ public class SlotGet extends Procedure2
   public static Member
   lookupMember (ObjectType clas, String name, ClassType caller)
   {
-    String mname = Compilation.mangleNameIfNeeded(name);
+    String mname = Mangling.mangleNameIfNeeded(name);
     Member member = clas.getField(mname, -1);
     if (member == null && clas instanceof ClassType)
       member = ((ClassType) clas).getDeclaredClass(mname);

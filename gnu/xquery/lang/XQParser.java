@@ -4326,7 +4326,7 @@ public class XQParser extends Lexer
   public static Expression makeFunctionExp(String className, String name)
   {
     return makeFunctionExp(className,
-			   Compilation.mangleNameIfNeeded(name),
+			   Mangling.mangleNameIfNeeded(name),
 			   name);
   }
 

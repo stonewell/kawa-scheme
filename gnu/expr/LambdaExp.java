@@ -668,7 +668,7 @@ public class LambdaExp extends ScopeExp {
             : comp.mainClass;
         String name = getName();
         String fname
-            = name == null ? "lambda" : Compilation.mangleNameIfNeeded(name);
+            = name == null ? "lambda" : Mangling.mangleNameIfNeeded(name);
         int fflags = Access.FINAL;
         if (nameDecl != null && nameDecl.context instanceof ModuleExp) {
             boolean external_access = nameDecl.needsExternalAccess();
@@ -1252,8 +1252,7 @@ public class LambdaExp extends ScopeExp {
                 // Later, we copy it from its incoming register
                 // to its home location heapFrame.  Here we just create and
                 // assign a Variable for the incoming (register) value.
-                String vname
-                    = Compilation.mangleName(decl.getName()).intern();
+                String vname = Mangling.mangleName(decl.getName()).intern();
                 Type vtype = decl.getType().promoteIfUnsigned().getImplementationType();
                 var = decl.var = getVarScope().addVariable(null, vtype, vname);
                 //getVarScope().addVariableAfter(var, decl);

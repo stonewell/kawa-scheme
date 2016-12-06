@@ -53,7 +53,7 @@ public class module_name extends Syntax {
             if (index >= 0)
                 tr.classPrefix = name.substring(0, index+1);
             else
-                className = tr.classPrefix + Compilation.mangleClassName(name);
+                className = tr.classPrefix + Mangling.mangleClassName(name);
             ModuleExp module = tr.getModule();
             if (tr.mainClass == null)
                 tr.mainClass = new gnu.bytecode.ClassType(className);
@@ -83,7 +83,7 @@ public class module_name extends Syntax {
             first = false;
             Object car = parg.getCar();
             if (car != null)
-                sbuf.append(Compilation.mangleClassName(car.toString()));
+                sbuf.append(Mangling.mangleClassName(car.toString()));
             list = parg.getCdr();
             if (list == LList.Empty)
                 break;

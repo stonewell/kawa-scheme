@@ -101,7 +101,7 @@ public class ImportFromLibrary extends Syntax
 
     public static String checkSrfi(String lname, Translator tr) {
         if (lname.startsWith("srfi.")) {
-            String demangled = Compilation.demangleSymbolic(lname.substring(5));
+            String demangled = Mangling.demangleSymbolic(lname.substring(5));
             int dot = demangled.indexOf('.');
             String srfiName;
             StringBuilder badNameBuffer = null;
@@ -162,7 +162,7 @@ public class ImportFromLibrary extends Syntax
         if (imports instanceof SimpleSymbol) {
             String sname = imports.toString();
             handleImport(sname, null,
-                         Compilation.mangleQualifiedName(sname),
+                         Mangling.mangleQualifiedName(sname),
                          defs, tr, mapper);
             return;
         }
@@ -283,7 +283,7 @@ public class ImportFromLibrary extends Syntax
                 if (sbuf.length() > 0)
                     sbuf.append('/');
                 String part = car.toString();
-                cbuf.append(Compilation.mangleClassName(part));
+                cbuf.append(Mangling.mangleClassName(part));
                 sbuf.append(part);
             }
             libref = cdr;

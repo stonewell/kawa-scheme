@@ -38,8 +38,7 @@
     object)))
 
 (define (record-type-name (rtd :: <class-type>))
-  (invoke-static <gnu.expr.Compilation> 'demangleName
-		  (invoke rtd 'getName) #t))
+  (gnu.expr.Mangling:demangleName (invoke rtd 'getName) #t))
 
 (define (record-type-field-names rtd)
   ((primitive-static-method <record> "typeFieldNames"

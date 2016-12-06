@@ -41,7 +41,7 @@ public class SlotSet extends Procedure3 implements Inlineable
     if (member instanceof CharSequence
         || member instanceof SimpleSymbol) {
       name = member.toString();
-      fname = gnu.expr.Compilation.mangleNameIfNeeded(name);
+      fname = Mangling.mangleNameIfNeeded(name);
       clas = isStatic ? SlotGet.coerceToClass(obj) : obj.getClass();
     }
     else {
@@ -136,7 +136,7 @@ public class SlotSet extends Procedure3 implements Inlineable
   lookupMember (ObjectType clas, String name, ClassType caller)
   {
     gnu.bytecode.Field field
-      = clas.getField(Compilation.mangleNameIfNeeded(name), -1);
+      = clas.getField(Mangling.mangleNameIfNeeded(name), -1);
     if (field != null)
       {
         if (caller == null)

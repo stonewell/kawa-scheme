@@ -749,7 +749,7 @@ public class repl extends Procedure0or1 {
 
                 if (compilationTopname != null) {
                     String cname
-                        = Compilation.mangleNameIfNeeded(compilationTopname);
+                        = Mangling.mangleNameIfNeeded(compilationTopname);
                     if (Compilation.classPrefixDefault != null)
                         cname = Compilation.classPrefixDefault + cname;
                     minfo.setClassName(cname);

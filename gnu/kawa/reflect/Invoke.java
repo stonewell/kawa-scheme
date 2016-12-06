@@ -289,7 +289,7 @@ public class Invoke extends Procedure
 	  mname = ((Symbol) name).getName();
         else
           throw new WrongType(this, 1, name, "string-or-symbol");
-        mname = Compilation.mangleName(mname);
+        mname = Mangling.mangleName(mname);
       }
     MethodProc proc = ClassMethods.apply(dtype, mname,
                                          kind == 'P' ? 'P'

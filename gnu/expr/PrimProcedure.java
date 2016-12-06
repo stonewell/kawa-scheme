@@ -1115,7 +1115,7 @@ public class PrimProcedure extends MethodProc {
             cwriter.println("Anonymous function - unknown method.");
             return;
           }
-        pname = Compilation.mangleName(pname);
+        pname = Mangling.mangleName(pname);
       }
     for (Method method = ctype.getMethods();
          method != null; method = method.getNext())
@@ -1176,7 +1176,7 @@ public class PrimProcedure extends MethodProc {
       {
         if (name == null)
           return null;
-        String mangledName = Compilation.mangleName(name);
+        String mangledName = Mangling.mangleName(name);
         String mangledNameV = mangledName + "$V";
         String mangledNameVX = mangledName + "$V$X";
         String mangledNameX = mangledName + "$X";

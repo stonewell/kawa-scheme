@@ -505,7 +505,7 @@ public class ModuleExp extends LambdaExp
             // If explicitly set, perhaps using command-line flags.
             className = info.className;
         else {
-            className = Compilation.mangleQualifiedName(mname);
+            className = Mangling.mangleQualifiedName(mname);
 
             Path parentPath;
             String parent;

@@ -43,7 +43,7 @@ public class ClassMethods extends Procedure2
     else
       throw new WrongType(thisProc, 1, null);
     if (! ("<init>".equals(mname)))
-      mname = Compilation.mangleName(mname);
+      mname = Mangling.mangleName(mname);
     MethodProc result = apply(dtype, mname, '\0', Language.getDefaultLanguage());
     if (result == null)
       throw new RuntimeException("no applicable method named `"+mname+"' in "
@@ -288,7 +288,7 @@ public class ClassMethods extends Procedure2
 	  return null;
 	if (Language.isValidJavaName(nam))
 	  return nam;
-	return Compilation.mangleName(nam, reversible);
+	return Mangling.mangleName(nam, reversible);
       }
     return null;
   }

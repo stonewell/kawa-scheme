@@ -1,3 +1,8 @@
+2016-12-06  Per Bothner  <per@bothner.com>
+
+	* Mangling.java: New file, for mangling-related static methods.
+	* Compilation.java: Move a bunch of methods here.
+
 2016-12-04  Per Bothner  <per@bothner.com>
 
 	Various changes to support IString for imutable strings.

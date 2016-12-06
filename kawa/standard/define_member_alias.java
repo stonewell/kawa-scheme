@@ -56,7 +56,7 @@ public class define_member_alias extends Syntax
         Expression arg = tr.rewrite(p2.getCar());
         Object p2_cdr = p2.getCdr();
         if (p2_cdr == LList.Empty)
-          fname = new QuoteExp(gnu.expr.Compilation.mangleName(name));
+          fname = new QuoteExp(Mangling.mangleName(name));
         else if (p2_cdr instanceof Pair)
           {
             Pair p3 = (Pair) p2_cdr;

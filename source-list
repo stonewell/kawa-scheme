@@ -43,6 +43,7 @@ GNU_EXPR_JSOURCES = \
   gnu/expr/LetExp.java \
   gnu/expr/Literal.java \
   gnu/expr/LitTable.java \
+  gnu/expr/Mangling.java \
   gnu/expr/ModuleBody.java \
   gnu/expr/ModuleContext.java \
   gnu/expr/ModuleInfo.java \

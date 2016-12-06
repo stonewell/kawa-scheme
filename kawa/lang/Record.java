@@ -6,6 +6,7 @@ import gnu.bytecode.*;
 import gnu.mapping.*;
 import gnu.lists.*;
 import gnu.expr.Compilation;
+import gnu.expr.Mangling;
 
 public class Record
 {
@@ -169,7 +170,7 @@ public class Record
   public static ClassType makeRecordType (String name, LList fnames)
   {
     ClassType superClass = ClassType.make("kawa.lang.Record");
-    String mangledName = Compilation.mangleNameIfNeeded(name);
+    String mangledName = Mangling.mangleNameIfNeeded(name);
     ClassType clas = new ClassType(mangledName);
     clas.setSuper(superClass);
     clas.setModifiers(Access.PUBLIC|Access.SUPER);
@@ -200,7 +201,7 @@ public class Record
 	Pair pair = (Pair) fnames;
 	String fname = pair.getCar().toString();
 	//fnamesBuf.append(fname);  fnamesBuf.append('\n');
-	fld = clas.addField(Compilation.mangleNameIfNeeded(fname),
+	fld = clas.addField(Mangling.mangleNameIfNeeded(fname),
 			    Type.pointer_type, Access.PUBLIC);
 	fld.setSourceName(fname.intern());
 	fnames = (LList) pair.getCdr();

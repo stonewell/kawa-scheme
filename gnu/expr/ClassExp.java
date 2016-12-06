@@ -151,7 +151,7 @@ public class ClassExp extends LambdaExp
                 int flags = decl.getAccessFlags(Access.PUBLIC);
                 if (decl.getFlag(Declaration.STATIC_SPECIFIED))
                     flags |= Access.STATIC;
-                String fname = Compilation.mangleNameIfNeeded(decl.getName());
+                String fname = Mangling.mangleNameIfNeeded(decl.getName());
                 decl.setField(instanceType.addField(fname, null, flags));
                 Declaration old = seenFields.get(fname);
                 if (old != null)
@@ -299,7 +299,7 @@ public class ClassExp extends LambdaExp
                 int dot = name.indexOf('.', start);
                 if (dot < 0)
                     break;
-                nbuf.append(Compilation
+                nbuf.append(Mangling
                             .mangleClassName(name.substring(start, dot)));
                 start = dot + 1;
                 if (start < name.length())
@@ -326,7 +326,7 @@ public class ClassExp extends LambdaExp
             else
                 setFlag(IS_PACKAGE_MEMBER);
             if (start < name.length())
-                nbuf.append(Compilation
+                nbuf.append(Mangling
                             .mangleClassName(name.substring(start)));
             name = nbuf.toString();
         }
@@ -847,7 +847,7 @@ public class ClassExp extends LambdaExp
      */
     public static String slotToMethodName(String prefix, String sname) {
         if (! Language.isValidJavaName(sname))
-            sname = Compilation.mangleName(sname, false);
+            sname = Mangling.mangleName(sname, false);
         int slen = sname.length();
         StringBuffer sbuf = new StringBuffer(slen+3);
         sbuf.append(prefix);

@@ -62,7 +62,7 @@ public class define_library extends Syntax {
         if (index >= 0)
             mcomp.classPrefix = name.substring(0, index+1);
         else
-            className = tr.classPrefix + Compilation.mangleClassName(name);
+            className = tr.classPrefix + Mangling.mangleClassName(name);
         ClassType moduleClass = new gnu.bytecode.ClassType(className);
         mcomp.mainLambda = module;
         module.setType(tr.mainClass);
