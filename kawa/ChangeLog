@@ -1,3 +1,7 @@
+2016-12-06  Per Bothner  <per@bothner.com>
+
+	* standard/requires.java (importDefinitions): Remove bogus semicolon.
+
 2016-12-04  Per Bothner  <per@bothner.com>
 
 	* lang/Translator.java (rewrite): Convert literal string to IString.
