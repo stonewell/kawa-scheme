@@ -18,15 +18,13 @@
 ;(module-compile-options warn-undefined-variable: #t
 ;			warn-invoke-unknown-method: #t)
 
+(module-name (srfi 95))
 (module-export sorted? merge merge! sort sort!
 	       ;; The following are needed for (rnrs sorting).
 	       ;; Should be moved to a core-sorting library.  FIXME.
 	       %sort-list %sort-vector %vector-sort!)
 
-(require <kawa.lib.prim_syntax>)
-(require <kawa.lib.std_syntax>)
-(require <kawa.lib.misc>)
-(require <kawa.lib.vectors>)
+(import (scheme base))
 
 ;(provide 'srfi-95)
 ;(provide 'sort)

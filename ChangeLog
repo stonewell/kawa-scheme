@@ -1,3 +1,9 @@
+2016-12-09  Per Bothner  <per@bothner.com>
+
+	Moved some files from gnu/kawa/slib to kawa/lib.
+	The latter now assume they are compiled using two separate commands.
+	* build.xml: Update accordingly.
+
 2016-11-25  Per Bothner  <per@bothner.com>
 
 	* README.md: Convert to Markdown from README.

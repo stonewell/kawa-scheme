@@ -682,19 +682,9 @@
         <file name="kawa/pictures.scm"/>
         <file name="kawa/process-keywords.scm"/>
         <file name="kawa/string-cursors.scm"/>
-        <file name="kawa/quaternions.scm"/>
-        <file name="kawa/rotations.scm"/>
         <file name="kawa/hashtable.scm"/>
         <file name="kawa/regex.scm"/>
         <file name="kawa/reflect.scm"/>
-        <file name="kawa/base.scm"/>
-        <file name="rnrs/hashtables.scm"/>
-        <file name="rnrs/lists.scm"/>
-        <file name="rnrs/arithmetic/bitwise.scm"/>
-        <file name="srfi95.scm"/>
-        <file name="rnrs/unicode.scm"/>
-        <file name="rnrs/sorting.scm"/>
-        <file name="rnrs/programs.scm"/>
         <file name="scheme/base.scm"/>
         <file name="scheme/case-lambda.scm"/>
         <file name="scheme/char.scm"/>
@@ -712,6 +702,25 @@
         <file name="scheme/write.scm"/>
         <file name="scheme/r5rs.scm"/>
         <file name="trace.scm"/>
+      </filelist>
+    </kawac>
+    <kawac failonerror="true" destdir="${build.classes}"
+	   prefix="kawa.lib." modulestatic="run" language="scheme">
+      <arg line="--warn-undefined-variable --warn-unknown-member --warn-as-error"/>
+      <filelist dir="${src.dir}/kawa/lib">
+        <file name="enums.scm"/>
+        <file name="kawa/quaternions.scm"/>
+        <file name="kawa/rotations.scm"/>
+        <file name="kawa/base.scm"/>
+        <file name="rnrs/hashtables.scm"/>
+        <file name="rnrs/lists.scm"/>
+        <file name="rnrs/arithmetic/bitwise.scm"/>
+        <file name="rnrs/unicode.scm"/>
+        <file name="rnrs/sorting.scm"/>
+        <file name="rnrs/programs.scm"/>
+        <file name="srfi/8.scm"/>
+        <file name="srfi/26.scm"/>
+        <file name="srfi/95.scm"/>
       </filelist>
       <fileset dir="${src.dir}/kawa/lib">
         <include name="windows.scm" if="${with-swing}"/>
@@ -741,9 +750,7 @@
 	   prefix="gnu.kawa.slib." modulestatic="run"
 	   language="scheme">
       <filelist dir="${src.dir}/gnu/kawa/slib">
-        <file name="enums.scm"/>
         <file name="readtable.scm"/>
-        <file name="receive.scm"/>
         <file name="srfi1.scm"/>
         <file name="srfi2.scm"/>
         <file name="conditions.scm"/>
@@ -763,7 +770,6 @@
         <file name="ppfile.scm"/>
         <file name="printf.scm"/>
         <file name="syntaxutils.scm"/>
-        <file name="cut.scm"/>
         <file name="testing.scm"/>
       </filelist>
       <fileset dir="${src.dir}/gnu/kawa/slib">

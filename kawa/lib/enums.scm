@@ -3,6 +3,7 @@
 
 (module-static #t)
 (module-export define-enum)
+(import (scheme base))
 
 (define (make-field-desc (t-name :: symbol)
                          (e-name :: symbol)

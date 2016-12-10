@@ -64,6 +64,7 @@ public class require extends Syntax
     }
 
     private static final String SLIB_PREFIX = "gnu.kawa.slib.";
+    private static final String LIB_SRFI_PREFIX = "kawa.lib.srfi.";
 
     static {
         map("generic-write", SLIB_PREFIX + "genwrite");
@@ -79,12 +80,12 @@ public class require extends Syntax
         map("list-lib", SLIB_PREFIX + "srfi1");
         map("srfi-2", SLIB_PREFIX + "srfi2");
         map("and-let*", SLIB_PREFIX + "srfi2");
-        map("srfi-8", SLIB_PREFIX + "receive");
-        map("receive", SLIB_PREFIX + "receive");
+        map("srfi-8", LIB_SRFI_PREFIX + "8");
+        map("receive", LIB_SRFI_PREFIX + "8");
         map("srfi-13", SLIB_PREFIX + "srfi13");
         map("srfi-14", SLIB_PREFIX + "srfi14");
         map("string-lib", SLIB_PREFIX + "srfi13");
-        map("srfi-26", SLIB_PREFIX + "cut");
+        map("srfi-26", LIB_SRFI_PREFIX + "26");
         map("srfi-34", SLIB_PREFIX + "srfi34");
         map("srfi-35", SLIB_PREFIX + "conditions");
         map("condition", SLIB_PREFIX + "conditions");
@@ -102,8 +103,8 @@ public class require extends Syntax
         map("srfi-69", SLIB_PREFIX + "srfi69");
         map("hash-table", SLIB_PREFIX + "srfi69");
         map("basic-hash-tables", SLIB_PREFIX + "srfi69");
-        map("srfi-95", "kawa.lib.srfi95");
-        map("sorting-and-merging", "kawa.lib.srfi95");
+        map("srfi-95", LIB_SRFI_PREFIX + "95");
+        map("sorting-and-merging", LIB_SRFI_PREFIX + "95");
         map("srfi-101", SLIB_PREFIX + "ralists");
         map("random-access-lists", SLIB_PREFIX + "ralists");
         map("ra-lists", SLIB_PREFIX + "ralists");

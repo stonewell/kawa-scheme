@@ -90,8 +90,8 @@
  ;; applying rotations
  make-rotation-procedure rotate-vector)
 
-(require <kawa.lib.prim_syntax>)
-(import (kawa quaternions))
+;(require <kawa.lib.prim_syntax>)
+(import (scheme base) (kawa quaternions))
 
 ;; The limit below which an angle is treated as effectively zero.
 (define-constant *epsilon* ::double 1E-12)

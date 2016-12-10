@@ -32,7 +32,7 @@ public class ImportFromLibrary extends Syntax
         { "2", "and-let*", "gnu.kawa.slib.srfi2" },
         { "5", "let", MISSING },
         { "6", "basic-string-ports", BUILTIN },
-        { "8", "receive", "gnu.kawa.slib.receive" },
+        { "8", "receive", "kawa.lib.srfi.8" },
         { "9", "records", BUILTIN },
         { "11", "let-values", BUILTIN },
         { "13", "strings", "gnu.kawa.slib.srfi13" },
@@ -44,7 +44,7 @@ public class ImportFromLibrary extends Syntax
         { "21", "real-time-multithreading", MISSING },
         { "23", "error", BUILTIN },
         { "25", "multi-dimensional-arrays", BUILTIN },
-        { "26", "cut", "gnu.kawa.slib.cut" },
+        { "26", "cut", "kawa.lib.srfi.26" },
         { "27", "random-bits", MISSING },
         { "28", "basic-format-strings", BUILTIN },
         { "29", "localization", MISSING },
@@ -81,7 +81,7 @@ public class ImportFromLibrary extends Syntax
         { "78", "lightweight-testing", MISSING },
         { "86", "mu-and-nu", MISSING },
         { "87", "case", BUILTIN },
-        { "95", "sorting-and-merging", "kawa.lib.srfi95" },
+        { "95", "sorting-and-merging", "kawa.lib.srfi.95" },
         { "98", "os-environment-variables", BUILTIN },
         { "101", "random-access-lists", "gnu.kawa.slib.ralists" }
     };

@@ -1,3 +1,25 @@
+2016-12-09  Per Bothner  <per@bothner.com>
+
+	* enums.scm: Moved gnu gnu/kawa/slib.
+	* srfi/26.scm: Renamed from gnu/kawa/slib/cut.scm.
+	* srfi/8.scm: Renamed from gnu/kawa/slib/receive.scm.
+	* srfi/95.scm: MOved from srfi95.scm.
+	* Makefile.am: Update accoringly.  Also compile using two separate
+	commands.  This allows simplifying imports/requires.
+
+Changes not staged for commit:
+  (use "git add <file>..." to update what will be committed)
+  (use "git checkout -- <file>..." to discard changes in working directory)
+
+	modified:   Makefile.am
+	modified:   enums.scm
+	modified:   kawa/rotations.scm
+	modified:   rnrs/sorting.scm
+	modified:   srfi/26.scm
+	modified:   srfi/8.scm
+	modified:   srfi/95.scm
+
+
 2016-12-04  Per Bothner  <per@bothner.com>
 
 	* syntax.scm (%symbol->construct): Update for string literal change.

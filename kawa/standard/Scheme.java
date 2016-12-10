@@ -535,7 +535,7 @@ public class Scheme extends LispLanguage {
       defSntxStFld("let*-values", "kawa.lib.syntax");
       defSntxStFld("define-values", "kawa.lib.syntax");
       defSntxStFld("case-lambda", "kawa.lib.syntax");
-      defSntxStFld("receive", "gnu.kawa.slib.receive");
+      defSntxStFld("receive", "kawa.lib.srfi.8");
       defProcStFld("eval", "kawa.lib.scheme.eval");
       defProcStFld("repl", "kawa.standard.SchemeCompilation", "repl");
       defProcStFld("scheme-report-environment", "kawa.lib.misc");
@@ -832,7 +832,7 @@ public class Scheme extends LispLanguage {
       defSntxStFld("define-variable", "kawa.lib.prim_syntax");
       defSntxStFld("define-member-alias", "kawa.standard.define_member_alias",
                    "define_member_alias");
-      defSntxStFld("define-enum", "gnu.kawa.slib.enums");
+      defSntxStFld("define-enum", "kawa.lib.enums");
       defSntxStFld("import", "kawa.standard.ImportFromLibrary", "instance");
       defSntxStFld("require", "kawa.standard.require", "require");
       defSntxStFld("module-name", "kawa.standard.module_name",
@@ -906,8 +906,8 @@ public class Scheme extends LispLanguage {
       defProcStFld("utf8->string", "kawa.lib.bytevectors");
       defProcStFld("string->utf8", "kawa.lib.bytevectors");
 
-      defSntxStFld("cut", "gnu.kawa.slib.cut");
-      defSntxStFld("cute", "gnu.kawa.slib.cut");
+      defSntxStFld("cut", "kawa.lib.srfi.26");
+      defSntxStFld("cute", "kawa.lib.srfi.26");
       defSntxStFld("scan", "kawa.standard.Scan", "scan");
       defSntxStFld("cond-expand", "kawa.standard.IfFeature", "condExpand");
 

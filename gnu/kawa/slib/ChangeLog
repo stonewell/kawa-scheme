@@ -1,3 +1,11 @@
+2016-12-09  Per Bothner  <per@bothner.com>
+
+	Move bindings in the default Kawa-Scheme environment to kawa/lib.
+	* enums.scm: Moved to kawa/lib/enums.scm.
+	* cut.scm: Renamed to kawa/lib/srfi/26.scm.
+	* receive.scm: Renamed to kawa/lib/srfi/8.scm
+	* Makefile.am: Update accordingly.
+
 2016-10-23  Per Bothner  <per@bothner.com>
 
 	* swing.scm: Update export 'picture-jpanel' to 'picture->jpanel'.

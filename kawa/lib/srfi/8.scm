@@ -15,6 +15,7 @@
 ;; followed, or as required to translate it into languages other than
 ;; English.
 
+(module-name (srfi 8))
 (import (scheme base))
 
 (define-syntax receive

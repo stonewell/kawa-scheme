@@ -1,3 +1,9 @@
+2016-12-09  Per Bothner  <per@bothner.com>
+
+	* standard/Scheme.java: Update for classes from from gnu/kawa/slib.
+	* standard/ImportFromLibrary.java: Update accordingly.
+	* standard/require.java: Likewise.
+
 2016-12-06  Per Bothner  <per@bothner.com>
 
 	* standard/requires.java (importDefinitions): Remove bogus semicolon.
