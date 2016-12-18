@@ -1,3 +1,9 @@
+2016-12-18  Per Bothner  <per@bothner.com>
+
+	* vectors.scm (make-vector): Fix default to #!null as in documentation.
+	Fixes Savannah bug #49866 "make-vector default elements #!null
+	v #!undefined".
+
 2016-12-09  Per Bothner  <per@bothner.com>
 
 	* enums.scm: Moved gnu gnu/kawa/slib.
@@ -7,28 +13,10 @@
 	* Makefile.am: Update accoringly.  Also compile using two separate
 	commands.  This allows simplifying imports/requires.
 
-Changes not staged for commit:
-  (use "git add <file>..." to update what will be committed)
-  (use "git checkout -- <file>..." to discard changes in working directory)
-
-	modified:   Makefile.am
-	modified:   enums.scm
-	modified:   kawa/rotations.scm
-	modified:   rnrs/sorting.scm
-	modified:   srfi/26.scm
-	modified:   srfi/8.scm
-	modified:   srfi/95.scm
-
-
 2016-12-04  Per Bothner  <per@bothner.com>
 
 	* syntax.scm (%symbol->construct): Update for string literal change.
 	* rnrs/programs.scm (command-line): Likewise.
-2016-12-18  Per Bothner  <per@bothner.com>
-
-	* vectors.scm (make-vector): Fix default to #!null as in documentation.
-	Fixes Savannah bug #49866 "make-vector default elements #!null
-	v #!undefined".
 
 2016-12-03  Per Bothner  <per@bothner.com>
 
