@@ -1,3 +1,9 @@
+2016-12-18  Per Bothner  <per@bothner.com>
+
+	* vectors.scm (make-vector): Fix default to #!null as in documentation.
+	Fixes Savannah bug #49866 "make-vector default elements #!null
+	v #!undefined".
+
 2016-12-03  Per Bothner  <per@bothner.com>
 
 	Make more robust for new string representations.

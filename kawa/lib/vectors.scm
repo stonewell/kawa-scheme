@@ -3,7 +3,7 @@
 (define (vector? x) :: <boolean>
   (instance? x vector))
 
-(define (make-vector (k :: <int>) #!optional (fill #!undefined)) :: vector
+(define (make-vector (k :: <int>) #!optional (fill #!null)) :: vector
   (gnu.lists.FVector k fill))
 
 (define (vector-length x :: <vector>) :: <int>
