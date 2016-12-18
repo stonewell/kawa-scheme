@@ -1900,7 +1900,7 @@ public class Translator extends Compilation
 
   public void resolveModule(ModuleExp mexp)
   {
-    setLine(null, -1, -1);
+    Expression savePos = new ReferenceExp((Object) null);
     int numPending = pendingImports == null ? 0 : pendingImports.size();
     for (int i = 0;  i < numPending;  )
       {
@@ -1911,7 +1911,6 @@ public class Translator extends Compilation
         if (mexp == defs)
           {
             // process(BODY_PARSED);
-            Expression savePos = new ReferenceExp((Object) null);
             savePos.setLine(this);
             setLine(posExp);
             Pair beforeImports = formStack.last;
@@ -1933,8 +1932,10 @@ public class Translator extends Compilation
           }
       }
     pendingImports = null;
-
     setModule(mexp);
+
+    savePos.setLine(this);
+    setLine(null, -1, -1);
     Compilation save_comp = Compilation.setSaveCurrent(this);
     try
       {
@@ -1960,6 +1961,7 @@ public class Translator extends Compilation
     finally
       {
 	Compilation.restoreCurrent(save_comp);
+        setLine(savePos);
       }
 
     /* DEBUGGING:

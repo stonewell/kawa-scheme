@@ -1,3 +1,7 @@
+2016-12-18  Per Bothner  <per@bothner.com>
+
+	* lang/Translator.java (resolveModule): Fix restore of line position.
+
 2016-12-09  Per Bothner  <per@bothner.com>
 
 	* standard/Scheme.java: Update for classes from from gnu/kawa/slib.
