@@ -304,7 +304,7 @@ public abstract class Language
     return Values.empty;
   }
 
-  /** True if functions are in a separate anme space from variable.
+  /** True if functions are in a separate name space from variable.
    * Is true for e.g. Common Lisp, Emacs Lisp;  false for Scheme. */
   public boolean hasSeparateFunctionNamespace()
   {
