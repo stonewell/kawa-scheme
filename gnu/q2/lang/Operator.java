@@ -16,6 +16,7 @@ public class Operator extends Syntax
 
   static final int RHS_NEEDED = 2;
   static final int ASSIGN_OP = 4;
+  static final int UNARY_PRIO = 88;
 
   public static final Operator FENCE = new Operator("<fence>", 0, -1, 0, null);
   public static final Operator SEMI = new Operator(";", 1, 1, 0, null);
@@ -61,14 +62,18 @@ public class Operator extends Syntax
     this.flags = flags;
     this.function = function;
   }
+    static String LAMBDA_NAME = "$lambda$";
+    static Operator makeLambda(Object params) {
+        return new Operator(LAMBDA_NAME, UNARY_PRIO, 2, RHS_NEEDED, params);
+    }
 
   public Object combine (Object largs, Object rargs, PairWithPosition op)
   {
-    Object funop = null;
+    Object funop = function;
     LList args;
     if ((flags & ASSIGN_OP) != 0)
       {
-        funop = Symbol.valueOf("set!");
+        funop = Symbol.valueOf("set!"); // FIXME nonhygienic
         if (largs instanceof Pair && ((Pair) largs).getCdr() == LList.Empty)
           {
             ((Pair) largs).setCdrBackdoor(LList.list1(rargs));
@@ -91,7 +96,11 @@ public class Operator extends Syntax
       {
         return this == SEMI ? QuoteExp.voidExp : funop;
       }
-    if (largs == LList.Empty)
+    if (this.getSymbol() == LAMBDA_NAME) {
+        funop = kawa.standard.SchemeCompilation.lambda;
+        args = new Pair(this.function, rargs);
+    }
+    else if (largs == LList.Empty)
       args = LList.list1(rargs);
     else if (rargs == LList.Empty)
       args = LList.list1(largs);

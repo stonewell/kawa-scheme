@@ -21,14 +21,28 @@ public class Q2Translator extends SchemeCompilation
     super(language, messages, lexical);
   }
 
+    Operator checkIfOperator(Object obj) {
+        if (obj instanceof Symbol && ! Q2.instance.selfEvaluatingSymbol(obj))  {
+            Expression func = rewrite(obj, true);
+            Declaration decl;
+            Object value;
+            if (func instanceof ReferenceExp
+                && (decl = ((ReferenceExp) func).getBinding()) != null
+                && (value = decl.getConstantValue()) instanceof Operator)
+            return (Operator) value;
+        } else if (obj instanceof Operator)
+            return (Operator) obj;
+        return null;
+    }
+
   /** Split list according to operator-precedence priorities.
    */
-  public static Object partition (Object p, Translator tr) 
+  public static Object partition (Object p, Q2Translator tr) 
   {
-    // A stack of: Fence, (arg-list, Pair<Operator>, Operator)*
+    // A stack of: Fence, (arg-list, arg-last, Pair, Operator)*
     // The "value" of each Pair<Operator> is the same as the following Operator.
-    // The invariant is that for each i, where i is 0, 3, 7, ..., we have:
-    // ((Operator)st.get(i)).rprio < ((Operator)st.get(i+3)).lprio
+    // The invariant is that for each i, where i is 0, 4, 11, ..., we have:
+    // ((Operator)st.get(i)).rprio < ((Operator)st.get(i+4)).lprio
     Stack st = new Stack();
     st.add(Operator.FENCE);
     Object larg = p;
@@ -49,18 +63,7 @@ public class Q2Translator extends SchemeCompilation
           {
             pp = (Pair) p;
             Object obj = pp.getCar();
-            if (obj instanceof Symbol && ! Q2.instance.selfEvaluatingSymbol(obj))
-              {
-                Expression func = tr.rewrite(obj, true);
-                Declaration decl;
-                Object value;
-                if (func instanceof ReferenceExp
-                    && (decl = ((ReferenceExp) func).getBinding()) != null
-                    && (value = decl.getConstantValue()) instanceof Operator)
-                  {
-                    op = (Operator) value;
-                  }
-              }
+            op = tr.checkIfOperator(obj);
           }
         if (op != null)
           {
@@ -76,15 +79,28 @@ public class Q2Translator extends SchemeCompilation
                 if ((topop.flags & Operator.RHS_NEEDED) != 0
                       && larg == LList.Empty)
                     tr.error('e', "missing right operand after "+topop.getName(), oppair);
-                larg = topop.combine((LList) st.get(stsz-3), larg,
-                                     oppair);
-                stsz -= 3;
+                LList prefixArgs = (LList) st.get(stsz-4);
+                if (topop.lprio == Operator.UNARY_PRIO) {
+                    Pair prefixTail = (Pair) st.get(stsz-3);
+                    Object narg = topop.combine(LList.Empty, larg,
+                                         oppair);
+                    narg = new Pair(narg, LList.Empty);       
+                    if (prefixTail == null)
+                        larg = narg;
+                    else {
+                        larg = prefixArgs;
+                        prefixTail.setCdrBackdoor(narg);
+                    }
+                } else
+                    larg = topop.combine(prefixArgs, larg, oppair);
+                stsz -= 4;
                 st.setSize(stsz);
                 topop = (Operator) st.get(stsz-1);
               }
             if (pp == null)
               break;
             st.add(larg);
+            st.add(prev);
             st.add(pp);
             st.add(op);
             larg = pp.getCdr();
