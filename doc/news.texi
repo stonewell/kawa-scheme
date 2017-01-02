@@ -48,14 +48,14 @@ use the splice operator:
 @itemize
 @item
 Moved Kawa's source code repository (version control system)
-to use git, hosted at @uref{https://gitlab.com/kashell/Kawa,gitmap}.
+to use git, hosted at @uref{https://gitlab.com/kashell/Kawa,gitlab}.
 @item
 New @code{with-docbook-stylesheets} to make it easier to build
 the documentation with better functionality and look.
 @item
 In the REPL if JLine is used then you can use the
 mouse to move the cursor on xterm-like terminals.  This conflicts with
-making a select for copying text; use shift-drag to access the
+making a selection for copying text; use shift-drag to access the
 terminal's builtin mouse handling, including text selection.
 @end itemize
 

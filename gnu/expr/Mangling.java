@@ -19,10 +19,6 @@ public class Mangling {
         return mangleSymbolic(name, 'Q', false);
     }
 
-    public static String mangleName(String name) {
-        return Language.mangleName(name, -1);
-    }
-
     /** Mangle according to John Rose's "Symbolic Freedom in the VM".
      * {@linkplain https://blogs.oracle.com/jrose/entry/symbolic_freedom_in_the_vm See this article.}
      * @param context One of 'C' (class name); 'Q' (qualified name, with dots);
@@ -208,6 +204,10 @@ public class Mangling {
             }
         }
         return sbuf.toString();
+    }
+
+    public static String mangleName(String name) {
+        return Language.mangleName(name, -1);
     }
 
     /** Convert a string to a safe Java identifier.
