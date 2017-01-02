@@ -102,7 +102,8 @@ public class ProcInitializer extends Initializer
         // code.emitPushString(proc.checkMethod.getName());
         // code.emitInvokeStatic(lookupApplyHandleMethod);
         /* #endif */
-        comp.compileConstant(pname, Target.pushObject);
+        comp.compileConstant(proc.getProperty(PropertySet.nameKey, pname),
+                             Target.pushObject);
         // If there are keyword arguments, we treat that as "unlimited" maxArgs,
         // so that ModuleBody.matchX methods call matchN.  A kludge, I guess.
         code.emitPushInt(proc.min_args
