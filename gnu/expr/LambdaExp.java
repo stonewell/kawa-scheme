@@ -1131,13 +1131,15 @@ public class LambdaExp extends ScopeExp {
             // (such as "run" or "apply").
             int renameCount = 0;
             int len = nameBuf.length();
+            String suffix = nameBuf.substring(nameBaseLength, len);
             retry:
             for (;;) {
                 for (ClassType t = ctype;  t != null; t = t.getSuperclass()) {
                     if (t.getDeclaredMethod(name, atypes) != null) {
-                        nameBuf.setLength(len);
+                        nameBuf.setLength(nameBaseLength);
                         nameBuf.append('$');
                         nameBuf.append(++renameCount);
+                        nameBuf.append(suffix);
                         name = nameBuf.toString();
                         continue retry;
                     }
