@@ -3579,7 +3579,7 @@ public class XQParser extends Lexer
     getRawToken();
     LambdaExp lexp = new LambdaExp();
     maybeSetLine(lexp, declLine, declColumn);
-    lexp.setName(name);
+    lexp.setSymbol(sym);
     Declaration decl = comp.currentScope().addDeclaration(sym);
     if (comp.isStatic())
       decl.setFlag(Declaration.STATIC_SPECIFIED);

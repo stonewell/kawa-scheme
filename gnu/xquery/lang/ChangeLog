@@ -1,3 +1,8 @@
+2017-01-02  Per Bothner  <per@bothner.com>
+
+	* XQParser.java (parseFunctionDefinition): Set function name
+	as symbol, not string.
+
 2015-10-10  Per Bothner  <per@bothner.com>
 
 	* XQParser.java (getStaticBaseUri): Use new Path#isPLainFile.

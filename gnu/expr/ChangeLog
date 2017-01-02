@@ -1,3 +1,8 @@
+2017-01-02  Per Bothner  <per@bothner.com>
+
+	* ProcInitializer.java (emitLoadModuleMethod): Use name property.
+	Before we would ignore any explicit name property.
+
 2017-01-01  Per Bothner  <per@bothner.com>
 
 	* LambdaExp.java (print): Also print properties.

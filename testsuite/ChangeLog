@@ -1,3 +1,8 @@
+2017-01-02  Duncan Mak <duncanmak@gmail.com>
+            Per Bothner <per@bothner.com>
+
+	* testsuite/reflect-fname.scm: New test for procedure name property.
+
 2016-11-27  Per Bothner  <per@bothner.com>
 
 	* inlining.expected: Update for improved '+' code generatation.
