@@ -1393,6 +1393,9 @@ public class ClassType extends ObjectType
                 return 0;
             else if (((ClassType) rawType).implementsInterface(this))
                 return 2;
+            else if (rawType.isInterface()
+                     && implementsInterface((ClassType) rawType))
+                return 0;
             else
                 // In theory a subclass of valueType might implement this
                 // interface, but that is not normal practice.
