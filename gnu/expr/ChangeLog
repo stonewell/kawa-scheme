@@ -1,5 +1,7 @@
 2017-01-02  Per Bothner  <per@bothner.com>
 
+	* QuoteExp.java (print): Paranoia-check for null format.
+
 	* ProcInitializer.java (emitLoadModuleMethod): Use name property.
 	Before we would ignore any explicit name property.
 
