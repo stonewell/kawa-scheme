@@ -1859,6 +1859,21 @@ public class LambdaExp extends ScopeExp {
             prevMode = mode;
         }
         out.endLogicalBlock(")");
+        if (properties != null) {
+            int plen = properties.length;
+            for (int j = 0; j < plen; j += 2) {
+                Object key = properties[j];
+                if (key == null)
+                    continue;
+                out.writeSpaceFill();
+                out.startLogicalBlock("", false, "");
+                out.print(key);
+                out.print(":");
+                out.writeSpaceFill();
+                out.print(properties[j+1]);
+                out.endLogicalBlock("");
+            }
+        }
         out.writeSpaceLinear();
         if (body == null)
             out.print("<null body>");
