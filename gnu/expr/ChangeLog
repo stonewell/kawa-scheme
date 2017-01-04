@@ -1,3 +1,9 @@
+2017-01-04  Per Bothner  <per@bothner.com>
+
+	* ApplicationMainSupport.java: New console:jline-mouse options.
+
+	* Declaration.java (load): Add null check for ambiguous value.
+
 2017-01-02  Per Bothner  <per@bothner.com>
 
 	* LambdaExp.java (addMethodFor): Do uniqueness-numbers before suffix.

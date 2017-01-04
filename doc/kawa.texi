@@ -469,6 +469,18 @@ Quantities, keyword values, and the expanded @code{lambda} form
 @node Reporting bugs
 @section Reporting bugs
 
+To report a bug or a feature request
+use the @uref{https://gitlab.com/kashell/Kawa/issues,Issue Tracker}.
+This does require a @uref{https://gitlab.com/,GitLab} account;
+if this is a problem you can use the Savannah bug tracker.
+
+@subsubheading Older Savannah bug tracker
+
+The older bug tracker for Kawa on Savannah is still available,
+but the we request you use
+the @uref{https://gitlab.com/kashell/Kawa/issues,GitLab Issue Tracker}
+for new issues.
+
 To report a bug or feature request for Kawa (including Qexo or JEmacs), it is
 best to use the
 @uref{http://savannah.gnu.org/bugs/?func=additem&group=kawa,bug-submission page}.
@@ -3051,6 +3063,7 @@ The @code{--no-console} flag was useful for older pre-Java-6
 implementations that did not have the @code{java.lang.Console} class.
 @item @code{console:type=}@var{console-types}
 @itemx @code{console:use-jline=}[@code{yes}|@code{no}]
+@itemx @code{console:console:jline-mouse=}[@code{yes}|@code{no}]
 See the @ref{REPL Console} section.
 @item @code{console:prompt1=@var{prompt1}}
 @itemx @code{console:prompt2=@var{prompt2}}
@@ -3473,15 +3486,15 @@ which is bundled with Kawa binary distribution.
 
 JLine3 handles the normal editing comands, including arrow keys
 for moving around in the input, and deleting with backspace or delete.
-In general, JLine3 uses te same keybindings as GNU readline,
-which are based on etc Emacs key-bindings.
+In general, JLine3 uses the same keybindings as GNU readline,
+which are based on Emacs key-bindings.
 
 You can use the up-arrow to move to previous commands in the
 input history and down-arrow to go forwards.
 Control-R (``reverse search'' searches backwards in the history
 for a previous comands that contains the search string.
 
-Multi-line commands are treated as unit by JLine3:
+Multi-line commands are treated as a unit by JLine3:
 If Kawa determines that input is ``incomplete'' it will
 ask for continuation lines - and you can go back and edit previous
 lines in the same command.
@@ -3498,6 +3511,23 @@ You can use Emacs shell or scheme mode.
 You can also use DomTerm in line-edit mode, where the browser handles
 the editing.
 
+@table @asis
+@item @code{console:use-jline=}[@code{yes}|@code{no}]
+Disable (with @code{no}) or enable (with @code{yes}, which is the default)
+input line editing with JLine.
+@item @code{console:console:jline-mouse=}[@code{yes}|@code{no}]
+Enable (with @code{yes}) mouse click reporting from
+most xterm-like terminals to JLine, which means you
+can move the input cursor with the mouse.
+This is disabled by default because it conflicts with other useful mouse
+actions (text selection using drag; middle-button paste; right-button
+context menu; and wheel mouse scrolling).
+If you enable mouse-reporting, on most terminals you can get the
+standard behavior when pressing the shift key.  E.g. to enable selection,
+drag with the shift key pressed.  (However, mouse-wheel scrolling
+may not work even with shift pressed.)
+@end table
+
 @anchor{New-Window}
 @subsection Running a Command Interpreter in a new Window
 
@@ -3508,7 +3538,7 @@ Kawa also creates a new window when it needs to create a REPL
 (for example if invoked with no options) and it is not running
 in a console.
 
-You have a number of options for how the Window appears and
+You have a number of options for how the window appears and
 what it supports, controlled by text following @code{-w}.
 All except @code{-wswing} (and @code{-wconsole}) use DomTerm,
 so they depend on some kind of web browser technology.
@@ -3563,7 +3593,7 @@ It is deprecated because it only supports the builtin Swing line editing.
 Starts up an HTTP server (along with a WebSocket server),
 but does not automatically create any browser windows.
 Instead you can use any modern browser to load @code{http://localhost:@var{port}/}.
-If @var{port} is not specified, the systems selects it (and print it out).
+If @var{port} is not specified, the systems selects it (and prints it out).
 @item @code{-wconsole}
 Same as @code{"--"} - i.e. it uses the existing console.
 @item @code{console:type=}@var{preference-list}

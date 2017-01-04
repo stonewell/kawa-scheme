@@ -44,11 +44,16 @@ public class CheckConsole {
     public static final ThreadLocation useJLine
         = new ThreadLocation("use-jline");
 
+    public static final ThreadLocation useJLineMouse
+        = new ThreadLocation("jline-mouse");
+
     public static String consoleTypeDefault = "google-chrome;browser;javafx;swing;console";
     public static final ThreadLocation consoleType
         = new ThreadLocation("type");
 
     public static int useJLine() { return getBoolean(useJLine); }
+    public static int useJLineMouse() { return getBoolean(useJLineMouse); }
+
     public static String consoleType() {
          Object val = consoleType.get(null);
          return val == null ? consoleTypeDefault : val.toString();

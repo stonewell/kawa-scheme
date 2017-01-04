@@ -48,15 +48,20 @@ use the splice operator:
 @itemize
 @item
 Moved Kawa's source code repository (version control system)
-to use git, hosted at @uref{https://gitlab.com/kashell/Kawa,gitlab}.
+to use git, hosted at @uref{https://gitlab.com/kashell/Kawa,GitLab}.
+@item
+Issues (bugs, feature requqests, etc) should now be reported using the
+@uref{https://gitlab.com/kashell/Kawa/issues,GitLab Issue Tracker}.
 @item
 New @code{with-docbook-stylesheets} to make it easier to build
 the documentation with better functionality and look.
 @item
-In the REPL if JLine is used then you can use the
-mouse to move the cursor on xterm-like terminals.  This conflicts with
-making a selection for copying text; use shift-drag to access the
-terminal's builtin mouse handling, including text selection.
+The command-line option @code{console:jline-mouse=yes}
+enables moving the input cursor using a mouse click,
+when using JLine in the REPL on common xterm-like terminals.
+This is disabled by default because it conflicts with
+other mouse actions, such as making a selection for copying text.
+You can press shift to get the terminal's standard mouse handling.
 @end itemize
 
 @subheading Kawa 2.2 (November 12, 2016)
