@@ -1,3 +1,8 @@
+2017-01-04  Per Bothner  <per@bothner.com>
+
+	* kawa.texi (Reporting bugs): Update to reference GitTab tracker.
+	* news.texi: Likewise.
+
 2016-11-28  Per Bothner  <per@bothner.com>
 
 	* style/kawa-ebook.js (onClick): Make more general.

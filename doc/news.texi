@@ -9,7 +9,10 @@ changes}.
 @itemize
 @item
 Moved Kawa's source code repository (version control system)
-to use git, hosted at @uref{https://gitlab.com/kashell/Kawa,gitlab}.
+to use git, hosted at @uref{https://gitlab.com/kashell/Kawa,GitLab}.
+@item
+Issues (bugs, feature requqests, etc) should now be reported using the
+@uref{https://gitlab.com/kashell/Kawa/issues,GitLab Issue Tracker}.
 @item
 New @code{with-docbook-stylesheets} to make it easier to build
 the documentation with better functionality and look.

@@ -467,6 +467,18 @@ Quantities, keyword values, and the expanded @code{lambda} form
 @node Reporting bugs
 @section Reporting bugs
 
+To report a bug or a feature request
+use the @uref{https://gitlab.com/kashell/Kawa/issues,Issue Tracker}.
+This does require a @uref{https://gitlab.com/,GitLab} account;
+if this is a problem you can use the Savannah bug tracker.
+
+@subsubheading Older Savannah bug tracker
+
+The older bug tracker for Kawa on Savannah is still available,
+but the we request you use
+the @uref{https://gitlab.com/kashell/Kawa/issues,GitLab Issue Tracker}
+for new issues.
+
 To report a bug or feature request for Kawa (including Qexo or JEmacs), it is
 best to use the
 @uref{http://savannah.gnu.org/bugs/?func=additem&group=kawa,bug-submission page}.
