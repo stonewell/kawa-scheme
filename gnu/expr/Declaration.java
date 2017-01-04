@@ -398,7 +398,8 @@ public class Declaration
             comp.compileConstant(val, target);
             return;
           }
-        else if (value != QuoteExp.undefined_exp && ignorable()
+        else if (value != QuoteExp.undefined_exp && value != null
+                 && ignorable()
                  && ! (value instanceof LambdaExp))
           {
             value.compile(comp, target);
