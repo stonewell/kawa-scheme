@@ -66,7 +66,8 @@ public class JLineInPort extends TtyInPort
             .completer(this)
             .parser(this)
             .build();
-        jlreader.setOpt(LineReader.Option.MOUSE);
+        if (CheckConsole.useJLineMouse() > 0)
+            jlreader.setOpt(LineReader.Option.MOUSE);
         language = Language.getDefaultLanguage();
         this.terminal = terminal;
     }

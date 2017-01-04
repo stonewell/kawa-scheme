@@ -1,3 +1,8 @@
+2017-01-04  Per Bothner  <per@bothner.com>
+
+	* JLineInPort.java: Only set JLine MOUSE mode if requested.
+	* CheckConsole.java (useJLineMouse): New ThreadLocation.
+
 2016-11-20  Per Bothner  <per@bothner.com>
 
 	* PrettyWriter.java: Fix to end-block handling for isDomTerm().
