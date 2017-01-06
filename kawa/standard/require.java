@@ -311,7 +311,7 @@ public class require extends Syntax
         Map<Symbol,Expression> dmap
             = new LinkedHashMap<Symbol,Expression>();
         Map<String,Declaration> moduleReferences = null;
-       
+
         for (Declaration fdecl = mod.firstDecl();
              fdecl != null;  fdecl = fdecl.nextDecl()) {
             if (fdecl.isPrivate())
