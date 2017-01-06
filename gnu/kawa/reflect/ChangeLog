@@ -1,3 +1,14 @@
+2017-01-06  Per Bothner  <per@bothner.com>
+
+	* ClassMemberLocation.java (define): Check SourceName attribute.
+
+	* ClassMemberLocation.java: Allow lazy ClassType creation, from name.
+	(<init>(Object,String,String)): New constructor.
+	(getDeclaringClassname): New method.
+	(type): Make private.
+	* FieldLocation.java: Make use of supertype changes.
+	* StaticFieldLocation.java: Likewise.
+
 2016-12-03  Per Bothner  <per@bothner.com>
 
 	* MultValuesType.java (isCompatibleWithValue): Use Type.isSame.

@@ -7,7 +7,7 @@ public class StaticFieldLocation extends FieldLocation
 {
   public StaticFieldLocation(String cname, String fname)
   {
-    super(null, ClassType.make(cname), fname);
+    super(null, cname, fname);
   }
 
   public StaticFieldLocation(ClassType type, String mname)

@@ -12,13 +12,21 @@ import gnu.expr.*;
 public abstract class ClassMemberLocation<T> extends Location<T>
 {
   Object instance;
-  ClassType type;
+  private String cname;
+  private ClassType type;
   /** Member (method or field) name. */
   String mname;
   java.lang.reflect.Field rfield;
 
   public final Object getInstance () { return instance; }
   public final void setInstance (Object obj) { instance = obj; }
+
+  public ClassMemberLocation(Object instance, String cname, String mname)
+  {
+    this.instance = instance;
+    this.cname = cname;
+    this.mname = mname;
+  }
 
   public ClassMemberLocation(Object instance, ClassType type, String mname)
   {
@@ -38,6 +46,7 @@ public abstract class ClassMemberLocation<T> extends Location<T>
   {
     this.instance = instance;
     this.rfield = field;
+    type = (ClassType) Type.make(field.getDeclaringClass());
     this.mname = field.getName();
   }
 
@@ -46,10 +55,14 @@ public abstract class ClassMemberLocation<T> extends Location<T>
     return mname;
   }
 
-  public ClassType getDeclaringClass()
-  {
-    return type;
-  }
+    public ClassType getDeclaringClass()  {
+        if (type == null)
+            type = ClassType.make(cname);
+        return type;
+    }
+    public String getDeclaringClassname() {
+        return cname != null ? cname : type == null ? "()" :  type.getName();
+    }
 
   void setup ()
   {
@@ -58,7 +71,7 @@ public abstract class ClassMemberLocation<T> extends Location<T>
 	Class clas;
 	try
 	  {
-	    clas = type.getReflectClass();
+	    clas = getDeclaringClass().getReflectClass();
 	  }
 	catch (RuntimeException ex)
 	  {
@@ -97,7 +110,7 @@ public abstract class ClassMemberLocation<T> extends Location<T>
 = null;
 	try
 	  {
-	    clas = type.getReflectClass();
+            clas = getDeclaringClass().getReflectClass();
             rfld = clas.getField(mname);
 	    this.rfield = rfld;
 	  }
@@ -118,7 +131,7 @@ public abstract class ClassMemberLocation<T> extends Location<T>
       return rfld.getDeclaringClass();
     try
       {
-        return type.getReflectClass();
+        return getDeclaringClass().getReflectClass();
       }
     catch (Exception ex)
       {
@@ -171,19 +184,31 @@ public abstract class ClassMemberLocation<T> extends Location<T>
     //setValue(loc, value);
   }
 
+    static final ClassType typeProcedure
+      = ClassType.make("gnu.mapping.Procedure");
+    static final ClassType typeLocation
+        = ClassType.make("gnu.mapping.Location");
+
   public static void define (Object instance, java.lang.reflect.Field rfield,
 			     String uri, Language language, Environment env)
     throws IllegalAccessException
   {
     Object fvalue = rfield.get(instance);
     Type ftype = Type.make(rfield.getType());
-    boolean isAlias = ftype.isSubtype(Compilation.typeLocation);
-    boolean isProcedure = ftype.isSubtype(Compilation.typeProcedure);
+    boolean isAlias = ftype.isSubtype(typeLocation);
+    boolean isProcedure = ftype.isSubtype(typeProcedure);
     int rModifiers = rfield.getModifiers();
     boolean isFinal = (rModifiers & Access.FINAL) != 0;
     Object fdname = (isFinal && (fvalue instanceof Named && ! isAlias)
 		     ? ((Named) fvalue).getSymbol()
 		     : Mangling.demangleName(rfield.getName(), true));
+    try {
+        SourceName sourceName = rfield.getAnnotation(SourceName.class);
+        if (sourceName != null) {
+            fdname = Symbol.valueOf(sourceName.name(), sourceName.uri(), sourceName.prefix());
+        }
+    } catch (Exception ex) {
+    }
     Symbol sym;
     if (fdname instanceof Symbol)
       sym = (Symbol) fdname;

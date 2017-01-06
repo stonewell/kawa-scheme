@@ -116,7 +116,7 @@ public class FieldLocation<T> extends ClassMemberLocation<T>
 
   public FieldLocation(Object instance, String cname, String fname)
   {
-    super(instance, ClassType.make(cname), fname);
+    super(instance, cname, fname);
   }
 
   public FieldLocation(Object instance, ClassType type, String mname)
@@ -127,7 +127,6 @@ public class FieldLocation<T> extends ClassMemberLocation<T>
   public FieldLocation (Object instance, java.lang.reflect.Field field)
   {
     super(instance, field);
-    type = (ClassType) Type.make(field.getDeclaringClass());
   }
 
   public void setDeclaration (Declaration decl)
@@ -137,13 +136,13 @@ public class FieldLocation<T> extends ClassMemberLocation<T>
 
   public Field getField ()
   {
-    return type.getDeclaredField(mname);
+    return getDeclaringClass().getDeclaredField(mname);
   }
 
   /** Get the type of the field. */
   public Type getFType ()
   {
-    return type.getDeclaredField(mname).getType();
+    return getField().getType();
   }
 
   public synchronized Declaration getDeclaration ()
@@ -210,7 +209,7 @@ public class FieldLocation<T> extends ClassMemberLocation<T>
     else
       {
 	v = getFieldValue();
-	if ((type.getDeclaredField(mname).getModifiers() & Access.FINAL) != 0)
+	if ((getDeclaringClass().getDeclaredField(mname).getModifiers() & Access.FINAL) != 0)
 	  {
 	    flags |= VALUE_SET;
 	    if ((flags & INDIRECT_LOCATION) == 0)
@@ -385,7 +384,7 @@ public class FieldLocation<T> extends ClassMemberLocation<T>
 	sbuf.append(instance);
 	sbuf.append(' ');
       }
-    sbuf.append(type == null ? "(null)" : type.getName());
+    sbuf.append(getDeclaringClassname());
     sbuf.append('.');
     sbuf.append(mname);
     /* DEBUGGING:
