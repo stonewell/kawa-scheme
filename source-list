@@ -750,7 +750,6 @@ KAWA_STANDARD_JSOURCES =\
   kawa/standard/define_class.java \
   kawa/standard/define.java \
   kawa/standard/define_library.java \
-  kawa/standard/define_member_alias.java \
   kawa/standard/define_syntax.java \
   kawa/standard/define_unit.java \
   kawa/standard/export.java \

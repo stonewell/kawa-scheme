@@ -4,6 +4,7 @@ gnu/bytecode/ClassTypeWriter.class
 gnu/bytecode/CodeAttr.class
 gnu/bytecode/ConstantPool.class
 gnu/bytecode/ConstantValueAttr.class
+gnu/bytecode/Cpool*.class
 gnu/bytecode/dump.*.class
 gnu/bytecode/EnclosingMethodAttr.class
 gnu/bytecode/ExceptionsAttr.class
@@ -136,7 +137,6 @@ kawa/standard/define_alias.class
 kawa/standard/define_autoload.class
 kawa/standard/define.class
 kawa/standard/define_class.class
-kawa/standard/define_member_alias.class
 kawa/standard/define_syntax.class
 kawa/standard/define_unit.class
 kawa/standard/define_variable.class
