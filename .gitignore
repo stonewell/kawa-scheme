@@ -7,6 +7,7 @@ config.status
 *.class
 *~
 kawa-jar.stamp
+kawa/lib/scm-classes*.stamp
 kawa*.tar.gz
 kawa-*.zip
 Makefile
@@ -35,7 +36,7 @@ doc/stamp-vti
 doc/version.texi
 doc/web
 kawa/Version.java
-lib/
+lib/*.jar
 testsuite/scribble.html
 testsuite/testing.zip
 testsuite/tmp*
