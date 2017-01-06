@@ -20,7 +20,7 @@ public class ConstrainedLocation<T> extends Location<T>
 
   public Symbol getKeySymbol ()
   {
-    return base.getKeySymbol();
+    return base == null ? null : base.getKeySymbol();
   }
 
   public Object getKeyProperty ()

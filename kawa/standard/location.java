@@ -28,7 +28,6 @@ public class location extends Syntax
     Pair pair = (Pair) obj;
     if (pair.getCdr() != LList.Empty)
       return tr.syntaxError ("extra arguments to location");
-    //    Expression arg = tr.rewrite(pair.getCar());
     Expression[] args = { location.rewrite(tr.rewrite(pair.getCar()), tr) };
     return Invoke.makeInvokeStatic(thisType, "makeLocationProc", args);
   }
