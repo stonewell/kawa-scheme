@@ -1,3 +1,16 @@
+2017-01-06  Per Bothner  <per@bothner.com>
+
+	Various fixes for top-level bindings.
+	* Declaration.java (loadFieldLocation): New method.
+	(load): Use it.
+	* BindingInitializer.java (emit): Use loadFieldLocation rather than
+	just compiling the value - see comment.
+	* ReferenceExp.java (calculateType): Tweak getDontDereference() result.
+	* BindingInitializer.java (emit): In normal "module mode" create a
+	simple local Location, rather than defining in teh environment.
+
+	* CompiledProc.java (resolveParameterTypes): Port from master.
+
 2017-01-04  Per Bothner  <per@bothner.com>
 
 	* ApplicationMainSupport.java: New console:jline-mouse options.

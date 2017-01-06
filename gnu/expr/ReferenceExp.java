@@ -250,7 +250,7 @@ public class ReferenceExp extends AccessExp
       return Type.pointer_type;
     if (getDontDereference())
       {
-        if (decl.getField() != null && ! decl.isIndirectBinding())
+        if (decl.getField() != null)
           return decl.getField().getStaticFlag()
             ? Compilation.typeStaticFieldLocation
             : Compilation.typeFieldLocation;

@@ -95,18 +95,36 @@ public class BindingInitializer extends Initializer
               .getDeclaredMethod("makeAnonymous", atypes);
             code.emitInvokeStatic(m);
           }
-        else
-          {
-            if (name instanceof String)
-              name = Namespace.EmptyNamespace.getSymbol(((String)name).intern());
+        else {
+            Method m;
+            if (comp.sharedModuleDefs()) {
+                if (name instanceof String)
+                    name = Namespace.EmptyNamespace.getSymbol(((String)name).intern());
+                m = Compilation.typeLocation.getDeclaredMethod("define", 1);
+            } else
+                m = makeLocationMethod(name);
             comp.compileConstant(name, Target.pushObject);
-            code.emitInvokeStatic(Compilation.typeLocation.getDeclaredMethod("define", 1));
-          }
+            code.emitInvokeStatic(m);
+        }
       }
     else
       {
         Type type = field == null ? decl.getType() : field.getType();
-        value.compileWithPosition(comp, StackTarget.getInstance(type));
+        Target ttarget = StackTarget.getInstance(type);
+        Declaration d = null;
+        if (value instanceof ReferenceExp
+            && value.getFlag(ReferenceExp.DONT_DEREFERENCE)) {
+            d = Declaration.followAliases(((ReferenceExp) value).getBinding());
+        }
+        if (d != null && d.getField() != null
+            && d.getField().getStaticFlag()) {
+            // We don't want to follow aliases or otherwise "inline" an alias,
+            // to avoid prematurely loading referenced classes.
+            // Just load the FieldLocation instead,
+            Type rtype = d.loadFieldLocation(null, comp);
+            ttarget.compileFromStack(comp, rtype);
+        } else
+            value.compileWithPosition(comp, ttarget);
       }
 
     // Optimization of Declaration.compileStore, to avoid swap.

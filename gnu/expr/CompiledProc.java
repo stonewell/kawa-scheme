@@ -9,6 +9,7 @@ import java.lang.invoke.MethodHandle;
 /* #else */
 // import gnu.mapping.CallContext.MethodHandle; 
 /* #endif */
+import kawa.SourceMethodType;
 
 public class CompiledProc extends MethodProc {
     protected int numArgs;
@@ -70,7 +71,58 @@ public class CompiledProc extends MethodProc {
         return this;
     }
 
-    // FIXME missing functionality of ModuleMethod.resolveParameterTypes
+    /** Figure out parameter types.
+     * Uses reflection to get method parameter types.
+     * INCOMPLETE - does not handle procedures with optional or rest args,
+     or with patterns. */
+    protected void resolveParameterTypes() {
+        Method method = null;
+        String name = getName();
+        if (name != null) {
+            try {
+                Class moduleClass = getModuleClass();
+                Method[] methods = moduleClass.getDeclaredMethods();
+                //String mangledName = Mangling.mangleName(name); IS CORRECT
+                String mangledName = Mangling.mangleNameIfNeeded(name);
+                for (int i = methods.length;  --i >= 0; ) {
+                    if (methods[i].getName().equals(mangledName)) {
+                        if (method != null) {
+                            method = null;
+                            break;
+                        }
+                        method = methods[i];
+                    }
+                }
+                if (method != null) {
+                    Language lang = Language.getDefaultLanguage();
+                    if (lang != null) {
+                        Class[] parameterClasses = method.getParameterTypes();
+                        int numParamTypes = parameterClasses.length;
+                        gnu.bytecode.Type[] atypes = new gnu.bytecode.Type[numParamTypes];
+                        String[] annotTypes;
+                        try {
+                            SourceMethodType sourceType = method.getAnnotation(SourceMethodType.class);
+                            annotTypes = sourceType == null ? null : sourceType.value();
+                        } catch (Throwable ex) {
+                            annotTypes = null;
+                        }
+                        for (int i = numParamTypes;  --i >= 0; ) {
+                            atypes[i] = lang.getTypeFor(parameterClasses[i]);
+                            if (annotTypes != null)
+                                atypes[i] =
+                                    PrimProcedure.decodeType(atypes[i],
+                                                             annotTypes, i+1,
+                                                             null, lang);
+                        }
+                        this.argTypes = atypes;
+                    }
+                }
+            } catch (Exception ex) {
+            }
+        }
+        if (argTypes == null)
+            super.resolveParameterTypes();
+    }
 
     public int numArgs() { return numArgs; }
 }

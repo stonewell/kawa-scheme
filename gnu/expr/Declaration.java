@@ -269,6 +269,32 @@ public class Declaration
       getContext().currentLambda().loadHeapFrame(comp);
   }
 
+    public Type loadFieldLocation(Declaration owner, Compilation comp) {
+        Field fld = getField();
+        if (fld == null)
+          throw new Error("internal error: cannot take location of "+this);
+        Method meth;
+        ClassType ltype;
+        boolean immediate = comp.immediate;
+        if (! fld.getStaticFlag())
+            loadOwningObject(owner, comp);
+        if (fld.getStaticFlag()) {
+            ltype = Compilation.typeStaticFieldLocation;
+            meth = ltype.getDeclaredMethod("make", immediate ? 1 : 2);
+        } else {
+            ltype = Compilation.typeFieldLocation;
+            meth = ltype.getDeclaredMethod("make", immediate ? 2 : 3);
+        }
+        if (immediate)
+            comp.compileConstant(this);
+        else {
+            comp.compileConstant(fld.getDeclaringClass().getName());
+            comp.compileConstant(fld.getName());
+        }
+        comp.getCode().emitInvokeStatic(meth);
+        return ltype;
+    }
+
   public void load (AccessExp access, int flags,
                     Compilation comp, Target target)
   {
@@ -306,32 +332,7 @@ public class Declaration
     Type rtype = dontDeref ? Compilation.typeLocation : getType();
     if (! isIndirectBinding() && dontDeref)
       {
-        if (getField() == null)
-          throw new Error("internal error: cannot take location of "+this);
-        Method meth;
-        ClassType ltype;
-        boolean immediate = comp.immediate;
-        if (getField().getStaticFlag())
-          {
-            ltype = Compilation.typeStaticFieldLocation;
-            meth = ltype.getDeclaredMethod("make", immediate ? 1 : 2);
-          }
-        else
-          {
-            ltype = Compilation.typeFieldLocation;
-            meth = ltype.getDeclaredMethod("make", immediate ? 2 : 3);
-
-            loadOwningObject(owner, comp);
-          }
-        if (immediate)
-          comp.compileConstant(this);
-        else
-          {
-            comp.compileConstant(getField().getDeclaringClass().getName());
-            comp.compileConstant(getField().getName());
-          }
-        code.emitInvokeStatic(meth);
-        rtype = ltype;
+        rtype = loadFieldLocation(owner, comp);
       }
     else if (getFlag(ALLOCATE_ON_STACK))
       {
