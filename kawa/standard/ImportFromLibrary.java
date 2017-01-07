@@ -509,6 +509,7 @@ public class ImportFromLibrary extends Syntax
                     Pair pair = (Pair) lst;
                     Object save1 = tr.pushPositionOf(pair);
                     Object name = Translator.stripSyntax(pair.getCar());
+                    name = tr.namespaceResolve(name);
                     Symbol oldsym = null;
                     Symbol newsym = null;
                     if (name instanceof Symbol) {
@@ -519,6 +520,8 @@ public class ImportFromLibrary extends Syntax
                         Pair rpair1 = (Pair) name;
                         Object rname1 = rpair1.getCar();
                         Object rname2 = ((Pair) rpair1.getCdr()).getCar();
+                        rname1 = tr.namespaceResolve(rname1);
+                        rname2 = tr.namespaceResolve(rname2);
                         if (rname1 instanceof Symbol
                             && rname2 instanceof Symbol) {
                             oldsym = (Symbol) rname1;
