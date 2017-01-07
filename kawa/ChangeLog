@@ -1,5 +1,8 @@
 2017-01-06  Per Bothner  <per@bothner.com>
 
+	* standard/ImportFromLibrary.java (map): Allow compound
+	symbols in only/except lists.
+
 	* standard/define_member_alias.java: Remove broken Syntax.
 
 2017-01-02  Per Bothner  <per@bothner.com>
