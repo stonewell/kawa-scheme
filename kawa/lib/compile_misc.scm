@@ -1,5 +1,8 @@
+(require <kawa.lib.prim_imports>)
+(require <kawa.lib.std_syntax>)
 (require <kawa.lib.characters>)
 (require <kawa.lib.strings>)
+(require <kawa.lib.lists>)
 (require <kawa.lib.kawa.expressions>)
 (require <kawa.lib.ExceptionClasses>)
 (define-alias MultValuesType gnu.kawa.reflect.MultValuesType)

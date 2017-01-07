@@ -1,5 +1,7 @@
-(module-name <kawa.lib.kawa.regex>)
+(module-name kawa.lib.kawa.regex)
+(require <kawa.lib.prim_imports>)
 (require <kawa.lib.std_syntax>)
+(require <kawa.lib.lists>)
 (export regex-quote regex-match? regex-match regex-match-positions
 	regex-split regex-replace regex-replace*)
 

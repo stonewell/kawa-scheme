@@ -111,6 +111,10 @@ public class OutPort extends PrintConsumer implements Printable
     public static BinaryOutPort getSystemOut() { return outInitial; }
     public static BinaryOutPort getSystemErr() { return errInitial; }
 
+    public static final ThreadLocation charEncoding
+        = new ThreadLocation("port-char-encoding");
+    static { charEncoding.setGlobal(Boolean.TRUE); }
+
   public static final ThreadLocation<gnu.kawa.io.OutPort> outLocation
     = new ThreadLocation<gnu.kawa.io.OutPort>("out-default");
   static { outLocation.setGlobal(outInitial); }
@@ -141,7 +145,7 @@ public class OutPort extends PrintConsumer implements Printable
 
     public static OutPort openFile(Object fname)
         throws java.io.IOException {
-        return openFile(fname, Environment.user().get("port-char-encoding"));
+        return openFile(fname, OutPort.charEncoding.get(null));
     }
 
     public static OutPort openFile(Object fname, Object conv)

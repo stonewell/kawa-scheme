@@ -1,17 +1,18 @@
 (module-export defmacro define-macro define-syntax-case
 	       begin-for-syntax define-for-syntax
-               when unless try-finally synchronized
+               when unless try-finally match synchronized
                let-values let*-values case-lambda define-values
                define-alias-parameter $bracket-list$
                $string$ $string-with-default-format$ $format$ $sprintf$
                $string-with-delimiter-marks$ define-simple-constructor)
 
-(require <kawa.lib.prim_syntax>)
+(require <kawa.lib.prim_imports>)
 (require <kawa.lib.std_syntax>)
 (require <kawa.lib.reflection>)
 (require <kawa.lib.lists>)
 (require <kawa.lib.scheme.eval>)
-(require <kawa.lib.prim_imports>)
+(require kawa.lib.kawa.istrings)
+(import (only kawa.standard.define_syntax (define_macro %define-macro)))
 
 (define-syntax defmacro
   (syntax-rules ()

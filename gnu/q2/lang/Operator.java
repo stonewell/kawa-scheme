@@ -51,7 +51,7 @@ public class Operator extends Syntax
     new Operator(":=", 2, 2, RHS_NEEDED|ASSIGN_OP, null);
   public static final Operator IF_THEN =
     new Operator("?>", 2, 2, RHS_NEEDED,
-                 new StaticFieldLocation("kawa.lib.prim_syntax", "if"));
+                 new StaticFieldLocation("kawa.lib.prim_imports", "if"));
 
   public Operator (String name, int lprio, int rprio, int flags,
                    Object function)

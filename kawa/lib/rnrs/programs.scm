@@ -1,6 +1,9 @@
 (module-name <kawa.lib.rnrs.programs>)
 (module-export command-line exit emergency-exit)
-(require <kawa.lib.prim_syntax>)
+(require <kawa.lib.prim_imports>)
+(require <kawa.lib.lists>)
+(require kawa.lib.std_syntax)
+(require kawa.lib.syntax)
 
 (define (command-line) :: list
   (let* ((rest ; Actual arguments, not including "argv[0]" equivalent.

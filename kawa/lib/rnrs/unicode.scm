@@ -6,7 +6,11 @@
 	       string-upcase string-downcase string-titlecase string-foldcase
 	       string-normalize-nfd string-normalize-nfkd
 	       string-normalize-nfc string-normalize-nfkc)
+
+(require <kawa.lib.prim_imports>)
+(require <kawa.lib.std_syntax>)
 (require <kawa.lib.characters>)
+(require kawa.lib.exceptions)
 (require <kawa.lib.compile_misc>)
 
 (define (char-upcase (ch :: character)) :: character

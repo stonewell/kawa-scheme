@@ -3,7 +3,6 @@
 
 (define-library (somemodule)
   (import
-    (scheme base)
     (kawa base)
     (kawa lib std_syntax))
   (begin

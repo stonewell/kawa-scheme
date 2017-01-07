@@ -1,6 +1,6 @@
 ;;; Definitions for some standard syntax.
 
-(module-export cond and or let let* do delay lazy delay-force
+(export cond and or let let* do delay lazy delay-force
                else ... ? => _ else unquote unquote-splicing
                syntax->datum datum->syntax with-syntax
 	       syntax-object->datum datum->syntax-object ; deprecated
@@ -8,16 +8,16 @@
 	       identifier? free-identifier=? bound-identifier=?
 	       syntax-source syntax-line syntax-column)
 
-(require <kawa.lib.prim_syntax>)
+(require <kawa.lib.prim_imports>)
 (import (only kawa.standard.syntax syntax))
 (import (only kawa.standard.syntax_case (syntax_case syntax-case)))
 
 (import (rename (only (kawa standard let) let) (let %let)))
 (import (rename (only (kawa standard define) defineRaw) (defineRaw %define)))
-(import (only (kawa standard SchemeCompilation) lambda))
-(import (only (kawa standard Scheme) not))
-(import (only (kawa standard begin) begin))
-(import (only kawa.standard.syntax_error (syntax_error syntax-error)))
+;;(import (only (kawa standard SchemeCompilation) lambda))
+;;(import (only (kawa standard Scheme) not))
+;;(import (only (kawa standard begin) begin))
+;;(import (only kawa.standard.syntax_error (syntax_error syntax-error)))
 
 (define-syntax ?
   (syntax-rules ()

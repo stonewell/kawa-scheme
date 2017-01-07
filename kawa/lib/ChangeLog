@@ -1,3 +1,14 @@
+2017-01-06  Per Bothner  <per@bothner.com>
+
+	Re-do so all default bindings are in kawa.base.
+	* kawa/base.scm: Do-do.
+	* prim_syntax.scm: Renamed to ...
+	* prim_imports.scm: ... new name.  Add imports from Java code.
+	* Makefile.am: Build classes in 3 stages.
+	* strings.scm (string-append): Remove.
+	* kawa/istrings.scm: New module, with immutable string-append.
+	* kawa/mstrings.scm: New module, with mutable string-append.
+
 2016-12-18  Per Bothner  <per@bothner.com>
 
 	* vectors.scm (make-vector): Fix default to #!null as in documentation.
@@ -6,10 +17,10 @@
 
 2016-12-09  Per Bothner  <per@bothner.com>
 
-	* enums.scm: Moved gnu gnu/kawa/slib.
+	* enums.scm: Moved from gnu/kawa/slib.
 	* srfi/26.scm: Renamed from gnu/kawa/slib/cut.scm.
 	* srfi/8.scm: Renamed from gnu/kawa/slib/receive.scm.
-	* srfi/95.scm: MOved from srfi95.scm.
+	* srfi/95.scm: Moved from srfi95.scm.
 	* Makefile.am: Update accoringly.  Also compile using two separate
 	commands.  This allows simplifying imports/requires.
 

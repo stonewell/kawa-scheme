@@ -121,8 +121,9 @@ public class CommonLisp extends Lisp2
 
     try
       {
+        loadClass("kawa.lib.kawa.base");
         // Force it to be loaded now, so we can over-ride let* length etc.
-        loadClass("kawa.lib.prim_syntax");
+        loadClass("kawa.lib.prim_imports");
         loadClass("kawa.lib.std_syntax");
         loadClass("kawa.lib.lists");
         loadClass("kawa.lib.strings");

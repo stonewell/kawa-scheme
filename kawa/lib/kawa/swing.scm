@@ -1,6 +1,10 @@
 (module-name (kawa swing))
 
-(require <kawa.lib.prim_syntax>)
+(require kawa.lib.prim_imports)
+(require kawa.lib.std_syntax)
+(require kawa.lib.strings)
+(require kawa.lib.exceptions)
+(require kawa.lib.parameters)
 
 (import (kawa pictures) (kawa process-keywords))
 

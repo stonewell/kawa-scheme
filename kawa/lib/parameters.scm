@@ -1,7 +1,8 @@
 ;; This implements SRFI-39 "Parameter objects".
 (module-export make-parameter as-location%)
 
-(require <kawa.lib.prim_syntax>)
+(require <kawa.lib.prim_imports>)
+(require <kawa.lib.std_syntax>)
 
 (define (make-parameter init #!optional (converter #!null))
   (if (not (eq? converter #!null))

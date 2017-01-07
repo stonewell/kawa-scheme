@@ -422,7 +422,7 @@ public class Shell
   }
 
     static InPort openFile(InputStream fs, Path path) throws IOException {
-        Object conv = Environment.user().get("port-char-encoding");
+        Object conv = OutPort.charEncoding.get(null);
         InPort src;
         if (conv == null || conv == Boolean.TRUE)
             return BinaryInPort.openHeuristicFile(fs, path);

@@ -1,5 +1,10 @@
-(require <kawa.lib.kawa.expressions>)
-(import (kawa lib kawa string-cursors))
+(require kawa.lib.prim_imports)
+(require kawa.lib.std_syntax)
+(require kawa.lib.syntax)
+(require kawa.lib.lists)
+(require kawa.lib.strings)
+(require kawa.lib.kawa.expressions)
+(import kawa.lib.kawa.string-cursors)
 (define-alias Convert gnu.kawa.functions.Convert)
 (define-alias FVector gnu.lists.FVector)
 

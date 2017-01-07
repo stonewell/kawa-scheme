@@ -8,6 +8,10 @@
 (module-export find for-all exists filter partition fold-left
                fold-right remp remove remv remq memp member memv memq
                assp assoc assv assq cons*)
+(require kawa.lib.prim_imports)
+(require kawa.lib.std_syntax)
+(require kawa.lib.syntax)
+(require kawa.lib.misc)
 (require kawa.lib.lists "../lists.scm")
 
 ;;; Helper Functions

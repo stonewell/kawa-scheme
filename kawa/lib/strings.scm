@@ -7,10 +7,10 @@
                substring string->list list->string string-copy string-copy!
                string-fill! string-upcase! string-downcase!
                string-capitalize string-capitalize!
-               string-append string-append! string-replace!
+               string-append! string-replace!
                string-map string-for-each srfi-13-string-for-each)
 
-(require <kawa.lib.prim_syntax>)
+(require <kawa.lib.prim_imports>)
 (require <kawa.lib.std_syntax>)
 (require <kawa.lib.syntax>)
 (require <kawa.lib.lists>)
@@ -173,11 +173,6 @@
   (let ((copy :: <gnu.lists.FString> (string-copy str)))
     (invoke-static <gnu.lists.Strings> 'makeCapitalize copy)
     copy))
-
-(define (string-append #!rest (args :: <Object[]>)) :: <gnu.lists.FString>
-  (let ((str :: <gnu.lists.FString> (make <gnu.lists.FString>)))
-    (invoke str 'addAllStrings args 0)
-    str))
 
 (define (%string-compare-ci2 (str1 :: string) (str2 :: string)) ::int
   ;; The obvious doesn't handle German SS correctly.

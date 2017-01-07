@@ -1,4 +1,4 @@
-(require <kawa.lib.prim_syntax>)
+(require <kawa.lib.prim_imports>)
 (require <kawa.lib.std_syntax>)
 
 (define-syntax (primitive-constructor form)
@@ -11,17 +11,17 @@
 
 ;;; RECORDS
 
-(define (make-record-type (name :: <String>) (fnames :: <list>))
-  (invoke-static <record> 'makeRecordType name fnames))
+(define (make-record-type name (fnames :: <list>))
+  (invoke-static <record> 'makeRecordType (name:toString) fnames))
 
 (define (record-constructor (cl :: <class-type>) #!optional (flds #!null))
   (make <kawa.lang.RecordConstructor> cl flds))
 
-(define (record-accessor (class :: <class-type>) (fname :: <String>))
-  (make <kawa.lang.GetFieldProc> class fname))
+(define (record-accessor (class :: <class-type>) (fname ::simple-symbol))
+  (make <kawa.lang.GetFieldProc> class (fname:getName)))
 
-(define (record-modifier (class :: <class-type>) (fname :: <String>))
-  (make <kawa.lang.SetFieldProc> class fname))
+(define (record-modifier (class :: <class-type>) (fname ::simple-symbol))
+  (make <kawa.lang.SetFieldProc> class (fname:getName)))
 
 (define (record? obj)
   (instance? obj <record>))

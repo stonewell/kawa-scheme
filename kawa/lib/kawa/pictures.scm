@@ -1,10 +1,14 @@
 (module-name (kawa pictures))
-(require <kawa.lib.prim_syntax>)
-(define-private-alias WithPaint gnu.kawa.models.WithPaint)
-(import (class gnu.kawa.models
+
+(import kawa.lib.prim_imports
+        kawa.lib.std_syntax
+        kawa.lib.syntax
+        kawa.lib.exceptions
+        (class gnu.kawa.models
                DDimension DrawImage Picture Pictures StandardColor)
         (class java.awt.geom AffineTransform)
         (class java.awt.image BufferedImage RenderedImage))
+(define-private-alias WithPaint gnu.kawa.models.WithPaint)
 
 (define (make-Point x y) (java.awt.geom.Point2D$Double x y))
 (define-simple-constructor P make-Point)
@@ -41,8 +45,7 @@
 	      (make <java.awt.geom.GeneralPath>))
         (curx::double initial:x)
         (cury::double initial:y)
-	(n-points :: <int>
-		  ((primitive-array-length <object>) more-points)))
+	(n-points :: <int> more-points:length))
     (path:moveTo curx cury)
     (do ((i :: <int> 0 (+ i 1)))
 	((>= i n-points)

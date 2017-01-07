@@ -1,7 +1,7 @@
 (module-name (kawa pprint))
-(require <kawa.lib.prim_syntax>)
-(require <kawa.lib.syntax>)
-(import (class gnu.lists Consumer PrintConsumer)
+
+(import (kawa base)
+        (class gnu.lists Consumer PrintConsumer)
         (class gnu.kawa.io PrettyWriter))
 
 (define (pprint-indent mode amount::int

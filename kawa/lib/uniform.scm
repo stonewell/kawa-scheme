@@ -1,17 +1,43 @@
 ;; Uniform vectors, as specified by SRFI-4.
 
-(require <kawa.lib.prim_syntax>)
-(require <kawa.lib.std_syntax>)
-(require <kawa.lib.syntax>)
+(require kawa.lib.prim_imports)
+(require kawa.lib.std_syntax)
+(require kawa.lib.lists)
+(require kawa.lib.syntax)
+
+(export 
+ f32vector f32vector? f32vector-length
+ f32vector-ref f32vector-set! f32vector->list
+ f64vector f64vector? f64vector-length
+ f64vector-ref f64vector-set! f64vector->list
+ list->f32vector list->f64vector
+ list->s8vector list->s16vector list->s32vector list->s64vector
+ list->u8vector list->u16vector list->u32vector list->u64vector
+ make-f32vector make-f64vector
+ make-s8vector make-s16vector make-s32vector make-s64vector
+ make-u8vector make-u16vector make-u32vector make-u64vector
+ s8vector s8vector? s8vector-length
+ s8vector-ref s8vector-set! s8vector->list
+ s16vector s16vector? s16vector-length
+ s16vector-ref s16vector-set! s16vector->list
+ s32vector s32vector? s32vector-length
+ s32vector-ref s32vector-set! s32vector->list
+ s64vector s64vector? s64vector-length
+ s64vector-ref s64vector-set! s64vector->list
+ u8vector u8vector? u8vector-length
+ u8vector-ref u8vector-set! u8vector->list
+ u16vector u16vector? u16vector-length
+ u16vector-ref u16vector-set! u16vector->list
+ u32vector u32vector? u32vector-length
+ u32vector-ref u32vector-set! u32vector->list
+ u64vector u64vector? u64vector-length
+ u64vector-ref u64vector-set! u64vector->list)
 
 (define (s8vector? x) :: <boolean>
   (instance? x <s8vector>))
 
 (define (make-s8vector (n :: <int>) #!optional (init :: <int> 0)) :: <s8vector>
   (make <s8vector> n init))
-
-(define (s8vector . values) :: <s8vector>
-  (list->s8vector values))
 
 (define (s8vector-length (v :: <s8vector>)) :: <int>
   (invoke v 'size))
@@ -46,9 +72,6 @@
 (define (make-u8vector (n :: <int>) #!optional (init :: <int> 0)) :: <u8vector>
   (make <u8vector> n init))
 
-(define (u8vector . values) :: <u8vector>
-  (list->u8vector values))
-
 (define (u8vector-length (v :: <u8vector>)) :: <int>
   (invoke v 'size))
 
@@ -69,9 +92,6 @@
 
 (define (make-s16vector (n :: <int>) #!optional (init :: <int> 0)) :: <s16vector>
   (make <s16vector> n init))
-
-(define (s16vector . values) :: <s16vector>
-  (list->s16vector values))
 
 (define (s16vector-length (v :: <s16vector>)) :: <int>
   (invoke v 'size))
@@ -94,9 +114,6 @@
 (define (make-u16vector (n :: <int>) #!optional (init :: <int> 0)) :: <u16vector>
   (make <u16vector> n init))
 
-(define (u16vector . values) :: <u16vector>
-  (list->u16vector values))
-
 (define (u16vector-length (v :: <u16vector>)) :: <int>
   (invoke v 'size))
 
@@ -117,9 +134,6 @@
 
 (define (make-s32vector (n :: <int>) #!optional (init :: <int> 0)) :: <s32vector>
   (make <s32vector> n init))
-
-(define (s32vector . values) :: <s32vector>
-  (list->s32vector values))
 
 (define (s32vector-length (v :: <s32vector>)) :: <int>
   (invoke v 'size))
@@ -142,9 +156,6 @@
 (define (make-u32vector (n :: <int>) #!optional (init :: <long> 0)) :: <u32vector>
   (make <u32vector> n init))
 
-(define (u32vector . values) :: <u32vector>
-  (list->u32vector values))
-
 (define (u32vector-length (v :: <u32vector>)) :: <int>
   (invoke v 'size))
 
@@ -165,9 +176,6 @@
 
 (define (make-s64vector (n :: <int>) #!optional (init :: <long> 0)) :: <s64vector>
   (make <s64vector> n init))
-
-(define (s64vector . values) :: <s64vector>
-  (list->s64vector values))
 
 (define (s64vector-length (v :: <s64vector>)) :: <int>
   (invoke v 'size))
@@ -190,9 +198,6 @@
 (define (make-u64vector (n :: <int>) #!optional (init :: <integer> 0)) :: <u64vector>
   (make <u64vector> n init))
 
-(define (u64vector . values) :: <u64vector>
-  (list->u64vector values))
-
 (define (u64vector-length (v :: <u64vector>)) :: <int>
   (invoke v 'size))
 
@@ -213,9 +218,6 @@
 
 (define (make-f32vector (n :: <int>) #!optional (init :: <float> 0.0)) :: <f32vector>
   (make <f32vector> n init))
-
-(define (f32vector . values) :: <f32vector>
-  (list->f32vector values))
 
 (define (f32vector-length (v :: <f32vector>)) :: <int>
   (invoke v 'size))
@@ -238,9 +240,6 @@
 (define (make-f64vector (n :: <int>) #!optional (init :: <double> 0.0)) :: <f64vector>
   (make <f64vector> n init))
 
-(define (f64vector . values) :: <f64vector>
-  (list->f64vector values))
-
 (define (f64vector-length (v :: <f64vector>)) :: <int>
   (invoke v 'size))
 
@@ -255,3 +254,35 @@
 
 (define (list->f64vector (l :: <list>)) :: <f64vector>
   (make <f64vector> (%list->array l double double)))
+
+#| Defined in LangObjType
+(define (s8vector . values) :: <s8vector>
+  (list->s8vector values))
+
+(define (u8vector . values) :: <u8vector>
+  (list->u8vector values))
+
+(define (s16vector . values) :: <s16vector>
+  (list->s16vector values))
+
+(define (u16vector . values) :: <u16vector>
+  (list->u16vector values))
+
+(define (s32vector . values) :: <s32vector>
+  (list->s32vector values))
+
+(define (u32vector . values) :: <u32vector>
+  (list->u32vector values))
+
+(define (s64vector . values) :: <s64vector>
+  (list->s64vector values))
+
+(define (u64vector . values) :: <u64vector>
+  (list->u64vector values))
+
+(define (f32vector . values) :: <f32vector>
+  (list->f32vector values))
+
+(define (f64vector . values) :: <f64vector>
+  (list->f64vector values))
+|#

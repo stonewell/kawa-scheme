@@ -18,7 +18,7 @@
 
 (module-export define-record-type)
 
-(require <kawa.lib.prim_syntax>)
+(require <kawa.lib.prim_imports>)
 (require <kawa.lib.std_syntax>)
 (import (only kawa.standard.begin begin))
 (import (only kawa.standard.define_class

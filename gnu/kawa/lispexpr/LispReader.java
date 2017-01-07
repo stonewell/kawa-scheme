@@ -118,7 +118,11 @@ public class LispReader extends Lexer
 
     boolean inQuasiSyntax;
 
-  char readCase = lookupReadCase();
+    public static final ThreadLocation symbolReadCase
+        = new ThreadLocation("symbol-read-case");
+    static { symbolReadCase.setGlobal(Symbol.valueOf("preserve")); }
+
+    char readCase = lookupReadCase();
 
   /** Get specification of how symbols should be case-folded.
     * @return Either '\0' (unspecified - defaults to preserve case),
@@ -132,8 +136,7 @@ public class LispReader extends Lexer
   {
     try
       {
-	String read_case_string
-	  = Environment.getCurrent().get("symbol-read-case", "P").toString();
+        String read_case_string = symbolReadCase.get("P").toString();
         if (read_case_string.length() > 0)
           {
             char read_case = read_case_string.charAt(0);

@@ -1,3 +1,5 @@
+;; Does not include string-append and similar procedures that return
+;; either a mutable or immutable string, depending on options and imports.
 (export
  ... => _ else unquote unquote-splicing
  * + - / < <= = > >=
@@ -34,7 +36,7 @@
  read-char read-error? read-line read-string read-u8
  real? remainder reverse round
  set! set-car! set-cdr! square string string->list string->number
- string->symbol string->utf8 string->vector string-append string-copy
+ string->symbol string->utf8 string->vector string-copy
  string-copy! string-fill! string-for-each string-length string-map string-ref
  string-set! string<=? string<? string=? string>=? string>? string? substring
  symbol->string symbol=? symbol? syntax-error syntax-rules

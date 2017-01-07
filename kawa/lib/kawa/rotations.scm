@@ -50,7 +50,6 @@
 ;;; All of the functions which use quaternions as rotations normalize
 ;;; their input by calling unit-quaternion.
 
-(module-static #t)
 (module-name (kawa rotations))
 (export
  ;; quaternion <-> rotation matrix
@@ -90,8 +89,8 @@
  ;; applying rotations
  make-rotation-procedure rotate-vector)
 
-;(require <kawa.lib.prim_syntax>)
-(import (scheme base) (kawa quaternions))
+(import (kawa base)
+        (kawa quaternions))
 
 ;; The limit below which an angle is treated as effectively zero.
 (define-constant *epsilon* ::double 1E-12)

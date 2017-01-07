@@ -1,4 +1,5 @@
 (module-name (rnrs arithmetic bitwise))
+(require <kawa.lib.prim_imports>)
 (require <kawa.lib.numbers>)
 
 (module-export bitwise-not
@@ -12,14 +13,12 @@
                bitwise-rotate-bit-field
                bitwise-reverse-bit-field)
 
-(define-alias arithmetic-shift gnu.kawa.functions.BitwiseOp:ashift)
-(define-alias bitwise-and gnu.kawa.functions.BitwiseOp:and)
-(define-alias bitwise-ior gnu.kawa.functions.BitwiseOp:ior)
-(define-alias bitwise-not gnu.kawa.functions.BitwiseOp:not)
-(define-alias bitwise-xor gnu.kawa.functions.BitwiseOp:xor)
-
-(define-alias bitwise-arithmetic-shift gnu.kawa.functions.BitwiseOp:ashift)
-(define-alias bitwise-arithmetic-shift-left
-  gnu.kawa.functions.BitwiseOp:ashiftl)
-(define-alias bitwise-arithmetic-shift-right
-  gnu.kawa.functions.BitwiseOp:ashiftr)
+(import (only gnu.kawa.functions.BitwiseOp
+              (ashift arithmetic-shift)
+              (ashift bitwise-arithmetic-shift)
+              (ashiftl bitwise-arithmetic-shift-left)
+              (ashiftr bitwise-arithmetic-shift-right)
+              (and bitwise-and)
+              (ior bitwise-ior)
+              (not bitwise-not)
+              (xor bitwise-xor)))

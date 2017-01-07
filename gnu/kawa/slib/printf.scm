@@ -150,7 +150,7 @@
 							(string-ref str n))
 						       #\0 #\#))))))
 		(else
-		 (let ((res (substring str 0 (+ ndigs 1)))
+		 (let ((res (string-copy str 0 (+ ndigs 1)))
 		       (dig (lambda (i)
 			      (let ((c (string-ref str i)))
 				(if (char-numeric? c)
