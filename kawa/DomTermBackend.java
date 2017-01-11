@@ -53,6 +53,15 @@ public class DomTermBackend extends Backend implements Runnable {
                 return "bad port specifier in -w"+command+" option";
             }
         }
+        if ("google-chrome".equals(command)
+            || "chrome".equals(command))
+            command = "browser="+DomServer.chromeCommand()+" --app=%U";
+        else if ("browser=google-chrome".equals(command)
+            || "browser=chrome".equals(command))
+            command = "browser="+DomServer.chromeCommand()+" %U";
+        if ("firefox".equals(command)
+            || "browser=firefox".equals(command))
+            command = "browser="+DomServer.firefoxCommand()+" %U";
         boolean exitOnClose = ! command.startsWith("serve");
         int wsport = DomTermBackend.WebSocketServer.getInstancePort();
         DomServer.setExitOnClose(exitOnClose);

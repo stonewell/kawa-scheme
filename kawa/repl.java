@@ -892,18 +892,12 @@ public class repl extends Procedure0or1 {
                 Shell.run(Language.getDefaultLanguage(), Environment.getCurrent());
                 return null;
             }
-            if ("google-chrome".equals(command))
-                command = "browser=google-chrome --app=%U";
             if ("qtdomterm".equals(command))
                 command = "browser=qtdomterm --connect localhost:%W";
-            if (command.startsWith("browser")
-                || (command.equals("serve") || command.startsWith("serve="))) {
-                Object result = Class.forName("kawa.DomTermBackend")
-                    .getMethod("startDomTermConsole", String.class)
-                    .invoke(null, command);
-                return result == null ? null : result.toString();
-            }
-            return "unrecognized -w subcommand '"+command+"'";
+            Object result = Class.forName("kawa.DomTermBackend")
+                .getMethod("startDomTermConsole", String.class)
+                .invoke(null, command);
+            return result == null ? null : result.toString();
         } catch (Throwable ex) {
             return "caught exception "+ex.toString();
         }
