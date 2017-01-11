@@ -52,6 +52,8 @@ JAR = jar
 FIND = @FIND@
 KAWAJAR = kawa.jar
 KAWALIB = $(datadir)/kawa/lib/$(KAWAJAR)
+# external domterm-jar
+DOMTERM_JAR = @WITH_DOMTERM_ARG@/lib/domterm.jar
 
 META_ScriptEngineFactory = META-INF/services/javax.script.ScriptEngineFactory
 if WITH_JAVAX_SCRIPT
@@ -132,7 +134,7 @@ kawa-$(ZIP_VERSION).zip: dist-kawa.jar doc/kawa-manual.epub bin/kawa.bat
 	mkdir -p kawa-$(VERSION) kawa-$(VERSION)/lib  kawa-$(VERSION)/bin kawa-$(VERSION)/doc
 	cd kawa-$(VERSION)/lib; \
 	  $(LN_S) ../../dist-kawa.jar kawa.jar; \
-	  $(LN_S) @WITH_DOMTERM_ARG@ domterm.jar; \
+	  $(LN_S) $(DOMTERM_JAR) domterm.jar; \
 	  $(LN_S) @WITH_SERVLET_ARG@ servlet.jar; \
 	  $(LN_S) @WITH_SERVLET_ARG@ servlet.jar; \
 	  $(LN_S) @WITH_JLINE_PATH@ jline.jar
@@ -274,7 +276,7 @@ install-jar:
 if WITH_DOMTERM
 	-rm -f $(DESTDIR)$(datadir)/kawa/lib/domterm.jar
 	cd $(DESTDIR)$(datadir)/kawa/lib && \
-	  $(LN_S) @WITH_DOMTERM_ARG@ domterm.jar
+	  $(LN_S) $(DOMTERM_JAR) domterm.jar
 endif
 if ENABLE_SERVLET
 	-rm -f $(DESTDIR)$(datadir)/kawa/lib/servlet.jar
@@ -329,7 +331,7 @@ if WITH_DOMTERM
 DOMTERM_LINK = lib/domterm.jar
 lib/domterm.jar:
 	mkdir -p lib
-	$(LN_S) @WITH_DOMTERM_ARG@ lib/domterm.jar
+	$(LN_S) $(DOMTERM_JAR) lib/domterm.jar
 endif
 if ENABLE_SERVLET
 SERVLET_LINK = lib/servlet.jar

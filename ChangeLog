@@ -1,3 +1,10 @@
+2017-01-10  Per Bothner  <per@bothner.com>
+
+	* configure.ac: --with-domterm value is "domterm home",
+	rather than the jar file.
+	* Makefile.am: Update accordingly.
+	* config.classpath: Update.
+
 2016-11-25  Per Bothner  <per@bothner.com>
 
 	* README.md: Convert to Markdown from README.
