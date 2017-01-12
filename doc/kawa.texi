@@ -3036,7 +3036,7 @@ The @code{--no-console} flag was useful for older pre-Java-6
 implementations that did not have the @code{java.lang.Console} class.
 @item @code{console:type=}@var{console-types}
 @itemx @code{console:use-jline=}[@code{yes}|@code{no}]
-@itemx @code{console:console:jline-mouse=}[@code{yes}|@code{no}]
+@itemx @code{console:jline-mouse=}[@code{yes}|@code{no}]
 See the @ref{REPL Console} section.
 @item @code{console:prompt1=@var{prompt1}}
 @itemx @code{console:prompt2=@var{prompt2}}
