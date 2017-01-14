@@ -1,3 +1,9 @@
+2017-01-13  Per Bothner  <per@bothner.com>
+
+	* configure.in (AC_INIT): Set version to 2.3.
+	* bin/configure.in (AC_INIT): Likewise.
+	* build.xml (version.release): Likewise.
+
 2017-01-10  Per Bothner  <per@bothner.com>
 
 	* configure.ac: --with-domterm value is "domterm home",
