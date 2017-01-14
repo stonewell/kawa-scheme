@@ -39,7 +39,7 @@ case ${with_domterm} in
   yes) ;;
   no) ;;
   "") ;;
-  *) conf_classpath=${with_domterm}${CLASSPATH_SEPARATOR}$conf_classpath
+  *) conf_classpath=${with_domterm}/lib/domterm.jar${CLASSPATH_SEPARATOR}$conf_classpath
      run_classpath='$kawadir/lib/domterm.jar'${CLASSPATH_SEPARATOR}"$run_classpath"
 esac
 case ${with_jline2} in

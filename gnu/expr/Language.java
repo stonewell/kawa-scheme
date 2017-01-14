@@ -82,6 +82,7 @@ public abstract class Language
     { "brl", ".brl", "gnu.kawa.brl.BRL" },
     { "emacs", "elisp", "emacs-lisp", ".el", "gnu.jemacs.lang.ELisp" },
     { "xquery", ".xquery", ".xq", ".xql", "gnu.xquery.lang.XQuery" },
+    { "kashell", ".ksl", "gnu.q2.lang.Q2" },
     { "q2", ".q2", "gnu.q2.lang.Q2" },
     { "xslt", "xsl", ".xsl", "gnu.kawa.xslt.XSLT" },
     { "commonlisp", "common-lisp", "clisp", "lisp",

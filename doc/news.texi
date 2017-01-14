@@ -53,8 +53,11 @@ use the splice operator:
 @end verbatim
 @end itemize
 
-@subheading In Git repository since last release
+@c @@subheading In Git repository (master branch) since last release
 @c @anchor{#in-git-repository-since-last-release}
+
+@subheading Kawa 2.3 (January 13, 2017)
+
 @itemize
 @item
 Moved Kawa's source code repository (version control system)

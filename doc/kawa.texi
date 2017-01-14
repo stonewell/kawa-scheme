@@ -1513,9 +1513,11 @@ the file @code{@var{path}/epub3/chunk.xsl} needs to exist.
 (For example, on Fedora 25 @var{path} can be @code{/usr/share/sgml/docbook/xsl-ns-stylesheets}.)
 
 @item @code{--with-domterm}
-@itemx @code{--with-domterm=@var{domterm.jar}}
+@itemx @code{--with-domterm=@var{domterm_home}}
 Compile with extra support for the @ref{Using DomTerm,DomTerm}
-terminal emulator library.  (Some DomTerm support is built-in regardless.)
+terminal emulator library, where @code{@var{domterm_home}}
+is such that @code{@var{domterm_home}/lib/domterm.jar} exists.
+(Some DomTerm support is built-in regardless.)
 
 If you use this option along with @code{--with-javafx}
 then creating a new @ref{REPL Console,REPL} window
@@ -3063,7 +3065,7 @@ The @code{--no-console} flag was useful for older pre-Java-6
 implementations that did not have the @code{java.lang.Console} class.
 @item @code{console:type=}@var{console-types}
 @itemx @code{console:use-jline=}[@code{yes}|@code{no}]
-@itemx @code{console:console:jline-mouse=}[@code{yes}|@code{no}]
+@itemx @code{console:jline-mouse=}[@code{yes}|@code{no}]
 See the @ref{REPL Console} section.
 @item @code{console:prompt1=@var{prompt1}}
 @itemx @code{console:prompt2=@var{prompt2}}

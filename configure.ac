@@ -1,5 +1,5 @@
 qdnl Process this with autoconf to create configure
-AC_INIT([kawa],[2.2.1_invoke]) dnl Also update bin/configure.ac and build.xml.
+AC_INIT([kawa],[2.3_invoke]) dnl Also update bin/configure.ac and build.xml.
 AC_CONFIG_SRCDIR([doc/kawa.texi])
 
 AM_MAINTAINER_MODE([enable])
@@ -31,7 +31,7 @@ AC_ARG_WITH(javafx,
 WITH_JAVAFX_ARG="${with_javafx}"
 
 AC_ARG_WITH(domterm,
- AS_HELP_STRING(--with-domterm=<:@=domterm.jar@:>@,Build support for DomTerm))
+ AS_HELP_STRING(--with-domterm=<:@=domterm_home:>@,Build support for DomTerm))
  WITH_DOMTERM_ARG="${with_domterm}"
 
 AC_ARG_WITH(jline3,
