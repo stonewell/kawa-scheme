@@ -4,7 +4,7 @@ most recent changes first.
 See also the list of @uref{../qexo/news.html,Qexo (XQuery)-specific
 changes}.
 
-@@subheading In Git repository (master branch) since last release
+@c @subheading In Git repository (master branch) since last release
 
 @subheading Kawa 2.3 (January 13, 2017)
 
