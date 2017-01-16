@@ -5,7 +5,7 @@ package gnu.bytecode;
 
 /** Maintains the state for generating a switch statement or expression.
  *
- * <h4>Simple example</h4>
+ * <h3>Simple example</h3>
  * <p>To translate:
  * <blockquote><pre>
  * switch (exps) {

@@ -14,7 +14,7 @@ import java.util.regex.*;
  * ;; Output: xx=20
  * </pre></blockquote>
  *
- * <h4>Directives</h4>
+ * <h3>Directives</h3>
  * <p>The following assumes Scheme, with a line-comment {@code ";;"},
  * start-block-comment {@code "#|"} and end-block-comment {@code "|#"}.
  * <dl>

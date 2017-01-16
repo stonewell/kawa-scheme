@@ -3,8 +3,8 @@ package gnu.kawa.util;
 /**
  * A hash table that maps Object to int.
  * 
- * This is a custom hash table optimised for the Object -> int
- * maps. This is done to avoid unnecessary object allocation in the image set.
+ * This is a custom hash table optimised for Object-to-int maps.
+ * This is done to avoid unnecessary object allocation in the image set.
  * 
  * @see gnu.kawa.io.OutPort
  * @author Charles Turner
@@ -18,7 +18,7 @@ public class IntHashTable {
     private static Object DELETED = new Object();
 
     /**
-     * Construct an Object -> int hash table.
+     * Construct an Object-to-int hash table.
      * 
      * The default size of the hash table is 64 mappings.
      */
@@ -29,7 +29,7 @@ public class IntHashTable {
     }
 
     /**
-     * Construct an Object -> int hash table with a specified amount of mappings.
+     * Construct an Object-to-int hash table with a specified amount of mappings.
      * @param capacity The number of default mappings in this hash table.
      */
     public IntHashTable(int capacity) {

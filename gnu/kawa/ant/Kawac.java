@@ -611,7 +611,7 @@ public class Kawac extends MatchingTask {
 
   /**
    * Executes the task.
-   * @exception BuildException if an error occurs
+   * Throws BuildException if an error occurs
    */
   public void execute() throws BuildException {
     checkParameters();

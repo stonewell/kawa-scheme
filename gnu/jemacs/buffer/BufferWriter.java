@@ -282,7 +282,7 @@ public class BufferWriter extends java.io.Writer implements Runnable
     marker.removeChar(marker.getOffset() - save);
   }
 
-  /** Move some number of columns right (or left if count < 0). */
+  /** Move some number of columns right (or left if {@code count < 0}). */
   public void moveColumns(int count)
   {
     marker.moveToColumn(marker.currentColumn() + count, true);

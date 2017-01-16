@@ -5,8 +5,10 @@ package gnu.kawa.lispexpr;
 import gnu.text.*;
 import gnu.kawa.io.InPort;
 
-/** Reader table entry for '<' to treat '[' and ']' as constituents.
- * Lets us use (say) '<char[]>' as a token even if  '[' and ']' are parens.
+/** Reader table entry for {@code '<'} to treat {@code '['}
+ * and {@code ']'} as constituents.
+ * Lets us use (say) {@code har[]>} as a token even if  {@code '['}
+ * and {@code ']'} are parens.
  * @author Bruce R. Lewis.
  */
 

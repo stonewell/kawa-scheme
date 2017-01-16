@@ -3,7 +3,7 @@ import gnu.mapping.*;
 import gnu.kawa.lispexpr.LangObjType;
 
 /** This procedure's first argument values are applied as argument list to the second argument.
- * The call: {@code(call-with-values prod cons)}
+ * The call: {@code (call-with-values prod cons)}
  * is equivalent to: {@code (apply-with-values (prod) cons)}.
  * (However, the latter isn't expressible in Scheme because you can't
  * bind multiple values to an argument or variable in Scheme.

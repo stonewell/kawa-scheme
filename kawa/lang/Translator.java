@@ -1966,7 +1966,7 @@ public class Translator extends Compilation
   }
 
   /** Push an alias for a declaration in a scope.
-   * If the name of {@code decl}> came from a syntax template
+   * If the name of {@code decl} came from a syntax template
    * whose immediate scope is {@code templateScope},
    * then the same syntax template may contain local variable references
    * that are also in the same {@code templateScope}.

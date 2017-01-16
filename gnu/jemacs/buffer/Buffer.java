@@ -503,9 +503,9 @@ public abstract class Buffer extends AbstractSequence<Char>
   }
 
   /** Search in BUF for COUNT instances of the character TARGET between START and END.
-   * If COUNT is positive, search forwards; END must be >= START.
+   * If COUNT is positive, search forwards; {@code END >= START} is required.
    * If COUNT is negative, search backwards for the -COUNTth instance;
-   *   END must be <= START.
+   *  inn this case {@code END <= START} is required.
    * If COUNT is zero, do anything you please; run rogue, for all I care.
    * If END is zero, use beginning or end of (FIXME: accessible part of)
    * the buffer, as appropriate for the direction indicated by COUNT.
@@ -515,9 +515,10 @@ public abstract class Buffer extends AbstractSequence<Char>
    * this is not the same as the usual convention for Emacs motion commands.
 
    * If we don't find COUNT instances before reaching END, set SHORTAGE
-   * to the number of TARGETs left unfound, and return (shortage<<32|END).
-   * @return (SHORTAGE<<32|POS)
-  */
+   * to the number of TARGETs left unfound,
+   * and return {@code (shortage<<32|END)}.
+   * @return {@code (SHORTAGE<<32|POS)}
+   */
   public abstract long scan(char target, int start, int end,
 			    int count, boolean allowQuit);
   
@@ -525,7 +526,7 @@ public abstract class Buffer extends AbstractSequence<Char>
    * A side-effect-free version of Emacs's forward-line function.
    * @param lines number of lines forward (or backward if negative)
    * @param start initial position (buffer offset)
-   * @return (SHORTAGE<<32|POS)
+   * @return {@code (SHORTAGE<<32|POS)}
    */
   public final long forwardLine(int lines, int start)
   {

@@ -1,7 +1,7 @@
 package gnu.mapping;
 
 /**
- * Abstract class for "N-argument" Scheme procedures, where N>4 or variable.
+ * Abstract class for "{@code N}-argument" Scheme procedures, where {@code N>4} or variable.
  * @author	Per Bothner
  */
 

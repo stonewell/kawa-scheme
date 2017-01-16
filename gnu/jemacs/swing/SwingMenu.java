@@ -10,7 +10,7 @@ import java.util.*;
 
 /**
  * This manages a menu (for menubars or popup menus).
- * @author Simon Josefsson <jas@pdc.kth.se> (orginal contribution)
+ * @author Simon Josefsson {@code <jas@pdc.kth.se>} (orginal contribution)
  */
 
 public class SwingMenu extends JMenu implements EMenu
