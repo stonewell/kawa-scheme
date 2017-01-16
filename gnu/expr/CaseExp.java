@@ -33,10 +33,10 @@ import gnu.text.Char;
  * case case-key case-clause+
  * case case-key case-clause* case-else-clause
  *     case-key ::= expression
- *     case-clause ::= ((datum*) expression+)
- *        | ((datum*) => expression)
+ *     case-clause ::= {@code ((}datum*{@code )} expression+{@code )}
+ *        | {@code ((}datum*{@code ) =>} expression{@code )}
  *     case-else-clause ::= (else  expression+)
- *        | (else => expression)
+ *        | {@code (else =>} expression{@code )}
  * </pre>
  * 
  * </blockquote>

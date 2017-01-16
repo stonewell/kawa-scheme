@@ -151,6 +151,9 @@ kawa-$(ZIP_VERSION).zip: dist-kawa.jar doc/kawa-manual.epub bin/kawa.bat
 upload-kawa.snapshot.zip:
 	gnupload --replace --to ftp.gnu.org:kawa --symlink-regex kawa-$(VERSION)-`date +%Y%m%d`.zip
 
+upload-kawa.release.zip:
+	gnupload --to ftp.gnu.org:kawa --symlink-regex kawa-$VERSION.tar.gz kawa-$VERSION.zip
+
 doc/kawa-manual.epub: doc/kawa.texi
 	cd doc && $(MAKE) kawa-manual.epub
 

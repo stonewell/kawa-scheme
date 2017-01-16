@@ -20,32 +20,36 @@ import java.util.Vector;
  * <blockquote>
  * 1. Monadic conversion:
  * <pre>
- * 
- *    (+ 1                             (bind (if (>= x 0)
- *       (if (>= x 0)                            (f x)
- *           (f x)             -->               (return 0))
- *           0))                             (lambda (t) (+ 1 t)))
- * 
+ * {@code (+ 1 (if (>= x 0) (f x) 0))}
+ * </pre>
+ * becomes:
+ * <pre>
+ * {@code (bind (if (>= x 0)  (f x)  (return 0)) (lambda (t) (+ 1 t)))}
  * </pre>
  * 2. The result is interpreted in the Identity monad:
  * <pre>
+ *                 (return a)  becomes:  a
  * 
- *                 (return a)  =>  a
- * 
- *    (bind a (lambda (x) b))  =>  (let ((x a)) b)
- * 
- * 
- *    (bind (if (>= x 0)               (let ((t (if (>= x 0)
- *              (f x)          -->                  (f x)
- *              (return 0))                         (return 0))))
- *           (lambda (t) (+ 1 t)))        (+ 1 t)) 
- * 
+ *    (bind a (lambda (x) b))  becomes:  (let ((x a)) b)
+ * </pre>
+ * <pre>
+ *   (bind (if {@literal (>= x 0)}
+ *             (f x)
+ *             (return 0))
+ *         (lambda (t) (+ 1 t)))
+ * </pre>
+ * becomes:
+ * <pre>
+ *   (let ((t (if {@literal (>= x 0)}
+ *                (f x)
+ *                (return 0))))
+ *        (+ 1 t))
  * </pre>
  * 3. Nested let are flattened:
  * <pre>
  * 
  *    (let ((x (let ((y a))               (let ((y a))
- *               b)))          -->          (let ((x b))
+ *               b)))        becomes:          (let ((x b))
  *      c)                                    c))
  * 
  * </pre>

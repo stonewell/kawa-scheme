@@ -17,10 +17,10 @@ public abstract class SimpleVector<E> extends AbstractSequence<E>
     /** If isSimple(), the values are all the values of the guffer.
      * In this case getSize() == getBufferLength(); */
     protected final boolean isVerySimple() { return info < 0; }
-    /** The values are buffer[offset <: offset+size]. */
+    /** The values are {@code buffer[offset <: offset+size]}. */
     protected final boolean isSubRange() {
         return (info & SUBRANGE_FLAG) != 0; }
-    /** The values are buffer[0 <: size] ++ buffer[gapEnd <: ],
+    /** The values are {@code buffer[0 <: size] ++ buffer[gapEnd <: ]},
      * where gapEnd = size + offset */
     protected final boolean isGapBuffer() {
         return (info & GAP_FLAG) != 0; }

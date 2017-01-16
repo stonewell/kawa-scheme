@@ -20,7 +20,7 @@ public class Mangling {
     }
 
     /** Mangle according to John Rose's "Symbolic Freedom in the VM".
-     * {@linkplain https://blogs.oracle.com/jrose/entry/symbolic_freedom_in_the_vm See this article.}
+     * <a href="https://blogs.oracle.com/jrose/entry/symbolic_freedom_in_the_vm">See this article.</a>
      * @param context One of 'C' (class name); 'Q' (qualified name, with dots);
      *   'F' (field name); 'M' (method name).
      * @param force True if should escape '\\' even if that is the

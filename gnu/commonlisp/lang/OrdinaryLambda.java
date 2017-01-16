@@ -18,7 +18,7 @@ import kawa.lang.Translator;
  * The syntax transformer that rewrites the ordinary lambda list from CL.
  * 
  * TODO:
- *   - arbitrary keyword symbols not supported (&key (secret password)).
+ *   - arbitrary keyword symbols not supported {@code (&key (secret password))}.
  *     Most of it is implemented in comments, but there are a few bugs
  *     to iron out.
  *   - This class and its superclass could do with a refactoring. The

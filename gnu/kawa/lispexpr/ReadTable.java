@@ -23,7 +23,7 @@ public class ReadTable extends RangeTable
   /** Default value to pass to setBracketMode() unless overridden. */
   public static int defaultBracketMode = -2;
 
-  /** A character X such that PreXWord -> ($lookup$ Pre 'Word), if > 0. */
+  /** A character {@code X} such that {@code PreXWord -> ($lookup$ Pre 'Word)}, if {@code X > 0}. */
   public char postfixLookupOperator = (char) (-1);
 
   /** True if ":IDENTIFIER" should be treated as a keyword. */
@@ -35,7 +35,7 @@ public class ReadTable extends RangeTable
   public int extraFlags;
 
   /** Control whether we should handle R6RS inline hex escape.
-   * I.e. "\x"<hexdigits>";".
+   * I.e. {@code "\x"<hexdigits>";"}.
    */
   protected boolean hexEscapeAfterBackslash = true;
 
@@ -117,14 +117,14 @@ public class ReadTable extends RangeTable
         return tab;
     }
 
-    /** Specify how '[' and ']' (and '<') are handled.
+    /** Specify how {@code '['} and {@code ']'} (and {@code '<'}) are handled.
      * The value -2 means {@code [a b c]} is {@code ($bracket-list$ a b c)}
      * and {@code f[a b]} is {@code ($bracket-apply$ f a b)}.
      * The value -1 means that '[' and ']' are plain token constituents.
      * The value 0 means that '[' and ']' are equivalent to '(' and ')'.
      * The value 1 means that '[' and ']' are equivalent to '(' and ')', except
-   * within a token starting with '<', in which case they are constituents.
-   * This is so '[' is non-terminating when reading say '<char[]>'
+   * within a token starting with {@code '<',} in which case they are constituents.
+   * This is so {@code '['} is non-terminating when reading say {@code '<char[]>'}
    */
   public void setBracketMode(int mode)
   {

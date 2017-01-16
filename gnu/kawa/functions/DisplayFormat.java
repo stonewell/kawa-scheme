@@ -263,7 +263,7 @@ public class DisplayFormat extends GenericFormat
    * it might have to emit an extra ')' if the corresponding posn marker 
    * becomes active.
    *
-   * @param value The list on which the method CDR's, termination occurs when
+   * @param list The list on which the method CDR's, termination occurs when
    * this becomes a non-pair or the empty list
    * @param out The output port that is responsible for the pretty printing
    */
