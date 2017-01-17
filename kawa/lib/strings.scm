@@ -4,7 +4,7 @@
                char-ci=? char-ci<? char-ci>? char-ci<=? char-ci>=?
                string=? string<? string>? string<=? string>=?
 	       string-ci=? string-ci<? string-ci>? string-ci<=? string-ci>=?
-               substring string->list list->string string-copy string-copy!
+               string->list list->string string-copy string-copy!
                string-fill! string-upcase! string-downcase!
                string-capitalize string-capitalize!
                string-append! string-replace!
@@ -79,11 +79,6 @@
 (define-compare string>? string > %string-compare2)
 (define-compare string<=? string <= %string-compare2)
 (define-compare string>=? string >= %string-compare2)
-
-(define (substring str::<string> start::<int> end::<int>)
-  :: <string>
-  (with-start-end str (start end) (istart iend)
-                  (gnu.lists.FString str istart (- iend istart))))
 
 (define (string->list (str ::string)
                       #!optional (start ::int 0) (end ::int -1))

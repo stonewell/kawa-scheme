@@ -19,5 +19,5 @@
 (require kawa.lib.DefineRecordType)
 (import (rename kawa.lib.prim_imports (letrec letrec*)))
 (import kawa.mstrings)
-(export string-append)
+(export string-append substring)
 (include "base-exports")

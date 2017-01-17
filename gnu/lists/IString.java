@@ -30,6 +30,9 @@ public class IString
         //return i & (INDEX_STEP-1);
     }
 
+    IString() {
+    }
+
     public IString(String str) {
         init(str);
     }
@@ -39,6 +42,15 @@ public class IString
             return (IString) str;
         else
             return new IString(str.toString());
+    }
+    public static IString valueOf(CharSequence str, int start, int count) {
+        if (start < 0 || count < 0 || start + count > str.length())
+            throw new IndexOutOfBoundsException();
+        if (str instanceof IString)
+            return new SubString((IString) str, start, start+count);
+        int jlStart = Character.offsetByCodePoints(str, 0, start);
+        int jlEnd = Character.offsetByCodePoints(str, jlStart, count);
+        return new IString(str.subSequence(jlStart, jlEnd).toString());
     }
 
     private void init(String str) {
@@ -57,16 +69,19 @@ public class IString
 
     /** used for string-ref */
     public int indexByCodePoints(int i) {
-        if (offsets == null)
-            return (int) str.charAt(i);
-        return str.codePointAt(offsetByCodePoints(i));
+        if (i < 0 || i >= cplength)
+            throw new StringIndexOutOfBoundsException(); // FIXME add args
+        return str.codePointAt(offsetByCodePoints(i)+jlStart());
     }
 
+    /** Map character offset to char offset.
+     * Caller is responsible for checking that {@code i >=0 && i <= cplength}.
+     */
     public int offsetByCodePoints(int i) {
         if (offsets == null)
             return i;
-        if (i < 0 || i >= cplength)
-            throw new StringIndexOutOfBoundsException(); // FIXME
+        int jlOffset = jlStart();
+        i += cpStart();
         int step = i>>INDEX_STEP_LOG;
         int ilo, ihi, clo, chi;
         // ilo <= i && i < ihi && ihi <= cplength
@@ -82,12 +97,12 @@ public class IString
         }
         // Optimization: all characters in [ilo..ihi)  are in BMP
         if (chi - clo == ihi - ilo)
-            return clo + restStep(i);
+            return clo + restStep(i) - jlOffset;
         // Optimization: no characters in range are in BMP
         if (chi - clo == 2 * (ihi - ilo))
-            return clo + 2 * restStep(i);
+            return clo + 2 * restStep(i) - jlOffset;
         // scan linearly from pos, at most INDEX_STEP-1 characters forward:
-        return str.offsetByCodePoints(clo, restStep(i));
+        return str.offsetByCodePoints(clo, restStep(i)) - jlOffset;
     }
 
     /* used for string-length */
@@ -97,6 +112,8 @@ public class IString
     public char charAt(int i) { return str.charAt(i); }
     public String toString() { return str; }
     public int length() { return str.length(); }
+
+    /** Substring using offsets in code-units (16-bit chars). */
     public IString subSequence(int from, int to) {
         return new IString(str.substring(from, to));
     }
@@ -110,20 +127,87 @@ public class IString
         init((String) in.readObject());
     }
 
-    public char[] toCharArray() { return str.toCharArray(); }
+    public char[] toCharArray() { return toString().toCharArray(); }
 
     public byte[] getBytes(String charsetName)
         throws java.io.UnsupportedEncodingException
-    { return str.getBytes(charsetName); }
+    { return toString().getBytes(charsetName); }
 
-    public int hashCode() { return str.hashCode(); }
+    public int hashCode() { return toString().hashCode(); }
 
     public boolean equals(Object other) {
-        return other instanceof IString
-            && str.equals(((IString) other).str);
+        if (other instanceof IString) {
+            IString str2 = (IString) other;
+            return this.length() == str2.length()
+                && Strings.compareTo(this, str2) == 0;
+        }
+        return false;
     }
 
     public int compareTo(IString other) {
-        return str.compareTo(other.str);
+        return Strings.compareTo(this, other);
+    }
+    int cpStart() { return 0; }
+    int jlStart() { return 0; }
+
+    public static final class SubString extends IString {
+        int cpStart;
+        int jlStart;
+        int jlLength;
+        private String jlString; // cache of substring
+
+        /** Create a substring of the given base string.
+         * Assumes caller has validated start and end.
+         */
+        public SubString(IString base, int start, int end) {
+            super();
+            this.str = base.str;
+            int jlStart = base.offsetByCodePoints(start);
+            int jlEnd = base.offsetByCodePoints(end);
+            this.jlStart = jlStart;
+            this.jlLength = jlEnd - jlStart;
+            this.cpStart = start + base.cpStart();
+            this.cplength = end - start;
+            if (jlLength != cplength) {
+                this.offsets = base.offsets;
+            }
+        }
+
+        @Override
+        int cpStart() { return cpStart; }
+
+        @Override
+        int jlStart() { return jlStart; }
+
+        @Override
+        public char charAt(int i) {
+            if (i >= jlLength)
+                throw new StringIndexOutOfBoundsException(i);
+            return str.charAt(i+jlStart); }
+
+        @Override
+        public String toString() {
+            String jstr = jlString;
+            if (jstr == null) {
+                jstr = str.substring(jlStart, jlStart+jlLength);
+                jlString = jstr; // atomic cache update
+            }
+            return jstr;
+        }
+        @Override
+        public int length() { return jlLength; }
+
+        public void writeExternal(ObjectOutput out) throws IOException {
+            out.writeObject(toString());
+        }
+
+        public void readExternal(ObjectInput in)
+            throws IOException, ClassNotFoundException {
+            this.str = (String) in.readObject();
+        }
+
+        public Object readResolve() throws ObjectStreamException {
+            return new IString(str);
+        }
     }
 }

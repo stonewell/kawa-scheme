@@ -1,6 +1,6 @@
 (module-name (kawa istrings))
 
-(module-export string-append)
+(module-export string-append substring)
 
 (require <kawa.lib.prim_imports>)
 (require <kawa.lib.std_syntax>)
@@ -13,3 +13,7 @@
              (buf:append (args i))
              (loop (+ i 1)))))
     (gnu.lists.IString buf)))
+
+(define (substring str::string start::int end::int)
+  :: <string>
+  (gnu.lists.IString:valueOf str start (- end start)))

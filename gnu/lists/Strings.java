@@ -255,4 +255,18 @@ public class Strings
         // }
         /* #endif */
     }
+
+    public static int compareTo(CharSequence str1, CharSequence str2) {
+        int n1 = str1.length();
+        int n2 = str2.length();
+        int n = n1 > n2 ? n2 : n1;
+        for (int i = 0; i < n; i++) {
+            char c1 = str1.charAt(i);
+            char c2 = str2.charAt(i);
+            int d = c1 - c2;
+            if (d != 0)
+                return d;
+        }
+        return n1 - n2;
+    }
 }
