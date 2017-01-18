@@ -13,7 +13,7 @@
 (require <kawa.lib.enums>)
 (require <kawa.lib.srfi.26>)
 
-(export string-append substring)
+(export list->string string-append substring)
 (export case-lambda read interaction-environment null-environment
         exact->inexact inexact->exact)
 (export ! ? => $<<$ $>>$
@@ -170,7 +170,7 @@
         unescaped-data unit untrace URI URI? values-append
         with-compile-options with-syntax
         )
-(import (only kawa.istrings string-append substring))
+(import (only kawa.istrings list->string string-append substring))
 (require kawa.lib.DefineRecordType)
 (import (rename kawa.lib.prim_imports (letrec letrec*)))
   (import
@@ -200,7 +200,6 @@
    kawa.lib.uniform
    kawa.lib.windows
    kawa.lib.kawa.domterm
-   ;;(except (scheme base) string-append)
    (scheme case-lambda)
    (scheme cxr)
    (scheme eval)

@@ -6,7 +6,7 @@
 (require kawa.lib.misc)
 (require kawa.lib.numbers)
 (require kawa.lib.ports)
-(require kawa.lib.prim_imports)
+(import (except kawa.lib.prim_imports string))
 (require kawa.lib.rnrs.unicode)
 (require kawa.lib.strings)
 (require kawa.lib.kawa.mstrings)

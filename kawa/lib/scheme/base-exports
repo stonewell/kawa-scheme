@@ -23,7 +23,7 @@
  if include include-ci inexact
  inexact? input-port-open? input-port? integer->char integer?
  lambda lcm length let let* let*-values let-syntax let-values letrec letrec*
- letrec-syntax list list->string list->vector list-copy list-ref list-set!
+ letrec-syntax list list->vector list-copy list-ref list-set!
  list-tail list?
  make-bytevector make-list make-parameter make-string make-vector map max
  member memq memv min modulo

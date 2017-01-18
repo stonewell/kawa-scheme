@@ -74,7 +74,7 @@ check-case: testing.zip
 	$(KAWATEST) -f "$(srcdir)/case-test.scm" -e '(test-report)'
 
 check-r7rs:
-	$(KAWA) $(OPTIONS) --no-warn-void-used -f $(srcdir)/r7rs-tests.scm
+	$(KAWA) $(OPTIONS) --no-warn-void-used --r7rs -f $(srcdir)/r7rs-tests.scm
 
 check-num: InliningTest.class
 	$(KAWA) $(OPTIONS) "$(srcdir)/num-test.scm"

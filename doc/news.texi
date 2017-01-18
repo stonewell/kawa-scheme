@@ -8,7 +8,7 @@ changes}.
 @itemize
 @item
 Most places where you could declare a new identifier
-binding have been generalied to accept @ref{Variables and Patterns,patterns}.
+binding have been generalized to accept @ref{Variables and Patterns,patterns}.
 @item
 The internal calling convention used for ``apply'' (ie. calling
 an unknown-at-compile-time procedure) has been completely changed.
@@ -18,26 +18,29 @@ an unknown-at-compile-time procedure) has been completely changed.
 The advantage of using @code{gnu.lists.IString} is that @code{string-ref}
 and @code{string-length} are (roughly) constant-time, rather than
 having to linearly scan the string.
-The @code{string-append} procedure returns an
-immutable string (an @code{IString}).
+@item
+@emph{Incompatible change:} The procedures @code{string-append},
+@code{substring}, @code{list->string}, and the constructor @code{string}
+return an immutable string (an @code{IString}).
+(The functions @code{string-copy} is similar to @code{substring},
+but returns a mutable string.)
 This is a work-in-progress with the goal of implementing
 @uref{http://srfi.schemers.org/srfi-140/srfi-140.html,SRFI-140}:
 Other procedures will be changed to return immutable strings.
 
 If you @code{(import (scheme base))} standard procedures
 such as @code{string-append} will return mutable strings;
-if you @code{(import (scheme base))} the procedure will return immutable strings.
-If you specify the command-line options @code{--r5rs} or @code{--r6rs}
-or @code{--r7rs} then procedures like @code{string-append}
-return mutable strings.
+if you @code{(import (kawa base))} the procedures will return immutable strings.
+The command-line options @code{--r5rs} or @code{--r6rs} or @code{--r7rs}
+override the default so these procedures return mutable strings.
 @item
-@emph{Incompatible change:} Before if a Java parameter type
-was @code{java.lang.String} Kawa would accept any magically call
-Object's @code{toString} method.
-Now Kawa will  reject an argument if it is not @code{java.lang.CharSequence}.
+@emph{Incompatible change:} Before, if a Java parameter type
+was @code{java.lang.String} Kawa would accept any value, converting it
+using Object's @code{toString} method.
+Now Kawa will reject an argument if it is not a @code{java.lang.CharSequence}.
 @item
 @emph{Incompatible change:} Kawa traditionally followed Java in allowing you
-to pass an array with the "rest" arguments to a varargs method.
+to pass an array with the ``rest'' arguments to a varargs method.
 For example, you could write:
 
 @verbatim
@@ -51,6 +54,18 @@ use the splice operator:
 @verbatim
 (java.lang.String:format "length:%s%s" @args)
 @end verbatim
+@item
+@emph{Incompatible change:} You used to be able to write a
+type-specifier in a formal parameter or return type without
+using @samp{::}, as in:
+@example
+(define (incr (x int)) int (+ x 1))
+@end example
+This is no longer allowed, because it conflicts with the
+syntax for patterns.  Instead you have to write:
+@example
+(define (incr (x ::int)) ::int (+ x 1))
+@end example
 @end itemize
 
 @c @@subheading In Git repository (master branch) since last release

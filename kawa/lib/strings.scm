@@ -1,10 +1,10 @@
-(module-export string? make-string $make$string$ string-length
+(module-export string? make-string string-length
                string-ref string-set!
                char=? char<? char>? char<=? char>=?
                char-ci=? char-ci<? char-ci>? char-ci<=? char-ci>=?
                string=? string<? string>? string<=? string>=?
 	       string-ci=? string-ci<? string-ci>? string-ci<=? string-ci>=?
-               string->list list->string string-copy string-copy!
+               string->list string-copy string-copy!
                string-fill! string-upcase! string-downcase!
                string-capitalize string-capitalize!
                string-append! string-replace!
@@ -51,14 +51,6 @@
   ::gnu.lists.FString
   (make <gnu.lists.FString> n (as int ch)))
 
-(define ($make$string$ #!rest args ::object[]) :: <string>
-  (let* ((n :: <int> args:length)
-	 (str (gnu.lists.FString:alloc n)))
-    (do ((i :: <int> 0 (+ i 1)))
-	((>= i n) str)
-	(str:appendCharacter
-         ((as gnu.text.Char (args i)):intValue)))))
-
 (define (string-length str ::string) ::int
   (gnu.lists.Strings:sizeInCodePoints str))
 
@@ -91,15 +83,6 @@
          result
          (let ((prev (string-cursor-prev str i)))
            (loop (make <pair> (string-cursor-ref str prev) result) prev))))))
-
-(define (list->string (lst ::list)) ::string
-  (let* ((len ::int (lst:size))
-	 (result ::abstract-string (make gnu.lists.FString len)))
-    (do ((i ::int 0 (+ i 1)))
-	((>= i len) result)
-      (let ((pair ::pair lst))
-	(string-set! result i pair:car)
-	(set! lst pair:cdr)))))
 
 (define (string-copy (str ::java.lang.CharSequence)
                      #!optional

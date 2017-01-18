@@ -895,7 +895,7 @@ public class LangObjType extends SpecialObjectType implements TypeValue
       case LIST_TYPE_CODE:
         return gnu.kawa.functions.MakeList.list;
       case STRING_TYPE_CODE:
-        return new PrimProcedure("kawa.lib.strings", "$make$string$"+VARARGS_SUFFIX, 1);
+        return new PrimProcedure("kawa.lib.kawa.istrings", "$make$string$"+VARARGS_SUFFIX, 1);
       case REGEX_TYPE_CODE:
         return new PrimProcedure("java.util.regex.Pattern", "compile", 1);
       case DYNAMIC_TYPE_CODE:
