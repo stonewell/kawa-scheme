@@ -29,6 +29,7 @@
 ;; Diagnostic: case-warnings.scm:19:7: warning - List and vectors will never be matched in a case clause
 ;; Diagnostic: case-warnings.scm:19:7: warning - datum type incompatible with the key
 ;; Diagnostic: case-warnings.scm:21:6: warning - datum type incompatible with the key
+;; Diagnostic: case-warnings.scm:23:6: warning - a string in a case clause will never match (except another literal)
 ;; Diagnostic: case-warnings.scm:22:6: warning - there are 2 more datums that are incompatible with the key
 ;; Output: list case: num
 
@@ -57,7 +58,7 @@
 (display "vector case: ")
 (display (d 5))
 (newline)
-;; Diagnostic: case-warnings.scm:53:17: warning - List and vectors will never be matched in a case clause
+;; Diagnostic: case-warnings.scm:54:17: warning - List and vectors will never be matched in a case clause
 ;; Output: vector case: 1
 
 ;; key side effects

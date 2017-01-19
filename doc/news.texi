@@ -68,7 +68,7 @@ syntax for patterns.  Instead you have to write:
 @end example
 @end itemize
 
-@c @@subheading In Git repository (master branch) since last release
+@c @subheading In Git repository (master branch) since last release
 @c @anchor{#in-git-repository-since-last-release}
 
 @subheading Kawa 2.3 (January 13, 2017)
