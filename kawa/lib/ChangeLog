@@ -1,3 +1,7 @@
+2017-01-18  Jamison Hope  <jrh@theptrgroup.com>
+
+	* kawa/rotations.scm: Don't use non-portable strings in case.
+
 2016-12-18  Per Bothner  <per@bothner.com>
 
 	* vectors.scm (make-vector): Fix default to #!null as in documentation.
