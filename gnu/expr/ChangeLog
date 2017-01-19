@@ -1,5 +1,9 @@
 2017-01-18  Per Bothner  <per@bothner.com>
 
+	* InlineCalls.java (inlineCalls): Fix indexing error.
+
+2017-01-18  Per Bothner  <per@bothner.com>
+
 	* InlineCalls.java (visitCaseExp): Warning if string used for case.
 
 2017-01-10  Per Bothner  <per@bothner.com>

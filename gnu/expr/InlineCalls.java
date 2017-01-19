@@ -987,10 +987,10 @@ public class InlineCalls extends ExpExpVisitor<Type> {
             }
             int i = 0;
             LetExp let = new LetExp();
-            for (Declaration param = lexp.firstDecl(); param != null; i++) {
+            for (Declaration param = lexp.firstDecl(); param != null; ) {
                 Declaration next = param.nextDecl();
                 if (! param.getFlag(Declaration.PATTERN_NESTED))
-                    param.setInitValue(cargs[i]);
+                    param.setInitValue(cargs[i++]);
                 if (makeCopy) {
                     Declaration ldecl =
                         let.addDeclaration(param.symbol, param.type);
