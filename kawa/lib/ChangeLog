@@ -1,3 +1,7 @@
+2017-01-18  Per Bothner  <per@bothner.com>
+
+	* syntax.scm (match): Update for new lambda pattern syntax.
+
 2017-01-18  Jamison Hope  <jrh@theptrgroup.com>
 
 	* kawa/rotations.scm: Don't use non-portable strings in case.

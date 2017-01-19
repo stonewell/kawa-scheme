@@ -194,19 +194,18 @@
 (define-syntax %match1
   (syntax-rules (::)
     ((%match1 pattern :: type . body)
-     (lambda ((pattern :: type)) . body))
+     (lambda (pattern :: type) . body))
     ((%match1 pattern . body)
-     (lambda ((pattern)) . body))))
+     (lambda (pattern) . body))))
 
 (define-syntax match
   (lambda (form)
     (syntax-case form ()
       ((match value clause ...)
-;       #`(,gnu.kawa.reflect.TypeSwitch:typeSwitch
-       #`(gnu.kawa.reflect.TypeSwitch:typeSwitch
+       #`(#,gnu.kawa.reflect.TypeSwitch:typeSwitch
           value
           (%match1 . clause) ...
-          (lambda ((_)) (primitive-throw (java.lang.RuntimeException "no match"))))))))
+          (lambda (_) (primitive-throw (java.lang.RuntimeException "no match"))))))))
 
 ;; Helper macros for $string$:
 ;; Collect format string (assuming we're *not* inside $<<$ ... $>>$)
