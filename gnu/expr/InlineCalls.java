@@ -485,6 +485,8 @@ public class InlineCalls extends ExpExpVisitor<Type> {
                 if (d instanceof SimpleVector
                         || (!(d instanceof EmptyList) && d instanceof PairWithPosition)) {
                     comp.error('w', "List and vectors will never be matched in a case clause", dexp);
+                } else if (d instanceof CharSequence) {
+                    comp.error('w', "a string in a case clause will never match (except another literal)", dexp);
                 }
                 if (key.getType().isCompatibleWithValue(dexp.getType()) == -1){
                     if (incomps < 2)

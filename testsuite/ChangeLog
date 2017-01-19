@@ -1,3 +1,8 @@
+2017-01-18  Per Bothner  <per@bothner.com>
+
+	* case-test.scm: Remove useless case using string.
+	* case-warnings.scm: Update for new warning for string case.
+
 2017-01-02  Duncan Mak <duncanmak@gmail.com>
             Per Bothner <per@bothner.com>
 
