@@ -1,5 +1,9 @@
 2017-01-17  Per Bothner  <per@bothner.com>
 
+	Also change list->string and string to return immutable strings.
+
+2017-01-17  Per Bothner  <per@bothner.com>
+
 	Change so substring (by default) returns an immutable IString.
 	* strings.scm: Move substring to ...
 	* kawa/mstrings.scm: ... here.
