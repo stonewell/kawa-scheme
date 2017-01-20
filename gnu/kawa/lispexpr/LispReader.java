@@ -1623,6 +1623,8 @@ public class LispReader extends Lexer
       return Special.abstractSpecial;
     if (name.equals("native"))
       return Special.nativeSpecial;
+    if (name.equals("if"))
+      return Special.ifk;
     if (name.equals("null"))
       return null;
     if (name.equals("fold-case"))

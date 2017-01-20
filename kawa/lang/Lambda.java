@@ -19,6 +19,13 @@ public class Lambda extends Syntax
   public Object restKeyword;
   public Object keyKeyword;
 
+    static BindDecls defaultBindParser = new BindDecls();
+    public BindDecls bindParser = defaultBindParser;
+    static {
+        defaultBindParser.allowShadowing = true;
+        defaultBindParser.makeConstant = false;
+    }
+
   public static final Keyword nameKeyword = Keyword.make("name");
 
   // This should technically have the type of Scheme.booleanType.
@@ -178,6 +185,8 @@ public class Lambda extends Syntax
         pair_car = tr.namespaceResolve(pair_car);
         Declaration decl = null;
 	if (pair_car instanceof Symbol
+            || pair_car == Special.ifk
+            || bindParser.literalPattern(pair_car, tr) != null
             || (pair_car instanceof Pair
                 && (mode == null
                     || (pccar = ((Pair) pair_car).getCar()) == LispLanguage.splice_sym
@@ -643,12 +652,6 @@ public class Lambda extends Syntax
           }
       }
   }
-
-    static BindDecls bindParser = new  BindDecls();
-    static {
-        bindParser.allowShadowing = true;
-        bindParser.makeConstant = false;
-    }
 
     public Object[] parsePatternCar(Pair patList, TemplateScope templateScope,
                                     LambdaExp lexp, Translator comp) {

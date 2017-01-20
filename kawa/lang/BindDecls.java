@@ -2,13 +2,17 @@ package kawa.lang;
 import gnu.bytecode.*;
 import gnu.expr.*;
 import gnu.lists.*;
+import gnu.text.Char;
 import java.util.Stack;
 import java.util.Vector;
 import gnu.mapping.Environment;
 import gnu.mapping.Symbol;
+import gnu.kawa.functions.Convert;
 import gnu.kawa.lispexpr.SeqSizeType;
 import gnu.kawa.lispexpr.LangObjType;
+import gnu.kawa.lispexpr.LangPrimType;
 import gnu.kawa.lispexpr.LispLanguage;
+import gnu.mapping.Procedure;
 
 /** Methods for parsing patterns. */
 
@@ -18,6 +22,10 @@ public class BindDecls {
     public boolean allowShadowing = false;
 
     public boolean makeConstant = true;
+
+    public Object ifKeyword = Special.ifk;
+    public Procedure compareEquals = kawa.standard.Scheme.isEqual;
+    public Type booleanType = kawa.standard.Scheme.booleanType;
 
     static final Symbol underScoreSymbol = Symbol.valueOf("_");
 
@@ -97,7 +105,12 @@ public class BindDecls {
         }
         patval = comp.namespaceResolve(patval);
         Declaration decl = null;
-        if (patval instanceof Symbol) {
+
+        QuoteExp literal = literalPattern(patval, comp);
+        if (literal != null) {
+            decl = scope.addDeclaration((Object) null);
+            addCondition(scope, compareLiteral(decl, literal));
+        } else if (patval instanceof Symbol) {
             if (patval == underScoreSymbol) {
                 decl = scope.addDeclaration((Object) null);
             } else {
@@ -113,8 +126,17 @@ public class BindDecls {
             if (makeConstant)
                 decl.setFlag(Declaration.IS_CONSTANT);
             decl.setFlag(Declaration.IS_SINGLE_VALUE);
-        }
-        else if (pattern instanceof Pair) {
+        } else if (patval == ifKeyword) {
+            if (next instanceof Pair) {
+                Pair nextPair = (Pair) next;
+                decl = addCondition(scope, nextPair.getCar());
+                next = nextPair.getCdr();
+                if (scope instanceof LambdaExp)
+                    ((LambdaExp) scope).min_args--;
+            } else {
+                comp.error('e', "missing expression after "+ifKeyword);
+            }
+        } else if (pattern instanceof Pair) {
             Pair patpair = (Pair) pattern;
             Object patcar = patpair.getCar();
             if (patcar == LispLanguage.bracket_list_sym) {
@@ -261,5 +283,44 @@ public class BindDecls {
             decl.setInitValue(init);
             decl.noteValueFromLet(scope);
         }
+    }
+    Declaration addCondition(ScopeExp scope, Object condition) {
+        Declaration decl = scope.addDeclaration((Object) null);
+        Expression cond;
+        if (condition instanceof Expression)
+            cond = Compilation.makeCoercion((Expression) condition, booleanType);
+        else
+            cond = new LangExp(LList.list3(new QuoteExp(Convert.cast),
+                                           new QuoteExp(booleanType),
+                                           condition));
+        decl.setInitValue(cond);
+        decl.setFlag(Declaration.PATTERN_NESTED|Declaration.SKIP_FOR_METHOD_PARAMETER);
+        decl.setType(LangPrimType.isTrueType);
+        return decl;
+    }
+
+    public QuoteExp literalPattern(Object patval, Translator comp) {
+        if (patval instanceof Number
+            || patval == null
+            || patval instanceof Character
+            || patval instanceof Char
+            || patval instanceof Boolean
+            || patval instanceof CharSequence)
+            return QuoteExp.getInstance(patval);
+        if (patval instanceof Pair) {
+            Pair p1 = (Pair) patval;
+            Object p1cdr = p1.getCdr();
+            if (comp.matches(p1.getCar(), "quote")
+                && p1cdr instanceof Pair) {
+                Pair p2 =  (Pair) p1cdr;
+                if (p2.getCdr() == LList.Empty)
+                    return QuoteExp.getInstance(p2.getCar());
+            }
+        }
+        return null;
+    }
+    public Expression compareLiteral(Declaration param, QuoteExp literal) {
+        return new ApplyExp(compareEquals,
+                            new ReferenceExp(param), literal);
     }
 }

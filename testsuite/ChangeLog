@@ -1,3 +1,7 @@
+2017-01-20  Per Bothner  <per@bothner.com>
+
+	* match1.scm: Test the 'match' form.
+
 2017-01-18  Per Bothner  <per@bothner.com>
 
 	* case-test.scm: Remove useless case using string.

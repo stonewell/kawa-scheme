@@ -1,3 +1,8 @@
+2017-01-20  Per Bothner  <per@bothner.com>
+
+	* Compilation.java (generateCheckArg): Handle boolean guards.
+	* Special.java (ifk): New special for #!if, used for boolean guards.
+
 2017-01-18  Per Bothner  <per@bothner.com>
 
 	* InlineCalls.java (inlineCalls): Fix indexing error.

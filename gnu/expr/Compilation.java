@@ -1364,7 +1364,6 @@ public class Compilation implements SourceLocator
         if (param.getFlag(Declaration.PATTERN_NESTED)) {
             Expression init = param.getInitValue();
             init.compile(this, init.getType());
-
         } else if (param.getFlag(Declaration.IS_REST_PARAMETER)) {
             int singleArgs = lexp.min_args; // FIXME
             Type lastArgType = ptype.getRawType();
@@ -1380,7 +1379,7 @@ public class Compilation implements SourceLocator
                 convertNeeded = false;
             }
             else if ("gnu.lists.LList".equals
-                     (lastArgType.getName())) {     
+                     (lastArgType.getName())) {
                 code.emitLoad(ctxVar);
                 //code.emitDup(); //
                 //code.emitPushInt(singleArgs);
@@ -1491,16 +1490,21 @@ public class Compilation implements SourceLocator
             // what if incoming!=null && convertNeeded
             if (incoming != null)
                 throw new InternalError();
-            StackTarget.forceLazyIfNeeded(this, Type.objectType, ptype);
-            incoming = code.addLocal(Type.pointer_type);
-            code.emitStore(incoming);
-            if (ptype instanceof TypeValue) {
-                ((TypeValue) ptype).emitTestIf(incoming, param, this);
+            if (ptype == LangPrimType.isTrueType) {
+                code.emitIfIntNotZero();
             }
             else {
-                code.emitLoad(incoming);
-                LangPrimType.emitTestIfNumber(incoming, param,
-                                              ptype, this);
+                StackTarget.forceLazyIfNeeded(this, Type.objectType, ptype);
+                incoming = code.addLocal(Type.pointer_type);
+                code.emitStore(incoming);
+                if (ptype instanceof TypeValue) {
+                    ((TypeValue) ptype).emitTestIf(incoming, param, this);
+                }
+                else {
+                    code.emitLoad(incoming);
+                    LangPrimType.emitTestIfNumber(incoming, param,
+                                                  ptype, this);
+                }
             }
             generateCheckArg(param.nextDecl(), lexp, knext, code, keyDecls, argVariables, suppliedParameterVar);
             recurseNeeded = false;

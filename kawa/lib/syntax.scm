@@ -193,8 +193,12 @@
 
 (define-syntax %match1
   (syntax-rules (::)
+    ((%match1 pattern :: type #!if cond . body)
+     (lambda (pattern :: type #!if cond) . body))
     ((%match1 pattern :: type . body)
      (lambda (pattern :: type) . body))
+    ((%match1 pattern #!if cond . body)
+     (lambda (pattern #!if cond) . body))
     ((%match1 pattern . body)
      (lambda (pattern) . body))))
 

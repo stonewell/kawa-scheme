@@ -1,3 +1,8 @@
+2017-01-20  Per Bothner  <per@bothner.com>
+
+	* BindDecls.java: Handle literal patterns and #!if guards.
+	* Lambda.java (parseFormals): Accept literals and #!if guards.
+
 2017-01-10  Per Bothner  <per@bothner.com>
 
 	* repl.java: Move some logic for "-w" to ...

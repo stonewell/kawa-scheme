@@ -1,3 +1,7 @@
+2017-01-20  Per Bothner  <per@bothner.com>
+
+	* syntax.scm (match): Allow #!if guards.
+
 2017-01-18  Per Bothner  <per@bothner.com>
 
 	* syntax.scm (match): Update for new lambda pattern syntax.
