@@ -1362,182 +1362,182 @@ public class Compilation implements SourceLocator
         Type itype = param.getType().getImplementationType();
 
         if (param.getFlag(Declaration.PATTERN_NESTED)) {
-                Expression init = param.getInitValue();
-                init.compile(this, init.getType());
+            Expression init = param.getInitValue();
+            init.compile(this, init.getType());
 
-            } else if (param.getFlag(Declaration.IS_REST_PARAMETER)) {
-		int singleArgs = lexp.min_args; // FIXME
-                Type lastArgType = ptype.getRawType();
-		if (lastArgType instanceof ArrayType) {
-		    varArgsToArray(lexp, singleArgs, null/*counter*/, ptype, ctxVar, param.getFlag(Declaration.KEYWORDS_OK));
-		    convertNeeded = false;
-		} else if (ptype == LangObjType.argVectorType
-                           || ptype == LangObjType.argListType) {
-		    code.emitLoad(ctxVar);
-                    String mname = ptype == LangObjType.argListType
-                        ? "getRestArgsList" : "getRestArgsVector";
-		    code.emitInvokeVirtual(typeCallContext.getDeclaredMethod(mname, 0));
-		    convertNeeded = false;
-                }
-		else if ("gnu.lists.LList".equals
-			 (lastArgType.getName())) {     
-		    code.emitLoad(ctxVar);
-		    //code.emitDup(); //
-		    //code.emitPushInt(singleArgs);
-                    //String mname = "peekRestArgsList";// if followed by #!key?
-                    String mname = true /* FIXME*/ ? "getRestArgsList"
-                        : "getRestPlainList";
-		    code.emitInvokeVirtual(typeCallContext.getDeclaredMethod(mname, 0));
-		    convertNeeded = false; // FIXME - may need convert if list[T]
-		} else {
-		    // FIXME
-		    throw new Error("unsupported #!rest conversion in "+lexp+" param:"+param+" pt:"+ptype+" cl:"+curClass);
-		}
-            } else if (param.getFlag(Declaration.IS_SUPPLIED_PARAMETER)
-                       && ! param.getFlag(Declaration.IS_PARAMETER)) {
-                incoming = suppliedParameterVar;
+        } else if (param.getFlag(Declaration.IS_REST_PARAMETER)) {
+            int singleArgs = lexp.min_args; // FIXME
+            Type lastArgType = ptype.getRawType();
+            if (lastArgType instanceof ArrayType) {
+                varArgsToArray(lexp, singleArgs, null/*counter*/, ptype, ctxVar, param.getFlag(Declaration.KEYWORDS_OK));
                 convertNeeded = false;
-	    } else if (kin >=lexp.min_args && kin < lexp.min_args+lexp.opt_args) {
-                // Optional parameter
+            } else if (ptype == LangObjType.argVectorType
+                       || ptype == LangObjType.argListType) {
                 code.emitLoad(ctxVar);
-                code.emitInvoke(typeCallContext.getDeclaredMethod("haveArg", 0));
+                String mname = ptype == LangObjType.argListType
+                    ? "getRestArgsList" : "getRestArgsVector";
+                code.emitInvokeVirtual(typeCallContext.getDeclaredMethod(mname, 0));
+                convertNeeded = false;
+            }
+            else if ("gnu.lists.LList".equals
+                     (lastArgType.getName())) {     
+                code.emitLoad(ctxVar);
+                //code.emitDup(); //
+                //code.emitPushInt(singleArgs);
+                //String mname = "peekRestArgsList";// if followed by #!key?
+                String mname = true /* FIXME*/ ? "getRestArgsList"
+                    : "getRestPlainList";
+                code.emitInvokeVirtual(typeCallContext.getDeclaredMethod(mname, 0));
+                convertNeeded = false; // FIXME - may need convert if list[T]
+            } else {
+                // FIXME
+                throw new Error("unsupported #!rest conversion in "+lexp+" param:"+param+" pt:"+ptype+" cl:"+curClass);
+            }
+        } else if (param.getFlag(Declaration.IS_SUPPLIED_PARAMETER)
+                   && ! param.getFlag(Declaration.IS_PARAMETER)) {
+            incoming = suppliedParameterVar;
+            convertNeeded = false;
+        } else if (kin >=lexp.min_args && kin < lexp.min_args+lexp.opt_args) {
+            // Optional parameter
+            code.emitLoad(ctxVar);
+            code.emitInvoke(typeCallContext.getDeclaredMethod("haveArg", 0));
+            if (param.getFlag(Declaration.IS_SUPPLIED_PARAMETER)) {
+                code.emitDup();
+                suppliedParameterVar =
+                    scope.addVariable(code, Type.booleanType, null);
+                code.emitStore(suppliedParameterVar);
+            }
+            if (lexp.primMethods == null || lexp.primMethods.length == 1) {
+                code.emitIfIntNotZero();
+                code.emitLoad(ctxVar);
+                code.emitInvoke(getNextArgMethod);
+                code.emitElse();
+                Expression defaultArg = param.getInitValue();
+                defaultArg.compile(this, param.getType());
+                code.emitFi();
+            } else {
+                code.emitIfIntEqZero();
+                code.emitLoad(ctxVar);
+                code.emitInvoke(typeCallContext.getDeclaredMethod("checkDone", 0));
+                code.emitIfIntNotZero();
+                code.emitLoad(ctxVar);
+                code.emitReturn();
+                code.emitFi();
+                generateCheckCall(lexp, code,
+                                  lexp.primMethods[kin-lexp.min_args], argVariables);
+                code.emitFi();
+                code.emitLoad(ctxVar);
+                code.emitInvoke(getNextArgMethod);
+            }
+            knext++;
+        } else if (kin >= lexp.min_args+lexp.opt_args) {
+            // keyword parameter
+            int kindex = kin - (lexp.min_args+lexp.opt_args);
+            Declaration keyDecl = keyDecls[kindex];
+            if (keyDecl.isSimple()) {
+                if (convertNeeded)
+                    code.emitLoad(keyDecl.var);
+                else
+                    incoming = keyDecl.var;
+            } else {
+                code.emitLoad(ctxVar);
+                code.emitLoad(keyDecl.var);
                 if (param.getFlag(Declaration.IS_SUPPLIED_PARAMETER)) {
                     code.emitDup();
                     suppliedParameterVar =
                         scope.addVariable(code, Type.booleanType, null);
+                    // {suppliedParameterVar} = {keyDecl.var} >= 0,
+                    // where the latter is equal to ({keyDecl.var}>>31)+1.
+                    code.emitPushInt(31);
+                    code.emitShr();
                     code.emitStore(suppliedParameterVar);
+                    code.emitInc(suppliedParameterVar, (short) 1);
                 }
-                if (lexp.primMethods == null || lexp.primMethods.length == 1) {
-                    code.emitIfIntNotZero();
-                    code.emitLoad(ctxVar);
-                    code.emitInvoke(getNextArgMethod);
-                    code.emitElse();
-                    Expression defaultArg = param.getInitValue();
-                    defaultArg.compile(this, param.getType());
-                    code.emitFi();
-                } else {
-                    code.emitIfIntEqZero();
-                    code.emitLoad(ctxVar);
-                    code.emitInvoke(typeCallContext.getDeclaredMethod("checkDone", 0));
-                    code.emitIfIntNotZero();
-                    code.emitLoad(ctxVar);
-                    code.emitReturn();
-                    code.emitFi();
-                    generateCheckCall(lexp, code,
-                                      lexp.primMethods[kin-lexp.min_args], argVariables);
-                    code.emitFi();
-                    code.emitLoad(ctxVar);
-                    code.emitInvoke(getNextArgMethod);
-                }
-                knext++;
-            } else if (kin >= lexp.min_args+lexp.opt_args) {
-                // keyword parameter
-                int kindex = kin - (lexp.min_args+lexp.opt_args);
-                Declaration keyDecl = keyDecls[kindex];
-                if (keyDecl.isSimple()) {
-                    if (convertNeeded)
-                        code.emitLoad(keyDecl.var);
-                    else
-                        incoming = keyDecl.var;
-                } else {
-                    code.emitLoad(ctxVar);
-                    code.emitLoad(keyDecl.var);
-                    if (param.getFlag(Declaration.IS_SUPPLIED_PARAMETER)) {
-                        code.emitDup();
-                        suppliedParameterVar =
-                            scope.addVariable(code, Type.booleanType, null);
-                        // {suppliedParameterVar} = {keyDecl.var} >= 0,
-                        // where the latter is equal to ({keyDecl.var}>>31)+1.
-                        code.emitPushInt(31);
-                        code.emitShr();
-                        code.emitStore(suppliedParameterVar);
-                        code.emitInc(suppliedParameterVar, (short) 1);
-                    }
-                    code.emitIfIntGEqZero();
-                    code.emitLoad(ctxVar);
-                    code.emitLoad(keyDecl.var);
-                    code.emitInvoke(typeCallContext.getDeclaredMethod("getArgAsObject", 1));;
-                    code.emitElse();
-                    Expression defaultArg = param.getInitValue();
-                    defaultArg.compile(this, param.getType());
-                    code.emitFi();
-                }
-                knext++;
-            } else {
-                // Required parameter
-                knext++;
-		code.emitLoad(ctxVar);
-                code.emitInvoke(getNextArgMethod);
+                code.emitIfIntGEqZero();
+                code.emitLoad(ctxVar);
+                code.emitLoad(keyDecl.var);
+                code.emitInvoke(typeCallContext.getDeclaredMethod("getArgAsObject", 1));;
+                code.emitElse();
+                Expression defaultArg = param.getInitValue();
+                defaultArg.compile(this, param.getType());
+                code.emitFi();
             }
-	    //param.allocateVariable(code, true);
-            //boolean saveSimple = param.isSimple();
-            //param.setSimple(true);
-            int line = param.getLineNumber();
+            knext++;
+        } else {
+            // Required parameter
+            knext++;
+            code.emitLoad(ctxVar);
+            code.emitInvoke(getNextArgMethod);
+        }
+        //param.allocateVariable(code, true);
+        //boolean saveSimple = param.isSimple();
+        //param.setSimple(true);
+        int line = param.getLineNumber();
+        if (line > 0)
+            code.putLineNumber(param.getFileName(), line);
+        if (incoming != null && ! convertNeeded)
+            param.var = incoming;
+        else {
+            param.var = scope.addVariable(code, itype, null/*vname*/);
+        }
+        if (param.parameterForMethod())
+            argVariables.add(param.var);
+        if (! convertNeeded) {
+            if (incoming == null)
+                code.emitStore(param.var);
+        }
+        else if (ptype instanceof TypeValue ||
+                 ptype instanceof PrimType /*FIXME only if number */) {
+            // what if incoming!=null && convertNeeded
+            if (incoming != null)
+                throw new InternalError();
+            StackTarget.forceLazyIfNeeded(this, Type.objectType, ptype);
+            incoming = code.addLocal(Type.pointer_type);
+            code.emitStore(incoming);
+            if (ptype instanceof TypeValue) {
+                ((TypeValue) ptype).emitTestIf(incoming, param, this);
+            }
+            else {
+                code.emitLoad(incoming);
+                LangPrimType.emitTestIfNumber(incoming, param,
+                                              ptype, this);
+            }
+            generateCheckArg(param.nextDecl(), lexp, knext, code, keyDecls, argVariables, suppliedParameterVar);
+            recurseNeeded = false;
+            code.emitElse();
             if (line > 0)
                 code.putLineNumber(param.getFileName(), line);
-            if (incoming != null && ! convertNeeded)
-                param.var = incoming;
-            else {
-                param.var = scope.addVariable(code, itype, null/*vname*/);
-            }
-            if (param.parameterForMethod())
-                argVariables.add(param.var);
-	    if (! convertNeeded) {
-                if (incoming == null)
-                    code.emitStore(param.var);
-	    }
-	    else if (ptype instanceof TypeValue ||
-                     ptype instanceof PrimType /*FIXME only if number */) {
-                // what if incoming!=null && convertNeeded
-                if (incoming != null)
-                    throw new InternalError();
-		StackTarget.forceLazyIfNeeded(this, Type.objectType, ptype);
-                incoming = code.addLocal(Type.pointer_type);
-                code.emitStore(incoming);
-                if (ptype instanceof TypeValue) {
-                    ((TypeValue) ptype).emitTestIf(incoming, param, this);
-                }
-                else {
-                    code.emitLoad(incoming);
-                    LangPrimType.emitTestIfNumber(incoming, param,
-                                                  ptype, this);
-                }
-                generateCheckArg(param.nextDecl(), lexp, knext, code, keyDecls, argVariables, suppliedParameterVar);
-                recurseNeeded = false;
-		code.emitElse();
-                if (line > 0)
-                    code.putLineNumber(param.getFileName(), line);
-		code.emitLoad(ctxVar);
+            code.emitLoad(ctxVar);
+            code.emitDup();
+            code.emitPushInt(MethodProc.NO_MATCH_BAD_TYPE|kin);
+            code.emitInvoke(typeCallContext.getDeclaredMethod("matchError", 1));
+            code.emitReturn();
+            code.emitFi();
+        } else {
+            if (incoming != null)
+                code.emitLoad(incoming);
+            StackTarget.forceLazyIfNeeded(this, Type.objectType, ptype);
+            // FIXME
+            if (ptype instanceof ObjectType &&
+                ptype != Type.objectType
+                && ptype != Type.toStringType) { // FIXME
                 code.emitDup();
-		code.emitPushInt(MethodProc.NO_MATCH_BAD_TYPE|kin);
-		code.emitInvoke(typeCallContext.getDeclaredMethod("matchError", 1));
-		code.emitReturn();
-		code.emitFi();
-	    } else {
-                if (incoming != null)
-                    code.emitLoad(incoming);
-		StackTarget.forceLazyIfNeeded(this, Type.objectType, ptype);
-                // FIXME
-		if (ptype instanceof ObjectType &&
-		    ptype != Type.objectType
-		    && ptype != Type.toStringType) { // FIXME
-		    code.emitDup();
-		    ptype.getRawType().emitIsInstance(code);
-		    code.emitIfIntEqZero();
-		    code.emitLoad(ctxVar);
-		    code.emitPushInt(MethodProc.NO_MATCH_BAD_TYPE|kin);
-		    code.emitInvoke(typeCallContext.getDeclaredMethod("matchError", 1));
-		    code.emitLoad(ctxVar);
-		    code.emitReturn();
-		    //code.emitElse();
-		    code.emitFi();
-		}
-                ptype.emitCoerceFromObject(code);
-                code.emitStore(param.var);
-	    }
-            if (lexp.inlinedInCheckMethod()) {
-                lexp.saveParameter(param, this);
+                ptype.getRawType().emitIsInstance(code);
+                code.emitIfIntEqZero();
+                code.emitLoad(ctxVar);
+                code.emitPushInt(MethodProc.NO_MATCH_BAD_TYPE|kin);
+                code.emitInvoke(typeCallContext.getDeclaredMethod("matchError", 1));
+                code.emitLoad(ctxVar);
+                code.emitReturn();
+                //code.emitElse();
+                code.emitFi();
             }
+            ptype.emitCoerceFromObject(code);
+            code.emitStore(param.var);
+        }
+        if (lexp.inlinedInCheckMethod()) {
+            lexp.saveParameter(param, this);
+        }
 	if (recurseNeeded)
 	    generateCheckArg(param.nextDecl(), lexp, knext, code, keyDecls, argVariables, suppliedParameterVar);
     }
