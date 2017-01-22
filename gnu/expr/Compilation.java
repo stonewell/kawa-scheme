@@ -1490,7 +1490,7 @@ public class Compilation implements SourceLocator
             // what if incoming!=null && convertNeeded
             if (incoming != null)
                 throw new InternalError();
-            if (ptype == LangPrimType.isTrueType) {
+            if (param.isGuard()) {
                 code.emitIfIntNotZero();
             }
             else {
@@ -1513,7 +1513,9 @@ public class Compilation implements SourceLocator
                 code.putLineNumber(param.getFileName(), line);
             code.emitLoad(ctxVar);
             code.emitDup();
-            code.emitPushInt(MethodProc.NO_MATCH_BAD_TYPE|kin);
+            int errCode = param.isGuard() ? MethodProc.NO_MATCH_GUARD_FALSE
+                : MethodProc.NO_MATCH_BAD_TYPE|kin;
+            code.emitPushInt(errCode);
             code.emitInvoke(typeCallContext.getDeclaredMethod("matchError", 1));
             code.emitReturn();
             code.emitFi();

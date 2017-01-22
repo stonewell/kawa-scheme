@@ -764,6 +764,13 @@ public class Declaration
         return context instanceof ModuleExp && context != comp.mainLambda;
     }
 
+    /** Does this encapsulate a boolean guard expression?
+     * In that case this is an unnamed pseudo-parameter, that matches no
+     * actual arguments but where {@code getInitValue()} is the expression. */
+    public boolean isGuard() {
+        return typeExp == QuoteExp.isTrueTypeExp;
+    }
+
   /* Note:  You probably want to use !ignorable(). */
   public final boolean getCanRead() { return (flags & CAN_READ) != 0; }
   public final void setCanRead(boolean read)

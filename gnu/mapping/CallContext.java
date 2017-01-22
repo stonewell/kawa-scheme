@@ -183,6 +183,9 @@ public class CallContext // implements Runnable
                 }
                 throw new IllegalArgumentException(mbuf.toString());
             }
+            if (code == MethodProc.NO_MATCH_GUARD_FALSE) {
+                throw new IllegalArgumentException("guard evaluated to false");
+            }
             throw new WrongType(proc, arg, arg >= 0 ? getArgAsObject(arg) : null);
 	}
         if (matchState == MATCH_CHECK || matchState == MATCH_CHECK_ONLY)

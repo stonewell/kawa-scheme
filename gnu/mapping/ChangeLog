@@ -1,3 +1,9 @@
+2017-01-21  Per Bothner  <per@bothner.com>
+
+	* CallContext.java (matchError): Different error message used
+	for guard expression being false.
+	* MethodProc.java (NO_MATCH_GUARD_FALSE): New error code.
+
 2017-01-06  Per Bothner  <per@bothner.com>
 
 	* ConstrainedLocation.java (getKeySymbol): Add paranoia null check.

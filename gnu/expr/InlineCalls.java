@@ -951,7 +951,8 @@ public class InlineCalls extends ExpExpVisitor<Type> {
      */
     public static Expression inlineCall(LambdaExp lexp, ApplyExp aexp,
                                         boolean makeCopy) {
-        if (lexp.keywords != null || ! aexp.isSimple())
+        if (lexp.keywords != null || ! aexp.isSimple()
+            || lexp.getFlag(LambdaExp.CANNOT_INLINE))
             return null;
         Expression[] args = aexp.getArgs();
         boolean varArgs = lexp.max_args < 0;

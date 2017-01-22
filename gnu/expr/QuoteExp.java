@@ -3,6 +3,7 @@ import gnu.mapping.*;
 import gnu.bytecode.*;
 import gnu.text.SourceLocator;
 import gnu.kawa.io.OutPort;
+import gnu.kawa.lispexpr.LangPrimType;
 import gnu.kawa.reflect.MakeAnnotation;
 
 /**
@@ -64,6 +65,7 @@ public class QuoteExp extends Expression
     static public QuoteExp trueObjExp = makeShared(Boolean.TRUE);
   static public QuoteExp falseObjExp = makeShared(Boolean.FALSE);
     static public QuoteExp emptyExp = makeShared(gnu.lists.LList.Empty);
+    static public QuoteExp isTrueTypeExp = makeShared(LangPrimType.isTrueType);
   static public QuoteExp nullExp = makeShared(null, Type.nullType);
   public static final QuoteExp classObjectExp = makeShared(Type.objectType);
 

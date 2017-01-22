@@ -295,7 +295,7 @@ public class BindDecls {
                                            condition));
         decl.setInitValue(cond);
         decl.setFlag(Declaration.PATTERN_NESTED|Declaration.SKIP_FOR_METHOD_PARAMETER);
-        decl.setType(LangPrimType.isTrueType);
+        decl.setType(QuoteExp.isTrueTypeExp, LangPrimType.isTrueType);
         return decl;
     }
 

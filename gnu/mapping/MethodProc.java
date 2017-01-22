@@ -123,6 +123,8 @@ public abstract class MethodProc extends ProcedureN
    * keyword argument that does not match. */
   public static final int NO_MATCH_UNUSED_KEYWORD = 0xfff50000;
 
+  public static final int NO_MATCH_GUARD_FALSE =  0xfff60000;
+
   /** Helper method to throw an exception if a <code>matchX</code>
    * method fails. */
   public static RuntimeException

@@ -273,6 +273,8 @@ public class PushApply extends ExpVisitor<Expression,Void>
                 break;
             }
         }
+        if (exp.getFlag(LambdaExp.HAS_NONTRIVIAL_PATTERN))
+            exp.setFlag(LambdaExp.CANNOT_INLINE);
         CanFinishTracker oldTracker = canFinishTracker;
         CanFinishTracker newTracker = new CanFinishTracker();
         newTracker.outer = oldTracker;
