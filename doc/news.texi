@@ -8,7 +8,11 @@ changes}.
 @itemize
 @item
 Most places where you could declare a new identifier
-binding have been generalized to accept @ref{Variables and Patterns,patterns}.
+binding have been generalized to accept @ref{Variables and Patterns,patterns},
+including literals and boolean @stxref{guard}s.
+@item
+The new form @ref{def-match,@code{match}} form is a generalization
+of @code{case} using patterns.
 @item
 The internal calling convention used for ``apply'' (ie. calling
 an unknown-at-compile-time procedure) has been completely changed.

@@ -6217,7 +6217,7 @@ context if the @func{if} expression itself is.
 @deffnx Syntax cond @arbno{@stxref{cond-clause}} @stxlit{(else} @meta{expression}@dots{}@stxlit{)} 
 
 @display
-@stxdef{cond-clause} @stxlit{(}@stxref{test-expression} @arbno{@stxref{expression}}@stxlit{)}
+@stxdef{cond-clause} @stxlit{(}@stxref{test-expression} @stxref{body}@stxlit{)}
     | @stxlit{(}@meta{test} @stxlit{=>} @meta{expression}@stxlit{)}
 @end display
 
@@ -6332,6 +6332,42 @@ expression.
 
 The last @meta{expression} of a @meta{case clause} is in tail context if
 the @func{case} expression itself is.
+@end deffn
+
+@anchor{def-match}
+@deffn Syntax match @stxref{match-key} @stxref{expression} @atleastone{@stxref{match-clause}}
+The @code{match} form is a generalization of @code{case} using @stxref{pattern}s,
+@display
+@stxdef{match-key} @stxref{expression}
+@stxdef{match-clause}
+  @stxlit{(} @stxref{pattern} [@stxref{guard}] @stxref{body} @stxlit{)}
+@end display
+The @var{match-key} is evaluated,
+Then the @var{match-clause}s are tried in order.
+The first @var{match-clause} whose @var{pattern} matches (and
+the @var{guard}, if any, is true), is selected,
+and the corresponding @var{body} evaluated.
+It is an error if no @var{match-clause} matches.
+@example
+(match value
+  (0 (found-zero))
+  (x #if (> x 0) (found-positive x))
+  (x #if (< x 0) (found-negative x))
+  (x::symbol (found-symbol x))
+  (_ (found-other)))
+@end example
+
+One @code{case} feature is not (yet) directly supported by @code{match}:
+Matching against a list of values.
+However, this is easy to simulate using a guard using @code{memq},
+@code{memv}, or @code{member}:
+@example
+;; compare similar example under case
+(match (car '(c d))
+  (x #!if (memv x '(a e i o u)) ’vowel)
+  (x #!if (memv x '(w y)) ’semivowel)
+  (x x))
+@end example
 @end deffn
 
 @deffn Syntax and @stxref{test-expression} @dots{}
@@ -6481,11 +6517,17 @@ rather than the details of the pattern syntax.)
 @display
 @stxdef{pattern} @stxref{identifier}
   | @stxlit{_}
+  | @stxref{pattern-literal}
+  | @stxlit{'}@stxref{datum}
   | @stxref{pattern} @stxlit{::} @stxref{type}
   | @stxlit{[} @arbno{@stxref{lpattern}} @stxlit{]}
 @stxdef{lpattern} @stxref{pattern}
   | @stxlit{@@} @stxref{pattern}
   | @stxref{pattern} @stxlit{...}
+  | @stxref{guard}
+@stxdef{pattern-literal}
+    @stxref{boolean} | number | @stxref{character} | @stxref{string}
+@stxdef{guard} @stxlit{#!if} @stxref{expression}
 @end display
 
 This is how the specific patterns work:
@@ -6500,6 +6542,12 @@ that is initialized to the incoming value.
 This pattern just discards the incoming value.
 It is equivalent to a unique otherwise-unused @var{identifier}.
 
+@item @stxref{pattern-literal}
+Matches if the value is @code{equal?} to the @var{pattern-literal}.
+
+@item @stxlit{'}@stxref{datum}
+Matches if the value is @code{equal?} to the quoted @var{datum}.
+
 @item @stxref{pattern} @stxlit{::} @stxref{type}
 The incoming value is coerced to a value of the specified @var{type},
 and then the coerced value is matched against the sub-@var{pattern}.
@@ -6513,6 +6561,12 @@ then the number of sub-patterns must match the size of the sequence, and
 each sub-pattern is matched against the corresponding element of the sequence.
 More generally, each sub-pattern may match zero or more consequtive
 elements of the incoming sequence.
+
+@item @stxlit{#!if} @stxref{expression}
+No incoming value is used.  Instead the @var{expression} is evaluated.
+If the result is true, matching succeeds (so far);
+otherwise the match fails.
+This form is called a @uref{https://en.wikipedia.org/wiki/Guard_(computer_science),@dfn{guard}}.
 @end table
 
 @node Definitions
@@ -8438,10 +8492,11 @@ Unrecognized keywords are used to set the procedure properties of the result.
 @node Extended formals
 @section Extended Formal Arguments List
 
-The formal arguments list of a lambda expression has two
-extendsions over standard Scheme:
+The formal arguments list of a lambda expression has some
+extensions over standard Scheme:
 Kawa borrows the extended formal argument list of DSSSL,
 and Kawa allows you to declare the type of the parameter.
+More generally, you can use @ref{Variables and Patterns,patterns}.
 
 @display
 @stxdef{lambda-expression} @stxlit{(lambda} @stxref{formals} @arbno{@stxref{option-pair}} @stxref{opt-return-type} @stxref{body}@stxlit{)}
@@ -8461,11 +8516,11 @@ You can of course also use the extended format in a @ref{Definitions,@code{defin
     @stxref{req-opt-args} (@stxref{rest-key-args} | @stxlit{.} @stxref{rest-arg})
 @end display
 @display
-@stxdef{req-opt-args} @stxref{required-arg} ... [@stxlit{#!optional} @stxref{optional-arg} ...]
+@stxdef{req-opt-args} @arbno{(@stxref{required-arg}|@stxref{guard})} [@stxlit{#!optional} @stxref{optional-arg} ...]
 @stxdef{rest-key-args} [@stxlit{#!rest} @stxref{rest-arg}] [@stxlit{#!key} @stxref{key-arg} ...]
   | [@stxlit{#!key} @stxref{key-arg} ...] [@stxlit{#!rest} @stxref{rest-arg}]
 @stxdef{required-arg} @stxref{pattern} [@stxlit{::} @stxref{type}]
-  | @stxlit{(} @stxref{pattern} @stxlit{::} @stxref{type} @stxlit{)}
+  | @stxlit{(} @stxref{pattern} @stxlit{::} @stxref{type}@stxlit{)}
 @stxdef{optional-arg} @var{variable} [@stxlit{::} @stxref{type}]
   | @stxlit{(} @stxref{pattern} [@stxlit{::} @stxref{type}] [@var{initializer} [@stxref{supplied-var}]]@stxlit{)}
 @stxdef{supplied-var} @var{variable}
@@ -8481,8 +8536,10 @@ actual arguments are processed from left to right as follows:
 @itemize
 @item
 The @var{required-arg}s are matched against actual (pre-keyword) arguments
-starting with the
-first actual argument.  It shall be an error if there are fewer pre-keyword
+in order, starting with the first actual argument.
+A @var{guard} is evaluated when it appears:
+If it evaluates to false, then matching fails.
+It shall be an error if there are fewer pre-keyword
 arguments then there are @var{req-arg}s.
 @item
 Next the @var{optional-arg}s are bound to remaining pre-keyword arguments.

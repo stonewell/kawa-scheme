@@ -1,3 +1,9 @@
+2017-01-21  Per Bothner  <per@bothner.com>
+
+	* kawa.texi (Variables and Patterns): Document guards and
+	literal (constant-match) patterns.
+	* kawa.texi (Conditionals): Document 'match' form.
+
 2017-01-17  Per Bothner  <per@bothner.com>
 
 	* news.texi: Update incompatible changes.
