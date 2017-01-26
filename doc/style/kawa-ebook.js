@@ -279,7 +279,8 @@ function receiveMessage(event) {
         loadPage(data.url, data.hash);
         break;
     case "scroll-to":  // top window to node window
-        window.location = data.url;
+        var url = data.url;
+        location.hash = url.indexOf('#') < 0 ? "" : url.replace(/.*#/, "");
         break;
     case "update-sidebar":
         var selected = data.selected;

@@ -1,5 +1,8 @@
 2017-01-26  Per Bothner  <per@bothner.com>
 
+	* style/kawa-ebook.js: For "scroll-to" message, only update
+	location.hash, to avoid reload.
+
 	* kawa-ebook.js: Re-do frame-management.
 	Use a fixed top-frame, and lazily load an iframe when visiting a page.
 	* kawa-ebook.css: Related changes.
