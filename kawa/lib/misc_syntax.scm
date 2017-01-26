@@ -28,6 +28,12 @@
        (cond-expand (srfi-64 #!void) (else (require 'srfi-64)))
        (%test-begin suite-name count)))))
 
+(define-syntax module-class
+  (lambda (form)
+    (syntax-case form ()
+      ((_)
+        (gnu.kawa.functions.GetModuleClass:getModuleClassExp)))))
+
 (define-syntax module-uri
   (lambda (form)
     (syntax-case form ()

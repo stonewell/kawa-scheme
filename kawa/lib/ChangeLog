@@ -1,3 +1,8 @@
+2017-01-26  Per Bothner  <per@bothner.com>
+
+	* misc_syntax.scm (module-class): New macro.
+	* kawa/base.scm: Also export module-class.
+
 2017-01-20  Per Bothner  <per@bothner.com>
 
 	* syntax.scm (match): Allow #!if guards.

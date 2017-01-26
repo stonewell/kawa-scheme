@@ -1,3 +1,8 @@
+2017-01-26  Per Bothner  <per@bothner.com>
+
+	* kawa.texi (Resources): Document new module-class.
+	* news.texi: Likewise.
+
 2017-01-21  Per Bothner  <per@bothner.com>
 
 	* kawa.texi (Variables and Patterns): Document guards and

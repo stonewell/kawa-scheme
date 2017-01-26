@@ -70,6 +70,9 @@ syntax for patterns.  Instead you have to write:
 @example
 (define (incr (x ::int)) ::int (+ x 1))
 @end example
+@item
+The expression @code{(module-class)} evaluates to the
+containing module class.
 @end itemize
 
 @c @subheading In Git repository (master branch) since last release

@@ -98,8 +98,8 @@
         make-s8vector make-s16vector make-s32vector make-s64vector
         make-u8vector make-u16vector make-u32vector make-u64vector
         map-values match
-        module-compile-options module-extends module-implements
-        module-name module-static
+        module-class module-compile-options module-extends module-implements
+        module-name module-static module-uri
         object
         path
         port-line port-column
@@ -116,8 +116,8 @@
         setter synchronized
         process-command-line-assignments rename-file system-tmpdir
         process-exit-wait process-exit-ok?
-        ->pathname system resource-url module-uri
-        make-process pipe-process run-process
+        ->pathname system
+        make-process pipe-process
         make-record-type namespace-uri namespace-prefix
         make-quantity quantity->number quantity->unit regex runnable
         parse-format path?
@@ -129,7 +129,7 @@
         receive record? record-accessor record-constructor record-modifier
         record-predicate record-type-descriptor record-type-field-names
         record-type-name
-        repl resolve-uri reverse!
+        repl resolve-uri resource-url reverse! run-process
         s8vector s8vector? s8vector-length
         s8vector-ref s8vector-set! s8vector->list
         s16vector s16vector? s16vector-length

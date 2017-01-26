@@ -16429,6 +16429,10 @@ The macro @code{resource-url} works by using @code{module-uri}
 and resolving that to a normal @code{URL}.
 @end deffn
 
+@deffn Syntax module-class
+Evaluates to the containing module class, as a @code{java.lang.Class} instance.
+@end deffn
+
 @node Types, Objects Classes and Modules, Input-Output, Top
 @chapter Types
 
