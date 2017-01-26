@@ -1,26 +1,34 @@
-// JavaScript mostly to set up a table-of-contents sidebar.
-// There are two options for the sidebar:
-// (1) to use an old-fashioned <frameset> browse with-frames.html
-// (2) otherwise using an <iframe> is preferred as it enables
-// cleaner URLs in the location-bar.
+/*
+TODO:
+- Styling of node header
+- Handle internal links: #NODE-NAME.ID-NAME
+- set location.hash usefully; use initial value
+*/
+
+// JavaScript mostly to set up a table-of-contents sidebar,
+// using an <iframe>.
 // The <iframe> sidebar can be explicitly enabled if you use the hash
 // "#sidebar" or "#sidebar=yes"; or explicitly disabled with "#sidebar=no".
 // The default is to enable the sidebar except when using a ebook-reader
 // (as detected by the property navigator.epubReadingSystem),
 // since ebook-readers generally provide their own table-of-contents.
 
-var usingFrameset = top.frames.length > 1;
-var mainTarget = usingFrameset ? "main" : "_parent";
+var mainName = "index.html";
 var mainWindow = window;
 var sidebarQuery = "";
-var tocFilename = "ToC.xhtml";
+var tocName = "ToC";
+var tocFilename = tocName+".xhtml";
 var xhtmlNamespace = "http://www.w3.org/1999/xhtml";
+var sidebarFrame = null;
+var mainFilename;
 
 function withSidebarQuery(href) {
+    var nodeName = href.replace(/[.]xhtml.*/, "");
+    if (href==mainFilename || href==mainName || nodeName == "start")
+        return mainFilename;
     var h = href.indexOf('#');
-    if (h < 0)
-        h = href.length;
-    return href.substring(0, h) + sidebarQuery + href.substring(h);
+    var hash = h < 0 ? "" : href.replace(/.*#/, ".");
+    return mainFilename + "#" + nodeName + hash;
 }
 
 function filename(loc) {
@@ -35,34 +43,47 @@ function filename(loc) {
 }
 
 function onMainLoad(evt) {
-    if (usingFrameset) {
-        top.mainLoaded = true;
-        if (top.sidebarLoaded)
-            updateSidebarForFrameset();
-        top.setHash(location.pathname);
-    } else {
+    if (top == window) {
+        mainFilename = location.pathname.replace(/.*[/]/, "");
+        var body = document.getElementsByTagName("body")[0];
+
+        // Move contents of <body> into a a fresh <div>
+        var div = document.createElement("div");
+        window.selectedDivNode = div;
+        div.setAttribute("id", "index");
+        div.setAttribute("node", "index");
+        for (var ch = body.firstChild; ch != null; ) {
+            div.appendChild(ch);
+            ch = body.firstChild;
+        }
+        body.appendChild(div);
+
         if (useSidebar(location.hash)) {
             var iframe = document.createElement("iframe");
-            var mainFilename = filename(location);
+            sidebarFrame = iframe;
             iframe.setAttribute("name", "slider");
             iframe.setAttribute("src", tocFilename+"#main="+mainFilename);
-            var body = document.getElementsByTagName("body")[0];
             body.insertBefore(iframe, body.firstChild);
             body.setAttribute("class", "mainbar");
         }
         sidebarQuery = location.hash;
+    } else {
+        mainFilename = window.name.replace(/.*[/]/, "").replace(/#.*/, "");
     }
     var links = document.getElementsByTagName("a");
     for (var i = links.length; --i >= 0; ) {
         var link = links[i];
         var href = link.getAttribute("href");
-        if (href) {
-            if (href.indexOf(':') >= 0)
-                link.setAttribute("target", "_blank");
-            else if (! usingFrameset && href.indexOf('?') < 0 && href.indexOf('#') < 0)
-                link.setAttribute("href", withSidebarQuery(href));
-        }
+        if (href)
+            fixLink(link, href);
     }
+}
+
+function fixLink(link, href) {
+    if (href.indexOf(':') >= 0)
+        link.setAttribute("target", "_blank");
+    else
+        link.setAttribute("href", withSidebarQuery(href));
 }
 
 function clearTocStyles(node) {
@@ -76,29 +97,16 @@ function clearTocStyles(node) {
     }
 }
 
-function updateSidebarForFrameset() {
-    var mainWindow = top.frames["main"];
-    var sideWindow = top.frames["slider"];
-    var mainFilename = sideWindow.filename(mainWindow.location);
-    var sideBody = sideWindow.document.getElementsByTagName("body")[0];
-    mainWindow.clearTocStyles(sideBody);
-    mainWindow.scanToc(sideBody, mainFilename);
-}
-
-function scanToc(node, current) {
-    scanToc1(node.getElementsByTagName("ul")[0], current.replace('*', '#'));
-}
 function addSidebarHeader(sidebarDoc) {
     var li = sidebarDoc.getElementsByTagName("li")[0];
     if (li && li.firstElementChild && li.firstElementChild.tagName == "a"
-        && li.firstElementChild.getAttribute("href") == "index.xhtml")
+        && li.firstElementChild.getAttribute("href") == mainName)
         li.parentNode.removeChild(li);
     var header = sidebarDoc.getElementsByTagName("header")[0];
     var h1 = sidebarDoc.getElementsByTagName("h1")[0];
     if (header && h1) {
         var a = sidebarDoc.createElement("a");
-        a.setAttribute("href", "index.xhtml");
-        a.setAttribute("target", mainTarget);
+        a.setAttribute("href", "index.html");
         header.appendChild(a);
         var div = sidebarDoc.createElement("div");
         a.appendChild(div);
@@ -112,8 +120,11 @@ function addSidebarHeader(sidebarDoc) {
     }
 }
 
+function scanToc(node, current) {
+    scanToc1(node.getElementsByTagName("ul")[0], withSidebarQuery(current));
+}
 /** Scan ToC entries to see which should be hidden.
-* Return 2 if node matches current; 1 if node is ancestor of current; else 0.
+ * Return 2 if node matches current; 1 if node is ancestor of current; else 0.
  */
 function scanToc1(node, current) {
     if (node.tagName == "a") { // lowercase "A" for xhtml
@@ -163,41 +174,20 @@ function scanToc1(node, current) {
 }
 
 function onSidebarLoad(evt) {
+    mainFilename = location.href.replace(/.*#main=/, "");
+    var search = location.hash;
+    addSidebarHeader(document);
+    // FIXME add base also for sub-pages
+    var base = document.createElement("base");
+    base.setAttribute("href", location.href.replace(/[/][^/]*$/, "/"));
+    document.head.appendChild(base);
     var body = document.getElementsByTagName("body")[0];
     body.setAttribute("class", "toc-sidebar");
-    if (usingFrameset) {
-        top.sidebarLoaded = true;
-        if (top.mainLoaded)
-            updateSidebarForFrameset();
-        addSidebarHeader(document);
-    } else {
-        var search = location.hash;
-        var mainFilename = search.startsWith("#main=") // FIXME use regex
-            ? search.substring(6) : null;
-        if (mainFilename) {
-            scanToc(body,
-                    mainFilename == "ToC.xhtml" ? "index.xhtml" : mainFilename);
-            addSidebarHeader(document);
-        }
-    }
     var links = document.getElementsByTagName("a");
-    for (var i = links.length; --i >= 0; ) {
-        var link = links[i];
-        var href = link.getAttribute("href");
-        if (href) {
-            if (href.indexOf(':') > 0) {
-                link.setAttribute("target", "_blank");
-            } else {
-                if (! usingFrameset)
-                    link.setAttribute("href", withSidebarQuery(href));
-                link.setAttribute("target", mainTarget);
-            }
-        }
-    }
-    if (links.length > 0) {
-        var tocA = document.createElementNS(xhtmlNamespace, "a");
-        tocA.setAttribute("href", "ToC.xhtml");
-        tocA.setAttribute("target", mainTarget);
+    var nlinks = links.length;
+
+    var tocA = document.createElementNS(xhtmlNamespace, "a");
+    tocA.setAttribute("href", tocFilename);
         tocA.appendChild(document.createTextNode("Table of Contents"));
         var tocLi = document.createElementNS(xhtmlNamespace, "li");
         tocLi.appendChild(tocA);
@@ -206,7 +196,28 @@ function onSidebarLoad(evt) {
         if (indexGrand.nodeName == "li") //hack
             indexLi = indexGrand;
         indexLi.parentNode.insertBefore(tocLi, indexLi.nextSibling);
+
+    var prevNode = null;
+    var nodes = new Array();
+    for (var i = 0; i <= nlinks; i++) {
+        var link = i < nlinks ? links[i] : tocA;
+        var href = link.getAttribute("href");
+        if (href) {
+            fixLink(link, href);
+            if (href.indexOf(':') <= 0) {
+                var nodeName = href.replace(/[.]xhtml.*/, "");
+                if (prevNode != nodeName) {
+                    prevNode = nodeName;
+                    nodes.push(nodeName);
+                }
+            }
+        }
     }
+    if (mainFilename != null) {
+        scanToc(body, mainFilename);
+    }
+    nodes.message_kind = "node-list";
+    top.postMessage(nodes, "*");
     var divs = document.getElementsByTagName("div");
     for (var i = divs.length; --i >= 0; ) {
         var div = divs[i];
@@ -215,25 +226,99 @@ function onSidebarLoad(evt) {
     }
 }
 
-var clickSeen = false;
+function loadPage(url, hash) {
+    var nodeName = url.replace(/[.]xhtml.*/, "");
+    var path = (window.location.pathname + window.location.search)
+        .replace(/#.*/, "") + hash;
+    var div = document.getElementById(nodeName);
+    var iframe = div.firstChild;
+    if (iframe == null) {
+        iframe = document.createElement("iframe");
+        iframe.setAttribute("class", "node");
+        iframe.setAttribute("name", path);
+        iframe.setAttribute("src", url);
+        div.appendChild(iframe);
+    } else if (iframe.nodeName == "IFRAME") {
+        iframe.contentWindow.postMessage({message_kind: "scroll-to", url: url}, "*");
+    }
+    sidebarFrame.contentWindow.postMessage({message_kind: "update-sidebar", selected: nodeName}, "*");
+    history.pushState("", document.title, path);
+    if (window.selectedDivNode != div) {
+        if (window.selectedDivNode)
+            window.selectedDivNode.setAttribute("hidden", "true");
+        div.removeAttribute("hidden");
+        window.selectedDivNode = div;
+    }
+}
+
+function receiveMessage(event) {
+    var data = event.data;
+    switch (data.message_kind) {
+    case "node-list": // from sidebar to top frame
+        var body = document.getElementsByTagName("body")[0];
+        var nnodes = data.length;
+        for (var i = 0; i < nnodes; i++) {
+            var name = data[i];
+            if (name == "index")
+                continue;
+            var div = document.createElement("div");
+            div.setAttribute("id", name);
+            div.setAttribute("node", name);
+            div.setAttribute("hidden", "true");
+            body.appendChild(div);
+        }
+        if (location.hash) {
+            var hash = location.hash;
+            var url = hash.indexOf(".") >= 0
+                ? hash.replace(/#(.*)[.](.*)/, "$1.xhtml#$2")
+                : hash.replace(/#/, "") + ".xhtml";
+            loadPage(url, hash);
+        }
+        break;
+    case "load-page":  // from click handler to top frame
+        loadPage(data.url, data.hash);
+        break;
+    case "scroll-to":  // top window to node window
+        window.location = data.url;
+        break;
+    case "update-sidebar":
+        var selected = data.selected;
+        var sideBody = document.body;
+        clearTocStyles(sideBody);
+        scanToc(sideBody, selected=="index"?"index.html":selected+".xhtml");
+        break;
+    }
+}
+
 function onClick(evt) {
     for (var target = evt.target;
          target != null;
          target = target.parentNode) {
-        if  (target.nodeName == "a"
+        if  ((target.nodeName == "a" || target.nodeName == "A")
              && target.getAttribute("target") != "_blank") {
-            top.clickSeen = true;
+            var href = target.getAttribute("href");
+            var url = href.replace(/.*#/, "");
+            if (url == "")
+                url = "index";
+            if (url.indexOf(".") >= 0)
+                url = url.replace(/[.]/, ".xhtml#")
+            else
+                url = url + ".xhtml";
+            var hash = href.replace(/.*#/, "#");
+            if (hash == "index.html")
+                hash = "";
+            top.postMessage({message_kind: "load-page", url: url, hash: hash}, "*");
+            evt.preventDefault();
+            evt.stopPropagation;
             return;
         }
     }
 };
 
 function onUnload(evt) {
-    if (! usingFrameset && !top.clickSeen) {
-        var request = new XMLHttpRequest();
-        request.open("GET","(WINDOW-CLOSED)");
-        request.send(null);
-    }
+    var request = new XMLHttpRequest();
+    request.open("GET","(WINDOW-CLOSED)");
+    request.send(null);
 }
 
 function useSidebar(hash) {
@@ -243,10 +328,18 @@ function useSidebar(hash) {
         return true;
     return ! (navigator && navigator.epubReadingSystem);
 }
-if (location.href.indexOf("#main=") >= 0 || window.name == "slider") {
-    window.addEventListener("load", onSidebarLoad, false);
-} else {
-    window.addEventListener("load", onMainLoad, false);
+
+if (top != window
+    || location.pathname.endsWith("/index.html")
+    || location.pathname.endsWith("/")) {
+
+    if (location.href.indexOf("#main=") >= 0 || window.name == "slider") {
+        window.addEventListener("load", onSidebarLoad, false);
+    } else {
+        window.addEventListener("load", onMainLoad, false);
+    }
+
+    window.addEventListener("beforeunload", onUnload, false);
+    window.addEventListener("click", onClick, false);
+    window.addEventListener("message", receiveMessage, false);
 }
-window.addEventListener("beforeunload", onUnload, false);
-window.addEventListener("click", onClick, false);

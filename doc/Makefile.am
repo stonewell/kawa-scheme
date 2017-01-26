@@ -95,7 +95,7 @@ kawa.xml: $(srcdir)/kawa.texi
 	-e '/<!DOCTYPE book/,/^\]>/d' \
 	-e 's|_002d|-|g' \
 	-e 's|<book id="-" lang="en">|<book id="book" xmlns="http://docbook.org/ns/docbook" lang="en"><?dbhtml filename="top.html"?>|' \
-	-e 's|<chapter label="" id="Top">|<chapter label="Top" id="Top"><?dbhtml filename="index.html"?>|' \
+	-e 's|<chapter label="" id="Top">|<chapter label="Top" id="Top"><?dbhtml filename="start.html"?>|' \
 	-e 's|<chapter label="1" id="News">|<chapter label="1" id="News"><?dbhtml filename="news.html"?>|' \
 	-e 's|id="Tutorial">|\0<?dbhtml filename="tutorial/index.html"?>|' \
 	-e 's|id="Tutorial---\([^"]*\)">|\0<?dbhtml filename="tutorial/\1.html"?>|' \
@@ -179,6 +179,7 @@ kawa-manual.epub: kawa.xml Makefile
 	sed -e '/<footer>/,/<.footer>/d' <ebook/OEBPS/bk01-toc.xhtml \
 	  >ebook/OEBPS/ToC.xhtml
 	rm ebook/OEBPS/bk01-toc.xhtml
+	sed -e '/<script/s|/>|> </script>|' <ebook/OEBPS/start.xhtml > ebook/OEBPS/index.html
 	cp style/kawa-ebook.css ebook/OEBPS/kawa.css
 	cp style/kawa-ebook.js ebook/OEBPS/kawa-ebook.js
 	cp style/kawa-logo.png ebook/OEBPS/kawa-logo.png

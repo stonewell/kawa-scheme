@@ -1,5 +1,10 @@
 2017-01-26  Per Bothner  <per@bothner.com>
 
+	* kawa-ebook.js: Re-do frame-management.
+	Use a fixed top-frame, and lazily load an iframe when visiting a page.
+	* kawa-ebook.css: Related changes.
+	* Makefile.am: Top frame is start.xhtml; make index.html from it.
+
 	* kawa.texi (Resources): Document new module-class.
 	* news.texi: Likewise.
 

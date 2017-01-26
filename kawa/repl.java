@@ -919,8 +919,7 @@ public class repl extends Procedure0or1 {
                 Shell.runFileOrClass(filename, false, 0);
                 return null;
             }
-            String defaultUrl = "index.xhtml";
-            //String defaultUrl = "with-frames.html";
+            String defaultUrl = "index.html";
             String pathPrefix = "jar:file:" + manualFile + "!/OEBPS";
             gnu.kawa.servlet.KawaHttpHandler.addStaticFileHandler("/kawa-manual/",
                                                                   pathPrefix, defaultUrl, true);
