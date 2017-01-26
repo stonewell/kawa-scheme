@@ -1,5 +1,7 @@
 2017-01-26  Per Bothner  <per@bothner.com>
 
+	* style/kawa-ebook.css: Some tweaking for consistency.
+
 	* style/kawa-ebook.js: For "scroll-to" message, only update
 	location.hash, to avoid reload.
 

@@ -37,16 +37,21 @@ div[node][hidden] {
     position: absolute;
     display: none
 }
-body{
-    margin: 0px
-}
+
 div[node] {
     left: 25%;
     width: 75%; height: auto;
     top: 0pt; bottom: 0pt;
     position: absolute;
-    border: none; margin: 8px; padding: 0px;
     overflow: hidden;
+}
+/* The initial contents are put into a separate node.  Unlike the other
+ *  nodes, it is *not* in an <iframe>, so needs different handling. */
+div[node]#index {
+    overflow: auto
+}
+div[node]#index header {
+    margin: 8px;
 }
 iframe.node {
    width: 100%; height: 100%; border: none; margin: 0px;padding: 0px;
