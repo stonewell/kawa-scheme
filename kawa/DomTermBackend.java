@@ -191,7 +191,7 @@ public class DomTermBackend extends Backend implements Runnable {
             termWriter.write("\033]0;Kawa\007");
         } catch (Throwable ex) { ex.printStackTrace(); }
         if (this.nrows >= 0)
-            setWindowSize(nrows, ncols, pixw, pixh);
+            setWindowSize(nrows, ncols, pixh, pixw);
         Shell.run(language, env);
         try {
             termWriter.close();
@@ -222,7 +222,7 @@ public class DomTermBackend extends Backend implements Runnable {
     }
 
     @Override
-    public void setWindowSize(int nrows, int ncols, int pixw, int pixh) {
+    public void setWindowSize(int nrows, int ncols, int pixh, int pixw) {
         this.nrows = nrows;
         this.ncols = ncols;
         this.pixw = pixw;
