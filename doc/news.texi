@@ -71,6 +71,14 @@ syntax for patterns.  Instead you have to write:
 (define (incr (x ::int)) ::int (+ x 1))
 @end example
 @item
+New type aliases @code{bitvector} and @code{c16vector}.
+The latter is a @ref{Uniform vectors,uniform vector} type for wrapping @code{char[]} arrays.
+@item
+You can convert a Java array (for example a @code{int[]} to the corresponing uniform vector type
+(for example @code{u32vector}) using the @code{as} pseudo-function or the corresponding
+conversion procedure (for example @code{->u32vector}).  The result shares storage with the
+array, so changes in one will update the other.
+@item
 The expression @code{(module-class)} evaluates to the
 containing module class.
 @end itemize

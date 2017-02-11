@@ -1,4 +1,4 @@
-(test-begin "java-array" 29)
+(test-begin "java-array" 33)
 
 (define obj1 ::Object (Object))
 (define obj2 ::Object (Object))
@@ -67,5 +67,14 @@
 (test-equal 85.0d+0 (apply - 100 (double[] 10 4 1)))
 
 (test-equal (int[] 1 2 3) (int-arr:clone))
+
+(! arrb1 (boolean[] #f #t #t #f))
+(! vecb1 (->bitvector arrb1))
+(test-equal #f (vecb1 3))
+(set! (arrb1 3) #t)
+(test-equal vecb1 (bitvector  #f #t #t #t))
+(test-equal #t (vecb1 3))
+(set! (vecb1 1) #f)
+(test-equal vecb1 (bitvector  #f #f #t #t))
 
 (test-end)

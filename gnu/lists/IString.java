@@ -44,10 +44,15 @@ public class IString
             return new IString(str.toString());
     }
     public static IString valueOf(CharSequence str, int start, int count) {
-        if (start < 0 || count < 0 || start + count > str.length())
+        int slen = str.length();
+        if (start < 0 || count < 0 || start + count > slen)
             throw new IndexOutOfBoundsException();
-        if (str instanceof IString)
-            return new SubString((IString) str, start, start+count);
+        if (str instanceof IString) {
+            IString istr = (IString) str;
+            if (start == 0 && count == slen)
+                return istr;
+            return new SubString(istr, start, start+count);
+        }
         int jlStart = Character.offsetByCodePoints(str, 0, start);
         int jlEnd = Character.offsetByCodePoints(str, jlStart, count);
         return new IString(str.subSequence(jlStart, jlEnd).toString());

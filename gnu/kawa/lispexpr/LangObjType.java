@@ -13,11 +13,7 @@ import gnu.kawa.reflect.CompileBuildObject;
 import gnu.kawa.reflect.CompileInvoke;
 import gnu.kawa.reflect.Invoke;
 import gnu.kawa.reflect.LazyType;
-import gnu.lists.Blob;
-import gnu.lists.FVector;
-import gnu.lists.IString;
-import gnu.lists.Sequences;
-import gnu.lists.U8Vector;
+import gnu.lists.*;
 import java.util.*;
 /* #ifdef use:java.lang.invoke */
 import java.lang.invoke.*;
@@ -59,14 +55,16 @@ public class LangObjType extends SpecialObjectType implements TypeValue
   private static final int U64VECTOR_TYPE_CODE = 24;
   private static final int F32VECTOR_TYPE_CODE = 25;
   private static final int F64VECTOR_TYPE_CODE = 26;
-  private static final int PROCEDURE_TYPE_CODE = 27;
-  private static final int PROMISE_TYPE_CODE = 28;
-  private static final int SEQUENCE_TYPE_CODE = 29;
-  private static final int DYNAMIC_TYPE_CODE = 30;
-  private static final int ARGLIST_TYPE_CODE = 31;
-  private static final int ARGVECTOR_TYPE_CODE = 32;
-  private static final int JSTRING_TYPE_CODE = 33;
-  private static final int ISTRING_TYPE_CODE = 34;
+  private static final int C16VECTOR_TYPE_CODE = 27;
+  private static final int BITVECTOR_TYPE_CODE = 28;
+  private static final int PROCEDURE_TYPE_CODE = 29;
+  private static final int PROMISE_TYPE_CODE = 30;
+  private static final int SEQUENCE_TYPE_CODE = 31;
+  private static final int DYNAMIC_TYPE_CODE = 32;
+  private static final int ARGLIST_TYPE_CODE = 33;
+  private static final int ARGVECTOR_TYPE_CODE = 34;
+  private static final int JSTRING_TYPE_CODE = 35;
+  private static final int ISTRING_TYPE_CODE = 36;
 
   public static final LangObjType pathType =
     new LangObjType("path", "gnu.kawa.io.Path",
@@ -155,6 +153,14 @@ public class LangObjType extends SpecialObjectType implements TypeValue
   public static final LangObjType f64vectorType =
     new LangObjType("f64vector", "gnu.lists.F64Vector",
                     F64VECTOR_TYPE_CODE);
+
+  public static final LangObjType c16vectorType =
+    new LangObjType("c16vector", "gnu.lists.CharVector",
+                    C16VECTOR_TYPE_CODE);
+
+  public static final LangObjType bitvectorType =
+    new LangObjType("bitvector", "gnu.lists.BitVector",
+                    BITVECTOR_TYPE_CODE);
 
   public static final LangObjType regexType =
     new LangObjType("regex", "java.util.regex.Pattern",
@@ -259,6 +265,10 @@ public class LangObjType extends SpecialObjectType implements TypeValue
             return LangObjType.u16vectorType;
         if ("gnu.lists.U8Vector".equals(name))
             return LangObjType.u8vectorType;
+        if ("gnu.lists.CharVector".equals(name))
+            return LangObjType.c16vectorType;
+        if ("gnu.lists.BitVector".equals(name))
+            return LangObjType.bitvectorType;
         return null;
     }
 
@@ -284,8 +294,33 @@ public class LangObjType extends SpecialObjectType implements TypeValue
                 && (((ClassType) vt)
                   .implementsInterface(Compilation.typeCharSequence)))
                 return 1;
+            break; 
+        case VECTOR_TYPE_CODE:
+            if (valueType instanceof ArrayType
+                && ((ArrayType) valueType).getComponentType() instanceof ObjectType)
+                return 1;
             break;
-       }
+        case BITVECTOR_TYPE_CODE:
+        case C16VECTOR_TYPE_CODE:
+        case F32VECTOR_TYPE_CODE:
+        case F64VECTOR_TYPE_CODE:
+        case S8VECTOR_TYPE_CODE:
+        case S16VECTOR_TYPE_CODE:
+        case S32VECTOR_TYPE_CODE:
+        case S64VECTOR_TYPE_CODE:
+        case U8VECTOR_TYPE_CODE:
+        case U16VECTOR_TYPE_CODE:
+        case U32VECTOR_TYPE_CODE:
+        case U64VECTOR_TYPE_CODE:
+            if (valueType instanceof ArrayType) {
+                Type valueElementType = ((ArrayType) valueType).getComponentType();
+                Type elementType = getElementType();
+                if (elementType == valueElementType
+                    || elementType.getImplementationType() == valueElementType)
+                    return 1;
+            }
+            break;
+        }
         return getImplementationType().isCompatibleWithValue(valueType);
     }
 
@@ -339,6 +374,8 @@ public class LangObjType extends SpecialObjectType implements TypeValue
       case JSTRING_TYPE_CODE:
       case LIST_TYPE_CODE:
       case VECTOR_TYPE_CODE:
+      case BITVECTOR_TYPE_CODE:
+      case C16VECTOR_TYPE_CODE:
       case S8VECTOR_TYPE_CODE:
       case U8VECTOR_TYPE_CODE:
       case S16VECTOR_TYPE_CODE:
@@ -516,6 +553,8 @@ public class LangObjType extends SpecialObjectType implements TypeValue
   }
 
     public static U8Vector coerceToU8Vector(Object obj) {
+        if (obj instanceof byte[])
+            return new U8Vector((byte[]) obj);
         if (obj instanceof LProcess)
             return ((LProcess) obj).getValue().asPlainBytevector();
         if (obj instanceof Blob)
@@ -550,6 +589,8 @@ public class LangObjType extends SpecialObjectType implements TypeValue
       case CONST_VECTOR_TYPE_CODE:
         return typeLangObjType.getDeclaredMethod("coerceToConstVector", 1);
       case VECTOR_TYPE_CODE:
+      case BITVECTOR_TYPE_CODE:
+      case C16VECTOR_TYPE_CODE:
       case S8VECTOR_TYPE_CODE:
       case S16VECTOR_TYPE_CODE:
       case U16VECTOR_TYPE_CODE:
@@ -559,6 +600,7 @@ public class LangObjType extends SpecialObjectType implements TypeValue
       case U64VECTOR_TYPE_CODE:
       case F32VECTOR_TYPE_CODE:
       case F64VECTOR_TYPE_CODE:
+          return getDeclaredMethod("cast", 1);
       case STRING_TYPE_CODE:
       case LIST_TYPE_CODE:
       case REGEX_TYPE_CODE:
@@ -628,6 +670,21 @@ public class LangObjType extends SpecialObjectType implements TypeValue
         methodDeclaringClass = ClassType.make("gnu.lists.Sequences");
         mname = "asSequenceOrNull";
         break;
+      case VECTOR_TYPE_CODE:
+      case BITVECTOR_TYPE_CODE:
+      case C16VECTOR_TYPE_CODE:
+      case S8VECTOR_TYPE_CODE:
+      case S16VECTOR_TYPE_CODE:
+      case U16VECTOR_TYPE_CODE:
+      case S32VECTOR_TYPE_CODE:
+      case U32VECTOR_TYPE_CODE:
+      case S64VECTOR_TYPE_CODE:
+      case U64VECTOR_TYPE_CODE:
+      case F32VECTOR_TYPE_CODE:
+      case F64VECTOR_TYPE_CODE:
+          methodDeclaringClass = (ClassType) getImplementationType();
+          mname = "castOrNull";
+          break;
       default:
         return null;
       }
@@ -715,16 +772,31 @@ public class LangObjType extends SpecialObjectType implements TypeValue
       case ISTRING_TYPE_CODE:
           return IString.valueOf((CharSequence) obj);
       case VECTOR_TYPE_CODE:
-      case S8VECTOR_TYPE_CODE:
-      case U8VECTOR_TYPE_CODE:
-      case S16VECTOR_TYPE_CODE:
-      case U16VECTOR_TYPE_CODE:
-      case S32VECTOR_TYPE_CODE:
-      case U32VECTOR_TYPE_CODE:
-      case S64VECTOR_TYPE_CODE:
-      case U64VECTOR_TYPE_CODE:
+          return FVector.cast(obj);
       case F32VECTOR_TYPE_CODE:
+          return F32Vector.cast(obj);
       case F64VECTOR_TYPE_CODE:
+          return F64Vector.cast(obj);
+      case BITVECTOR_TYPE_CODE: // FIXME etc
+          return BitVector.cast(obj);
+      case C16VECTOR_TYPE_CODE:
+          return CharVector.cast(obj);
+      case S8VECTOR_TYPE_CODE:
+          return S8Vector.cast(obj);
+      case U8VECTOR_TYPE_CODE:
+          return U8Vector.cast(obj);
+      case S16VECTOR_TYPE_CODE:
+          return S16Vector.cast(obj);
+      case U16VECTOR_TYPE_CODE:
+          return U16Vector.cast(obj);
+      case S32VECTOR_TYPE_CODE:
+          return S32Vector.cast(obj);
+      case U32VECTOR_TYPE_CODE:
+          return U32Vector.cast(obj);
+      case S64VECTOR_TYPE_CODE:
+          return S64Vector.cast(obj);
+      case U64VECTOR_TYPE_CODE:
+          return U64Vector.cast(obj);
       case LIST_TYPE_CODE:
       case REGEX_TYPE_CODE:
         // optimize?
@@ -830,16 +902,6 @@ public class LangObjType extends SpecialObjectType implements TypeValue
   {
     switch (typeCode)
       {
-      case VECTOR_TYPE_CODE:
-      case S8VECTOR_TYPE_CODE:
-      case S16VECTOR_TYPE_CODE:
-      case U16VECTOR_TYPE_CODE:
-      case S32VECTOR_TYPE_CODE:
-      case U32VECTOR_TYPE_CODE:
-      case S64VECTOR_TYPE_CODE:
-      case U64VECTOR_TYPE_CODE:
-      case F32VECTOR_TYPE_CODE:
-      case F64VECTOR_TYPE_CODE:
       case STRING_TYPE_CODE:
       case LIST_TYPE_CODE:
       case REGEX_TYPE_CODE:
@@ -858,6 +920,18 @@ public class LangObjType extends SpecialObjectType implements TypeValue
           code.emitCheckcast(Compilation.typeCharSequence);
           toStringType.emitCoerceFromObject(code);
           break;
+      case VECTOR_TYPE_CODE:
+      case BITVECTOR_TYPE_CODE:
+      case C16VECTOR_TYPE_CODE:
+      case S8VECTOR_TYPE_CODE:
+      case S16VECTOR_TYPE_CODE:
+      case U16VECTOR_TYPE_CODE:
+      case S32VECTOR_TYPE_CODE:
+      case U32VECTOR_TYPE_CODE:
+      case S64VECTOR_TYPE_CODE:
+      case U64VECTOR_TYPE_CODE:
+      case F32VECTOR_TYPE_CODE:
+      case F64VECTOR_TYPE_CODE:
       default:
         code.emitInvoke(coercionMethod());
       }
@@ -920,7 +994,9 @@ public class LangObjType extends SpecialObjectType implements TypeValue
 
     public Type getElementType() {
         switch (typeCode) {
-        case S8VECTOR_TYPE_CODE:  return LangPrimType.byteType; 
+        // Should we use Scheme.booleanType here?
+        case BITVECTOR_TYPE_CODE: return Type.booleanType;
+        case C16VECTOR_TYPE_CODE: return LangPrimType.charType; 
         case S16VECTOR_TYPE_CODE: return LangPrimType.shortType; 
         case S32VECTOR_TYPE_CODE: return LangPrimType.intType; 
         case S64VECTOR_TYPE_CODE: return LangPrimType.longType; 
@@ -936,6 +1012,10 @@ public class LangObjType extends SpecialObjectType implements TypeValue
 
     public String elementGetterMethodName() {
         switch (typeCode) {
+        case BITVECTOR_TYPE_CODE:
+            return "getBoolean";
+        case C16VECTOR_TYPE_CODE:
+            return "charAt";
         case S8VECTOR_TYPE_CODE:
         case U8VECTOR_TYPE_CODE:
             return "getByte";
@@ -968,6 +1048,9 @@ public class LangObjType extends SpecialObjectType implements TypeValue
 
     public CompileBuildObject getBuildObject() {
         switch (typeCode) {
+        case VECTOR_TYPE_CODE:
+        case BITVECTOR_TYPE_CODE:
+        case C16VECTOR_TYPE_CODE:
         case S8VECTOR_TYPE_CODE:
         case S16VECTOR_TYPE_CODE:
         case S32VECTOR_TYPE_CODE:

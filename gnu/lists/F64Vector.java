@@ -110,6 +110,26 @@ public  class F64Vector extends SimpleVector<Double>
         return new F64Vector(newLength < 0 ? data : new double[newLength]);
     }
 
+    public static F64Vector castOrNull(Object obj) {
+        if (obj instanceof double[])
+            return new F64Vector((double[]) obj);
+        if (obj instanceof F64Vector)
+            return (F64Vector) obj;
+        return null;
+    }
+
+    public static F64Vector cast(Object value) {
+        F64Vector vec = castOrNull(value);
+        if (vec == null) {
+            String msg;
+            if (value == null)
+                msg = "cannot convert null to F64Vector";
+            else
+                msg = "cannot convert a "+value.getClass().getName()+" to F64Vector";
+            throw new ClassCastException(msg);
+        }
+        return vec;
+    }
     public int getElementKind() { return DOUBLE_VALUE; }
 
     public String getTag() { return "f64"; }

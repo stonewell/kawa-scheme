@@ -1,3 +1,9 @@
+2017-02-03  Per Bothner  <per@bothner.com>
+
+	* PrimVector.template (cast, castOrNull): New methods.
+	* CharVector.java (cast, castOrNull): Likewise.
+	* FVector.java (cast, castOrNull): Likewise.
+
 2017-01-17  Per Bothner  <per@bothner.com>
 
 	* IString.java (SubString): New class for substring of an IString.

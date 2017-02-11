@@ -4,8 +4,8 @@
  + - * / ! $<<$ $>>$ $bracket-apply$
  *print-circle* *print-miser-width* *print-right-margin*
  append apply arglist argvector array array-ref array-set! as
- begin bytevector
- call-with-current-continuation call-with-values call/cc cond-expand
+ begin bitvector bytevector
+ c16vector call-with-current-continuation call-with-values call/cc cond-expand
  constant-fold constant-vector
  define define-alias define-class define-library
  define-namespace define-private-alias
@@ -96,6 +96,7 @@
               (define_xml_namespace define-xml-namespace)))
 (import (only gnu.kawa.lispexpr.LangObjType
               (listType list) (stringType string) (vectorType vector)
+              (bitvectorType bitvector) (c16vectorType c16vector)
               (f32vectorType f32vector)  (f64vectorType f64vector)
               (s8vectorType s8vector)  (s16vectorType s16vector)
               (s32vectorType s32vector)  (s64vectorType s64vector)

@@ -110,6 +110,26 @@ public  class BitVector extends SimpleVector<Boolean>
         return new BitVector(newLength < 0 ? data : new boolean[newLength]);
     }
 
+    public static BitVector castOrNull(Object obj) {
+        if (obj instanceof boolean[])
+            return new BitVector((boolean[]) obj);
+        if (obj instanceof BitVector)
+            return (BitVector) obj;
+        return null;
+    }
+
+    public static BitVector cast(Object value) {
+        BitVector vec = castOrNull(value);
+        if (vec == null) {
+            String msg;
+            if (value == null)
+                msg = "cannot convert null to BitVector";
+            else
+                msg = "cannot convert a "+value.getClass().getName()+" to BitVector";
+            throw new ClassCastException(msg);
+        }
+        return vec;
+    }
     public int getElementKind() { return BOOLEAN_VALUE; }
 
     public String getTag() { return "b"; }

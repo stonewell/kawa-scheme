@@ -35,7 +35,7 @@
         arithmetic-shift ash
         array array-ref array-set! as attributes
         begin-for-syntax
-        bit-extract bitwise-not
+        bit-extract bitvector bitwise-not
         bitwise-and bitwise-ior bitwise-xor bitwise-if
         bitwise-bit-count bitwise-length bitwise-first-bit-set
         bitwise-bit-set? bitwise-copy-bit
@@ -45,7 +45,7 @@
         bitwise-arithmetic-shift-right
         bitwise-rotate-bit-field bitwise-reverse-bit-field
         bound-identifier=?
-        call-with-input-string call-with-output-string catch
+        c16vector call-with-input-string call-with-output-string catch
         char-general-category char-title-case? char-titlecase
         copy-file create-directory
         class-methods children command-line-arguments command-parse

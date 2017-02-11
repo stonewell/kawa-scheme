@@ -61,6 +61,26 @@ public  class U8Vector extends ByteVector<UByte>
         return new U8Vector(newLength < 0 ? data : new byte[newLength]);
     }
 
+    public static U8Vector castOrNull(Object obj) {
+        if (obj instanceof byte[])
+            return new U8Vector((byte[]) obj);
+        if (obj instanceof U8Vector)
+            return (U8Vector) obj;
+        return null;
+    }
+
+    public static U8Vector cast(Object value) {
+        U8Vector vec = castOrNull(value);
+        if (vec == null) {
+            String msg;
+            if (value == null)
+                msg = "cannot convert null to U8Vector";
+            else
+                msg = "cannot convert a "+value.getClass().getName()+" to U8Vector";
+            throw new ClassCastException(msg);
+        }
+        return vec;
+    }
     public int getElementKind() { return INT_U8_VALUE; }
 
     public String getTag() { return "u8"; }

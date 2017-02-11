@@ -1,3 +1,8 @@
+2017-02-03  Per Bothner  <per@bothner.com>
+
+	* prim_imports.scm (bitvector, c16vector): New type names.
+	* kawa/base.scm (bitvector, c16vector): Export these.
+
 2017-01-26  Per Bothner  <per@bothner.com>
 
 	* misc_syntax.scm (module-class): New macro.

@@ -181,4 +181,25 @@ public  class FVector<E> extends SimpleVector<E>
         return n1 - n2;
     }
 
+    public static FVector castOrNull(Object obj) {
+        if (obj instanceof Object[])
+            return new FVector((Object[]) obj);
+        if (obj instanceof FVector)
+            return (FVector) obj;
+        return null;
+    }
+
+    public static FVector cast(Object value) {
+        FVector vec = castOrNull(value);
+        if (vec == null) {
+            String msg;
+            if (value == null)
+                msg = "cannot convert null to vector";
+            else
+                msg = "cannot convert a "+value.getClass().getName()+" to vector";
+            throw new ClassCastException(msg);
+        }
+        return vec;
+    }
+
 }

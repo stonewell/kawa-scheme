@@ -61,6 +61,26 @@ public  class U16Vector extends ShortVector<UShort>
         return new U16Vector(newLength < 0 ? data : new short[newLength]);
     }
 
+    public static U16Vector castOrNull(Object obj) {
+        if (obj instanceof short[])
+            return new U16Vector((short[]) obj);
+        if (obj instanceof U16Vector)
+            return (U16Vector) obj;
+        return null;
+    }
+
+    public static U16Vector cast(Object value) {
+        U16Vector vec = castOrNull(value);
+        if (vec == null) {
+            String msg;
+            if (value == null)
+                msg = "cannot convert null to U16Vector";
+            else
+                msg = "cannot convert a "+value.getClass().getName()+" to U16Vector";
+            throw new ClassCastException(msg);
+        }
+        return vec;
+    }
     public int getElementKind() { return INT_U16_VALUE; }
 
     public String getTag() { return "u16"; }

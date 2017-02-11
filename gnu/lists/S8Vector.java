@@ -60,6 +60,26 @@ public  class S8Vector extends ByteVector<Byte>
         return new S8Vector(newLength < 0 ? data : new byte[newLength]);
     }
 
+    public static S8Vector castOrNull(Object obj) {
+        if (obj instanceof byte[])
+            return new S8Vector((byte[]) obj);
+        if (obj instanceof S8Vector)
+            return (S8Vector) obj;
+        return null;
+    }
+
+    public static S8Vector cast(Object value) {
+        S8Vector vec = castOrNull(value);
+        if (vec == null) {
+            String msg;
+            if (value == null)
+                msg = "cannot convert null to S8Vector";
+            else
+                msg = "cannot convert a "+value.getClass().getName()+" to S8Vector";
+            throw new ClassCastException(msg);
+        }
+        return vec;
+    }
     public int getElementKind() { return INT_S8_VALUE; }
 
     public String getTag() { return "s8"; }

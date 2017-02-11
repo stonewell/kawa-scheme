@@ -61,6 +61,26 @@ public  class S32Vector extends IntVector<Integer>
         return new S32Vector(newLength < 0 ? data : new int[newLength]);
     }
 
+    public static S32Vector castOrNull(Object obj) {
+        if (obj instanceof int[])
+            return new S32Vector((int[]) obj);
+        if (obj instanceof S32Vector)
+            return (S32Vector) obj;
+        return null;
+    }
+
+    public static S32Vector cast(Object value) {
+        S32Vector vec = castOrNull(value);
+        if (vec == null) {
+            String msg;
+            if (value == null)
+                msg = "cannot convert null to S32Vector";
+            else
+                msg = "cannot convert a "+value.getClass().getName()+" to S32Vector";
+            throw new ClassCastException(msg);
+        }
+        return vec;
+    }
     public int getElementKind() { return INT_S32_VALUE; }
 
     public String getTag() { return "s32"; }

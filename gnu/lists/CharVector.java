@@ -30,6 +30,32 @@ public class CharVector extends AbstractCharVector<Character>
         data[index] = value.charValue();
     }
 
+    public static CharVector castOrNull(Object obj) {
+        if (obj instanceof char[])
+            return new CharVector((char[]) obj);
+        if (obj instanceof CharVector)
+            return (CharVector) obj;
+        if (obj instanceof CharSequence) {
+            char[] chars = obj instanceof FString ? ((FString) obj).toCharArray()
+                : obj.toString().toCharArray();
+            return new CharVector(chars);
+        }
+        return null;
+    }
+
+    public static CharVector cast(Object value) {
+        CharVector vec = castOrNull(value);
+        if (vec == null) {
+            String msg;
+            if (value == null)
+                msg = "cannot convert null to CharVector";
+            else
+                msg = "cannot convert a "+value.getClass().getName()+" to CharVector";
+            throw new ClassCastException(msg);
+        }
+        return vec;
+    }
+
     public boolean equals(Object obj) {
         return obj instanceof CharVector && equals(this, (CharVector) obj);
     }

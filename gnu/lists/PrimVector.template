@@ -211,6 +211,26 @@ public @Abstract class $CNAME$ extends $SUPER$
 
     /* #endif */
     /* #ifdef BIT|S8|S16|S32|S64|U8|U16|U32|U64|F32|F64 */
+    public static $CNAME$ castOrNull(Object obj) {
+        if (obj instanceof $ptype$[])
+            return new $CNAME$(($ptype$[]) obj);
+        if (obj instanceof $CNAME$)
+            return ($CNAME$) obj;
+        return null;
+    }
+
+    public static $CNAME$ cast(Object value) {
+        $CNAME$ vec = castOrNull(value);
+        if (vec == null) {
+            String msg;
+            if (value == null)
+                msg = "cannot convert null to $CNAME$";
+            else
+                msg = "cannot convert a "+value.getClass().getName()+" to $CNAME$";
+            throw new ClassCastException(msg);
+        }
+        return vec;
+    }
     public int getElementKind() { return $KIND$_VALUE; }
 
     public String getTag() { return "$tag$"; }
