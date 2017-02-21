@@ -1518,7 +1518,6 @@ public class CodeAttr extends Attribute implements AttrContainer
   {
     if (! reachableHere())
       return;
-    int initSP = SP;
     reserve(opcode == 185 ? 5 : 3);
     int arg_count = method.arg_types.length;
     boolean is_invokestatic = opcode == 184;
