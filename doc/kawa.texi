@@ -822,6 +822,91 @@ The ones marked @i{(GSoC)} are probably most suitable for a Google
 Summer of Code project, in being reasonable size, self-contained, and not
 depending on other tasks.
 
+@subsection Run interactive process in separate Java Virtual Machine:
+@i{(GSoC)}
+
+When developing and testing it is useful for the REPL to support
+hot-swapping (replacing functions on-the-fly) and debugging.
+The main goal being able to smoothly reload changed modules
+(files or functions), and have other modules not break.
+Debugging (such as setting breakpoints) would not be a priority
+for this project, but could be a follow-on project.
+Skills: Should be experienced with Java, and interested in learning
+about @uref{https://docs.oracle.com/javase/8/docs/technotes/guides/jvmti/index.html,JVM TI} and similar low-level parts of the platform.
+Difficulty: Challenging, but you can study
+how @uref{https://en.wikipedia.org/wiki/Jshell,Java-9's new jshell}
+uses the JVM TI.
+
+@subsection Better dynamic reload
+
+@i{(GSoC - this is related to the previous item)}
+
+Kawa does a lot of optimizations and inlining.  This conflicts
+with being able to ``reload'' a module into an already-running
+interactive environment.
+
+We could add an option to load a module in ``reloadable'' mode.
+Kawa already patches an old function object (a @code{ModuleMethod})
+so existing references to the function get automatically updated.
+However, there are problems if the ``signature'' of the function
+changes - for example if the return type (declared or inferred)
+becomes more general.  In those cases the best thing is to
+re-compile any code that depends on the modified function.
+
+Reloading a module that defines a class is even trickier,
+at least if there are existing instances that should
+work as the updated class.  We can handle the special case
+where only method bodies change: In reloadable mode, each
+method body is compiled to a separate function, the
+actual body indirects to the function.  We must also
+recognize that we compiling a new version of the same
+class, which requires a textual comparison between the
+old and new versions, or a structural comparison
+between the old class and the new code.
+
+When it comes to top-level variables, an issue is when
+to re-evaluate the initializing expression.  It is reasonable
+to do so if and only if the expression is modified, which
+again requires a textual comparison.
+
+@subsection Easier Access to Native Libraries using JNA/JNR
+@i{(GSoC)}
+
+The traditional way to access native (C/C++) functions is using JNI,
+but it's very awkward.
+JNA and @uref{https://github.com/jnr,JNR} are @uref{http://www.oracle.com/technetwork/java/jvmls2013nutter-2013526.pdf,much easier to use}.
+This project would design and implement an easy-to-use Kawa wrapper for
+for JNR.  You should study existing JNR wrappers, such as that for JRuby.
+Difficulty: Medium.  Need to study existing wrappers and "foreign
+function interfaces" (in multiple languages) and design one suitable for Kawa.
+Some Scheme (Kawa) experience would be helpful.  
+
+@subsection Types for units
+
+@i{(GSoC)}
+
+Kawa support units (such as @code{cm^2} for square centimeters)
+and @ref{Quantities,quantities} (such as @code{4cm^2}).
+We would like to integrate these into the type system, both
+for performance and compile-time type checking.
+
+For syntax we can use a pseudo-parameterized type @code{quantity}.  For example:
+@example
+(define a1 ::quantity[cm^2] 4cm^2)
+(* 2.0 a1) ;; @result{} 8cm^2
+(+ 2.0 a1) ;; @i{compile-time error}
+@end example
+The run-time type of the variable @code{a1} should be
+a primitive @code{double}, without object allocation.
+Of course when @code{a1} is converted to an object, we
+create a @code{Quantity}, not a @code{Double}.
+We can build on Kawa's existing framework for
+non-standard primitive types such as @code{character} and @code{ulong}.
+Skills: Need good Java experience, and somewhat familiar with the
+Java Virtual Machine.
+You will need to become comfortable reading <code>javap</code> output.
+Difficulty: Modest.
+
 @subsection Compiler should use class-file reading instead of reflection
 The Kawa compiler currently uses reflection to determine properties
 (such as exported function definitions) from referenced classes.
@@ -863,19 +948,18 @@ that a standalone stub-generator.
 
 This project is good if you know or want to learn how @code{javac} works.
 
-@subsection Make use of Java-7 MethodHandles
+@subsection Use Java-7 MethodHandles and invokedynamic
 Java 7 supports MethodHandles which are meant to provide better
 performance (ultimately) for dynamic languages.
 See @uref{http://jcp.org/en/jsr/detail?id=292,JSR 292}
-and the @uref{http://openjdk.java.net/projects/mlvm/,Da Vinci Machine Project}. 
-MethodHandles will be used to compile lambdas in Java 8.
-Kawa can already be compiled to use Methodhandles, but only in
-one unimportant way.  There much more to be done.  For example we
+and the @uref{http://openjdk.java.net/projects/mlvm/,Da Vinci Machine Project}.
+Kawa makes limited use of MethodHandles, and no use of invokedynamic.
+There much more to be done.  For example we
 can start by optimizing arithmetic when the types are unknown
 at compile-time.  They could make implementing
 generic functions (multimethods) more efficient.
 At some point we want to compile lambdas in the same way
-as the Java 8 preview does. This can potenitally
+as Java 8 does. This can potentially
 be more efficient than Kawa's current mechanism.
 
 Remi Forax's @uref{https://github.com/forax/vmboiler,vmboiler} is
@@ -892,7 +976,7 @@ Support definition of parameterized classes.
 Better used of parameterized types for sequence class.
 Support wildcards.  
 (It might be better to have wild-carding be associated with
-declarations, as in Scala or @uref{http://openjdk.java.net/jeps/8043488,proposed for Java 10}, rather than uses.)
+declarations, as in Scala or @uref{http://openjdk.java.net/jeps/300,proposed for Java}, rather than uses.)
 See also @uref{http://openjdk.java.net/jeps/8043488}.
 
 @subsection Function types
@@ -1078,39 +1162,6 @@ focus could be GUI programming and perhaps web programming.
 @c is done on demand, for example on printing.
 @c (This is similar to values in the XML data model.)
 
-@subsection Better dynamic reload
-
-@i{(GSoC - a bit much doing all of this, but we can
-find more manageable sub-goals)}
-
-Kawa does a lot of optimizations and inlining.  This conflicts
-with being able to ``reload'' a module into an already-running
-interactive environment.
-
-We could add an option to load a module in ``reloadable'' mode.
-Kawa already patches an old function object (a @code{ModuleMethod})
-so existing references to the function get automatically updated.
-However, there are problems if the ``signature'' of the function
-changes - for example if the return type (declared or inferred)
-becomes more general.  In those cases the best thing is to
-re-compile any code that depends on the modified function.
-
-Reloading a module that defines a class is even trickier,
-at least if there are existing instances that should
-work as the updated class.  We can handle the special case
-where only method bodies change: In reloadable mode, each
-method body is compiled to a separate function, the
-actual body indirects to the function.  We must also
-recognize that we compiling a new version of the same
-class, which requires a textual comparison between the
-old and new versions, or a structural comparison
-between the old class and the new code.
-
-When it comes to top-level variables, an issue is when
-to re-evaluate the initializing expression.  It is reasonable
-to do so if and only if the expression is modified, which
-again requires a textual comparison.
-
 @subsection Decimal arithmetic and repeated decimals
 
 @i{(GSoC. Possibly a bit light for a full Summer project,
@@ -1130,28 +1181,6 @@ Possible ideas: @code{0._81_} or @code{0.#81}.
 If a Scheme number literal is specified as exact and has either
 a decimal point or an exponent (for example @code{#e1.25}), then it should
 read as an exact decimal, not a fraction.
-
-@subsection Types for units
-
-@i{(GSoC)}
-
-Kawa support units (such as @code{cm^2} for square centimeters)
-and @ref{Quantities,quantities} (such as @code{4cm^2}).
-We would like to integrate these into the type system, both
-for performance and compile-time type checking.
-
-For syntax we can use a pseudo-parameterized type @code{quantity}.  For example:
-@example
-(define a1 ::quantity[cm^2] 4cm^2)
-(* 2.0 a1) ;; @result{} 8cm^2
-(+ 2.0 a1) ;; @i{compile-time error}
-@end example
-The run-time type of the variable @code{a1} should be
-a primitive @code{double}, without object allocation.
-Of course when @code{a1} is converted to an object, we
-create a @code{Quantity}, not a @code{Double}.
-We can build on Kawa's existing framework for
-non-standard primitive types such as @code{character} and @code{ulong}.
 
 @subsection Optional strict typing along with an explicit @code{dynamic} type
 
@@ -2114,7 +2143,7 @@ and then that the @code{kawa} command.
 
 @image{images/domterm-pictures-1}
 
-The above image shows two simple example: a filled
+The above image shows two simple examples: a filled
 circle (radius 30 pixels, color magenta), and a non-filled rotated rectangle
 (color maroonm 3-pixel wide strokes).
 
@@ -11748,7 +11777,7 @@ and strings can be viewed a sequence (or vector) of characters.
 Kawa also provides @ref{Uniform vectors,uniform vectors}.
 
 Sequence types differ in their API, but given a sequence type @var{stype}
-you can construct instances of that types using the syntax:
+you can construct instances of that type using the syntax:
 @example
 (@var{stype} @var{v0} @var{v1} .... @var{vn})
 @end example
@@ -15341,7 +15370,7 @@ The value of @code{symbol-read-case} only checked
 when a reader is created, not each time a symbol is read.
 @end defvar
 
-@subsection Miscellaeous
+@subsection Miscellaneous
 
 @anchor{port-char-encoding}
 @defvar port-char-encoding
