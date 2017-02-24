@@ -1,3 +1,9 @@
+2017-02-24  Per Bothner  <per@bothner.com>
+
+	* DomTermBackend.java: Use org.domterm.DomHttpServer, rather
+	than org.domterm.websocket.DomServer, as the latter requires
+	the unmaintained (and slightly large) java_websocket library.
+
 2017-02-07  Per Bothner  <per@bothner.com>
 
 	* DomTermBackend.java (setWindowSize): Fix inconsistent parameter order.

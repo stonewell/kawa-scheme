@@ -53,7 +53,7 @@ FIND = @FIND@
 KAWAJAR = kawa.jar
 KAWALIB = $(datadir)/kawa/lib/$(KAWAJAR)
 # external domterm-jar
-DOMTERM_JAR = @WITH_DOMTERM_ARG@/lib/domterm.jar
+DOMTERM_JAR = @WITH_DOMTERM_ARG@/share/domterm/domterm.jar
 
 META_ScriptEngineFactory = META-INF/services/javax.script.ScriptEngineFactory
 if WITH_JAVAX_SCRIPT
