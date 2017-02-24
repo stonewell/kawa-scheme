@@ -168,8 +168,7 @@ public class ModuleExp extends LambdaExp
         }
     }
 
-    /** @deprecated */
-    public static boolean compilerAvailable = true;
+    @Deprecated public static boolean compilerAvailable = true;
 
     /** 1: have compiler; -1: don't have compiler: 0: need to check. */
     private static int haveCompiler;

@@ -1,3 +1,8 @@
+2017-02-24  Per Bothner  <per@bothner.com>
+
+	Various places change @deprecated comment to @Deprecated annotation.
+	Java-9 warns about the former and prefer the latter.
+
 2017-01-18  Per Bothner  <per@bothner.com>
 
 	* configure.in (AC_INIT): Set version to 2.3.1.

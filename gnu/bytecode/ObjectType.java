@@ -142,7 +142,7 @@ public class ObjectType extends Type
     return Type.objectType.getMethod(name, arg_types);
   }
 
-  /** @deprecated */
+  @Deprecated
   public final int getMethods (Filter filter, int searchSupers,
                                Vector result, String context)
   {

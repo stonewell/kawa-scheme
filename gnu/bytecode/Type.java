@@ -715,19 +715,18 @@ public abstract class Type
     public static final ObjectType toStringType
         = new SpecialObjectType("String", javalangStringType);
 
-  /** @deprecated */
+  @Deprecated
   public static final ClassType pointer_type = javalangObjectType;
-  /** @deprecated */
+  @Deprecated
   public static final ClassType string_type = javalangStringType;
-  /** @deprecated */
+  @Deprecated
   public static final ObjectType tostring_type = toStringType;
-  /** @deprecated */
+  @Deprecated
   public static final ClassType java_lang_Class_type = javalangClassType;
-  /** @deprecated */
+  @Deprecated
   public static final ClassType boolean_ctype = javalangBooleanType;
-  /** @deprecated */
   public static final ClassType throwable_type = javalangThrowableType;
-  /** @deprecated */
+  @Deprecated
   public static final ClassType number_type = javalangNumberType;
   
   protected Class reflectClass;

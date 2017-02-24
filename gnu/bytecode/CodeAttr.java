@@ -1310,13 +1310,11 @@ public class CodeAttr extends Attribute implements AttrContainer
 
   public final void emitAdd(char sig) { emitBinop (96, sig); }
   public final void emitAdd(PrimType type) { emitBinop (96, type); }
-  /** @deprecated */
-  public final void emitAdd () { emitBinop (96); }
+  @Deprecated public final void emitAdd () { emitBinop (96); }
 
   public final void emitSub(char sig) { emitBinop (100, sig); }
   public final void emitSub(PrimType type) { emitBinop (100, type); }
-  /** @deprecated */
-  public final void emitSub () { emitBinop (100); }
+  @Deprecated public final void emitSub () { emitBinop (100); }
 
   public final void emitMul () { emitBinop (104); }
   public final void emitDiv () { emitBinop (108); }
@@ -1720,7 +1718,7 @@ public class CodeAttr extends Attribute implements AttrContainer
   }
 
   // binary comparisons
-  /** @deprecated */
+  @Deprecated
   public final void emitGotoIfEq (Label label, boolean invert)
   {
     emitGotoIfCompare2(label, invert ? 154 : 153);

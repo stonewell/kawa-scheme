@@ -69,7 +69,7 @@ public class Lexer extends Reader
     /** Read a Unicode character (codepoint) by checking for surrogates.
      * @deprecated Use {@link #readCodePoint}.
      */
-    public int readUnicodeChar() throws java.io.IOException {
+    @Deprecated public int readUnicodeChar() throws java.io.IOException {
         return port.readCodePoint();
     }
 
