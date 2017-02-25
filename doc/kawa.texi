@@ -158,7 +158,7 @@ Kawa is also a useful @ref{Framework,framework} for implementing
 other programming languages on the Java platform.
 It has many useful utility classes.
 
-This documents version @value{VERSION}, updated @value{UPDATED}.
+This manual describes version @value{VERSION}, updated @value{UPDATED}.
 See the summary of @ref{News,recent changes}.
 
 @c Old versions of makeinfo don't support: @ifnotdocbook
@@ -167,8 +167,8 @@ version of this document) is @uref{http://www.gnu.org/software/kawa/}.
 
 @c (blank line needed above) @end ifnotdocbook
 
-The @ref{Tutorial,Kawa tutorial} is be useful to get stated,
-though it is woefully incomplete.  It does link to some other more in-depth
+The @ref{Tutorial,Kawa tutorial} is useful to get stated.
+While it is woefully incomplete, it does link to some other more in-depth
 (but not Kawa-specific) Scheme tutorials.
 
 For copyright information on the software and documentation,
@@ -224,7 +224,7 @@ and much faster than other ``scripting languages''.
 This is due to a sophisticated compiler,
 compile-time transformations, type inference, and optional type declarations.
 
-Full convenient and efficient access to the huge set of Java libraries
+Full, convenient, and efficient access to the huge set of Java libraries
 means you can access objects, methods, fields, and classes without run-time overhead.
 
 Start-up times are fast.  You don't have to wait for a lot of
@@ -233,16 +233,16 @@ and compiler are fast.
 
 @ref{Scripts} are simple Kawa source files
 that can run as an application or command.  These are simple to write,
-start start, and run efficiently, since they're automatically
+start, and run efficiently, since they're automatically
 compiled before execution.
 
 Alternatively, you can embed Kawa as a @ref{Evaluating Scheme expressions from Java,
-scripting language for Java applications}
+scripting language for Java applications}.
 
 Deployment is easy and flexible.  You just need the Kawa jar file.
 
 @ref{Macros} and @ref{Named quasi-literals,custom named literals} make it easy
-to extend the syntax, and implement Domain-Specific Languages.
+to extend the syntax and implement Domain-Specific Languages.
 
 Kawa provides the usual @ref{REPL Console,read-eval-print loop}, as well as batch modes.
 
@@ -265,13 +265,13 @@ This can be ``printed'' directly in the Kawa console
 @ref{Building JavaFX applications,JavaFX programming} is simpler.
 
 You can @ref{Building for Android,run Kawa programs on Android},
-and there is special handing to make @ref{Android view construction,constructing View objects} easier.
+and there is special handling to make @ref{Android view construction,constructing View objects} easier.
 
 Flexible shell-like functionality, including @ref{process literals}.
 
 @ref{Server-side scripts,Web page scripts} are easy to write and install
-with @ref{Self-configuring page scripts,self-configuring web servers}
-and optionally using @ref{Servlets,servlets} and @ref{XML literals}.
+with @ref{Self-configuring page scripts,self-configuring web servers},
+optionally using @ref{Servlets,servlets} and @ref{XML literals}.
 
 @ref{Arrays} and sequences have a lot of flexibility:
 Arrays can be multi-dimensional;
@@ -410,13 +410,13 @@ The @code{read-with-shared-structure} is missing, but subsumed by @code{read}.
 Kawa implements all the required and optional features of R7RS,
 with the following exceptions.
 
-The entire "numeric tower" is implemented.
-However, some transcendental function only work on reals.
-Integral function do not necessarily work on
+The entire ``numeric tower" is implemented.
+However, some transcendental functions only work on reals.
+Integral functions do not necessarily work on
 inexact (floating-point) integers.
-(The whole idea of "inexact integer" in R5RS seems rather pointless ...)
+(The whole idea of ``inexact integer" in R5RS seems rather pointless ...)
 
-Also, @code{call-with-current-continuation} is only "upwards" (?).
+Also, @code{call-with-current-continuation} is only ``upwards" (?).
 I.e. once a continuation has been exited, it cannot be invoked.
 These restricted continuations can be used to implement catch/throw
 (such as the examples in R4RS), but not co-routines or backtracking.
@@ -426,7 +426,7 @@ you use the flag @code{--full-tail-calls}.  (Currently, the
 @code{eval} function itself is not fully tail-recursive, in violation
 of R5RS.)   The @code{--full-tail-calls} flag is not on by default,
 partly because it is noticably slower (though I have not measured how
-much), and partly I think it is more useful for Kawa to be compilatible
+much), and partly I think it is more useful for Kawa to be compatible
 with standard Java calling conventions and tools.
 Code compiled with @code{--full-tail-calls} can call code
  compiled without it and vice versa.
@@ -475,12 +475,12 @@ if this is a problem you can use the Savannah bug tracker.
 @subsubheading Older Savannah bug tracker
 
 The older bug tracker for Kawa on Savannah is still available,
-but the we request you use
+but we request you use
 the @uref{https://gitlab.com/kashell/Kawa/issues,GitLab Issue Tracker}
 for new issues.
 
-To report a bug or feature request for Kawa (including Qexo or JEmacs), it is
-best to use the
+To report a bug or feature request for Kawa (including Qexo or JEmacs) through Savannah,
+use the
 @uref{http://savannah.gnu.org/bugs/?func=additem&group=kawa,bug-submission page}.
 You can browse and comment on existing bug reports
 using the @uref{http://savannah.gnu.org/bugs/?group=kawa, Kawa Bugzilla page}.
@@ -501,7 +501,7 @@ send a blank message request to @email{kawa-subscribe@@sourceware.org}.
 To unsubscribe, send a blank message to
 @email{kawa-unsubscribe@@sourceware.org}.
 (If your mail is forwarded and you're not sure which email address you're
-subscribed as send mail to the address following @code{mailto:} in the
+subscribed as, send mail to the address following @code{mailto:} in the
 @code{List-Unsubscribe} line in the headers of the messages you get from
 the list.)
 
@@ -583,6 +583,8 @@ improvements in the Common Lips support, and other changes.
 Andrea Bernardini optimized the implementation of @code{case}.
 
 Julien Rousseau and Marius Kjeldahl contributed to Android support.
+
+Peter Lane for many documentation improvements.
 
 @subsubheading Small fixes and improvements
 
@@ -707,15 +709,15 @@ imported into gnu.kawa.slib. He also wrote some tests we're using.
 @section Technical Support for Kawa
 
 If you have a project that depends on Kawa or one of its component
-packages, you might do well get get paid priority support from
+packages, you might do well to get paid priority support from
 Kawa's author.
 
 The base price is $2400 for one year.  This entitles you to basic
 support by email or phone.  Per @email{per@@bothner.com} will answer techical
 questions about Kawa or its implementation, investigate bug reports, and
 suggest work-arounds.  I may (at my discretion) provide fixes and
-enhancements (patches) for simple problems.  Reponse for support
-requests received using the day (California time) will normally be
+enhancements (patches) for simple problems.  Response for support
+requests received during the day (California time) will normally be
 within a few hours.
 
 All support requests must come through a single designated contact
@@ -756,13 +758,13 @@ that come with using Scheme while still maintaining tight
 integration with a large number of Java libraries.
 
 JEmacs is included in the Kawa distribution.  It is a project to
-re-implement Emacs, allowing a mix of Java. Scheme, and Emacs Lisp.
+re-implement Emacs, allowing a mix of Java, Scheme, and Emacs Lisp.
 It has its own @uref{http://jemacs.sourceforge.net/,home-page}.
 
-BRL ("the Beautiful Report Language") is a database-oriented language
+BRL (``the Beautiful Report Language") is a database-oriented language
 to embed in HTML and other markup.
 @uref{http://brl.sourceforge.net/, BRL} allows you to embed Scheme in
-a an HTML file on a web server.
+an HTML file on a web server.
 
 The @uref{http://schemeway.sourceforge.net,SchemeWay Project} is a set of
 @uref{http://www.eclipse.org,Eclipse} plug-ins for professional Scheme
@@ -796,8 +798,8 @@ MODULE=plugins/SchemeShell
 
 STMicroelectronics (@code{marco.vezzoli@@st.com})
 uses Kawa in a prototypal
-intranet 3tier information retrival system as a communication protocol
-between server and clients and to do server agents programming.
+intranet 3tier information retrieval system as a communication protocol
+between server and clients, and to do server agents programming.
 
 @ignore
 The Nice Programming Language is a new open source language with a
@@ -819,7 +821,7 @@ Kawa (like other Free Software projects) has no lack of tasks and projects
 to work on.  Here are some ideas.
 
 The ones marked @i{(GSoC)} are probably most suitable for a Google
-Summer of Code project, in being reasonable size, self-contained, and not
+Summer of Code project, in being a reasonable size, self-contained, and not
 depending on other tasks.
 
 @subsection Run interactive process in separate Java Virtual Machine:
@@ -859,7 +861,7 @@ work as the updated class.  We can handle the special case
 where only method bodies change: In reloadable mode, each
 method body is compiled to a separate function, the
 actual body indirects to the function.  We must also
-recognize that we compiling a new version of the same
+recognize when compiling a new version of the same
 class, which requires a textual comparison between the
 old and new versions, or a structural comparison
 between the old class and the new code.
@@ -885,7 +887,7 @@ Some Scheme (Kawa) experience would be helpful.
 
 @i{(GSoC)}
 
-Kawa support units (such as @code{cm^2} for square centimeters)
+Kawa supports units (such as @code{cm^2} for square centimeters)
 and @ref{Quantities,quantities} (such as @code{4cm^2}).
 We would like to integrate these into the type system, both
 for performance and compile-time type checking.
@@ -918,33 +920,33 @@ abstracts over class information read by reflection or class reading.
 
 @i{(GSoC - maybe)}
 
-We'd like a command for compiling compile a list of Java and Scheme
-source files thar may have mutual dependencies.  A good way
+We'd like a command for compiling a list of Java and Scheme
+source files that may have mutual dependencies.  A good way
 to do this is to hook into @code{javac}, which is quite extensible
 and pluggable.
 
 One could do something like:
 @enumerate
 @item
-Read the "header" of each Kawa source file, to determine the
+Read the ``header" of each Kawa source file, to determine the
 name of the generated main class.
 @item
 Enter these class names into the javac tables as ``uncompleted''
 classes.
 @item
 Start compiling the Java files.  When this requires the members
-of the of the Kawa classes, switch to the Kawa files.  From javac,
+of the Kawa classes, switch to the Kawa files.  From javac,
 treat these as pre-compiled .class files.  I.e. we treat the Kawa
 compiler as a black box that produces Symbols in the same way as
-reading class files.  At this point we should only need to the
+reading class files.  At this point we should only need the
 initial ``scan'' phase on Kawa.
 @item
 If necessary, finish compiling remaining Kawa files.
 @end enumerate
 
 This approach may not immediately provide as robust mixed-language
-support as ideal, but it is more amenable to incremental improvement
-that a standalone stub-generator.
+support as is ideal, but it is more amenable to incremental improvement
+than a standalone stub-generator.
 
 This project is good if you know or want to learn how @code{javac} works.
 
@@ -954,7 +956,7 @@ performance (ultimately) for dynamic languages.
 See @uref{http://jcp.org/en/jsr/detail?id=292,JSR 292}
 and the @uref{http://openjdk.java.net/projects/mlvm/,Da Vinci Machine Project}.
 Kawa makes limited use of MethodHandles, and no use of invokedynamic.
-There much more to be done.  For example we
+There is more to be done.  For example, we
 can start by optimizing arithmetic when the types are unknown
 at compile-time.  They could make implementing
 generic functions (multimethods) more efficient.
@@ -973,7 +975,7 @@ It could be useful for ideas.
 Kawa has some limited support for parameterized types, but
 it's not used much.  Improve type inferencing.
 Support definition of parameterized classes.
-Better used of parameterized types for sequence class.
+Better use of parameterized types for sequence class.
 Support wildcards.  
 (It might be better to have wild-carding be associated with
 declarations, as in Scala or @uref{http://openjdk.java.net/jeps/300,proposed for Java}, rather than uses.)
@@ -993,8 +995,8 @@ improvements in @ref{task-parameterized-types,Parameterized types}.
 Add support for full continuations, which is the major
 feature missing for Kawa to qualify as a ``true Scheme''.
 One way to implement continuations is to add a add that converts
-the abstract syntax tree to continuation-pass-style, and then
-exhand the existing full-tail-call support to manage a stack.
+the abstract syntax tree to continuation-passing-style, and then
+expand the existing full-tail-call support to manage a stack.
 There are other ways to solve the problem.
 This may benefit from @ref{task-faster-tailcalls,Faster tailcalls}.
 
@@ -1018,7 +1020,7 @@ low-level data-structures, along with lots of profiling and testing.)
 C# recently added @code{asynch} and @code{await} keywords
 for @uref{http://msdn.microsoft.com/en-us/vstudio/gg316360,asynchronous programming}.  Kawa's recently improved support for lazy programming
 seems like a good framework for equivalent functionality:
-Instead of an @code{asynch} method that returns a @code{Task<T>}
+Instead of an @code{asynch} method that returns a @code{Task<T>},
 the Kawa programmer would write a function that returns a @code{lazy[T]}.
 This involves some design work, and modifying the compiler to
 rewrite the function body as needed.
@@ -1031,7 +1033,7 @@ This is related to full continuations, as the re-writing is similar.
 
 Improvements to the read-eval-print console.
 In addition to a traditional Swing console,
-it would be useful to support using a web browser as a a remote terminal,
+it would be useful to support using a web browser as a remote terminal,
 possibly using web-sockets.
 (This allows ``printing'' HTML-expressions, which can be a useful way
 to learn and experiment with web technologies.)
@@ -1059,7 +1061,7 @@ It would be nice to support @uref{http://www.w3.org/TR/xquery-update-10/, XQuery
 @anchor{task-common-lisp}
 @subsection Common Lisp support
 Kawa supports a small subset of the Common Lisp language, but it supports
-a much larger subset of core Common Lisp concepts and data structure, some
+a much larger subset of core Common Lisp concepts and data structures, some
 designed with Common Lisp functionality in mind.  Examples include
 packages, arrays, expanded function declarations, type specifications,
 and format.  A lot could be done to improve the Common Lisp support
@@ -1070,7 +1072,7 @@ better MOP-like introspection, and generic methods a la defmethod
 as opposed to the current make-procedure) all come to mind.
 Being able to run some existing Common Lisp code bases with
 at most modest changes should be the goal.
-One such package to start with might be a
+One such package to start with might be an
 @uref{http://aperiodic.net/phil/archives/Geekery/notes-on-lisp-testing-frameworks.html,existing test framework}, perhaps
 @uref{http://common-lisp.net/project/bese/FiveAM.html, FivaAM}.
 Full Common Lisp compatibility is nice, but let's walk before we can run.
@@ -1148,12 +1150,12 @@ default to using the literal parts of the string.
 @subsection Data binding
 Implement a ``bind'' mechanism similar to that
 of @uref{http://docs.oracle.com/javafx/1.3/tutorials/core/dataBinding/,JavaFX Script}.
-The idea is when you initialize a variable or field,
+The idea is that when you initialize a variable or field,
 instead of initializing it to a fixed value, you bind it to
 an expression depending on other variables.
 We install ``listeners'' on those variables, so when those variables
 change, we update the bound variable.
-This feature is useful in many application, but the initial
+This feature is useful in many applications, but the initial
 focus could be GUI programming and perhaps web programming.
 @c Note in general the result is a ``text'', which is a generalization
 @c of a string: A text is a sequence of characters *or* other values.
@@ -1168,7 +1170,7 @@ focus could be GUI programming and perhaps web programming.
 but can be extended or combined with other projects.)}
 
 Exact decimal arithmetic is a variation of exact rational arithmetic,
-but may more user-friendly.  In particular printing using
+but may be more user-friendly.  In particular, printing using
 decimals is generally nicer than fractions.
 It is also sometimes useful to specify an explicit scale,
 so we can distinguish 0.2 from 0.20.
@@ -1188,7 +1190,7 @@ read as an exact decimal, not a fraction.
 
 Kawa currently implements ``optimistic'' typing: The compiler only
 complains if an expression has no values in common with the target type
-- for example if assigning a @code{string} expression to an @code{integer}
+- for example, if assigning a @code{string} expression to an @code{integer}
 variable.
 It would be interesting to experiment with a
 @code{--strict-typing} option (which would never be the default):
@@ -1197,8 +1199,8 @@ that the expression type be a subtype of the target type.
 For example it would complain if assigning a @code{number} to an @code{integer}
 unless you used an explicit cast.
 
-To make this easier to work with we'd want make use
-of the @ref{dynamic-type,@code{dynamic} type}, similar to what
+To make this easier to work with we'd make use
+of the @ref{dynamic-type,@code{dynamic} type}, similar to
 @uref{https://msdn.microsoft.com/en-us/library/dd264736.aspx,what
 @code{C#} does}: Any expression can be converted
 to or from @code{dynamic} without the compiler complaining.
@@ -1440,7 +1442,7 @@ easiest done with the @code{autogen.sh} script:
 ./autogen.sh
 @end example
 
-Then you must configure the sources.  This you can do
+Then you must configure the sources.  This you do in
 the same way you configure most other GNU software.  Normally
 you can just run the configure script with no arguments:
 
@@ -1588,7 +1590,7 @@ usable or maintained.
 @item @code{--with-javafx}
 @itemx @code{--with-javafx=@var{javafx-jar}}
 @itemx @code{--with-javafx=@var{java-home}}
-Set this flag enable the convenience features
+Set this flag to enable the convenience features
 for @ref{Building JavaFX applications,JavaFX}.
 The JavaFX classes are included in JDK 8 (but not OpenJDK 8),
 and you don't need to specify @code{@var{javafx-jar}} or @code{@var{java-home}}.
@@ -1680,7 +1682,7 @@ as well as enabling support for the
 cd doc && make kawa-manual.epub
 @end example
 
-The build a @code{pdf} file suitable for printing or online viewing do:
+To build a @code{pdf} file suitable for printing or online viewing do:
 @example
 cd doc && make kawa.pdf
 @end example
@@ -1725,10 +1727,10 @@ Deletes all files generated by the build, including the jar.
 
 There is not yet a @code{test} target for running the testsuite.
 
-The are various "properties" that control what @code{ant} does.  You can
-override the on the command line or by editing the
+There are various ``properties" that control what @code{ant} does.  You can
+override these on the command line or by editing the
 @code{build.properties} file in the same directory as @code{build.xml}.
-For example the @code{build.dir} directory tells @code{ant} where to
+For example, the @code{build.dir} property tells @code{ant} where to
 build temporary files, and where to leave the resulting @code{.jar}
 file.  For example, to leave the generated files in the sub-directory
 named @code{BUILD} do:
@@ -1900,9 +1902,9 @@ $ @kbd{java -jar kawa-@var{version-number}.jar}
 
 The prompt string has the form of a Scheme comment,
 to make it easier to cut-and-paste.
-Kawa is expecting you type type in an expression or command,
-which it will evaluate and print out the result.
-For example a quoted string is a simple expression that evaluates to a
+Kawa is expecting you type in an expression or command,
+which it will evaluate, and then print out the result.
+For example, a quoted string is a simple expression that evaluates to a
 string value, which will print as itself, before printing the next prompt:
 
 @example
@@ -1931,8 +1933,8 @@ value @code{7}.)
 The prefix notation may feel a bit weird, but you quickly
 get used to it, and it has some advantages.
 One is consistency: What are special infix operators in most languages
-in most languages are just regular functions in Scheme.
-For example addition is just a regular ordinary function call,
+are just regular functions in Scheme.
+For example, addition is just a regular function call,
 and @code{+} is just a regular function name:
 @example
 (+ 2.5 1.2) @result{} 3.7
@@ -1949,10 +1951,10 @@ The same prefix notation is used for special operations like assignments:
 @section Booleans
 
 Scheme uses the syntax @code{#t} and @code{#f}
-for Boolean true and false value.  For example the
+for Boolean true and false value, respectively.  For example, the
 ``less-than'' function is named @code{<}.
-Its result is true if the first argument is less than the second (or if
-there are more than two arguments: that they are in increasing order):
+Its result is true if the first argument is less than the second (or, if
+there are more than two arguments, that they are in increasing order):
 @example
 (< 3 4) @result{} #t
 (< -3 -4) @result{} #f
@@ -1979,7 +1981,7 @@ counts as ``true'' when evaluating the first expression of an @code{if}:
 @end example
 
 You can use @code{and}, @code{or},
-and not @code{and} to create complex boolean expressions.
+and @code{not} to create complex boolean expressions.
 Of these @code{and} and @code{or}
 are special forms that only evaluate as many of the sub-expressions as needed.
 @example
@@ -1987,7 +1989,7 @@ are special forms that only evaluate as many of the sub-expressions as needed.
     (display "error"))
 @end example
 
-You can use @code{cond} form as an alternative to
+You can use the @code{cond} form as an alternative to
 @code{if}:
 @example
 (cond ((< 3 3) 'greater)
@@ -1995,8 +1997,8 @@ You can use @code{cond} form as an alternative to
       (else ’equal))       @result{} equal
 @end example
 
-The null values (written as @code{#!null} in Kawa or @code{null} in Java)
-is also considered to false.
+The null value (written as @code{#!null} in Kawa or @code{null} in Java)
+is also considered as false.
 
 @node Tutorial - Numbers
 @section Numbers
@@ -2004,7 +2006,7 @@ is also considered to false.
 @subheading Exact integers and fractions
 
 Kawa has the usual syntax for decimal integers.
-Addition, subtraction, and mutliplication
+Addition, subtraction, and multiplication
 are written using the usual @code{+},
 @code{-}, and  @code{*},
 but these are all prefix functions that take a variable number of arguments:
@@ -2027,7 +2029,7 @@ Type in the following (we'll look at the syntax shortly):
 
 (The prompt changes to indicate a continuation line.)
 This binds the name @code{factorial}
-to new function, with formal parameter @code{x}.
+to a new function, with formal parameter @code{x}.
 This new function is immediately compiled to Java bytecodes,
 and later a JIT compiler may compile it to native code.
 
@@ -2041,9 +2043,95 @@ A few tests:
 
 @subheading Floating-point real numbers
 
+Given what was said above about being able to add, subtract and multiply integers,
+the following may be unexpected:
+
+@example
+#|kawa:1|# (/ 2 3)
+2/3
+#|kawa:2|# (+ (/ 1 3) (/ 2 3))
+1
+@end example
+
+In many languages, dividing two integers, as 2/3, would result in 0.  At best,
+the result would be a floating point number, similar to 0.666667.  Instead,
+Kawa has a @emph{rational} number type, which holds the results of divisions
+@emph{exactly}, as a proper fraction.  Hence, adding one third to two thirds
+will always result in exactly one.
+
+Floating-point real numbers are known in Kawa as @emph{inexact} numbers, as
+they cannot be stored exactly.  Consider:
+
+@example
+#|kawa:3|# (exact? 2/3)
+#t
+#|kawa:4|# (exact? 0.33333333)
+#f
+#|kawa:5|# (exact->inexact 2/3)
+0.6666666666666666
+@end example
+
+The first two examples check numbers for being @code{exact?}; there is a
+corresponding @code{inexact?} test.  The last shows how an exact number can be
+converted to an inexact form.
+
+Numbers are converted between exact and inexact versions when required
+within operations or procedures:
+
+@example
+#|kawa:6|# (+ 0.33333333 2/3)
+0.9999999966666666
+#|kawa:7|# (inexact? (+ 0.33333333 2/3))
+#t
+#|kawa:8|# (sin 2/3)
+0.618369803069737
+@end example
+
 @subheading Complex numbers
 
+A @emph{complex} number is made from two parts: a @emph{real} part and an
+@emph{imaginary} part.  They are written @code{2+3i}.  A complex number can
+be manipulated just like other numbers:
+
+@example
+#|kawa:9|# (+ 2+3i 5+2i)
+7+5i
+#|kawa:10|# (* 2+3i 4-3i)
+17+6i
+#|kawa:11|# (integer? (+ 2+3i -3i))
+#t
+@end example
+
+Notice how in the last example the result is an integer, which Kawa recognises.
+
+Kawa also includes @ref{Quaternions,quaternion} numbers.
+
 @subheading Units and dimensions
+
+In many applications, numbers have a @emph{unit}.  For example, 5 might be
+a number of dollar bills, a weight on a scale, or a speed.  Kawa enables us
+to represent numbers as @emph{quantities}: numbers along with their unit.
+For example, with weight, we might measure weight in pounds and ounces,
+where an ounce is 1/16 of a pound.
+
+Using Kawa, we can define units for our weight measurements, and specify the 
+units along with numbers:
+
+@example
+#|kawa:12|# (define-base-unit pound "Weight")
+#|kawa:13|# (define-unit ounce 0.0625pound)
+#|kawa:14|# 3pound
+3.0pound
+#|kawa:15|# (+ 1pound 5ounce)
+1.3125pound
+@end example
+
+In this example we define a base unit, the pound, and a unit based on it, the
+ounce, which is valued at 0.0625 pounds (one sixteenth).  Numbers can then be
+written along with their unit (making them quantities).  Arithmetic is possible 
+with quantities, as shown in the last line, and Kawa will do the smart thing
+when combining units.  In this case, 1 pound and 5 ounces is combined to make
+1.3125 pounds.
 
 @node Tutorial - Functions
 @section Functions
@@ -2058,9 +2146,9 @@ This creates a new function named @var{function-name},
 which takes @var{parameter-names} as parameters.
 When the function is called, the  @var{parameter-names}
 are initialized with the actual arguments. Then @var{body}
-is evaluated, and that becomes the result of the call.
+is evaluated, and its value becomes the result of the call.
 
-For example in the @code{factorial} function we looked at recently,
+For example, in the @code{factorial} function we looked at recently,
 the @var{function-name} is @code{factorial},
 and the @var{parameter-names} is @code{x}:
 
@@ -2073,24 +2161,168 @@ and the @var{parameter-names} is @code{x}:
 @subheading Anonymous functions
 
 @c If you just evaluate a function nameA function is an actual variable you can evaluate xxx
-A @dfn{lambda expression} has the following form:
+
+An @emph{anonymous} function is simply a function which does not have a name.
+We define an anonymous function using a @dfn{lambda expression}, which has
+the following form:
 @example
 (lambda (@var{parameter-names}) @var{body})
 @end example
 
-@subheading Optional and rest parameters
-You can declare a function that takes optional argument,
-or variable number of arguments.
-You can also use keyword parameters.
-@ref{Extended formals,Read more here.}
+The lambda expression has the @var{parameter-names} and @var{body} of a
+function, but it has no name.  What is the point of this?
+
+An important example is creating a function to act on a list, perhaps using
+@code{map}.  The @code{map} function takes two parameters: the first is a
+function which takes a value and returns a value; the second is a list.  Here,
+we want to double every number in the list.
+
+The usual way of doing this is to create a named function, called
+@code{double}, and then apply it to a list:
+
+@example
+#|kawa:1|# (define (double x)
+#|.....2|#    (* 2 x))
+#|kawa:3|# (map double (list 1 2 3 4 5))
+(2 4 6 8 10)
+@end example
+
+Instead, anonymous functions make it easy to create a function to work on a
+list, without having to define it in advance:
+
+@example
+#|kawa:4|# (map (lambda (x) (* 2 x)) (list 1 2 3 4 5))
+(2 4 6 8 10)
+#|kawa:5|# (define y 3)
+#|kawa:6|# (map (lambda (x) (* x y)) (list 1 2 3 4 5))
+(3 6 9 12 15)
+@end example
+
+The first example shows the double example rewritten as an anonymous function.
+The second example shows how the anonymous function can be changed to
+fit the place in which it is used: here, the value of @var{y} determines the
+value by which the list values are multiplied.
+
+Notice that we can name our anonymous functions, in just the same way we
+name any value in Kawa, using @code{define}:
+
+@example
+(define double
+   (lambda (n)
+       (* 2 n)))
+@end example
+
+although more frequently we use the short-hand for defining functions, which we
+have already met:
+
+@example
+(define (double n)
+  (* 2 n))
+@end example
+
+Anonymous functions are ``first-class values'' in Kawa, and can be passed to
+other functions as arguments (like we did with @code{map}), and they can even
+be created and returned by functions as results.
+
+@subheading Optional, rest and keyword parameters
+
+You can declare a function that takes optional arguments,
+or a variable number of arguments.  You can also use keyword parameters.
+
+The following function illustrates the use of @emph{optional} arguments.  The function
+identifies an optional argument @code{z}: if the function is called with 3 arguments, @code{z}
+will be bound to the third value, otherwise it will be @code{#f}.
+
+@example
+(define (addup x y #!optional z)
+  (if z
+    (+ x y z)
+    (+ x y)))
+@end example
+
+The following examples show @code{addup} applied to 2, 3 and invalid arguments.  It is an error to
+pass just one argument or more than three: @code{x} and @code{y} are compulsory, but @code{z} is
+optional.
+
+@example
+#|kawa:12|# (addup 1 2)
+3
+#|kawa:13|# (addup 1 2 3)
+6
+#|kawa:14|# (addup 1)
+/dev/stdin:14:1: call to 'addup' has too few arguments (1; min=2, max=3)
+#|kawa:15|# (addup 1 2 3 4)
+/dev/stdin:15:1: call to 'addup' has too many arguments (4; min=2, max=3)
+@end example
+
+In this example, a better way to define the function would be to include a
+default value for @code{z}, for when its value is not given by the caller.
+This is done as follows, with the same behavior as above:
+
+@example
+(define (addup x y #!optional (z 0))
+  (+ x y z))
+@end example
+
+You can include as many optional parameters as you wish, after the @code{#!optional}.
+
+@emph{Rest} arguments are an alternative way to pass an undefined number of
+arguments to a function.  Here is @code{addup} written with rest arguments,
+notice the variable name after the . (dot):
+
+@example
+(define (addup x y . args)
+  (+ x y (apply + args)))
+@end example
+
+The @code{args} are simply a list of all remaining values.  The following now all work, as the
+function only requires a minimum of two numbers:
+
+@example
+#|kawa:4|# (addup 1 2)
+3
+#|kawa:5|# (addup 1 2 3)
+6
+#|kawa:6|# (addup 1 2 3 4 5 6 7 8)
+36
+@end example
+
+An alternative way to identify the rest args is with @code{#!rest}:
+
+@example
+(define (addup x y #!rest args)
+  (+ x y (apply + args)))
+@end example
+
+Finally, it can be useful to identify parameters by name and, for this, Kawa
+provides @emph{keyword} arguments.  Consider the following function:
+
+@example
+(define (vector-3d #!key x y z)
+  (make-vector x y z))
+#|kawa:40|# (vector-3d #:x 2 #:z 3 #:y 4)
+#(2 4 3)
+@end example
+
+@code{vector-3d} is defined with three keyword arguments: @code{x}, @code{y}, and @code{z}.  When the
+function is called, we identify the name for each value by writing @code{#:} at the start of the name.
+This allows us to write the arguments in any order.  Keyword parameters can also be given default
+values, as with optional parameters.  Keyword parameters with no default value, and no value in the caller,
+will get the value @code{#f}.
+
+In the caller, keywords are symbols with @code{#:} at the front (or @code{:} at
+the end): @ref{Keywords,read more here}.
+
+All these extended types of arguments are available both for ``named'' and for ``anonymous'' functions.
+Optional, rest and keyword arguments can be mixed together, along with the usual arguments.
+For details @ref{Extended formals,read more here.}
 
 @node Tutorial - Variables
 @section Variables
 
 You can declare a variable using a @code{!} form.
 This takes a variable name, and an expression.  It declares a new
-variable with the given name, and gives it the value of the expression:
-expression to the variable.
+variable with the given name, and gives it the value of the expression.
 @example
 #|kawa:1|# (! binary-kilo 1024)
 #|kawa:2|# (! binary-mega (* binary-kilo binary-kilo))
@@ -2117,10 +2349,63 @@ by a nested variable with the same name.
 A @code{!} (or @code{define}) typed into the command-line
 defines a top-level variable.
 
-You can also declare local variables.  NEED EXAMPLES.
+You can also declare local variables, which are variables defined for
+a given block of code.  For example, in the following code @code{let}
+is used to set up a local binding of @code{x} to 3: this does not affect
+the outer binding of @code{x} to 5:
+
+@example
+(define x 5)
+
+(let ((x 3))
+  (display x))  @result{} 3
+
+(display x)     @result{} 5
+@end example
 
 Alternative forms for defining local variables are
 @code{let}, @code{let*}, or @code{letrec}/@code{letrec*}.
+
+The differences are in the order in which definitions are made.
+@code{let} evaluates all its definitions in the environment holding
+at the start of the @code{let} statement.  In the following example,
+the local variables are defined using values from the global variables:
+
+@example
+(define x 5)
+(define y 2)
+
+(let ((x (+ 2 y))  ; uses value of global y, i.e. 2
+      (y (+ 3 x))) ; uses value of global x, i.e. 5
+  (display (list x y)))  @result {} (4 8)
+@end example
+
+@code{let*} instead evaluates each definition in the environment holding
+at the start of the @code{let*} statement, along with all @emph{previous}
+local definitions. In the following example, @code{y} is now defined with the
+@emph{local} value of @code{x}:
+
+@example
+(define x 5)
+(define y 2)
+
+(let* ((x (+ 2 y))  ; uses value of global y, i.e. 2
+       (y (+ 3 x))) ; uses value of local x, i.e. 4
+  (display (list x y)))  @result {} (4 7)
+@end example
+
+@code{letrec/letrec*} are similar, but allow the definition of recursive
+functions:
+
+@example
+(letrec ((is-even? (lambda (n) (and (not (= 1 n))
+                                    (or (zero? n)
+                                        (is-odd? (- n 1))))))
+         (is-odd? (lambda (n) (and (not (zero? n))
+                                   (or (= 1 n)
+                                       (is-even? (- n 1)))))))
+  (display (is-even? 11)))   @result {} #f
+@end example
 
 @node Tutorial - Pictures
 @section Composable pictures
@@ -2133,25 +2418,25 @@ You first need to import the library:
 @end example
 The easiest way to use and learn the library
 is with a suitable REPL, where you can type
-expression that evaluate to pictures values,
-and then view the resulting pictures directly on the console.
+expressions that evaluate to pictures values,
+and view the resulting pictures directly on the console.
 The easiest way is to start the @code{kawa} command with the @code{-w}
-flag.  Alternative you can use
+flag.  Alternatively, you can use
 a @ref{Using DomTerm,DomTerm}-based terminal emulator
 such as @code{qtdomterm} (which is shown in the image below),
-and then that the @code{kawa} command.
+and then the @code{kawa} command.
 
 @image{images/domterm-pictures-1}
 
 The above image shows two simple examples: a filled
 circle (radius 30 pixels, color magenta), and a non-filled rotated rectangle
-(color maroonm 3-pixel wide strokes).
+(color maroon 3-pixel wide strokes).
 
 See @ref{Composable pictures} for details and more examples.
 
 @subheading Shapes and coordinates
 
-A @dfn{shape} a geometrical figure consisting of
+A @dfn{shape} is a geometrical figure consisting of
 one or more curves and lines.  One kind of shape is a circle;
 you can create one with the @code{circle} procedure,
 specifying the radius in ``pixels''.
@@ -2175,24 +2460,24 @@ For example:
 @example
 &P[30 20]
 @end example
-is a a point 30 pixels right and 20 pixels down from the origin point.
+is a point 30 pixels right and 20 pixels down from the origin point.
 To create a circle centered on that point do @code{(center 30 &P[30 20])}.
 
 The expression @code{(rectangle &P[10 20] &P[50 40])} creates
 a rectangle whose upper left corner is (10,20) and whose
-lower right corner (50,40).
+lower right corner is (50,40).
 
-A @dfn{dimension} is a pair of a width and height,
+A @dfn{dimension} is a pair, a width and height,
 and is written:
 @example
 &D[@var{width} @var{height}]
 @end example
 In addition to being used for sizes,
-a deminsion is also used for relative offsets.
-For example the previous rectangle could also
+a dimension is also used for relative offsets.
+For example, the previous rectangle could also
 be written  @code{(rectangle &P[10 20] &D[40 20])}.
 
-You can you @code{line} to create a line.
+You can use @code{line} to create a line.
 More generally, if you specify @var{n} points you get a
 @dfn{polyline} of @var{n-1} line segments:
 @example
@@ -2205,7 +2490,7 @@ The same line using dimensions for relative offsets:
 @end example
 
 A @dfn{closed shape} is one whose end point is the same as its start point.
-The @code{polygon} functions creates one using straight line segments
+The @code{polygon} function creates one using straight line segments
 @example
 #|kawa:5|# @kbd{(polygon &P[10 20] &P[50 60] &P[90 0])}
 @image{images/polygon-1}
@@ -2220,19 +2505,19 @@ to produce a new picture:
 #|kawa:6|# @kbd{(with-paint 'red (circle 32))}
 @end example
 
-The first arguement can be either one of the standard CSS/HTML5 color
+The first argument can be either one of the standard CSS/HTML5 color
 names (such as @code{'red} or @code{'medium-slate-blue}),
-or an integer represent an a sRBG color, usually written
+or an integer representing an sRGB color, usually written
 as a hex literal in the form @code{#xRRGGBB}:
 @example
 #|kawa:7|# @kbd{(with-paint #x0808FF (circle 32))}
 @end example
 
-The name @code{with-paint} refers to that the first argument
+The name @code{with-paint} is because the first argument
 can be not just a color, but a general ``paint'', such as
 a gradient or a background image.  However, we won't go into that.
 
-If the spape is closed, you can ``fill'' its inside:
+If the shape is closed, you can ``fill'' its inside:
 @example
 (fill (circle 32))
 @end example
@@ -2253,7 +2538,7 @@ An image is a picture represented as a rectangular grid of color values.
 It may be a photograph from a camera, or be created by a painting
 program like Photoshop or gimp.
 You can use @code{image-read} to read an image from a file,
-typically a @code{png} or @code{.jpg}file.
+typically a @code{.png} or @code{.jpg} file.
 
 @example
 #|kawa:10|# @kbd{(define img1 (image-read "http://pics.bothner.com/2013/Cats/06t.jpg"))}
@@ -2277,7 +2562,7 @@ typically a @code{png} or @code{.jpg}file.
 
 A @dfn{sequence} is a generalized array or list:
 Zero or more values treated as a compound value.
-Sequences have certain common operations including indexing and iteration.
+Sequences have certain common operations, including indexing and iteration.
 (@i{Technical note:} Sequences generally implement the @code{java.util.List}
 interface, but Kawa will also treat strings and native
 Java arrays as sequences.)
@@ -2343,6 +2628,8 @@ See @ref{Vectors} for details and operations.
 
 @subheading Java arrays and primitive vectors
 
+See @ref{Array operations, Using Java arrays} for examples.
+
 @subheading Indexing of general sequences
 
 You can use function-call notation to index a generalized sequence,
@@ -2351,8 +2638,8 @@ native Java array, or string:
 @example
 ((list 'A 'B 'C 'D) 2)  @result{} 'C
 ("abcdef" 3)  @result{}  @result{}
-(! iarr (float[] 1.5 3 4.5])  ;; native Java array
-(iarr 2) @result{} 4.5
+(! farr (float[] 1.5 3 4.5))  ;; native Java array
+(farr 2) @result{} 4.5
 @end example
 
 Note that indexing a list with an index @var{i} will be slow, since it
@@ -2371,7 +2658,7 @@ This is the sequence of integers starting with the integer @var{start}
 For example @code{[3 <: 7]} is the sequence @code{[3 4 5 6]}.
 
 The @samp{<:} is a keyword; the @code{<} is a mnemonic for the
-the set of integers that are @code{<} the end value 6.
+set of integers that are @code{<} the end value 6.
 You can also use @code{<=:} if you want to include the upper bound:
 @code{[4 <=: 8]} is @code{[4 5 6 7 8]}.
 
@@ -2425,12 +2712,12 @@ An @dfn{object} is a value that has the following features:
 @itemize
 @item
 class - each object is an instance of a specific class,
-which is part of the class hierarchy, which is an important
-part of the type system;
+making it part of the class hierarchy, which is an important
+aspect of the type system;
 @item
 properties - various fields and methods, depending on the class;
 @item
-identity - it is distict from all other objects,
+identity - it is distinct from all other objects,
 even if all the properties are the same.
 @end itemize
 
@@ -2475,7 +2762,7 @@ See @ref{Allocating objects} for details.
 
 @subheading Calling instance methods
 
-Given an object @var{obj} of a class that has a method @var{meth}
+Given an object @var{obj} of a class that has a method @var{meth},
 you can call it with argumens @var{v1} ... @var{v2} using @ref{Colon notation}:
 @example
 (@var{obj}:@var{meth} @var{v1} ... @var{v2})
@@ -2485,20 +2772,20 @@ For example:
 (button1:paintImmediately 10 10 30 20)
 @end example
 
-If you prefer you can use the @code{invoke} procedure,
+If you prefer, you can use the @code{invoke} procedure,
 normally with a quoted method name:
 @example
 (invoke button1 'paintImmediately 10 10 30 20)
 @end example
 You need to use @code{invoke} (rather than colon notation)
-if @var{obj} is a @code{Class} or a type expression or its class
+if @var{obj} is a @code{Class} or a type expression, or its class
 implements @code{gnu.mapping.HasNamedParts}.
 
 See @ref{Method operations} for details.
 
 @subheading Accessing properties
 
-If @var{obj} has field or property named @var{fld} you can also use colon
+If @var{obj} has a field or property named @var{fld} you can also use colon
 notation:
 @example
 @var{obj}:@var{fld}
@@ -2507,7 +2794,7 @@ notation:
 You use the same syntax whether @var{fld} is an actual field in the
 object, or a @dfn{property} (in the Java Beans sense).  The
 latter is implemented using a getter/setter pair:
-Methods named @code{get@var{F}} and  @code{get@var{F}}, respectively.
+Methods named @code{get@var{F}} and  @code{set@var{F}}, respectively.
 For example:
 @example
 button1:tool-tip-text
@@ -2559,9 +2846,9 @@ You can also use the @code{static-field} and @code{invoke-static} procedures.
 
 A @dfn{type} is a named value for a set
 of objects with related properties.
-For example @code{vector} is the type for standard Scheme vectors.
+For example, @code{vector} is the type for standard Scheme vectors.
 You can use a type to specify that a variable can only have
-values of the specified types:
+values of the specified type:
 
 @example
 #|kawa:5|# @kbd{(define v ::vector #(3 4 5))}
@@ -2580,8 +2867,8 @@ Caused by: java.lang.ClassCastException: gnu.math.IntNum cannot be cast to gnu.l
 	... 6 more
 @end example
 
-Using a type specification catches errors, and matches your programs
-more readable.  It also can allow the Kawa compiler to generate code
+Using a type specification catches errors, and makes your programs
+more readable.  It can also allow the Kawa compiler to generate code
 that runs faster.
 
 You can use a type to check that a value is an instance of the type,
@@ -2597,17 +2884,39 @@ As a convenience, you can use a type-name followed by a ``@code{?}'':
 (@var{type}? @var{val}) == (instance? @var{val} @var{type})
 @end example
 
-You can ``call'' a type as if it were a function.
-That constructs a new instance of the type.
+You can ``call'' a type as if it were a function,
+which constructs a new instance of the type.
+The following example shows how to construct a normal Scheme vector,
+and a Java array of ints:
+
 @example
-((EXAMPLE NEEDED))
+|kawa:1|# (vector )
+#()
+#|kawa:2|# (instance? (vector ) vector)
+#t
+#|kawa:3|# (define x (int[] 1 2 3))
+#|kawa:4|# x
+[1 2 3]
+#|kawa:5|# (instance? x int[])
+#t
 @end example
 
 A fully-qualified Java class is a type name.
 So are the names of Java primitive types.
-So are Java array types. ((EXAMPLES NEEDED))
+So are Java array types, as shown above.
 
-A type is true run-time value:
+e.g. a JFrame is constructed by using its class name as a function:
+
+@example
+#|kawa:6|# (javax.swing.JFrame )
+javax.swing.JFrame[frame0,0,25,0x0,invalid,hidden,layout=java.awt.BorderLayout,
+title=,resizable,normal,defaultCloseOperation=HIDE_ON_CLOSE,
+rootPane=javax.swing.JRootPane[,0,0,0x0,invalid,
+layout=javax.swing.JRootPane$RootLayout,alignmentX=0.0,alignmentY=0.0,border=,
+flags=16777673,maximumSize=,minimumSize=,preferredSize=],rootPaneCheckingEnabled=true]
+@end example
+
+A type is a true run-time value:
 
 @example
 (define mytypes (list vector list string))
@@ -2631,7 +2940,7 @@ from R6RS and R7RS.  See @ref{Exceptions} for details.
 
 You can also work with native Java exceptions at a low level.
 
-The @code{primitive-throw} procedure throw a @code{Throwable} value.
+The @code{primitive-throw} procedure throws a @code{Throwable} value.
 It is implemented just like Java's @code{throw}.
 @example
 (primitive-throw (java.lang.IndexOutOfBoundsException "bad index"))
@@ -2669,7 +2978,7 @@ See @ref{Defining new classes} for the gory details; no tutorial yet.
 @subheading Import
 
 The @code{import} form can be used to avoid having to write
-fully-qualified class name.  For example:
+fully-qualified class names.  For example:
 @example
 (import (class java.util
                Map
@@ -2681,19 +2990,19 @@ one with renaming:
 and @code{HMap} is an alias for @code{java.util.HashMap}.
 
 The @code{class} keyword is needed because the @code{import}
-for is also used for Kawa's module system.
+form is also used for Kawa's module system.
 See @ref{importing-class-names} and @ref{Importing} for details.
 
 @subheading Synchronized blocks
 
-You can a use @code{synchronized} expression:
+You can use a @code{synchronized} expression:
 
 @example
 (synchronized obj form1 ... formn)
 @end example
 This waits until it can get an exclusive lock on @var{obj}
 and then evaluates @var{form1} through @var{formn}.
-Unlke Java, this is an expression, and return the value of @var{formn}.
+Unlike Java, this is an expression and returns the value of @var{formn}.
 
 @subheading Annotations
 
@@ -2708,8 +3017,8 @@ or declaring new annotation classes.
 @chapter How to start up and run Kawa
 
 The easiest way to start up Kawa is to run the @samp{kawa} program.
-This finds your java interpreter, and sets up @samp{CLASSPATH} correctly.
-If you have installed Kawa such @code{$PREFIX/bin} is in your @code{$PATH},
+This finds your Java interpreter, and sets up @samp{CLASSPATH} correctly.
+If you have installed Kawa such that @code{$PREFIX/bin} is in your @code{$PATH},
 just do:
 @example
 kawa
@@ -2720,7 +3029,7 @@ On some platforms, @samp{kawa} is a program that uses the GNU
 
 To run Kawa manually, you must start a Java Virtual Machine.
 How you do this depends on the Java implementation.
-For Sun's JDK s and some other implementations, you must have the
+For Oracle's JDK, and some other implementations, you must have the
 Java evaluator (usually named @code{java}) in your @code{PATH}.
 You must also make sure that the @code{kawa/repl.class} file,
 the rest of the Kawa packages, and the standard Java
@@ -2796,7 +3105,7 @@ file that is read and evaluated, or a compiled class.
 In the former case, the whole file is read and compiled as a module
 before being loaded (unlike the @code{-f} flag which reads and
 evaluates the file command by command.)
-If the argument is the fully-qualited name of a class,
+If the argument is the fully-qualified name of a class,
 then the class is loaded, an instance allocated,
 and its @code{run} method invoked.  If the class was compiled from
 a Kawa Scheme module, then invoking @code{run} has the
@@ -2879,12 +3188,12 @@ kawa --browse-manual="firefox %U"
 @item --server @var{portnum}
 Start a server listening from connections on the specified @var{portnum}.
 Each connection using the Telnet protocol causes a new read-eval-print-loop
-to started.  This option allows you to connect using any
+to start.  This option allows you to connect using any
 Telnet client program to a remote "Kawa server".
 @item --with-arg-count=@var{argc}
 This option is used before an action option (such as @code{-f}).
 The @var{argc} arguments after the action become the
-value of the @code{command-line-arguments} duing the action.
+value of the @code{command-line-arguments} during the action.
 When the action is finished, command-line-processing resumes
 after skipping the @var{argc} arguments.
 
@@ -2907,7 +3216,7 @@ set to @code{["x" "y"]}
 @example
 $ kawa --with-arg-count=4 -f a.scm -f b.scm x y
 @end example
-In this case @code{b.scm} is evaluated with @code{command-line-arguments}
+In this case @code{a.scm} is evaluated with @code{command-line-arguments}
 set to @code{["-f" "b.scm" "x" "y"]}. Since command-line processing
 skips the arguments specified by @code{--with-arg-count=4},
 in this case @code{b.scm} is not evaluated.
@@ -2962,7 +3271,7 @@ for more information.
 @item --pedantic
 Try to follow the approprate language specification to the letter,
 even in corner cases, and even if it means giving up some
-Kawa convenience features.  This flags so far only affects
+Kawa convenience features.  This flag so far only affects
 the XQuery parser, but that will hopefully change.
 @end table
 
@@ -3191,7 +3500,7 @@ Similar to the previous option, but prints out the @code{Expression} after
 various transformations and optimizations have been done, and just before
 code generation.
 @item --debug-syntax-pattern-match
-Prints logging importation to standard error when a @code{syntax-rules}
+Prints logging information to standard error when a @code{syntax-rules}
 or @code{syntax-case} pattern matches.
 @item --debug-error-prints-stack-trace
 Prints a stack trace with any error found during compilation.
@@ -3244,7 +3553,7 @@ Equivalent to @code{-J-D@var{variable-name}=@var{variable-value}}.
 @node Scripts
 @section Running Command Scripts
 
-If you write a Kawa application it is convenient to be able
+If you write a Kawa application, it is convenient to be able
 to execute it directly (from the command line or clicking an icon, say),
 without have to explicitly run @code{kawa} or @code{java}.
 On Unix-like systems the easiest way to do this is to
@@ -3260,10 +3569,10 @@ process (interpret) the script.
 
 (Windows has @dfn{batch files}, which are similar.)
 
-This is convention works well for script languages that use @samp{#}
+This convention works well for script languages that use @samp{#}
 to indicate the start of a comment, since the interpreter will
 automatically ignore the line specifying the interpreter filename.
-Scheme, however uses @samp{#} as a multi-purpose prefix,
+Scheme, however, uses @samp{#} as a multi-purpose prefix,
 and Kawa specifically uses @samp{#!} as a prefix for
 various @ref{Special named constants} such as @code{#!optional}.
 
@@ -3276,7 +3585,7 @@ Here is an example:
 @end example
 
 If you copy this text to a file named @code{/home/me/bin/scm-echo},
-set the execute permission, and make sure it in your @code{PATH},
+set the execute permission, and make sure it is in your @code{PATH},
 then you can execute it just by naming it on command line:
 @example
 $ chmod +x /home/me/bin/scm-echo
@@ -3327,7 +3636,7 @@ is a line starting with a @code{#}, so it is treated as a comment by the shell.
 You can then invoke @code{kawa} (or @code{java} directly)
 as you prefer, setting up class-path and jars as needed,
 and passing whatever arguments you want.
-(The shell replaces the @code{"$0"} by the name the script, and
+(The shell replaces the @code{"$0"} by the name of the script, and
 replaces the @code{"$@@"} by the remaining arguments passed to the script.)
 You need to make sure the shell finishes before it reaches
 the end of the block comment or the Scheme code, which would confuse it.
@@ -3336,7 +3645,7 @@ itself by @var{kawa};
 an alternative is to use the shell @code{exit} command.
 
 If you copy the above file to @code{/tmp/sch-echo} and make
-that file executate, you can run it directly:
+that file executable, you can run it directly:
 @example
 $ /tmp/scm-echo "a b" "c d"
 The command-line is: "/tmp/scm-echo" "a b c d".
@@ -3360,7 +3669,7 @@ It has 26 characters.
 
 An argument consisting of just a @code{\} (backslash)
 causes Kawa to read the @emph{second} line looking for
-options.  (Quotes and backslahes work like in the shell.)
+options.  (Quotes and backslashes work like in the shell.)
 These replace the backslash in the command line.
 
 This is a less verbose mechanism, but it requires an
@@ -3372,7 +3681,7 @@ absolute path to @code{kawa}, due to shell limitations.
 (format #t "The command-line is:~@{ ~w~@}.~%" (command-line))
 @end example
 
-In this case the efective command line received by Kawa will
+In this case the effective command line received by Kawa will
 be @code{--scheme}, @code{--full-tailcalls}, followed by the
 script filename, followed by other arguments specified when
 running the script.
@@ -3393,7 +3702,7 @@ exec kawa --commonlisp out:base=16 --script2 "$0" "$@@"
 (setq xx 20) (display xx) (newline)
 @end example
 
-This slightly more compact than using block-comments as shown earlier,
+This is slightly more compact than using block-comments as shown earlier,
 but it has the disadvantage that you can't explicitly
 use @code{kawa} or @code{java} to run the script unless you
 make sure to pass it the @code{--script2} option.
@@ -3410,7 +3719,7 @@ exec kawa -Dkawa.command.name="$0" foo "$@@"
 @end example
 
 Using the @code{kawa} front-end is a convenience, since it automatically
-sets up the paths for the Kawa classes, and (if enabled) if
+sets up the paths for the Kawa classes, and (if enabled) it
 provides readline support for the default input port.
 
 Setting the @code{kawa.command.name} property to @code{"$0"}
@@ -3438,9 +3747,9 @@ being actively developed.)
 The read-eval-print-loop (REPL) console is a convenient way to
 do simple programming, test out things, and experiment.
 As the name implies, the REPL repeatedly (in a loop)
-prints out a prompt, reads an input command, evaluates it, the prints the result.
+prints out a prompt, reads an input command, evaluates it, then prints the result.
 
-The REPL is started out when you invoke the @code{kawa} command
+The REPL is started when you invoke the @code{kawa} command
 with no arguments.  For example:
 
 @example
@@ -3480,11 +3789,11 @@ On rare occason you may need to specify the @code{--console} flag.
 
 When typing a command in a console it is helpful to go back
 and correct mistakes, repeat and edit previous commands, and so on.
-How well you can do this varies at lot depending on which tools you use.
+How well you can do this varies a lot depending on which tools you use.
 Kawa delegates input editing to an external tool.
-The recommended and default input-editing tool
-the the @uref{https://github.com/jline/jline3,JLine3 library},
-which is bundled with Kawa binary distribution.
+The recommended and default input-editing tool is
+the @uref{https://github.com/jline/jline3,JLine3 library},
+which is bundled with the Kawa binary distribution.
 
 JLine3 handles the normal editing comands, including arrow keys
 for moving around in the input, and deleting with backspace or delete.
@@ -3494,7 +3803,7 @@ which are based on Emacs key-bindings.
 You can use the up-arrow to move to previous commands in the
 input history and down-arrow to go forwards.
 Control-R (``reverse search'' searches backwards in the history
-for a previous comands that contains the search string.
+for a previous command that contains the search string.
 
 Multi-line commands are treated as a unit by JLine3:
 If Kawa determines that input is ``incomplete'' it will
@@ -3503,11 +3812,11 @@ lines in the same command.
 You can explicitly create a multi-line command with Escape-Space.
 An entry in the command history may be multiple lines.
 
-Tab-completion works for Kawa-Scheme identiers: If you type TAB
+Tab-completion works for Kawa-Scheme identifiers: If you type TAB
 after an identifier, Kawa will present a list of possible completions.
 
 There are multiple alternatives to using JLine3.
-You can use GNU readline (if you configued with @code{--enable-kawa-frontend}).
+You can use GNU readline (if you configured with @code{--enable-kawa-frontend}).
 You can use a front-end program like @code{rlfe} or @code{fep}.
 You can use Emacs shell or scheme mode.
 You can also use DomTerm in line-edit mode, where the browser handles
@@ -3659,7 +3968,7 @@ In this example we change the background color to light gray:
 @section Exiting Kawa
 Kawa normally keeps running as long as there is an active
 read-eval-print loop still awaiting input or there is an unfinished
-other computation (such as requested by a @samp{-e} of @samp{-f} option).
+other computation (such as requested by a @samp{-e} or @samp{-f} option).
 
 To close a read-eval-print-loop, you can type the special
 literal @code{#!eof} at top level.  This is recognized as end-of-file.
@@ -3695,15 +4004,11 @@ of the archive file to the @code{load} procedure.
 Currently, the archive is a "zip" archive and has extension ".zip";
 a future release will probably use "Java Archive" (jar) files.
 The advantage of compiling to an archive is that it is simple
-and transparent.  A minor disadvantage is that it causes the
-Java "verifier" to be run when functions are loaded from it,
-which takes a little extra time.
+and transparent.
 
 Alternatively, you can compile a Scheme source file to a
 collection of @samp{.class} files.
 You then use the standard Java class loading mechanism to load the code.
-The Java "verifier" does not need to get run, which makes
-loading a little faster.
 The compiled class files do have to be installed somewhere
 in the @code{CLASSPATH}.
 
@@ -3756,14 +4061,14 @@ The resulting class inherits from @code{java.applet.Applet},
 and can be used as an applet.  @xref{Applet compilation}.
 @item --servlet
 The resulting class implements @code{javax.servlet.http.HttpServlet},
-and can be used as an servlet in a servlet container like Tomcat.
+and can be used as a servlet in a servlet container like Tomcat.
 @end table
 
 When you actually want to load the classes, the @var{outdirectory}
 must be in your @samp{CLASSPATH}.
 You can use the @code{require} syntax or the @code{load} function to load the code,
 by specifying the top-level class, either as a file name
-(relative to @var{outdirectory}) or a class name.
+(relative to @var{outdirectory}) or as a class name.
 E.g. if you did:
 @example
 kawa -d /usr/local/share/java -P my.lib. -T foo -C foosrc.scm
@@ -3778,7 +4083,7 @@ or:
 @end example
 Using @code{require} is preferred as it imports the definitions
 from @code{my.lib.foo} into the compile-time environment,
-while @code{load} only imports the definitions into run-time environment.
+while @code{load} only imports the definitions into the run-time environment.
 
 If you are compiling a Scheme source file (say @samp{foosrc.scm})
 that uses macros defined in some other file (say @samp{macs.scm}),
@@ -3819,7 +4124,7 @@ loading @samp{foo.scm}, except you will get the faster byte-compiled versions.
 @cindex kawac
 Many Java projects use @uref{http://ant.apache.org, Ant}
 for building Java projects.  Kawa includes a @code{<kawac>}
-Ant ask that simplifies compiling Kawa sources files to classes.
+Ant task that simplifies compiling Kawa source files to classes.
 See the @code{build.xml} in the Kawa source distribution for examples.
 See the @uref{ant-kawac.html, @code{kawac} task documentation} for details.
 
@@ -3839,7 +4144,7 @@ compile this Scheme program to a standalone application:
 @enumerate
 @item
 Compile
-in the regular way decribed in the previous section, but add the 
+in the regular way described in the previous section, but add the
 @code{--main} option.
 @example
 kawa --main -C MyProgram.scm
@@ -3865,8 +4170,8 @@ This way you can compile multiple Scheme programs at once, and
 still control which one(s) will compile to standalone application(s).
 @end enumerate
 
-Both method will create a @code{MyProgram.class} which you can either 
-@code{load} (as decribed in the previous section), or invoke as an application:
+Both methods will create a @code{MyProgram.class} which you can either
+@code{load} (as described in the previous section), or invoke as an application:
 @example
 java MyProgram [@var{args}]
 @end example
@@ -4660,7 +4965,7 @@ not a macro use (see below).  The value of the variable reference is the
 value stored in the location to which the variable is bound.  It is a
 syntax violation to reference an unbound variable.
 
-The following example examples assumes the base library has been
+The following example assumes the base library has been
 imported:
 
 @example
@@ -4717,7 +5022,7 @@ the Scheme reader to the internal representation @code{($lookup$ @var{owner} (qu
 
 Evaluation proceeds as follows.
 First @var{property-owner-expression} is
-evaluated to yield a @var{owner} object.
+evaluated to yield an @var{owner} object.
 Evaluating the @var{property-name} yields a @var{part} name,
 which is a simple symbol: Either
 the literal @var{identifier}, or the result of evaluating the
@@ -4760,7 +5065,7 @@ then the named part is modified as appropriate.
 
 @subsection Specific cases
 
-Some of these are depecated;
+Some of these are deprecated;
 more compact and readable forms are usually preferred.
 
 @subsubsection Invoking methods
@@ -4857,11 +5162,11 @@ first requires the Kawa processor to analyze
 the whole @meta{program-unit} to determine which names are defined by the
 definitions, and then evaluates each @meta{statement} in order in the context
 of the defined names.  The value of an @meta{expression} is normally
-discared, but may be printed out instead, depending on the evaluating context.
+discarded, but may be printed out instead, depending on the evaluating context.
 
 The read-eval-print-loop (REPL) reads one or more lines until it gets
 a valid @meta{program-unit}, and evaluates it as above, except that the
-values of expression are printed to the console (as if using the
+values of expressions are printed to the console (as if using the
 @code{display} function).  Then the REPL reads and evaluates
 another @meta{program-unit}, and so on. A definition in an earlier
 @meta{program-unit} is remembered and is visible in a later @meta{program-unit}
@@ -4892,8 +5197,8 @@ A @meta{program-unit} may contain @meta{library-definitions}.
 In addition, any @meta{statements} in @meta{program-unit} comprise
 an @dfn{implicit library}, in that it can be given a name, and referenced
 from other libraries.
-Certain names defined in the @meta{program-unit} an be exported,
-and then they can be imported by other libraries
+Certain names defined in the @meta{program-unit} can be exported,
+and then they can be imported by other libraries.
 For more information @pxref{Module classes}.
 
 It is recommended but not required that:
@@ -4908,10 +5213,10 @@ match the name of the source file.  For example:
 @end example
 should be in a file named @code{foo/bar.scm}.
 @item
-If there is a @meta{library-definition} there should
-should be no extra @meta{statements} - i.e no implicit library definition.
+If there is a @meta{library-definition}, there should
+be no extra @meta{statements} - i.e no implicit library definition.
 (It is disallowed to @code{export} any definitions from the
-implicit library if there are also a  @meta{library-definition}.)
+implicit library if there is also a @meta{library-definition}.)
 @end itemize
 Following these recommendations makes it easier to locate
 and organize libraries.
@@ -5021,7 +5326,7 @@ feature which gives access to command line arguments. Note that an error
 will be signaled at macro-expansion time if this feature is not present.
 
 You can use @code{java-6}, @code{java-7}, @code{java-8},
-or @code{java-9} to check check if the underlying Java
+or @code{java-9} to check if the underlying Java
 is a specific version or newer.
 For example the name @code{java-7} matches for
 either Java 7, Java 8, or newer, as
@@ -5041,7 +5346,7 @@ treats as true.
 This not a complete list - for example @code{class-exists:@var{ClassName}}
 feature identifiers are not included.
 It is an error to modify this list.
-Here is example of what @code{features} might return:
+Here is an example of what @code{features} might return:
 @example
 (features)  @result{}
 (complex exact-complex full-unicode java-7 java-6 kawa
@@ -5163,8 +5468,8 @@ is a function that maps syntax forms to syntax forms,
 usually an instance of @code{syntax-rules}.
 If the @code{define-syntax} occurs at the top level, then the top-level
 syntactic environment is extended by binding the @var{keyword}
-to to the specified transformer, but existing references to any top-level
-binding for @var{keyword} remain unchanged.  Otherwise, it is a
+to the specified transformer, but existing references to any top-level
+binding for @var{keyword} remain unchanged.  Otherwise, it is an
 @dfn{internal syntax definition}, and is local to the @var{body}
 in which it is defined.
 
@@ -5183,7 +5488,7 @@ in which it is defined.
 Macros can expand into definitions in any context that permits them.
 However, it is an error for a definition to define an identifier
 whose binding has to be known in order to determine the meaning
-of the definitoion itself, or of any predecing definiton that belongs
+of the definition itself, or of any preceding definition that belongs
 to the same group of internal definitions.
 @end deffn
 
@@ -5314,7 +5619,7 @@ An identifier appearing within a pattern can be an underscore
 or the @meta{ellipsis}. All other identifiers appearing within a
 pattern are pattern variables.
 
-The outer @var{syntax-list} of the pattern in a @meta{yntax-rule}
+The outer @var{syntax-list} of the pattern in a @meta{syntax-rule}
 must start with an identifier. It is not involved in the matching and
 is considered neither a pattern variable nor a literal identifier.
 
@@ -5428,7 +5733,7 @@ free identifiers.
 
 A template of the
 form @stxlit{(}@meta{ellipsis} @meta{template}@stxlit{)} is
-identical to @meta{template} , except that @meta{ellipses}
+identical to @meta{template}, except that @meta{ellipses}
 within the template have no special meaning.
 That is, any @meta{ellipses} contained within
 @meta{template} are treated as ordinary identifiers. In particular,
@@ -6107,7 +6412,7 @@ in this manner for whether it is true or false.
 In addition the null value @code{#!null} (in Java written as @code{null})
 is also considered false.  Also, if you for some strange reason create a
 fresh @code{java.lang.Boolean} object whose @code{booleanValue()}
-return @code{false}, that is also considered false.
+returns @code{false}, that is also considered false.
 
 @emph{Note:} Unlike some other dialects of Lisp, Scheme distinguishes
 @code{#f} and the empty list from each other and from the symbol
@@ -6129,7 +6434,7 @@ The type of boolean values.
 As a type conversion, a true value is converted to @code{#t},
 while a false value is converted to @code{#f}.
 Represented as a primitive Java @code{boolean}
-or @code{kava.lang.Boolean} when converted to an object.
+or @code{kawa.lang.Boolean} when converted to an object.
 @end deffn
 
 @deffn Procedure boolean? obj
@@ -6143,7 +6448,7 @@ is either @code{#t} or @code{#f}, and returns @code{#f} otherwise.
 @end deffn
 
 @deffn Procedure not obj
-The not procedure returns @code{#t} if @var{obj} is false,
+The @code{not} procedure returns @code{#t} if @var{obj} is false,
 and returns @code{#f} otherwise.
 
 @example
@@ -6251,7 +6556,7 @@ itself is.  For a @meta{cond clause} of the form:
 
 @noindent
 the (implied) call to the procedure that results from the evaluation of
-@meta{expression} is in a tail context if the @func{cond} form itself
+@meta{expression} is in tail context if the @func{cond} form itself
 is.
 @end deffn
 
@@ -6555,7 +6860,7 @@ If the order matters, you should use @code{letrec*}.
 
 If it is not possible to evaluate each @var{init} without assigning
 or referring to the value of the corresponding @var{variable}
-or the variables that follow it , it is an error.
+or the variables that follow it, it is an error.
 @example
 (letrec ((even?
           (lambda (n)
@@ -6776,14 +7081,14 @@ the function in an application.
 Type membership tests, such as the @code{instance?} operation,
 generally do not force their values.
 
-The exact behavior for when implicit forcing is a work-in-progress:
+The exact behavior for when implicit forcing happens is a work-in-progress:
 There are certainly places where implicit forcing doesn't happen while
 it should; there are also likely to be places where implicit forcing
 happens while it is undesirable.
 
 Most Scheme implementations are such that a forced promise behaves differently
 from its forced value, but some Scheme implementions are such that there is no
-means by which a promise can be operationally distingished
+means by which a promise can be operationally distinguished
 from its forced value.
 Kawa is a hybrid: Kawa tries to minimize the difference between
 a forced promise and its forced value, and may freely optimize
@@ -6833,7 +7138,7 @@ For example: @code{(delay exp)} is equivalent to:
 The following four procedures require that their first arguments
 be blank promises.  When the procedure returns, the promise is
 no longer blank, and cannot be changed.  This is because a
-promise is conceptually placeholder for a single ``not-yet-known'' value;
+promise is conceptually a placeholder for a single ``not-yet-known'' value;
 it is not a location that can be assigned multiple times.
 The former enables clean and safe (``declarative") use of multiple threads;
 the latter is much trickier.
@@ -6892,9 +7197,9 @@ in context requiring a @code{promise[integer]}, that conversion is basically
 a no-op (though the compiler may wrap the @code{integer}
 in a pre-forced promise).
 
-If a fully-lazy language there would be no distinction, or
+In a fully-lazy language there would be no distinction, or
 at least the promise type would be the default.  However, Kawa is
-mostly-eager language, so the eager type is the default.
+a mostly-eager language, so the eager type is the default.
 This makes efficient code-generation easier: If an expression
 has an eager type, then the compiler can generate code that
 works on its values directly, without having to check for laziness.
@@ -6915,8 +7220,8 @@ implements @code{gnu.mapping.Lazy}.)
 @end deffn
 
 @deffn Procedure force thread
-The standard @code{force} function has generalized to also work
-on threads.  If waits for the thread's @var{expression} to finish
+The standard @code{force} function is generalized to also work
+on threads.  It waits for the thread's @var{expression} to finish
 executing, and returns the result.
 @end deffn
 
@@ -6952,7 +7257,7 @@ you back to the top level prompt.
 When not running interactively, an unhandled exception
 will normally cause Kawa to be exited.
 
-In the Scheme exception model (as of R6RS and R7RS)
+In the Scheme exception model (as of R6RS and R7RS),
 exception handlers are one-argument procedures that determine
 the action the program takes when an exceptional situation is signaled.
 The system implicitly maintains a
@@ -7392,7 +7697,7 @@ continuation that, when passed some values, calls the
 @end example
 
 @PerformanceNote{} If either the @var{producer} or @var{consumer} is a
-fixed-arity lambda expression it is inlined.
+fixed-arity lambda expression, it is inlined.
 @end deffn
 
 @deffn Syntax define-values @stxref{formals} @stxref{expression}
@@ -7414,7 +7719,7 @@ a @code{lambda} expression are matched to the arguments in a procedure call.
 @end deffn
 
 @deffn Syntax let-values @stxlit{((}@stxref{formals} @stxref{expression}@stxlit{)} ...@stxlit{)} @stxref{body}
-Each @var{formals} should be a formal arguments list as for a @code{lambda}.
+Each @var{formals} should be a formal arguments list, as for a @code{lambda}.
 
 The @var{expression}s are evaluated in the current environment, the
 variables of the @var{formals} are bound to fresh locations, the return
@@ -7496,7 +7801,7 @@ A symbol is immutable (unmodifiable) and normally viewed as atomic.
 Symbols are useful for many applications; for instance, they may be
 used the way enumerated values are used in other languages.
 
-In addition to the simple symbols or standard Scheme, Kawa
+In addition to the simple symbols of standard Scheme, Kawa
 also has compound (two-part) symbols.
 
 @menu
@@ -7579,7 +7884,7 @@ Compound symbols are usually written using the infix colon operator:
 @example
 @var{prefix}@stxlit{:}@var{local-name}
 @end example
-where @var{prefix} is is namespace alias bound
+where @var{prefix} is a namespace alias bound
 to some (lexically-known) namespace URI.
 
 Compound symbols are used for namespace-aware XML processing.
@@ -7587,14 +7892,14 @@ Compound symbols are used for namespace-aware XML processing.
 @subsection Namespace objects
 
 A @dfn{namespace} is a mapping from strings to symbols.
-The string is the local-name of resulting symbol.
+The string is the local-name of the resulting symbol.
 A namespace is similar to a Common Lisp @dfn{package}.
 
 A namespace has a namespace-uri, which a string;
-it recommended that it have the form of an absolute URI.
+it is recommended that it have the form of an absolute URI.
 A namespace may optionally have a prefix, which is a string used
 when printing out symbols belonging to the namespace.
-(If you want for ``equivalent symbols'' (i.e. those that have the same
+(If you want ``equivalent symbols'' (i.e. those that have the same
 local-name and same uri) to be the identical symbol object, then
 you should use namespaces whose prefix is the empty string.)
 
@@ -7602,7 +7907,7 @@ you should use namespaces whose prefix is the empty string.)
 Return a namespace with the given @var{name} and @var{prefix}.
 If no such namespace exists, create it.
 The @var{namespace-name} is commonly a URI, especially when working with XML,
-in which case it is called a @var{namespace-URI}.  However, any non-empty
+in which case it is called a @var{namespace-uri}.  However, any non-empty
 string is allowed.
 The prefix can be a string or a simple symbol.
 (If a symbol is used, then the symbol's local-name is used.)
@@ -7638,7 +7943,7 @@ and have an empty namespace uri, but that is not recommended.)
 @deffn Constructor symbol local-name namespace-spec
 @deffnx Constructor symbol local-name [uri [prefix]]
 Construct a symbol with the given @var{local-name} and namespace.
-If @var{namespace-spec} is a namespace object, then find (or if needed
+If @var{namespace-spec} is a namespace object, then find (or, if needed,
 construct) a symbol with the given @var{local-name} belonging to the
 namespace.  Multiple calls to @code{symbol} with the same namespace
 and @var{local-name} will yield the same symbol object.
@@ -7747,7 +8052,7 @@ Same as @code{define-namespace}, but the prefix @var{name}
 is local to the current module.
 @end deffn
 
-For example you might have a set of a geometry definitions
+For example, you might have a set of a geometry definitions
 defined under the namespace-uri @code{"http://foo.org/lib/geometry"}:
 
 @example
@@ -7817,7 +8122,7 @@ equal, even if they have different prefix.  You can think of
 the prefix as annotation used when printing, but not
 otherwise part of the ``meaning'' of a compound symbol.
 They are the same object if they also have the same prefix.
-This is an important different from traditional Lisp/Scheme symbols,
+This is an important difference from traditional Lisp/Scheme symbols,
 but it is how XML QNames work.
 @example
 #|kawa:7|# (instance? xb na:em)
@@ -7971,7 +8276,7 @@ The system uses certain internal properties:
 @code{'name} refers to the name used when a procedure is printed;
 @code{'emacs-interactive} is used to implement Emacs @code{interactive}
 specification;
-@code{'setter} is used to associate a @code{setter} prcedure.
+@code{'setter} is used to associate a @code{setter} procedure.
 
 @deffn Procedure procedure-property proc key [default]
 Get the property value corresponding to the given @var{key}.
@@ -8160,8 +8465,8 @@ function's return type.  It is syntactic sugar for
 @code{(as <TYPE> (begin BODY))}.
 
 You can set the @ref{Procedure properties,properties}
-of the resulting procedure using an @var{option-pair}.  For example
-to the set the @code{setter} property of a procedure
+of the resulting procedure using an @var{option-pair}.  For example,
+to set the @code{setter} property of a procedure
 to @code{my-set-car} do the following:
 @example
 (define my-car
@@ -8303,7 +8608,7 @@ This is a sub-type of @code{rational}.
 Kawa allows working with expressions of ``primitive'' types,
 which are supported by the JVM without object allocation,
 and using builtin arithmetic.  Using these types may be much
-faster, assuming if compiler is able to infer
+faster, assuming the compiler is able to infer
 that the variable or expression has primitive type.
 
 @deffn Type long
@@ -8335,7 +8640,7 @@ object, the classes @code{gnu.math.ULong}, @code{gnu.math.UInt},
 
 @deffn Type double
 @deffnx Type float
-These are fixed-size primitive in-exact floating-point real types,
+These are fixed-size primitive inexact floating-point real types,
 using the standard 64-bit or 32-bit IEEE representation.
 If a value of one of these types needs to be converted to an
 object, the standard classes @code{java.lang.Double},
@@ -8432,8 +8737,8 @@ as exact integers within the implementation:
 When combining two values of different numeric types,
 the values are converted to the first line in the following
 that subsumes (follows) both types.  The computation is done using
-values of that types, and so is the result.
-For example adding a @code{long} and @code{float} converts the former
+values of that type, and so is the result.
+For example adding a @code{long} and a @code{float} converts the former
 to the latter, yielding a @code{float}.
 
 Note that @code{short}, @code{byte}, @code{ushort}, @code{ubyte}
@@ -8983,7 +9288,7 @@ This is equivalent to @code{(* @var{z} @var{z})}.
 @end deffn
 
 @deffn Procedure sqrt @var{z}
-Return the principal square root of @var{z}.  For rational @var{z}, the
+Returns the principal square root of @var{z}.  For rational @var{z}, the
 result has either positive real part, or zero real part and
 non--negative imaginary part.  The value of @code{(sqrt @var{z})} could be
 expressed as:
@@ -9007,10 +9312,10 @@ then we use the real-number version of @code{sqrt}:
 @example
 (sqrt (->double -5))        @result{}  NaN
 @end example
-That is we get different result for @code{java.lang.Double}
+That is, we get different a result for @code{java.lang.Double}
 and @code{gnu.math.DFloNum}, even for arguments that are numerically equal
 in the sense of @code{=}.
-This so that the compiler can use the @code{java.lang.Math.sqrt}
+This is so that the compiler can use the @code{java.lang.Math.sqrt}
 method without object allocation when the argument is a @code{double}
 (and because we want @code{double} and @code{java.lang.Double} to behave
 consistently).
@@ -9076,7 +9381,7 @@ expressed by the given @var{string}. It is an error if @var{radix} is not
 an exact integer in the range 2 to 26, inclusive.
 
 If supplied, @var{radix} is a default radix that will be overridden
- if an explicit radix prefix is present in string (e.g.
+ if an explicit radix prefix is present in the string (e.g.
 @code{"#o177"}). If @var{radix} is not supplied, then the default @var{radix}
 is 10. If @var{string} is not a syntactically valid notation for a
 number, or would result in a number that the implementation cannot represent,
@@ -9650,7 +9955,7 @@ is transformed into:
 @deffn Procedure quantity? object
 True iff @var{object} is a quantity.  Note that all numbers are
 quantities, but not the other way round.
-Currently, there are no quantities that re not numbers.
+Currently, there are no quantities that are not numbers.
 To distinguish a plain unit-less number from a quantity,
 you can use @code{complex?}.
 @end deffn
@@ -9720,8 +10025,8 @@ A full circle is 360 degrees.
 @end deffn
 
 @deffn Unit grad
-A unit for angles specified in gradiants.
-A full circle is 400 gradiants.
+A unit for angles specified in gradians.
+A full circle is 400 gradians.
 @end deffn
 
 @node Logical Number Operations
@@ -9763,7 +10068,7 @@ is equivaent to the following computation:
 @end deffn
 
 @deffn Procedure bitwise-bit-count i
-If ei is non-negative, returns the number of 1 bits in the twos complement
+If i is non-negative, returns the number of 1 bits in the twos complement
 representation of i. Otherwise it returns the result of the following
 computation:
 @example
@@ -9790,7 +10095,7 @@ This is the number of bits needed to represent @var{i} in an unsigned field.
 
 @deffn Procedure bitwise-first-bit-set i
 Returns the index of the least significant 1 bit in the twos complement
-representation of i. If ei is 0, then - 1 is returned.
+representation of i. If i is 0, then - 1 is returned.
 @example
 (bitwise-first-bit-set 0) @result{} -1
 (bitwise-first-bit-set 1) @result{} 0
@@ -9811,7 +10116,7 @@ otherwise. This is the result of the following computation:
 @end deffn
 
 @deffn Procedure bitwise-copy-bit i bitno replacement-bit
-Return the result of replacing the @var{bitno}'th bit of @var{i}
+Returns the result of replacing the @var{bitno}'th bit of @var{i}
 by @var{replacement-bit}, where @var{bitno} must be non-negative,
 and @var{replacement-bit} must be either 0 or 1.
 This is the result of the following computation:
@@ -9824,7 +10129,7 @@ This is the result of the following computation:
 @end deffn
 
 @deffn Procedure bitwise-bit-field n start end
-Return the integer formed from the (unsigned) bit-field
+Returns the integer formed from the (unsigned) bit-field
 starting at @var{start} and ending just before @var{end}.
 Same as:
 @example
@@ -10061,13 +10366,13 @@ one is floating-point and the other is rational),
 then single-instruction @code{double} or @code{float}
 instructions are emitted.
 
-A binary operation involing an infinite-precision @code{integer}
+A binary operation involving an infinite-precision @code{integer}
 and a fixed-size @code{int} or @code{long} is normally
 evaluated by expanding the latter to @code{integer}
-and using @code{integer} arithmetic.  An exception is the
-@code{integer} argument is an integer literal whose
-value fits in a @code{int} or @code{long} - in that case
-the operation is done using  @code{int} or @code{long}
+and using @code{integer} arithmetic.  An exception is
+an integer literal whose
+value fits in an @code{int} or @code{long} - in that case
+the operation is done using @code{int} or @code{long}
 arithmetic.
 
 In general, integer literals have amorphous type.
@@ -10078,7 +10383,7 @@ When used to infer the type of a variable, they have @code{integer} type:
 @end example
 However, a literal whose value fits in the @code{int} or @code{long} range
 is implicitly viewed @code{int} or @code{long} in certain contexts,
-primarily method overload resolution and binary arithmethic
+primarily method overload resolution and binary arithmetic
 (as mentioned above).
 
 The comparison functions @code{<}, @code{<=}, @code{=},
@@ -10386,7 +10691,7 @@ otherwise the contents of the @var{string} are unspecified.
 Return the number of characters in the given @var{string} as an exact
 integer object.
 
-@PerformanceNote{} Calling @code{string-length} may take time propertial
+@PerformanceNote{} Calling @code{string-length} may take time proportional
 to the length of the @var{string},
 because of the need to scan for surrogate pairs.
 @end deffn
@@ -10396,7 +10701,7 @@ because of the need to scan for surrogate pairs.
 procedure returns character @var{k} of @var{string} using zero--origin
 indexing.
 
-@PerformanceNote{} Calling @code{string-ref} may take time propertial
+@PerformanceNote{} Calling @code{string-ref} may take time proportional
 to @var{k} because of the need to check for surrogate pairs.
 An alternative is to use @code{string-cursor-ref}.
 If iterating through a string, use @code{string-for-each}.
@@ -10414,11 +10719,11 @@ s1 @result{} "?**"
 (string-set! (symbol->string 'immutable) 0 #\?) @result{} @emph{error}
 @end example
 
-@PerformanceNote{} Calling @code{string-set!} may take time propertial
+@PerformanceNote{} Calling @code{string-set!} may take time proportional
 to the length of the string:  First it must scan for the right position,
 like @code{string-ref} does. Then if the new character requires
-using a surrogate pair (and the old one doesn't) then we have to make rom
-in the string, possible re-allocating a new @code{char} array.
+using a surrogate pair (and the old one doesn't) then we have to make room
+in the string, possibly re-allocating a new @code{char} array.
 Alternatively, if the old character requires using a surrogate pair
 (and the new one doesn't) then following characters need to be moved.
 
@@ -10454,12 +10759,12 @@ by appending each @var{value} (in order) to the end of @var{string}.
 Each @code{value} should be a character or a string.
 
 @PerformanceNote{} The compiler converts a call with multiple @var{value}s
-to a multiple @code{string-append!} calls.
+to multiple @code{string-append!} calls.
 If a @var{value} is known to be a @code{character}, then
 no boxing (object-allocation) is needed.
 
-The following example show to to efficiently process a string
-using @code{string-for-each} and incrementally ``building'' a result string
+The following example shows how to efficiently process a string
+using @code{string-for-each} and incrementally ``build'' a result string
 using @code{string-append!}.
 
 @example
@@ -10516,7 +10821,7 @@ Analogous to @func{for-each}.
 
 @PerformanceNote{} The compiler generates efficient code
 for @code{string-for-each}.
-If @var{proc} is a lambda expression, it is inlined,
+If @var{proc} is a lambda expression, it is inlined.
 @end deffn
 
 @deffn Procedure string-map @var{proc} @vari{string} @varii{string} @dots{}
@@ -10552,11 +10857,11 @@ which @var{proc} is applied to the elements of the strings is unspecified.
 @PerformanceNote{} The @code{string-map} procedure has not been
 optimized (mainly because it is not very useful):
 The characters are boxed, and the @var{proc} is not inlined even if
-a lambda expression.
+it is a lambda expression.
 @end deffn
 
 @deffn Procedure string-copy @var{string} [@var{start} [@var{end}]]
-Returns a newly allocated copy of the the part of the given @var{string}
+Returns a newly allocated copy of the part of the given @var{string}
 between @var{start} and @var{end}.
 @end deffn
 
@@ -10569,7 +10874,7 @@ insertion; the case where @var{src-start} is equal to @var{src-end}
 corresponds to deletion.
 The order in which characters are copied
 is unspecified, except that if the source and destination overlap,
-copying takes places as if the source is first copied into a
+copying takes place as if the source is first copied into a
 temporary string and then into the destination.
 (This is achieved without allocating storage by making sure to copy in
 the correct direction in such circumstances.)
@@ -10580,7 +10885,7 @@ Copies the characters of the string @var{from} that are between
 @var{start} end @var{end} into the string @var{to},
 starting at index @var{at}.  The order in which characters are copied
 is unspecified, except that if the source and destination overlap,
-copying takes places as if the source is first copied into a
+copying takes place as if the source is first copied into a
 temporary string and then into the destination.
 (This is achieved without allocating storage by making sure to copy in
 the correct direction in such circumstances.)
@@ -10647,7 +10952,7 @@ considered to be lexicographically less than the longer string.
 @deffnx Procedure string-ci>=? @vari{string} @varii{string} @variii{string} @dots{}
 These procedures are similar to @func{string=?}, etc.,
 but behave as if they applied @code{string-foldcase} to their arguments
-before invokng the corresponding procedures without @code{-ci}.
+before invoking the corresponding procedures without @code{-ci}.
 
 @example
 (string-ci<? "z" "Z")                   @result{} #f
@@ -10787,8 +11092,8 @@ the @code{string-length} procedure counts @code{character}s.  Thus:
 
 Counting @code{char}s is a constant-time operation (since it
 is stored in the data structure), while counting @code{character}s
-takes time propertional to the length of the string,
-since it has subtract one for each surrogate pair.
+takes time proportional to the length of the string,
+since it has to subtract one for each surrogate pair.
 
 Similarly we can can index the string in 3 ways:
 
@@ -13285,7 +13590,7 @@ Creates a new array @var{narray} of the given @var{shape},
 such that @code{(array->vector @var{array})} and
 @code{(array->vector @var{narray})} are equivalent.
 I.e. the @var{i}'th element in row-major-order of @var{narray}
-is the the @var{i}'th element in row-major-order of @var{array}.
+is the @var{i}'th element in row-major-order of @var{array}.
 Hence @code{(array-size @var{narray})} (as specied from the @var{shape})
 must be equal to @code{(array-size @var{array})}.
 The resulting @var{narray} is a view such that modifying @var{array}
@@ -14229,9 +14534,9 @@ can be used to override the default format for how values are
 printed on the standard output.  This format is used for values printed
 by the read-eval-print interactive interface.  It is also used to
 control how values are printed when Kawa evaluates a file named on the
-command line (using the @code{-f} flag or a just a script name).
-(It also effects applications compiled with the @code{--main} flag.)
-It currently effects how values are printed by a @code{load},
+command line (using the @code{-f} flag or just a script name).
+(It also affects applications compiled with the @code{--main} flag.)
+It currently affects how values are printed by a @code{load},
 though that may change.
 
 The default format depends on the current programming language.
@@ -14272,7 +14577,7 @@ written like @samp{#\A}.
 Values are printed in XML, XHTML, or HTML format.
 This is discussed in more detail in @ref{Formatting XML}.
 @item cgi
-The output should be a follow the CGI standards.  I.e. assume that this
+The output should follow the CGI standards.  I.e. assume that this
 script is invoked by a web server as a CGI script/program, and that the
 output should start with some response header,
 followed by the actual response data.
@@ -14614,7 +14919,7 @@ named @code{HELP} in the @code{dir} directory.
 @anchor{Blobs}
 @subsection Blobs
 
-The contents of a file is in general a sequence of uninterpreted bytes.
+The content of a file is, in general, a sequence of uninterpreted bytes.
 Often these bytes represent text in a locale-dependent encoding,
 but we don't always know this. Sometimes they're images, or videos,
 or word-processor documents.  A filename extension or a ``magic number''
@@ -14650,7 +14955,7 @@ to replace the contents of a file:
 
 The new contents must be blob-compatible - i.e. a bytevector or a string.
 
-If you dislike using @code{<} as an output operator, you can instead using the @code{&>@lbracechar{}..@rbracechar{}} operation, which evaluates to function whose single argument is the new value:
+If you dislike using @code{<} as an output operator, you can instead using the @code{&>@lbracechar{}..@rbracechar{}} operation, which evaluates to a function whose single argument is the new value:
 @example
 (&>@lbracechar{}README@rbracechar{} "Check example.com\n")
 @end example
@@ -14795,7 +15100,7 @@ or @code{java.io.OutputStream}.)
 @deffnx Procedure current-error-port
 Returns the current default input port, output port, or
 error port (an output port), respectively.
-(The error port is the the port to which errors and warnings should be sent
+(The error port is the port to which errors and warnings should be sent
 - the @dfn{standard error} in Unix and C terminology.)
 These procedures are @ref{Parameter objects,parameter objects},
 which can be overridden with @ref{parameterize-syntax,@code{parameterize}}.
@@ -16030,16 +16335,16 @@ type values using @code{java.lang.Class} objects, but unfortunately
 that does not work very well.  One reason is that we need
 to be able to refer to types and classes that do not exist yet,
 because we are in the processing of compiling them.  Another
-reason is that we want to be able to distinuish between different
+reason is that we want to be able to distinguish between different
 types that are implemented using the same Java class.
 
 Various Kawa constructs require or allow a type to be specified.
-Those specifications consist of @dfn{type expressions}, which
+Those specifications consist of @dfn{type expressions}, and a type expression
 is evaluated to yield a type value.  The current Kawa compiler
 is rather simple-minded, and in many places only allows simple
 types that the compiler can evaluate at compile-time.
 More specifically, it only allows simple @dfn{type names}
-that map to primitive Java types or java classes.
+that map to primitive Java types or Java classes.
 
 @display
 @stxdef{type} @stxref{expression}
@@ -16143,7 +16448,7 @@ invoking the @code{toString} method on the value to be coerced.
 Thus it "works" for all objects.
 It also works for @code{#!null}.
 
-When Scheme code invokes a Java methods any parameter
+When Scheme code invokes a Java method, any parameter
 whose type is @code{java.lang.String} is converted
 as if it was declared as a @code{String}.
 @end defvar
@@ -16154,8 +16459,8 @@ This type can take a type parameter (sic):
 @example
 (define-constant client ::parameter[Client] (make-parameter #!null))
 @end example
-This lets Kawa know that reading the parameter (as in @code{(client)}
-return a value of the specified type (in this case @code{Client}).
+This lets Kawa know that reading the parameter (as in @code{(client)})
+returns a value of the specified type (in this case @code{Client}).
 @end defvar
 
 More will be added later.
@@ -16246,7 +16551,7 @@ Returns @code{#t} iff @var{value} is an instance of type @var{type}.
 @deffn Procedure as type value
 Converts or coerces @var{value} to a value of type @var{type}.
 Throws an exception if that cannot be done.
-Not supported for @var{type} to be a primitive type such as @code{<int>}.
+Not supported for @var{type} to be a primitive type such as @code{int}.
 @end deffn
 
 @node Objects Classes and Modules, XML tools, Types, Top
@@ -17439,7 +17744,7 @@ Kawa also searches for a matching source file, described below.
 It uses the implicit source name (formed by concatenating the
 library-name parts, separated by @code{"/"}), as well as
 any @meta{explicit-source-name}.  The source file is parsed as
-a @stxref{program-unit}.  It is an error the @meta{program-unit}
+a @stxref{program-unit}.  It is an error if the @meta{program-unit}
 does not declare a library (explicit or implicit) with the
 matching name.
 
@@ -18903,7 +19208,7 @@ Evaluate it in the @var{env} environment, and return the result.
 For the @code{Environment} in most cases you could use
 @samp{Environment.current()}.  Before you start, you
 need to initialize the global environment,
-which you can with
+which you can do with
 @example
 Environment.setCurrent(new Scheme().getEnvironment());
 @end example
@@ -18920,7 +19225,7 @@ System.out.println(x);
 
 Kawa also supports the standard
 @uref{http://docs.oracle.com/javase/8/docs/api/javax/script/package-summary.html,@code{javax.script}} API.
-The main advantage of this API is if you want your users to be able to chose
+The main advantage of this API is if you want your users to be able to choose
 between multiple scripting languages.  That way you can support Kawa
 without Kawa-specific programming.
 
@@ -18967,12 +19272,12 @@ You don't have to worry about quoting special characters.
 Missing or incorrect quoting is a common source of bugs
 and security problems on systems that work directly with text, such as PHP.
 @item
-Some errors such as mismatched element tags are automatically avoided.
+Some errors, such as mismatched element tags, are automatically avoided.
 @item
-The generated generated XML can be validated as it is generated,
+The generated XML can be validated as it is generated,
 or even using compile-time type-checking.  (Kawa doesn't yet do either.)
 @item
-In application that also reads XML,
+In an application that also reads XML,
 you can treat XML that is read in and XML that is generated using
 the same functions.
 @end itemize
@@ -20546,7 +20851,7 @@ If the @var{center} is not specified, it defaults to @code{&P[0 0]}.
 @subsection Colors and paints
 
 A @dfn{paint} is a color pattern used to fill part of the canvas.
-A paint can be a color, a texture (a replicated pattern), or a gradiant
+A paint can be a color, a texture (a replicated pattern), or a gradient
 (a color that gradually fades to some other color).
 
 A @dfn{color} is defined by red, green, and blue values.
@@ -21704,7 +22009,7 @@ or equivalently:
 @end example
 
 @anchor{substitution-tokenization}
-Things gets more interesting when considering the interaction between
+Things get more interesting when considering the interaction between
 substitution and tokenization. This is not simple string
 interpolation. For example, if an interpolated value contains a quote
 character, we want to treat it as a literal quote, rather than a token
@@ -22445,7 +22750,7 @@ OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
 WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 @end example
 
-In the past the Kawa license was a "modified GNU GPL (General
+In the past the Kawa license was a ``modified GNU GPL (General
 Public License)".
 If you find any files that contain the old license or otherwise seem
 to contradict the new license, please report that as a bug.
@@ -22453,7 +22758,7 @@ to contradict the new license, please report that as a bug.
 Some of the JEmacs files are based on Emacs and have a GPL license,
 which is incompatible with non-Free (proprietary) products.  For that
 reason, the @code{gnu.jemacs.*} packages are not included any more in
-the standard @code{.jar} or by default when building from source, to
+the standard @code{.jar}, or by default when building from source, to
 avoid surprises.
 To build JEmacs you have to specify the @code{configure}
 flag @code{--enable-jemacs} or the @code{ant} flag
@@ -22509,7 +22814,7 @@ into another language, under the above conditions for modified versions,
 except that this permission notice may be stated in a translation approved
 by the author.
 
-Parts of this manual is copied from the @uref{http://www.r6rs.org/,R6RS}
+Parts of this manual are copied from the @uref{http://www.r6rs.org/,R6RS}
 or @uref{http://www.r7rs.org/,R7RS}, which both state:
 @quotation
 We intend this report to belong to the entire Scheme community, and so
@@ -22580,7 +22885,7 @@ This manual has quoted from SRFI-69 (Basic hash tables),
 which is Copyright (C) Panu Kalliokoski (2005). All Rights Reserved.
 
 The following notice applies to SRFI-69,
-which are quoted in this manual, but it does not apply to the manual as a whole:
+which is quoted in this manual, but it does not apply to the manual as a whole:
 
 @quotation
 Permission is hereby granted, free of charge, to any person obtaining
@@ -22603,11 +22908,11 @@ OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
 WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 @end quotation
 
-This manual has made use text and examples from Dorai Sitaram's
+This manual has made use of text and examples from Dorai Sitaram's
 @code{pregexp} implementation.  But not where the latter talks about
-@code{pregexp-xxx} functions the manual also also talks about
-the @code{regex-xxx} functions (which are are similar but use a
-slight different regular expression syntax).
+@code{pregexp-xxx} functions; the manual also talks about
+the @code{regex-xxx} functions (which are similar but use a
+slightly different regular expression syntax).
 The @code{pregexp} distribution has the following @code{COPYING} file:
 @quotation
 Copyright (c) 1999-2005, Dorai Sitaram.
