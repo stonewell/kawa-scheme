@@ -1,3 +1,13 @@
+2017-02-24  Peter Lane <peter@peterlane.info>
+
+	* kawa.texi: Many changes.
+
+2017-02-22  Per Bothner  <per@bothner.com>
+
+	* kawa.texi: Adjustments to the "projects" page.
+
+	* Makefile.am (kawa-manual.epub): Don't depend on Makefile.
+
 2017-02-11  Per Bothner  <per@bothner.com>
 
 	* news.texi: Mention new bitvector and c16vector types.

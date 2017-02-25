@@ -4,7 +4,7 @@ import org.domterm.*;
 import org.domterm.util.DomTermErrorWriter;
 import org.domterm.util.StyleSheets;
 import org.domterm.util.Utf8WriterOutputStream;
-import org.domterm.websocket.DomServer;
+import org.domterm.DomHttpServer;
 import gnu.expr.*;
 import gnu.mapping.*;
 import gnu.kawa.io.*;
@@ -17,20 +17,29 @@ import java.net.URI;
 
 public class DomTermBackend extends Backend implements Runnable {
 
-    public static class WebSocketServer extends org.domterm.websocket.DomServer {
-        private static WebSocketServer instance = null;
+    Thread thread;
 
-        public WebSocketServer(int port) throws UnknownHostException {
+    public static class Server extends DomHttpServer {
+        private static Server instance = null;
+        Backend pendingBackend;
+
+        public Server(int port) throws UnknownHostException, IOException {
             super(port, new String[0]);
         }
         @Override
         protected Backend createBackend() {
+             if (pendingBackend != null) {
+                 Backend b = pendingBackend;
+                 pendingBackend = null;
+                 return b;
+             }
             return new DomTermBackend();
         }
-        public synchronized static WebSocketServer getInstance() {
+        public synchronized static Server getInstance() throws IOException {
             if (instance == null) {
                 try {
-                    instance = new WebSocketServer(0);
+                    instance = new Server(0);
+                    instance.pendingBackend = new DomTermBackend();
                 } catch (UnknownHostException ex) {
                     throw new RuntimeException(ex);
                 }
@@ -38,7 +47,7 @@ public class DomTermBackend extends Backend implements Runnable {
             }
             return instance;
         }
-        public static int getInstancePort() {
+        public static int getInstancePort() throws IOException {
             return getInstance().getPort();
         }
     }
@@ -55,39 +64,27 @@ public class DomTermBackend extends Backend implements Runnable {
         }
         if ("google-chrome".equals(command)
             || "chrome".equals(command))
-            command = "browser="+DomServer.chromeCommand()+" --app=%U";
+            command = "browser="+DomHttpServer.chromeCommand()+" --app=%U";
         else if ("browser=google-chrome".equals(command)
             || "browser=chrome".equals(command))
-            command = "browser="+DomServer.chromeCommand()+" %U";
+            command = "browser="+DomHttpServer.chromeCommand()+" %U";
         if ("firefox".equals(command)
             || "browser=firefox".equals(command))
-            command = "browser="+DomServer.firefoxCommand()+" %U";
+            command = "browser="+DomHttpServer.firefoxCommand()+" %U";
         boolean exitOnClose = ! command.startsWith("serve");
-        int wsport = DomTermBackend.WebSocketServer.getInstancePort();
-        DomServer.setExitOnClose(exitOnClose);
-        String defaultUrl = "/repl-client.html#ws=//localhost:"+wsport+"/";
-        String kawaHome = System.getProperty("kawa.home");
-        if (kawaHome == null)
-            return "kawa.home not set";
-        File domtermJar = new File(kawaHome+"/lib/domterm.jar");
-        if (! domtermJar.exists())
-            return domtermJar.toString()+" does not exist";
-        String pathPrefix = "jar:file:" + domtermJar + "!";
-        gnu.kawa.servlet.KawaHttpHandler.addStaticFileHandler("/", pathPrefix, defaultUrl, exitOnClose);
-        com.sun.net.httpserver.HttpServer httpHandler =
-            gnu.kawa.servlet.KawaHttpHandler.startServer(htport, System.err);
-        htport = httpHandler.getAddress().getPort();
-        String webUrl = "http://127.0.0.1:"+htport+"/";
+        int port = Server.getInstancePort();
+        DomHttpServer.setExitOnClose(exitOnClose);
+        String url =  "http://localhost:"+port+"/domterm/#ajax";
         if (command.equals("browser")) {
             if (! Desktop.isDesktopSupported())
                 return "using default desktop browser not supported";
-            Desktop.getDesktop().browse(new URI(webUrl));
+            Desktop.getDesktop().browse(new URI(url));
             return null;
         } else if (command.startsWith("browser=")) {
             String cmd = command.substring(8);
             if (cmd.indexOf('%') < 0)
                 cmd = cmd  + " %U";
-            cmd = cmd.replace("%U", webUrl).replace("%W", Integer.toString(wsport));
+            cmd = cmd.replace("%U", url).replace("%W", Integer.toString(port));
             Runtime.getRuntime().exec(cmd);
             return null;
         }
@@ -114,6 +111,7 @@ public class DomTermBackend extends Backend implements Runnable {
     }
     public DomTermBackend() {
         this(Language.getDefaultLanguage(), Environment.getCurrent(), false);
+        thread = new Thread(this);
     }
 
     @Override
@@ -191,7 +189,7 @@ public class DomTermBackend extends Backend implements Runnable {
             termWriter.write("\033]0;Kawa\007");
         } catch (Throwable ex) { ex.printStackTrace(); }
         if (this.nrows >= 0)
-            setWindowSize(nrows, ncols, pixw, pixh);
+            setWindowSize(nrows, ncols, pixh, pixw);
         Shell.run(language, env);
         try {
             termWriter.close();
@@ -204,7 +202,8 @@ public class DomTermBackend extends Backend implements Runnable {
     public void run(Writer out) throws Exception {
         this.termWriter = out;
         //addVersionInfo(???");
-        Thread thread = new Thread(this);
+        if (thread == null)
+            thread = new Thread(this);
         thread.start();
     }
     public void processInputCharacters(String text) {
@@ -222,7 +221,7 @@ public class DomTermBackend extends Backend implements Runnable {
     }
 
     @Override
-    public void setWindowSize(int nrows, int ncols, int pixw, int pixh) {
+    public void setWindowSize(int nrows, int ncols, int pixh, int pixw) {
         this.nrows = nrows;
         this.ncols = ncols;
         this.pixw = pixw;
@@ -234,6 +233,18 @@ public class DomTermBackend extends Backend implements Runnable {
                 // ignore
             }
         }
+    }
+
+    @Override public void close(boolean isLast) {
+        if (inPipe != null) {
+            try {
+                inPipe.close();
+            } catch (Throwable ex) {
+                // ignore
+            }
+        }
+        else
+            inIn.appendEOF();
     }
 
     public static void loadStyleSheet(String name, String fname)

@@ -56,7 +56,7 @@ public class ClassType extends ObjectType
     return (ClassType) Type.getType(name);
   }
 
-  /** @deprecated */
+  @Deprecated
   public static ClassType make (String name, ClassType superClass)
   {
     ClassType type = make(name);
@@ -851,8 +851,8 @@ public class ClassType extends ObjectType
    * @param result array to place selected methods in
    * @param offset start of where in result to place result
    * @return number of methods placed in result array
-   * @deprecated
    */
+  @Deprecated
   public int getMethods (Filter filter, int searchSupers,
 			 Method[] result, int offset)
   {

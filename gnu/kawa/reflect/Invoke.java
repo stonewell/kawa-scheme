@@ -319,7 +319,7 @@ public class Invoke extends Procedure
     return new ApplyExp(method, args);
   }
 
-  /** @deprecated */
+  @Deprecated
   public static synchronized PrimProcedure
   getStaticMethod(ClassType type, String name, Expression[] args)
   {

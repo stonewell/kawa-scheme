@@ -127,13 +127,13 @@ public class WrongType extends WrappedException
     this.argValue = argValue;
   }
 
-  /** @deprecated */
+  @Deprecated
   public static WrongType make(ClassCastException ex, Procedure proc, int n)
   {
     return new WrongType(proc, n, ex);
   }
 
-  /** @deprecated */
+  @Deprecated
   public static WrongType make(ClassCastException ex, String procname, int n)
   {
     return new WrongType(procname, n, ex);

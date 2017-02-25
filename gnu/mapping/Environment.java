@@ -363,9 +363,7 @@ public abstract class Environment
 
   protected abstract boolean hasMoreElements (LocationEnumeration it);
 
-  /**
-    * @deprecated
-    */
+  @Deprecated
   public static Environment current () { return getCurrent(); }
 
   protected static final InheritedLocal curEnvironment = new InheritedLocal();

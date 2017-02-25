@@ -137,9 +137,8 @@ public class Method implements AttrContainer, Member {
     /**
      * Allocate slots for a local variable (or parameter).
      * @param local the variable we need to allocate
-     * @deprecated
      */
-    public void allocate_local(Variable local) {
+    @Deprecated public void allocate_local(Variable local) {
         local.allocateLocal(code);
     }
 
@@ -206,15 +205,11 @@ public class Method implements AttrContainer, Member {
      * @deprecated
      */
     public void push_var(Variable var) { code.emitLoad (var); }
-    /**
-     * @deprecated
-     */
+
+    @Deprecated
     public void compile_push_value(Variable var) { code.emitLoad(var); }
 
-    /** 
-     * @deprecated
-     */
-    public void compile_store_value(Variable var) {
+    @Deprecated public void compile_store_value(Variable var) {
         code.emitStore(var);
     }
 

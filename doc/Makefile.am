@@ -151,7 +151,7 @@ $(HTML_TARGET_DIRECTORY)/index.html: kawa.xml Makefile
 
 # There is some weuid bug causing "tutorial/XXX.xhtml" to be
 # treated as "XXX.xhtml", so use "tutorial-XXX.xhtml" instead.
-kawa-manual.epub: kawa.xml Makefile
+kawa-manual.epub: kawa.xml
 	sed \
 	  -e 's|<?dbhtml filename="tutorial/\([^".]*\)\.html|<?dbhtml filename="tutorial-\1.xhtml|'\
 	  -e 's|<?dbhtml filename="\([^"]*\)\.html|<?dbhtml filename="\1.xhtml|'\
