@@ -3,7 +3,7 @@
 (require kawa.lib.syntax)
 (require <kawa.lib.lists>)
 
-(define-namespace <CaseClause> <gnu.expr.CaseExp>:CaseClause)
+(define-alias <CaseClause> gnu.expr.CaseExp:CaseClause)
 (define-namespace <CaseExp> <gnu.expr.CaseExp>)
 (define-namespace <Expression> <gnu.expr.Expression>)
 (define-namespace <QuoteExp> <gnu.expr.QuoteExp>)

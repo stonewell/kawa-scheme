@@ -1,5 +1,8 @@
 2017-02-25  Per Bothner  <per@bothner.com>
 
+	* case_syntax.scm (<CaseClause>): Define using define-alias.
+	Don't remember the reason ...
+
 	* kawa/base.scm: Only export domterm-load-stylesheet
 	if DomTermBackend exists.
 
