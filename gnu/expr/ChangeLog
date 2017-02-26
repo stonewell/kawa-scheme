@@ -1,3 +1,10 @@
+2017-02-25  Per Bothner  <per@bothner.com>
+
+	Fixes due to stricter Java-9 verifier.
+	Specfically, a static final field can only be set in <clinit>.
+	* Compilation.java: Inline earlier $runBody$ method in <clinit>.
+	* ProcInitializer.java: If field is static set it in <clinit>.
+
 2017-01-21  Per Bothner  <per@bothner.com>
 
 	Disable inlining for procedures with guards.

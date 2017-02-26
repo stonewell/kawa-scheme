@@ -15,8 +15,8 @@ public class ProcInitializer extends Initializer
         this.field = field;
         proc = lexp;
         LambdaExp heapLambda = field.getStaticFlag() ? comp.getModule()
-            : lexp.getOwningLambda() ;
-        if (heapLambda instanceof ModuleExp && comp.isStatic()) {
+            : lexp.getOwningLambda();
+        if (field.getStaticFlag()) {
             next = comp.clinitChain;
             comp.clinitChain = this;
         } else {

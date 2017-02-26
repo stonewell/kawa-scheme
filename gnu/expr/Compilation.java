@@ -1045,6 +1045,8 @@ public class Compilation implements SourceLocator
       type.addInterface(typeRunnable);
     if (! module.staticInitRun())
       type.addInterface(typeRunnableModule);
+    else
+      module.setInlineOnly(true);
     type.setSuper(sup);
 
     module.compiledType = type;
@@ -1862,19 +1864,18 @@ public class Compilation implements SourceLocator
     
     Method apply_method;
     if (module.staticInitRun()) {
-        apply_method = curClass.addMethod("$runBody$", Type.typeArray0, Type.voidType,
-                                          Access.PRIVATE|Access.STATIC);
+        apply_method = startClassInit();
     } else {
         Type[] arg_types = { typeCallContext };
         apply_method = curClass.addMethod ("run", arg_types, Type.voidType,
                                            Access.PUBLIC+Access.FINAL);
+        apply_method.initCode();
     }
     method = apply_method;
     // For each parameter, assign it to its proper slot.
     // If a parameter !isSimple(), we cannot assign it to a local slot,
     // so instead create an artificial Variable for the incoming argument.
     // Below, we assign the value to the slot.
-    method.initCode();
     code = getCode();
     // if (usingCPStyle())   code.addParamLocals();
 
@@ -1887,34 +1888,46 @@ public class Compilation implements SourceLocator
     module.getVarScope().addVariableAfter(thisDecl, callContextVar);
     callContextVar.setParameter(true);
 
-    module.allocParameters(this);
-    module.enterFunction(this);
-    if (usingCPStyle())
-      {
-	loadCallContext();
-        code.emitGetField(pcCallContextField);
-        fswitch = code.startSwitch();
-	fswitch.addCase(0, code);
-      }
+    if (! module.staticInitRun()) {
+        module.allocParameters(this);
+        module.enterFunction(this);
+        if (usingCPStyle()) {
+            loadCallContext();
+            code.emitGetField(pcCallContextField);
+            fswitch = code.startSwitch();
+            fswitch.addCase(0, code);
+        }
+        module.compileBody(this);
+        module.compileEnd(this);
+    }
 
-    module.compileBody(this);
-    module.compileEnd(this);
 
-    Label startLiterals = null;
-    Label afterLiterals = null;
-    Method initMethod = null;
-
-      {
 	Method save_method = method;
         Variable callContextSave = callContextVar;
         callContextVar = null;
 
-	initMethod = startClassInit();
+        Method initMethod;
+        if (module.staticInitRun())
+            initMethod = apply_method;
+        else
+            initMethod = startClassInit();
         clinitMethod = initMethod;
+        method = clinitMethod;
 	code = getCode();
+        Label beforeBody = null;
+        Label afterBody = null;
+        Label afterInits = null;
+        if (module.staticInitRun()) {
+            beforeBody = new Label(code);
+            afterBody = new Label(code);
+            afterInits = new Label(code);
+            code.fixupChain(beforeBody, afterBody);
+            module.compileAsInlined(this, Target.Ignore);
+            code.fixupChain(afterBody, afterInits);
+        }
 
-        startLiterals = new Label(code);
-        afterLiterals = new Label(code);
+        Label startLiterals = new Label(code);
+        Label afterLiterals = new Label(code);
         code.fixupChain(afterLiterals, startLiterals);
 
 	if (staticModule && ! module.staticInitRun())
@@ -1944,14 +1957,11 @@ public class Compilation implements SourceLocator
             dumpInitializers(init);
           }
 
-	if (module.staticInitRun())
-            code.emitInvoke(apply_method);
-
-        code.emitReturn();
+        if (! module.staticInitRun())
+            code.emitReturn();
 
         method = save_method;
         callContextVar = callContextSave;
-      }
 
     curLambda = saveLambda;
 
@@ -1993,6 +2003,10 @@ public class Compilation implements SourceLocator
 	  }
 	code.fixupChain(endLiterals, afterLiterals);
       }
+    if (module.staticInitRun()) {
+        code.fixupChain(afterInits, beforeBody);
+        code.emitReturn();
+    }
 
     if (generateMainMethod() && curClass == mainClass)
       {
