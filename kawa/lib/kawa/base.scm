@@ -61,7 +61,7 @@
         define-syntax-case define-unit define-xml-namespace
         defmacro disassemble
         div div0 mod mod0 div-and-mod div0-and-mod0
-        domterm-load-stylesheet duration dynamic
+        duration dynamic
         eager environment-bound?
         error error-object? error-object-message error-object-irritants
         export module-export
@@ -173,7 +173,7 @@
 (import (only kawa.istrings list->string string-append substring))
 (require kawa.lib.DefineRecordType)
 (import (rename kawa.lib.prim_imports (letrec letrec*)))
-  (import
+(import
    kawa.lib.arrays
    kawa.lib.bytevectors
    kawa.lib.case_syntax
@@ -199,7 +199,6 @@
    kawa.lib.trace
    kawa.lib.uniform
    kawa.lib.windows
-   kawa.lib.kawa.domterm
    (scheme case-lambda)
    (scheme cxr)
    (scheme eval)
@@ -297,3 +296,7 @@
 (define-alias input-prompt1 gnu.kawa.io.CheckConsole:prompt1)
 (define-alias input-prompt2 gnu.kawa.io.CheckConsole:prompt2)
 (define-alias default-prompter kawa.Shell:defaultPrompter)
+
+(cond-expand (class-exists:kawa.DomTermBackend
+              (import kawa.lib.kawa.domterm)
+              (export domterm-load-stylesheet)))
