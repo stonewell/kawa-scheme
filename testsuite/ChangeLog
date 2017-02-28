@@ -1,3 +1,7 @@
+2017-02-27  Per Bothner  <per@bothner.com>
+
+	* lib-test.scm: Added a string-cursor test.
+
 2017-01-18  Per Bothner  <per@bothner.com>
 
 	* case-test.scm: Remove useless case using string.

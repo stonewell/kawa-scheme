@@ -1,6 +1,6 @@
 ;; -*- coding: utf-8 -*-
 
-(test-begin "libs" 259)
+(test-begin "libs" 260)
 
 (test-begin "vectors")
 (test-equal '(dah dah didah)
@@ -499,6 +499,16 @@
     ((string-cursor>=? sc sc1e))
   (set! str1lst (cons (as int (string-cursor-ref str1 sc)) str1lst)))
 (test-equal '(97 128514 98 128572 99) (reverse str1lst))
+
+(set! str1lst '())
+(do ((sc::string-cursor (string-cursor-start str1)
+                        (string-cursor-next-quick sc)))
+    ((string-cursor>=? sc sc1e))
+  (let* ((ch (string-cursor-ref str1 sc))
+         (r (if (char=? ch #\ignorable-char) 'ignorable (string ch))))
+  (set! str1lst (cons r str1lst))))
+(test-equal '("a" "😂" ignorable "b" "😼" ignorable "c")
+            (reverse str1lst))
 
 (define str2lst '())
 (string-cursor-for-each
