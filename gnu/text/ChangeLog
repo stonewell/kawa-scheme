@@ -1,3 +1,7 @@
+2017-02-27  Per Bothner  <per@bothner.com>
+
+	* Char.java (append): Trivial optimization.
+
 2016-09-03  Per Bothner  <per@bothner.com>
 
 	* CaseConvertFormat.java: Moved to gnu.kawa.format.
