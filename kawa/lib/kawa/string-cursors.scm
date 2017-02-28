@@ -2,7 +2,7 @@
 
 (module-export string-cursor-start string-cursor-end
                string-cursor-ref substring-cursor
-               string-cursor-next string-cursor-prev
+               string-cursor-next string-cursor-next-quick string-cursor-prev
                string-cursor<? string-cursor<=? string-cursor=?
                string-cursor>? string-cursor>=? string-cursor
                string-cursor-for-each)
@@ -23,7 +23,25 @@
 
 ;; get the char at the given cursor
 (define (string-cursor-ref str::string cursor::string-cursor) ::character
-  (as character (java.lang.Character:codePointAt str (as int cursor))))
+  ;;(as character (java.lang.Character:codePointAt str (as int cursor))))
+  (let* ((cursor0 (as int cursor))
+         (ch1 ::int (str:charAt cursor0)))
+    (cond ((or (< ch1 #xD800) (> ch1 #xDFFF)) ;; regular
+           (as character ch1))
+          ((and (>= ch1 #xD800) (<= ch1 #xDBFF)) ;; leading surrogate
+           (let ((ch2 ::int (if (= cursor0 (str:length)) 0
+                                (str:charAt (+ cursor0 1)))))
+             (if (or (< ch2 #xDC00) (> ch2 #xDFFF))
+                 (as character ch1)
+                 (as character
+                     (+ (* (- ch1 #xD800) #x400)
+                        (- ch2 #xDC00)
+                        #x10000)))))
+          (else ;; (and (>= ch2 #xDC00) (<= ch2 #xDFFF)) ;; trailing surrogate
+           (let ((ch0 ::int (if (= cursor0 0) 0 (str:charAt (- cursor0 1)))))
+             (if (and (>= ch0 #xD800) (<= ch0 #xDBFF))
+                 #\ignorable-char
+                 (as character ch1)))))))
 
 #|
 (define (string-cursor-ref-or-eof str::string cursor::string-cursor) ::character-or-eof
@@ -49,6 +67,10 @@
                             #!optional (count ::int 1)) ::string-cursor
   (as string-cursor
       (java.lang.Character:offsetByCodePoints str (as int cursor) count)))
+
+(define (string-cursor-next-quick cursor::string-cursor)
+  ::string-cursor
+  (as string-cursor (+ 1  (as int cursor))))
 
 ;; decrement to the previous cursor
 (define (string-cursor-prev str::string cursor::string-cursor

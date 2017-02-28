@@ -1,3 +1,7 @@
+2017-02-27  Per Bothner  <per@bothner.com>
+
+	* lib-test.scm: Added a string-cursor test.
+
 2017-01-20  Per Bothner  <per@bothner.com>
 
 	* match1.scm: Test the 'match' form.

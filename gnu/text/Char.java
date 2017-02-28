@@ -90,12 +90,11 @@ public class Char implements Comparable, Externalizable {
     }
 
     public static void append(int i, Appendable out) throws IOException {
-        if (i < 0x10000)
-            out.append((char) i);
-        else if (i != IGNORABLE_CHAR) {
+        if (i >= 0x10000 && i != IGNORABLE_CHAR) {
             out.append((char) (((i - 0x10000) >> 10) + 0xD800));
-            out.append((char) ((i & 0x3FF) + 0xDC00));
+            i = (i & 0x3FF) + 0xDC00;
         }
+        out.append((char) i);
     }
 
     public final char charValue() {
