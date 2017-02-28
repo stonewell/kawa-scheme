@@ -335,24 +335,6 @@ public class FString extends AbstractCharVector<Char>
     data[index] = ch;
   }
 
-    /** Set all the elements to a given character. */
-    public final void fill(char ch) {
-        fill(0, size(), ch);
-    }
-
-    public void fill(int fromIndex, int toIndex, char value) {
-        if (fromIndex < 0 || toIndex > size())
-            throw new IndexOutOfBoundsException();
-        if (isVerySimple()) { // Minor optimization
-            char[] d = data; // Move to local to help optimizer.
-            for (int i = fromIndex;  i < toIndex;  i++)
-                d[i] = value;
-        } else {
-            for (int i = fromIndex;  i < toIndex;  i++)
-                setCharAt(i, value);
-        }
-    }
-
     public void insertRepeated(int where, int value, int count) {
         addSpace(where, value < 0x10000 ? count : 2 * count);
         insertRepeatedRaw(where, value, count);

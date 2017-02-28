@@ -61,17 +61,6 @@ public class SubCharSeq extends AbstractSequence<Char>
         ((CharSeq) base).setCharacterAt(start + index, ch);
     }
 
-    /** Set all the elements to a given character. */
-    public void fill(char value) {
-        ((CharSeq) base).fill(start, end, value);
-    }
-
-    public void fill(int fromIndex, int toIndex, char value) {
-        if (fromIndex < 0 || toIndex < fromIndex || start + toIndex > end)
-            throw new IndexOutOfBoundsException();
-        ((CharSeq) base).fill(start + fromIndex, start + toIndex, value);
-    }
-
   public void writeTo(int start, int count, Appendable dest)
     throws java.io.IOException
   {

@@ -94,22 +94,6 @@ public abstract class Buffer extends AbstractSequence<Char>
         getStringContent().setCharacterAt(index, ch);
     }
 
- /**
-   * @see gnu.lists.CharSeq#fill(char)
-   */
-  public void fill(char value)
-  {
-    getStringContent().fill(value);
-  }
-
-  /**
-   * @see gnu.lists.CharSeq#fill(int, int, char)
-   */
-  public void fill(int fromIndex, int toIndex, char value)
-  {
-    getStringContent().fill(fromIndex, toIndex, value);
-  }
-
   /**
    * @see gnu.lists.CharSeq#getChars(int, int, char[], int)
    */

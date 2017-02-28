@@ -209,17 +209,6 @@ public class BufferContent extends SwtCharBuffer
     replaceTextRange(index, index+1, new String(arr));
   }
 
-  public void fill(char value)
-  {
-    fill(0, size(), value);
-  }
-
-  public void fill(int fromIndex, int toIndex, char value)
-  {
-    for (int i = fromIndex;  i < toIndex;  i++)
-      setCharAt(i, value);
-  }
-
   /* #ifdef use:java.lang.CharSequence */
   public CharSequence subSequence(int start, int end)
   {

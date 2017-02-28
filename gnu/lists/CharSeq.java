@@ -24,11 +24,6 @@ public interface CharSeq
   public void setCharAt(int index, char ch);
   public void setCharacterAt(int index, int ch);
 
-  /** Set all the elements to a given character. */
-  public void fill(char value);
-
-  public void fill(int fromIndex, int toIndex, char value);
-
   public CharSeq subSequence(int start, int end);
 
   /** Append a specified subsequence to an <code>Appendable</code>.

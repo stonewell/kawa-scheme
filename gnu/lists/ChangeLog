@@ -1,3 +1,10 @@
+2017-02-28  Per Bothner  <per@bothner.com>
+
+	* CharSeq.java (fill): Remove two 'fill' methods.
+	They aren't used any more as they don't work for non-BMP characters.
+	* FString.java (fill): Remove methods.
+	* SubCharSeq.java (fill): Likewise.
+
 2017-02-03  Per Bothner  <per@bothner.com>
 
 	* PrimVector.template (cast, castOrNull): New methods.
