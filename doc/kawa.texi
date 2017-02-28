@@ -10628,7 +10628,7 @@ In Kawa @code{char-set} is a type that can be used in type specifiers:
 @end example
 @end deffn
 
-Kawa uses @uref{http://www.ibm.com/developerworks/linux/library/l-cpinv.html,inversion lists} for an efficient implementation, using Java @code{int} arrays
+Kawa uses @uref{https://en.wikipedia.org/wiki/Inversion_list,inversion lists} for an efficient implementation, using Java @code{int} arrays
 to represents character ranges (inversions).
 The @code{char-set-contains?} function uses binary search,
 so it takes time proportional to the logarithm of the number of inversions.
@@ -11211,10 +11211,32 @@ scanning the string until we have seen @var{i} characters.
 The string-cursor API is defined in terms of abstract ``cursor values'',
 which point to a position in the string.  This avoids the linear scan.
 
+Typical usage is:
+@example
+(let* ((str @var{whatever})
+       (end (string-cursor-end str)))
+  (do ((sc::string-cursor (string-cursor-start str)
+                          (string-cursor-next str sc)))
+    ((string-cursor>=? sc end))
+    (let ((ch (string-cursor-ref str sc)))
+      (@var{do-something-with} ch))))
+@end example
+Alternatively, the following may be marginally faster:
+@example
+(let* ((str @var{whatever})
+       (end (string-cursor-end str)))
+  (do ((sc::string-cursor (string-cursor-start str)
+                          (string-cursor-next-quick sc)))
+    ((string-cursor>=? sc end))
+    (let ((ch (string-cursor-ref str sc)))
+      (if (not (char=? ch #\ignorable-char))
+        (@var{do-something-with} ch)))))
+@end example
+
 The API is non-standard, but is based on that in Chibi Scheme.
 
 @deffn Type string-cursor
-An abstract posistion (index) in a string.
+An abstract position (index) in a string.
 Implemented as a primitive @code{int} which counts the
 number of preceding code units (16-bit @code{char} values).
 @end deffn
@@ -11231,6 +11253,8 @@ Implemented as @code{(as string-cursor (invoke @var{str} 'length))}.
 
 @deffn Procedure string-cursor-ref str cursor
 Return the @code{character} at the @var{cursor}.
+If the @var{cursor} points to the second @code{char} of a surrogate pair,
+returns @code{#\ignorable-char}.
 @end deffn
 
 @deffn Procedure string-cursor-next string cursor [count]
@@ -11238,6 +11262,14 @@ Return the cursor position @var{count} (default 1) character
 positions forwards beyond @var{cursor}.
 For each @var{count} this may add either 1 or 2
 (if pointing at a surrogate pair) to the @var{cursor}.
+@end deffn
+
+@deffn Procedure string-cursor-next-quiet cursor
+Increment cursor by one raw @code{char} position,
+even if @var{cursor} points to the start of a surrogate pair.
+(In that case the next @code{string-cursor-ref} will
+return @code{#\ignorable-char}.)
+Same as @code{(+ @var{cursor} 1)} but with the @code{string-cursor} type.
 @end deffn
 
 @deffn Procedure string-cursor-prev string cursor [count]
@@ -12161,13 +12193,12 @@ Returns the number of elements of the @var{seq}.
 
 The length of a string is the number of 16-bit code units,
 not the number the code points.
-That is the result of the @code{java.lang.CharSequence#length}
-method, not the @code{string-length} procedure.
+@strong{Warning: This will change in Kawa 3.x!}
 @example
 (length "Hello")              @result{}  5
 (define str1 "Hello \x1f603;!")
 (invoke str1 'length)         @result{}  9
-(length str1)                 @result{}  9
+(length str1)                 @result{}  9 ;; 8 in Kawa 3.x
 (string-length str1)          @result{}  8
 @end example
 @end deffn
