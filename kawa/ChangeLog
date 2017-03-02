@@ -1,3 +1,9 @@
+2017-03-01  Per Bothner  <per@bothner.com>
+
+	* standard/ImportFromLibrary.java: Fix computation of "current root".
+	Use current library source path reather than current position,
+	which might be in an included file.
+
 2017-02-24  Per Bothner  <per@bothner.com>
 
 	* DomTermBackend.java: Use org.domterm.DomHttpServer, rather

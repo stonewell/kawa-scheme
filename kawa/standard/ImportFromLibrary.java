@@ -324,7 +324,7 @@ public class ImportFromLibrary extends Syntax
         }
 
         ModuleInfo curinfo = tr.getMinfo();
-        Path currentSource = tr.getSourceAbsPath();
+        Path currentSource = curinfo.getSourceAbsPath();
         String currentExtension = currentSource == null ? null
             : currentSource.getExtension();
         if (currentExtension == null) {
