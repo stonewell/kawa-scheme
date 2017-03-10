@@ -1,3 +1,9 @@
+2017-03-09  Per Bothner  <per@bothner.com>
+
+	* XslTranslator.java (parse): Use existing ModuleExp.
+	This fixes bug reproted by Steve Graham when trying to compile
+	an xslt module with -C.
+
 2016-06-02  Per Bothner  <per@bothner.com>
 
 	* XSLT.java (parse): Returns false if missing body (i.e. EOF).

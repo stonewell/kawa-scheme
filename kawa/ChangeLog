@@ -1,3 +1,14 @@
+2017-03-10  Per Bothner  <per@bothner.com>
+
+	* lang/SyntaxTemplate.java (get_var): Avoid exception on bad ellipsis.
+	In the case of inconsistent ellipsis length, report an error
+	rather than throwing a NullPointerException.
+
+2017-03-01  Per Bothner  <per@bothner.com>
+
+	* standard/ImportFromLibrary.java: Fix computation of "current root".
+	Use current library source path reather than current position,
+	which might be in an included file.
 2017-01-26  Per Bothner  <per@bothner.com>
 
 	* repl.java (browseManual): Default to index.html.

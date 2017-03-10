@@ -64,7 +64,7 @@ public class SyntaxTemplate implements Externalizable {
      * of at least the needed depth.  The result is spliced in. */
     final static int BUILD_DOTS = 5;
 
-    /** Unfinished support for "operand" values that need more tahn 13 bits. */
+    /** Unfinished support for "operand" values that need more than 13 bits. */
     final static int BUILD_WIDE = 7;
 
     /** Map variable to ellipsis nesting depth.
@@ -426,12 +426,23 @@ public class SyntaxTemplate implements Externalizable {
         return execute(0, vars, 0, new int[max_nesting], tr, TemplateScope.make(tr, savedScope));
     }
 
-    Object get_var(int var_num, Object[] vars, int[] indexes) {
+    Object get_var(int var_num, Object[] vars, int[] indexes, Translator tr) {
         Object var = vars [var_num];
         if (var_num < patternNesting.length()) {
             int var_nesting = (int) patternNesting.charAt(var_num) >> 1;
-            for (int level = 0;  level < var_nesting;  level++)
-                var = ((Object[]) var) [indexes[level]];
+            for (int level = 0;  level < var_nesting;  level++) {
+                Object[] varr = (Object[]) var;
+                int ind = indexes[level];
+                if (ind >= varr.length) {
+                    Syntax macro = tr.getCurrentSyntax();
+                    String mname = macro == null ? null : macro.getName();
+                    if (mname == null)
+                        mname = "<unknown>";
+                    tr.syntaxError("inconsistent use of ellipsis variable in macro "+mname);
+                    return LList.list1(var);
+                }
+                var = varr[ind];
+            }
         }
         return var;    
     }
@@ -446,7 +457,7 @@ public class SyntaxTemplate implements Externalizable {
         while ((ch & 7) == BUILD_WIDE)
             ch = ((ch - BUILD_WIDE) << 13) |	template_program.charAt(++pc);
         if ((ch & 7) == BUILD_VAR_CAR) {
-            Pair p = (Pair) get_var(ch >> 3, vars, indexes);
+            Pair p = (Pair) get_var(ch >> 3, vars, indexes, tr);
             return Translator.makePair(p, p.getCar(), LList.Empty);
         } else if ((ch & 7) == BUILD_DOTS) {
             int var_num = (int) (ch >> 3);
@@ -538,7 +549,7 @@ public class SyntaxTemplate implements Externalizable {
             */
             return literal_values[lit_no];
         } else if ((ch & 6) == BUILD_VAR) { // Also handles BUILD_VAR_CAR.
-            Object var = get_var(ch >> 3, vars, indexes);
+            Object var = get_var(ch >> 3, vars, indexes, tr);
             if ((ch & 7) == BUILD_VAR_CAR)
                 var = ((Pair) var).getCar();
             return var;

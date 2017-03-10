@@ -68,7 +68,6 @@ public class JLineInPort extends TtyInPort
             .build();
         if (CheckConsole.useJLineMouse() > 0)
             jlreader.setOpt(LineReader.Option.MOUSE);
-        language = Language.getDefaultLanguage();
         this.terminal = terminal;
     }
 
@@ -86,6 +85,8 @@ public class JLineInPort extends TtyInPort
         CharArrayInPort cin = CharArrayInPort.make(line, "\n");
         cin.setLineNumber(this.getLineNumber());
         cin.setPath(this.getPath());
+        if (language == null)
+            return new KawaParsedLine(this, line, cursor);
         try {
             Lexer lexer = language.getLexer(cin, this.messages);
             lexer.setInteractive(true);
@@ -99,7 +100,7 @@ public class JLineInPort extends TtyInPort
                 messages.clear();
                 throw new EOFError(-1, -1, "unexpected end-of-file", "");
             }
-            return new KawaParsedLine(this, comp, line, cursor);
+            return new KawaParsedLine(this, line, cursor, comp);
         } catch (IOException ex) {
             throw new RuntimeException(ex);
         }
@@ -123,13 +124,13 @@ public class JLineInPort extends TtyInPort
                                Language.PARSE_FOR_EVAL|Language.PARSE_INTERACTIVE_MODULE,
                                null);
             language.resolve(comp);
-            return new KawaParsedLine(this, comp, line, cursor);
+            return new KawaParsedLine(this, line, cursor, comp);
         } catch (SyntaxException ex) {
             if (cin.eofSeen())
                 throw new EOFError(-1, -1, "unexpected end-of-file", "");
             throw ex;
         } catch (CommandCompleter ex) {
-            return new KawaParsedLine(this, ex, line, cursor);
+            return new KawaParsedLine(this, line, cursor, ex);
         } catch (IOException ex) {
             throw new RuntimeException(ex);
         }
@@ -229,7 +230,14 @@ public class JLineInPort extends TtyInPort
         int wordCursor;
         CommandCompleter ex;
 
-        public KawaParsedLine(JLineInPort inp, Compilation comp, String source, int cursor) {
+        public KawaParsedLine(JLineInPort inp, String source, int cursor) {
+            this.inp = inp;
+            this.source = source;
+            this.cursor = cursor;
+            this.word = "";
+        }
+
+         public KawaParsedLine(JLineInPort inp, String source, int cursor, Compilation comp) {
             this.inp = inp;
             this.comp = comp;
             this.source = source;
@@ -237,7 +245,7 @@ public class JLineInPort extends TtyInPort
             this.word = "";
         }
 
-        public KawaParsedLine(JLineInPort inp, CommandCompleter ex, String source, int cursor) {
+        public KawaParsedLine(JLineInPort inp, String source, int cursor, CommandCompleter ex) {
             this.inp = inp;
             this.comp = ex.getCompilation();
             this.source = source;
@@ -270,6 +278,8 @@ public class JLineInPort extends TtyInPort
                                  pattern2);
             inp.readState = saveState;
             inp.messages = lexer.getMessages();
+            Language saveLanguage = inp.language; // Normally null
+            inp.language = language;
             try {
                 jlreader.readLine(inp.prompt, null, null, null);
                 if (inp.tie != null)
@@ -279,6 +289,9 @@ public class JLineInPort extends TtyInPort
                 return parsedLine.comp;
             } catch (org.jline.reader.EndOfFileException ex) {
                 return null;
+            }
+            finally {
+                inp.language = saveLanguage;
             }
             
         }
