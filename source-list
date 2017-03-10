@@ -196,7 +196,6 @@ GNU_LISTS_JSOURCES = \
   gnu/lists/Sequences.java \
   gnu/lists/ShortVector.java \
   gnu/lists/SimpleVector.java \
-  gnu/lists/SubCharSeq.java \
   gnu/lists/SubSequence.java \
   gnu/lists/StableManager.java \
   gnu/lists/Strings.java \

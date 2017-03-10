@@ -10,9 +10,16 @@ import java.io.IOException;
 
 public class Strings
 {
+    /** Get character (code point) at a offset.
+     * @param index offset measured in 16-bit code units
+     */
     public static int characterAt(CharSequence cseq, int index) {
         return characterAt(cseq, 0, cseq.length(), index);
     }
+    /** Get character (code point) at a offset.
+     * @param index offset measured in 16-bit code units,
+     * from begining of cseq, not frm start
+     */
     public static int characterAt(CharSequence cseq, int start, int end,
                                   int index) {
         if (index < start || index >= end)
@@ -33,6 +40,9 @@ public class Strings
         }
         return ch1;
     }
+    /** Get index'th character (code point).
+     * @param index offset by code points
+     */
     public static int indexByCodePoints(CharSequence str, int index) {
         if (str instanceof IString)
             return ((IString) str).indexByCodePoints(index);
@@ -41,7 +51,7 @@ public class Strings
     }
 
     /** Like offsetByCodePoints, but optimize if an IString.
-     * @param number of code points beyond start index.
+     * @param offset number of code points beyond start index.
      * @param cuStart start index in code units (Java chars)
      * @param cpStart start index in Unicode code points
      */
@@ -52,7 +62,7 @@ public class Strings
         return Character.offsetByCodePoints(str, cuStart, offset);
     }
 
-   public static int sizeInCodePoints(CharSequence str) {
+    public static int sizeInCodePoints(CharSequence str) {
         if (str instanceof IString)
             return ((IString) str).lengthByCodePoints();
         int len = str.length();
@@ -192,8 +202,10 @@ public class Strings
         }
     }
 
-    /** Make a read-only substring, generalized to arbitrary index sequences. */
-    public static CharSequence indirectIndexed(CharSequence base,
+    /** Make a read-only substring, generalized to arbitrary index sequences.
+     * The indexes are in terms of code points (character) offsets.
+     */
+    public static IString indirectIndexed(CharSequence base,
                                                IntSequence indexes) {
         if (indexes instanceof Range.IntRange) {
             Range.IntRange range = (Range.IntRange) indexes;
@@ -202,28 +214,38 @@ public class Strings
                 int end = base.length();
                 if (start < 0 || start > end)
                     throw new IndexOutOfBoundsException();
+                int size;
                 if (! range.isUnbounded()) {
-                    int size = range.size();
+                    size = range.size();
                     if (start+size < 0 || start+size > end)
                         throw new IndexOutOfBoundsException();
-                    end = start+size;
-                }
-                return Strings.substring(base, start, end);
+                } else
+                    size = end - start;
+                return IString.valueOf(base, start, size);
             }
         }
         int len = indexes.size();
         StringBuilder sbuf = new StringBuilder(len);
-        for (int i = 0; i < len; i++)
-            sbuf.append(base.charAt(indexes.getInt(i)));
-        return sbuf.toString();
+        for (int i = 0; i < len; i++) {
+            int ch = Strings.indexByCodePoints(base, indexes.getInt(i));
+            if (ch >= 0x10000) {
+                sbuf.append((char) (((ch - 0x10000) >> 10) + 0xD800));
+                ch = (ch & 0x3FF) + 0xDC00;
+            }
+            sbuf.append((char) ch);
+        }
+        return new IString(sbuf.toString());
     }
 
+    /** Make a read-only substring.
+     * The start and end are in terms of code unit (16-bit char).
+     */
     public static CharSequence substring(CharSequence base,
                                          int start, int end) {
         if (base instanceof FString) {
             FString fstr = (FString) base;
             if (fstr.isVerySimple() || fstr.isSubRange())
-                return (CharSequence) Sequences.copy(fstr, start, end, false);
+                return (CharSequence) Sequences.copySimple(fstr, start, end, false);
         }
         if (base instanceof String) {
             return ((String) base).substring(start, end);

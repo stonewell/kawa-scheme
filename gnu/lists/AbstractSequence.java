@@ -547,9 +547,6 @@ public abstract class AbstractSequence<E>
   protected int nextIndex(int ipos) {
     return ipos == -1 ? size() : ipos >>> 1;
   }
-    public int xnextIndex(int ipos) {
-        return nextIndex(ipos);
-    }
 
   protected int fromEndIndex(int ipos)
   {
@@ -919,15 +916,15 @@ public abstract class AbstractSequence<E>
         releasePos(ipos1);
     }
 
-  public void consume(Consumer out)
-  {
-    boolean isSequence = this instanceof Sequence;
-    if (isSequence)
-      out.startElement("#sequence");
-    consumePosRange(startPos(), endPos(), out);
-    if (isSequence)
-      out.endElement();
-  }
+    public void consume(Consumer out) {
+        boolean isSequence =
+            this instanceof Sequence && ! (this instanceof CharSequence);
+        if (isSequence)
+            out.startElement("#sequence");
+        consumePosRange(startPos(), endPos(), out);
+        if (isSequence)
+            out.endElement();
+    }
 
   public void toString (String sep, StringBuffer sbuf)
   {

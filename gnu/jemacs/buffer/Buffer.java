@@ -102,7 +102,7 @@ public abstract class Buffer extends AbstractSequence<Char>
     getStringContent().getChars(srcBegin, srcEnd, dst, dstBegin);
   }
 
-  public CharSeq subSequence(int start, int end)
+  public CharSequence subSequence(int start, int end)
   {
     return getStringContent().subSequence(start, end);
   }
@@ -136,14 +136,6 @@ public abstract class Buffer extends AbstractSequence<Char>
   //   writeTo(0, length(), str);
   // }
   /* #endif */
-
-  /**
-   * @see gnu.lists.CharSeq#consume(int, int, gnu.lists.Consumer)
-   */
-  public void consume(int start, int count, gnu.lists.Consumer out)
-  {
-    getStringContent().consume(start, count, out);
-  }
 
   public static Buffer findFile(String fname)
   {

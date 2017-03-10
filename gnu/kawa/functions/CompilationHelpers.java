@@ -145,7 +145,7 @@ public class CompilationHelpers
                     } else if (intIndexCompat > 0) {
                         if (isString && nargs == 1) {
                             Method method = ClassType.make("gnu.lists.Strings")
-                                .getDeclaredMethod("characterAt", 2);
+                                .getDeclaredMethod("indexByCodePoints", 2);
                             PrimProcedure prproc =
                                 new PrimProcedure(method, LangPrimType.characterType,
                                                   null);

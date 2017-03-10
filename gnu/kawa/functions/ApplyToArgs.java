@@ -37,7 +37,7 @@ public class ApplyToArgs extends ProcedureN
             return Strings.indirectIndexed(str, indexes);
         } else {
             int iindex = ((Number) index).intValue();
-            return Char.valueOf(Strings.characterAt(str, iindex));
+            return Char.valueOf(Strings.indexByCodePoints(str, iindex));
         }
     }
 
@@ -147,6 +147,7 @@ public class ApplyToArgs extends ProcedureN
         }
         return applyRest(arg0, ctx);
     }
+
     private static Object applyRest(Object arg0, CallContext ctx) throws Throwable {
         if (arg0 instanceof gnu.bytecode.Type
             || arg0 instanceof Class) {
@@ -166,7 +167,7 @@ public class ApplyToArgs extends ProcedureN
             if (! (arg1 instanceof Number))
                 ctx.matchError(MethodProc.NO_MATCH_BAD_TYPE|2);
             int iindex = ((Number) arg1).intValue();
-            return Char.valueOf(Strings.characterAt(str, iindex));
+            return Char.valueOf(Strings.indexByCodePoints(str, iindex));
         }
         if (arg0 instanceof java.util.List) {
             Object arg1 = Promise.force(ctx.getNextArg());

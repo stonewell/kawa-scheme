@@ -9,9 +9,8 @@ public class Sequences {
     public static List asSequenceOrNull(Object value) {
         if (value instanceof List)
             return (List) value;
-        if (value instanceof CharSequence) {
-            CharSequence cseq = (CharSequence) value;
-            return new SubCharSeq(cseq, 0, cseq.length());
+        if (value instanceof CharSequence) { // FIXME?
+            return new IString(value.toString());
         }
         if (value instanceof Object[])
             return new FVector((Object[]) value);
@@ -168,31 +167,39 @@ public class Sequences {
         return subList(base, fromStart, lbase.size() - fromEnd);
     }
 
+    /** Do a logical substring operation with sharing.
+     * Requires base.isVerySimple() || base.isSubRange().
+     * Note also that if base is an FString, the indexes count 16-bit code units.
+     */
+    public static SimpleVector copySimple(SimpleVector base, int start, int end,
+                                          boolean writable) {
+        SimpleVector nvec = base.newInstance(-1);
+        long flags = SimpleVector.SUBRANGE_FLAG;
+        if (! writable)
+            flags |= SimpleVector.READ_ONLY_FLAG;
+        int baseStart, baseSize;
+        if (base.isVerySimple()) {
+            baseStart = 0;
+            baseSize = base.size();
+        } else {
+            baseStart = base.getOffsetBits();
+            baseSize = base.getSizeBits();
+        }
+        int off = baseStart + start;
+        if (start < 0 || start > end || end > baseSize)
+            throw new IndexOutOfBoundsException();
+        // buffer[offset <: offset+size]
+        nvec.setInfoField(end - start, off, flags);
+        base.info |= SimpleVector.COPY_ON_WRITE;
+        return nvec;
+    }
+
     public static SimpleVector copy(SimpleVector base, int start, int end,
                                     boolean writable) {
-        int sz = end - start;
         if (base.isVerySimple() || base.isSubRange()) {
-            SimpleVector nvec = base.newInstance(-1);
-            long flags = SimpleVector.SUBRANGE_FLAG;
-            if (! writable)
-                flags |= SimpleVector.READ_ONLY_FLAG;
-            int baseStart, baseSize;
-            if (base.isVerySimple()) {
-                baseStart = 0;
-                baseSize = base.size();
-            } else {
-                baseStart = base.getOffsetBits();
-                baseSize = base.getSizeBits();
-            }
-            int off = baseStart + start;
-            if (start < 0 || start > end || end > baseSize)
-                throw new IndexOutOfBoundsException();
-            // buffer[offset <: offset+size]
-            nvec.setInfoField(sz, off, flags);
-            base.info |= SimpleVector.COPY_ON_WRITE;
-            return nvec;
+            return copySimple(base, start, end, writable);
         }
-        return copy(base, new Range.IntRange(start, 1, sz), writable);
+        return copy(base, new Range.IntRange(start, 1, end - start), writable);
     }
                                     
     public static SimpleVector copy(List base, Range.IntRange range,

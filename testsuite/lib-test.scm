@@ -1,6 +1,6 @@
 ;; -*- coding: utf-8 -*-
 
-(test-begin "libs" 269)
+(test-begin "libs" 270)
 
 (test-begin "vectors")
 (test-equal '(dah dah didah)

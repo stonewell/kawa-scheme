@@ -50,7 +50,7 @@ public class Blob
     public String toString() {
         synchronized (this) {
             if (stringValue == null) {
-                BinaryInPort in = new BinaryInPort(data, size(), null);
+                BinaryInPort in = new BinaryInPort(data, super.length(), null);
                 // Caching the string value may not be a good idea.
                 // Especially if we're just printing it.
                 StringBuilder buf = new StringBuilder();

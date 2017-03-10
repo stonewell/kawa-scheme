@@ -183,12 +183,6 @@ public class BufferContent extends SwtCharBuffer
     return offset2pos(lineStartOffset);
   }
 
- public void consume(int start, int count, Consumer out)
-  {
-    // TODO Auto-generated method stub
-    
-  }
-
   public void insertFile(Reader in, int pos) throws IOException
   {
     char[] buf = new char[65536];

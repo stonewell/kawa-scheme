@@ -1,3 +1,11 @@
+2017-03-10  Per Bothner  <per@bothner.com>
+
+	String viewed as vector works same as string-ref.
+	I.e. a string is a list of Unicode chars (with no #\ignorable-char).
+	* FString.java: Major re-write.
+	* CharSeq.java (subSequence, consume): Remove methods.
+	* SubCharSeq.java: Remove - no longer needed.
+
 2017-02-28  Per Bothner  <per@bothner.com>
 
 	* CharSeq.java (fill): Remove two 'fill' methods.

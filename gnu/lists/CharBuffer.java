@@ -31,29 +31,7 @@ public class CharBuffer extends FString
 
     public int length() { return size(); }
 
-  public char[] getArray() { return (char[]) getBuffer(); }
-
-  public void consume(int start, int count, Consumer dest)
-  {
-      throw new Error();
-      /*
-    char[] array = data;
-    if (start < gapStart)
-      {
-	int count0 = gapStart - start;
-	if (count0 > count)
-	  count0 = count;
-	dest.write(array, start, count0);
-	count -= count0;
-	start += count;
-      }
-    if (count > 0)
-      {
-	start += gapEnd - gapStart;
-	dest.write(array, start, count);
-      }
-      */
-  }
+    public char[] getArray() { return (char[]) getBuffer(); }
 
     @Override public int startPos() { return manager.startPos(); }
     @Override public int endPos() { return manager.endPos(); }

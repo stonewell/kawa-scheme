@@ -1,17 +1,18 @@
 package gnu.lists;
 
+import gnu.text.Char;
 import java.io.*;
+import java.util.RandomAccess;
 
-// FIXME should also implement CharSeq, Consumable
-// maybe also AVector<Char>, RandomAccess
-// FIXME should extend AbstractSequence<gnu.text.Char>
-//    of perhaps (unlikely) extend SimpleVector<gnu.text.Char>
+// FIXME should perhaps also implement CharSeq
+// FIXME should perhaps (unlikely) extend SimpleVector
 
 /** A string implementation with contant-time codepoint indexing.
  * Suitable for SRFI-135 or SRFI-140.
  */
-public class IString
-    implements CharSequence, Externalizable, Comparable<IString> {
+public class IString extends AbstractSequence<Char>
+    implements CharSequence, Externalizable, Comparable<IString>,
+               AVector<Char>, RandomAccess, Consumable {
     String str;
     int cplength; // number of codepoints
 
@@ -72,11 +73,19 @@ public class IString
         }
     }
 
-    /** used for string-ref */
-    public int indexByCodePoints(int i) {
-        if (i < 0 || i >= cplength)
+    public int effectiveIndex(int index) {
+        if (index < 0 || index >= cplength)
             throw new StringIndexOutOfBoundsException(); // FIXME add args
-        return str.codePointAt(offsetByCodePoints(i)+jlStart());
+        return offsetByCodePoints(index)+jlStart();
+    }
+
+    public Char getRaw(int index) {
+        return Char.valueOf(str.codePointAt(index));
+    }
+
+    /** used for string-ref */
+    public int indexByCodePoints(int index) {
+        return str.codePointAt(effectiveIndex(index));
     }
 
     /** Map character offset to char offset.
@@ -113,6 +122,8 @@ public class IString
     /* used for string-length */
     public int lengthByCodePoints() { return cplength; }
 
+    public int size() { return cplength; }
+
     /** To implement CharSequence */
     public char charAt(int i) { return str.charAt(i); }
     public String toString() { return str; }
@@ -137,6 +148,10 @@ public class IString
     public byte[] getBytes(String charsetName)
         throws java.io.UnsupportedEncodingException
     { return toString().getBytes(charsetName); }
+
+    public void consume(Consumer out) {
+        out.write(str, jlStart(), length());
+    }
 
     public int hashCode() { return toString().hashCode(); }
 
