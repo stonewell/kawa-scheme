@@ -1,3 +1,9 @@
+2017-03-10  Per Bothner  <per@bothner.com>
+
+	* lang/SyntaxTemplate.java (get_var): Avoid exception on bad ellipsis.
+	In the case of inconsistent ellipsis length, report an error
+	rather than throwing a NullPointerException.
+
 2017-03-01  Per Bothner  <per@bothner.com>
 
 	* standard/ImportFromLibrary.java: Fix computation of "current root".
