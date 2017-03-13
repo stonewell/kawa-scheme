@@ -1491,7 +1491,7 @@ public class CodeAttr extends Attribute implements AttrContainer
   }
 
   /** Compile code to put a non-static field value.
-   * Stack:  ..., objectref, value ⇒ ... */
+   * Stack:  ..., objectref, value => ... */
 
   public final void emitPutField (Field field)
   {
