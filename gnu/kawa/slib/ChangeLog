@@ -1,3 +1,7 @@
+2017-03-15  Per Bothner  <per@bothner.com>
+
+	* srfi14.scm: Add type specifiers for loop variables.
+
 2016-12-09  Per Bothner  <per@bothner.com>
 
 	Move bindings in the default Kawa-Scheme environment to kawa/lib.
