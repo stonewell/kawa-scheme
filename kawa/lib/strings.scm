@@ -47,7 +47,7 @@
 (define (string? x) :: <boolean>
   (instance? x <string>))
 
-(define (make-string n ::int #!optional (ch ::character #\Space))
+(define (make-string #!optional (n ::int 0) (ch ::character #\Space))
   ::gnu.lists.FString
   (make <gnu.lists.FString> n (as int ch)))
 
