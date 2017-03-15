@@ -11095,9 +11095,6 @@ Other operations may take time proportional to the number of inversions.
 
 Strings are sequences of characters.  The @emph{length} of a string is
 the number of characters that it contains, as an exact non-negative integer.
-This number is usually fixed when the string is created,
-however, you can extend a mutable string with
-the (Kawa-specific) @code{string-append!} function.
 The @emph{valid indices} of a string are the
 exact non-negative integers less than the length of the string.
 The first character of a
@@ -11113,10 +11110,52 @@ character counts) difficult to implement efficiently.  Luckily one
 rarely needs to index or count based on character counts;
 alternatives are discussed below.
 
+@cindex istring
+@cindex mstring
+There are different kinds of strings:
+@itemize
+@item
+An @dfn{istring} is @emph{immutable}:
+It is fixed, and cannot be modified.
+On the other hand, indexing (e.g. @code{string-ref}) is efficient (constant-time),
+while indexing of other string implementations takes time proportional
+to the index.
+
+String literals are istrings, as are the return values of
+most of the procedures in this chapter.
+
+An @dfn{istring} is an instance of the @code{gnu.lists.IString} class.
+
+@item
+An @dfn{mstring} is @emph{mutable}:
+You can replace individual characters (using @code{string-set!}).
+You can also change the @var{mstring}'s length by inserting
+or removing characters (using @code{string-append!} or @code{string-replace!}).
+
+An @dfn{mstring} is an instance of the @code{gnu.lists.FString} class.
+
+@item
+Any other object that implements the @code{java.lang.CharSequence} interface
+is also a string.
+This includes standard Java @code{java.lang.String}
+and @code{java.lang.StringBuilder} objects.
+@end itemize
+
 Some of the procedures that operate on strings ignore the
 difference between upper and lower case. The names of
 the versions that ignore case end with “@code{-ci}” (for “case
 insensitive”).
+
+@CompatibilityNote{}
+Many of the following procedures (for example @code{string-append})
+return an immutable istring in Kawa,
+but return a ``freshly allocated'' mutable string in
+standard Scheme (include R7RS) as well as most Scheme implementations
+(including previous versions of Kawa).
+To get the  ``compatibility mode'' versions of those procedures
+(which return mstrings),
+invoke Kawa with one the @code{--r5rs}, @code{--r6rs}, or @code{--r7rs}
+options, or you can @code{import} a standard library like @code{(scheme base)}.
 
 @deffn Type string
 The type of string objects.
@@ -11132,13 +11171,16 @@ Return @true{} if @var{obj} is a string, @false{} otherwise.
 @end deffn
 
 @deffn Constructor string @var{char} @dots{}
-Return a newly allocated string composed of the arguments.
+Return a string composed of the arguments.
 This is analogous to @var{list}.
+
+@CompatibilityNote{} The result is an istring,
+except in compatibility mode, when it is a new allocated mstring.
 @end deffn
 
-@deffn Procedure make-string @var{k}
-@deffnx Procedure make-string @var{k} @var{char}
-Return a newly allocated string of length @var{k}.  If @var{char} is
+@deffn Procedure make-string [@var{k} [@var{char}]]
+Return a newly allocated mstring of @var{k} characters,
+where @var{k} defaults to 0.  If @var{char} is
 given, then all elements of the string are initialized to @var{char},
 otherwise the contents of the @var{string} are unspecified.
 @end deffn
@@ -11147,7 +11189,8 @@ otherwise the contents of the @var{string} are unspecified.
 Return the number of characters in the given @var{string} as an exact
 integer object.
 
-@PerformanceNote{} Calling @code{string-length} may take time proportional
+@PerformanceNote{} If the @var{string} is not an istring,
+the calling @code{string-length} may take time proportional
 to the length of the @var{string},
 because of the need to scan for surrogate pairs.
 @end deffn
@@ -11157,7 +11200,8 @@ because of the need to scan for surrogate pairs.
 procedure returns character @var{k} of @var{string} using zero--origin
 indexing.
 
-@PerformanceNote{} Calling @code{string-ref} may take time proportional
+@PerformanceNote{} If the @var{string} is not an istring,
+then calling @code{string-ref} may take time proportional
 to @var{k} because of the need to check for surrogate pairs.
 An alternative is to use @code{string-cursor-ref}.
 If iterating through a string, use @code{string-for-each}.
@@ -11201,10 +11245,12 @@ from the characters of @var{string} beginning with index @var{start}
 (inclusive) and ending with index @var{end} (exclusive).
 @end deffn
 
-
 @deffn Procedure string-append @var{string} @dots{}
-Return a newly allocated string whose characters form the concatenation
+Returns a string whose characters form the concatenation
 of the given strings.
+
+@CompatibilityNote{} The result is an istring,
+except in compatibility mode, when it is an mstring.
 @end deffn
 
 @deffn Procedure string-append! @var{string} @var{value} @dots{}
@@ -11317,8 +11363,8 @@ it is a lambda expression.
 @end deffn
 
 @deffn Procedure string-copy @var{string} [@var{start} [@var{end}]]
-Returns a newly allocated copy of the part of the given @var{string}
-between @var{start} and @var{end}.
+Returns a newly allocated mutable (mstring) copy of the part of the given
+@var{string} between @var{start} and @var{end}.
 @end deffn
 
 @deffn Procedure string-replace!  @var{dst} @var{dst-start} @var{dst-end} @var{src} [@var{src-start} [@var{src-end}]]
@@ -16882,7 +16928,7 @@ An arbitrary Scheme value - and hence an arbitrary Java object.
 @defvar symbol
 The type of Scheme symbols.
 (Implemented using the Java class @code{gnu.mapping.Symbol}.)
-(Compatibility note: Previous versions of Kawa implemented
+(@CompatibilityNote{} Previous versions of Kawa implemented
 a simple Scheme symbol using an interned @code{java.lang.String}.)
 @end defvar
 
@@ -16905,7 +16951,7 @@ and @code{gnu.lists.FString} for mutable strings.
 Both of these implement the interface @code{java.lang.CharSequence}.
 In the future, we may change the representation for strings
 containing ``surrogate characters'', for efficient indexing.)
-(Compatibility note: Previous versions of Kawa
+(@CompatibilityNote{} Previous versions of Kawa
 always used @code{gnu.lists.FString}.)
 @end defvar
 

@@ -38,6 +38,16 @@ if you @code{(import (kawa base))} the procedures will return immutable strings.
 The command-line options @code{--r5rs} or @code{--r6rs} or @code{--r7rs}
 override the default so these procedures return mutable strings.
 @item
+@emph{Incompatible change:}
+Treating a string as a sequence is now simpler but possibly slower:
+The @var{I}'th element is now the @var{I}'th Unicode code point.
+Indexing with function-call syntax
+@code{(@var{string} @var{i})} is the same as @code{(string-ref @var{string} @var{i})} and
+@code{(length @var{string})} is the same as @code{(string-length @var{string})}.
+This applies to all classes that implement @code{java.lang.CharSequence}.
+Indexing may be a linear-time operation (thus much slower),
+unless the string is an @code{IString} (in which case it is constant-time),
+@item
 @emph{Incompatible change:} Before, if a Java parameter type
 was @code{java.lang.String} Kawa would accept any value, converting it
 using Object's @code{toString} method.
