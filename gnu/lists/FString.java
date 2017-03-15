@@ -29,7 +29,8 @@ public class FString extends AbstractCharVector<Char>
 
     public FString(int num, int value) {
         data = new char[value < 0x10000 ? num : 2 * num];
-        insertRepeatedRaw(0, value, num);
+        if (value != 0 && num != 0)
+            insertRepeatedRaw(0, value, num);
     }
 
     /** Create an FString from a char[].
