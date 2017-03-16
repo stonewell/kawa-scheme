@@ -1,3 +1,11 @@
+2017-03-15  Per Bothner  <per@bothner.com>
+
+	* Compilation.java (generateCheckArg): Fix default parameters.
+	The default expressions have to be compiled to Type.objectType,
+	and not the parameter's type, to be consistent with the unknown
+	type from the CallContext.  We can perhaps optimize if default is
+	known to be of correct type, but requires some logic changes.
+
 2017-02-25  Per Bothner  <per@bothner.com>
 
 	Fixes due to stricter Java-9 verifier.

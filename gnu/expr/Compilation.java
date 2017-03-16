@@ -1414,7 +1414,7 @@ public class Compilation implements SourceLocator
                 code.emitInvoke(getNextArgMethod);
                 code.emitElse();
                 Expression defaultArg = param.getInitValue();
-                defaultArg.compile(this, param.getType());
+                defaultArg.compile(this, Type.objectType);
                 code.emitFi();
             } else {
                 code.emitIfIntEqZero();
@@ -1460,7 +1460,7 @@ public class Compilation implements SourceLocator
                 code.emitInvoke(typeCallContext.getDeclaredMethod("getArgAsObject", 1));;
                 code.emitElse();
                 Expression defaultArg = param.getInitValue();
-                defaultArg.compile(this, param.getType());
+                defaultArg.compile(this, Type.objectType);
                 code.emitFi();
             }
             knext++;
