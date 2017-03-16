@@ -147,7 +147,7 @@
         string-capitalize
         string-capitalize! ;; ???
         string-normalize-nfd string-normalize-nfkd
-        string-normalize-nfc string-normalize-nfkc
+        string-normalize-nfc string-normalize-nfkc string-replicate
         subtype?
         syntax-error syntax->expression syntax-body->expression
         syntax-column syntax-line syntax-object->datum syntax-source

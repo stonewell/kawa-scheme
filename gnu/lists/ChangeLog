@@ -1,5 +1,8 @@
 2017-03-15  Per Bothner  <per@bothner.com>
 
+	* Strings.java (replicate): New method.
+	(offsetByCodePoints): Add index checking.
+
 	* FString.java (<init>): Minor optimization.
 
 2017-03-10  Per Bothner  <per@bothner.com>

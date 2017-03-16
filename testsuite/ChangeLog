@@ -1,3 +1,7 @@
+2017-03-15  Per Bothner  <per@bothner.com>
+
+	* text-test.scm: Add some tests for new string-replicate procedure.
+
 2017-03-10  Per Bothner  <per@bothner.com>
 
 	* text-test.scm: Update for new string-as-list model.

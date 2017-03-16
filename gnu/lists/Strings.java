@@ -57,8 +57,13 @@ public class Strings
      */
     public static int offsetByCodePoints(CharSequence str, int offset,
                                          int cuStart, int cpStart) {
-        if (str instanceof IString)
-            return ((IString) str).offsetByCodePoints(cpStart+offset);
+        if (str instanceof IString) {
+            IString istr = (IString) str;
+            offset += cpStart;
+            if (offset < 0 || offset > istr.size())
+                throw new IndexOutOfBoundsException();
+            return istr.offsetByCodePoints(offset);
+        }
         return Character.offsetByCodePoints(str, cuStart, offset);
     }
 
@@ -290,5 +295,42 @@ public class Strings
                 return d;
         }
         return n1 - n2;
+    }
+
+    public static IString replicate(int from, int to, boolean suppliedTo,
+                                    CharSequence string,
+                                    int start, int end, boolean suppliedEnd) {
+        int sstart = Strings.offsetByCodePoints(string, start, 0, 0);
+        if (end <= start || (suppliedTo && to < from)) {
+            if (end >= start && from == to)
+                return IString.valueOf("");
+            throw new StringIndexOutOfBoundsException();
+        }
+        int slen = end - start;
+        // startOffset = modulo(from, slen)
+        int startOffset = from % slen;
+        if (startOffset < 0) startOffset += slen;
+        int ptr = Strings.offsetByCodePoints(string, startOffset-start,
+                                             sstart, start);
+        int send = ! suppliedEnd ? string.length()
+            : Strings.offsetByCodePoints(string, end-startOffset, ptr, startOffset);
+        StringBuilder buf = new StringBuilder();
+        for (int i = from;
+             suppliedTo ? i < to : ptr < send;
+             i++) {
+            if (ptr == send)
+                ptr = sstart;
+            char ch = string.charAt(ptr);
+            ptr++;
+            buf.append(ch);
+            if (ch >= 0xD800 && ch <= 0xDBFF && ptr < send) {
+                char next = string.charAt(ptr);
+                if (next >= 0xDC00 && next <= 0xDFFF) {
+                    ptr++;
+                    buf.append(next);
+                }
+            }
+        }
+        return new IString(buf.toString());
     }
 }

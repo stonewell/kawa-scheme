@@ -7,7 +7,7 @@
                string->list string-copy string-copy!
                string-fill! string-upcase! string-downcase!
                string-capitalize string-capitalize!
-               string-append! string-replace!
+               string-append! string-replace! string-replicate
                string-map string-for-each srfi-13-string-for-each)
 
 (require <kawa.lib.prim_imports>)
@@ -280,3 +280,9 @@
       ((>= i len))
       (str:append (args i)))))
 
+(define (string-replicate str::string
+                          #!optional (from::int 0) (to::int 0 supplied-to)
+                          (start::int 0) (end::int 0 supplied-end))
+  ::string
+  (let* ((end (if supplied-end end (gnu.lists.Strings:sizeInCodePoints str))))
+    (gnu.lists.Strings:replicate from to supplied-to str start end supplied-end)))
