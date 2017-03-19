@@ -87,7 +87,7 @@ public class RunnableClosure<T>
   /** Get the result of running this {@code Runnable}.
    * The result is a value or a thrown exception.
    * Should be called after {#code run} finishes. */
-  Object getResult () throws Throwable
+  public Object getResult () throws Throwable
   {
     Throwable ex = exception;
     if (ex != null)

@@ -1,3 +1,8 @@
+2017-03-19  Sudarshan S Chawathe  <chaw@eip10.org>
+
+	* gnu/mapping/RunnableClosure.java (getResult): Add public
+	modifier to enable calling getResult as suggested by manual.
+
 2017-02-24  Per Bothner  <per@bothner.com>
 
 	Various places change @deprecated comment to @Deprecated annotation.
