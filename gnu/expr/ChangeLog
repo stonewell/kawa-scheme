@@ -1,3 +1,7 @@
+2017-03-20  Per Bothner  <per@bothner.com>
+
+	* Compilation.java (pushPendingImport): Also push DeclSetMapper.
+
 2017-03-15  Per Bothner  <per@bothner.com>
 
 	* Compilation.java (generateCheckArg): Fix default parameters.
