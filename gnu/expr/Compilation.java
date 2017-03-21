@@ -20,6 +20,7 @@ import gnu.text.Options;
 import gnu.text.SourceLocator;
 import gnu.text.SourceMessages;
 import kawa.lang.Translator.FormStack;
+import kawa.standard.require.DeclSetMapper;
 
 /** State for a single expression or module.
  * For each top-level thing (expression or file) we compile or evaluate
@@ -102,17 +103,18 @@ public class Compilation implements SourceLocator
   /** Stack of quads of (ModuleInfo, ScopeExp, position, formSize). */
   public java.util.Stack<Object> pendingImports;
 
-  public void pushPendingImport(ModuleInfo info, ScopeExp defs, FormStack forms)
-  {
-    if (pendingImports == null)
-      pendingImports = new java.util.Stack<Object>();
-    pendingImports.push(info);
-    pendingImports.push(defs);
-    Expression posExp = new ReferenceExp((Object) null);
-    posExp.setLine(this);
-    pendingImports.push(posExp);
-    pendingImports.push(forms.lastPair());
-  }
+    public void pushPendingImport(ModuleInfo info, ScopeExp defs,
+                                  FormStack forms, DeclSetMapper mapper) {
+        if (pendingImports == null)
+            pendingImports = new java.util.Stack<Object>();
+        pendingImports.push(info);
+        pendingImports.push(defs);
+        Expression posExp = new ReferenceExp((Object) null);
+        posExp.setLine(this);
+        pendingImports.push(posExp);
+        pendingImports.push(forms.lastPair());
+        pendingImports.push(mapper);
+    }
 
     public Map<String,ModuleInfo> subModuleMap;
 

@@ -287,7 +287,7 @@ public class require extends Syntax
             if (! info.loadEager(Compilation.COMPILED)
                 && info.getState() < Compilation.RESOLVED) {
                 // Oops.  We found a cycle.
-                tr.pushPendingImport(info, defs, forms);
+                tr.pushPendingImport(info, defs, forms, mapper);
                 return true;
             }
         }

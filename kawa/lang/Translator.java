@@ -16,18 +16,19 @@ import gnu.kawa.functions.GetNamedPart;
 import gnu.kawa.functions.CompileNamedPart;
 import gnu.kawa.functions.MakeSplice;
 import gnu.kawa.functions.MultiplyOp;
+import kawa.standard.expt;
 import gnu.kawa.xml.XmlNamespace;
 import gnu.math.DFloNum;
 import gnu.math.IntNum;
 import gnu.math.Unit;
-import kawa.standard.Scheme;
-import kawa.standard.expt;
 import gnu.text.Char;
 import gnu.text.SourceLocator;
 import gnu.text.StandardNamedChars;
 /* #ifdef enable:XML */
 import gnu.xml.NamespaceBinding;
 /* #endif */
+import kawa.standard.Scheme;
+import kawa.standard.require.DeclSetMapper;
 
 /** Used to translate from source to Expression.
  * The result has macros expanded, lexical names bound, etc, and is
@@ -1877,13 +1878,14 @@ public class Translator extends Compilation
         ScopeExp defs = (ScopeExp) pendingImports.elementAt(i++);
         Expression posExp = (Expression) pendingImports.elementAt(i++);
         Pair beforeGoal = (Pair) pendingImports.elementAt(i++);
+        DeclSetMapper mapper = (DeclSetMapper) pendingImports.elementAt(i++);
         if (mexp == defs)
           {
             // process(BODY_PARSED);
             savePos.setLine(this);
             setLine(posExp);
             Pair beforeImports = formStack.last;
-            kawa.standard.require.importDefinitions(null, info, null,
+            kawa.standard.require.importDefinitions(null, info, mapper,
                                                     formStack, defs, this);
             if (beforeGoal != beforeImports
                 && beforeImports != formStack.last)

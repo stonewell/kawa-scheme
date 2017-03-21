@@ -1,3 +1,9 @@
+2017-03-20  Per Bothner  <per@bothner.com>
+
+	* lang/Translator.java (resolveModule): Pop DeclSetMapper
+	when handing pendingImports.
+	* standard/require.java: Pass DeclSetMapper to pushPendingImport.
+
 2017-03-10  Per Bothner  <per@bothner.com>
 
 	* lang/SyntaxTemplate.java (get_var): Avoid exception on bad ellipsis.
