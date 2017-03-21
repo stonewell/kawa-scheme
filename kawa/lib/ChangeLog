@@ -1,3 +1,11 @@
+2017-03-20  Per Bothner  <per@bothner.com>
+
+	Change vector->string to (by default) return an istring.
+	* kawa/istrings.scm (list->string): Re-implement using mstring.
+	* strings.scm: Avdoid import of kawa.lib.characters.
+	* kawa/mstrings.scm (vector->string): Move here ...
+	* vectors.scm: ... instead of here.
+
 2017-03-15  Per Bothner  <per@bothner.com>
 
 	* strings.scm (string-replicate): New procedure.

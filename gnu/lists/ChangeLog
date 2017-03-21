@@ -1,3 +1,7 @@
+2017-03-20  Per Bothner  <per@bothner.com>
+
+	* Strings.java (replicate): Change return type to plain String.
+
 2017-03-15  Per Bothner  <per@bothner.com>
 
 	* Strings.java (replicate): New method.

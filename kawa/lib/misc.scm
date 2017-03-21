@@ -82,11 +82,11 @@
 ;;(static-field <kawa.standard.Scheme> 'nullEnvironment))
 
 (define (scheme-report-environment version)
-  (case version
-    ((5) (kawa.standard.Scheme:getR5rsEnvironment))
-    (else (primitive-throw
-           (kawa.lang.NamedException:makeError
-            "scheme-report-environment version must be 4 or 5")))))
+  (if (eqv? version 5)
+      (kawa.standard.Scheme:getR5rsEnvironment)
+      (primitive-throw
+       (kawa.lang.NamedException:makeError
+        "scheme-report-environment version must be 5"))))
 
 (define (interaction-environment)
   (invoke-static <gnu.mapping.Environment> 'user))

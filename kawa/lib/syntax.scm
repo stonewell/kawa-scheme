@@ -11,7 +11,7 @@
 (require <kawa.lib.reflection>)
 (require <kawa.lib.lists>)
 (require <kawa.lib.scheme.eval>)
-(require kawa.lib.kawa.istrings)
+(import (only kawa.lib.kawa.istrings string-append))
 (import (only kawa.standard.define_syntax (define_macro %define-macro)))
 
 (define-syntax defmacro

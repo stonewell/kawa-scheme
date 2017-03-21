@@ -1,10 +1,24 @@
 (module-name (kawa mstrings))
 
-(export list->string (rename mstring string) string-append substring)
+(export list->string (rename mstring string) string-append substring
+        vector->string)
 
 (require kawa.lib.prim_imports)
 (require <kawa.lib.std_syntax>)
 (import kawa.lib.strings)
+
+(define (vector->string (vec ::vector)
+                        #!optional (start ::int 0) (end ::int (vec:size)))
+  ::string
+  (let ((result (gnu.lists.FString:alloc (- end start))))
+    (let loop ((i ::int start))
+      (if (>= i end)
+          result
+          (let ((ch (vec i)))
+            (if (java.lang.Character? ch)
+                (result:append ((as java.lang.Character ch):charValue))
+                (result:appendCharacter ((as gnu.text.Char ch):intValue)))
+            (loop (+ i 1)))))))
 
 (define (list->string (lst ::list)) ::string
   (let* ((len ::int (lst:size))

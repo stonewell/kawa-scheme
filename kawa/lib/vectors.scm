@@ -34,19 +34,6 @@
 (define (list->vector (x :: <list>)) :: <vector>
   (gnu.lists.FVector x))
 
-(define (vector->string (vec ::vector)
-                        #!optional (start ::int 0) (end ::int (vec:size)))
-  ::string
-  (let loop ((result ::java.lang.StringBuilder (java.lang.StringBuilder))
-	     (i ::int start))
-    (if (>= i end)
-	(gnu.lists.FString result)
-        (let ((ch (vector-ref vec i)))
-          (if (java.lang.Character? ch)
-              (result:append ((as java.lang.Character ch):charValue))
-              (gnu.text.Char:print ((as gnu.text.Char ch):intValue) result))
-          (loop result (+ i 1))))))
-
 (define (string->vector (str ::string)
                         #!optional (start ::int 0) (end ::int (str:length)))
   ::vector

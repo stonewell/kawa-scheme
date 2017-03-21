@@ -42,7 +42,7 @@
  symbol->string symbol=? symbol? syntax-error syntax-rules
  textual-port? truncate truncate-quotient truncate-remainder truncate/
  u8-ready? unless utf8->string
- values vector vector->list vector->string vector-append vector-copy
+ values vector vector->list vector-append vector-copy
  vector-copy! vector-fill! vector-for-each vector-length vector-map
  vector-ref vector-set! vector?
  when with-exception-handler write-bytevector write-char write-string write-u8

@@ -19,5 +19,5 @@
 (import (except kawa.lib.prim_imports string))
 (import (only kawa.lib.prim_imports (letrec letrec*)))
 (import kawa.mstrings)
-(export list->string string-append substring)
+(export list->string string-append substring vector->string)
 (include "base-exports")

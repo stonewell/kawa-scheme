@@ -297,13 +297,13 @@ public class Strings
         return n1 - n2;
     }
 
-    public static IString replicate(int from, int to, boolean suppliedTo,
+    public static String replicate(int from, int to, boolean suppliedTo,
                                     CharSequence string,
                                     int start, int end, boolean suppliedEnd) {
         int sstart = Strings.offsetByCodePoints(string, start, 0, 0);
         if (end <= start || (suppliedTo && to < from)) {
             if (end >= start && from == to)
-                return IString.valueOf("");
+                return "";
             throw new StringIndexOutOfBoundsException();
         }
         int slen = end - start;
@@ -331,6 +331,6 @@ public class Strings
                 }
             }
         }
-        return new IString(buf.toString());
+        return buf.toString();
     }
 }

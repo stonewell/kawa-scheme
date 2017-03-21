@@ -14,7 +14,6 @@
 (require <kawa.lib.std_syntax>)
 (require <kawa.lib.syntax>)
 (require <kawa.lib.lists>)
-(require <kawa.lib.characters>)
 (import (kawa lib kawa string-cursors))
 
 (define-syntax define-compare
@@ -166,7 +165,7 @@
 (define-compare string-ci>=? string >= %string-compare-ci2)
 
 (define (%char-compare (c1 :: character) (c2 :: character)) ::int
-  (let ((i1 (char->integer c1)) (i2 (char->integer c2)))
+  (let ((i1 (as int c1)) (i2 (as int c2)))
     (cond ((> i1 i2) 1) ((< i1 i2) -1) (else 0))))
 
 (define-compare char=? character = %char-compare
@@ -181,8 +180,8 @@
   validate-apply: "kawa.lib.compile_misc:charCompareValidateApply")
 
 (define (%char-compare-ci (c1 :: character) (c2 :: character)) ::int
-  (- (java.lang.Character:toUpperCase (char->integer c1))
-     (java.lang.Character:toUpperCase (char->integer c2))))
+  (- (java.lang.Character:toUpperCase (as int c1))
+     (java.lang.Character:toUpperCase (as int c2))))
 
 (define-compare char-ci=? character = %char-compare-ci
   validate-apply: "kawa.lib.compile_misc:charCompareValidateApply")
@@ -285,4 +284,5 @@
                           (start::int 0) (end::int 0 supplied-end))
   ::string
   (let* ((end (if supplied-end end (gnu.lists.Strings:sizeInCodePoints str))))
-    (gnu.lists.Strings:replicate from to supplied-to str start end supplied-end)))
+    (gnu.lists.IString
+     (gnu.lists.Strings:replicate from to supplied-to str start end supplied-end))))
