@@ -1,3 +1,7 @@
+2017-03-21  Per Bothner  <per@bothner.com>
+
+	* Expt.java: Moved from from kawa/standard/expt.java.
+
 2017-01-26  Per Bothner  <per@bothner.com>
 
 	* GetModuleClass.java (getModuleClassExp): New method.

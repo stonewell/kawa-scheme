@@ -110,7 +110,7 @@
 (import (only (kawa standard begin) begin))
 (import (rename (only (gnu kawa functions CallWithValues) callWithValues)
                 (callWithValues call-with-values)))
-(import (only (kawa standard expt) expt))
+(import (only gnu.kawa.functions.Expt expt))
 (import (only kawa.standard.define_alias
               (define_alias define-alias)
               (define_private_alias define-private-alias)))

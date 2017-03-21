@@ -1,3 +1,7 @@
+2017-03-21  Per Bothner  <per@bothner.com>
+
+	* standard/expt.java: Moved to gnu.kawa.functions.Expt.
+
 2017-03-20  Per Bothner  <per@bothner.com>
 
 	* lang/Translator.java (resolveModule): Pop DeclSetMapper

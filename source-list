@@ -363,6 +363,7 @@ GNU_KAWA_FUNCTIONS_JSOURCES = \
   gnu/kawa/functions/Curry1.java \
   gnu/kawa/functions/DisplayFormat.java \
   gnu/kawa/functions/DivideOp.java \
+  gnu/kawa/functions/Expt.java \
   gnu/kawa/functions/GetModuleClass.java \
   gnu/kawa/functions/GetNamedInstancePart.java \
   gnu/kawa/functions/GetNamedPart.java \
@@ -758,7 +759,6 @@ KAWA_STANDARD_JSOURCES =\
   kawa/standard/define_syntax.java \
   kawa/standard/define_unit.java \
   kawa/standard/export.java \
-  kawa/standard/expt.java \
   kawa/standard/fluid_let.java \
   kawa/standard/IfFeature.java \
   kawa/standard/ImportFromLibrary.java \

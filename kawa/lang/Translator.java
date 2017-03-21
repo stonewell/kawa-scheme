@@ -16,7 +16,7 @@ import gnu.kawa.functions.GetNamedPart;
 import gnu.kawa.functions.CompileNamedPart;
 import gnu.kawa.functions.MakeSplice;
 import gnu.kawa.functions.MultiplyOp;
-import kawa.standard.expt;
+import gnu.kawa.functions.Expt;
 import gnu.kawa.xml.XmlNamespace;
 import gnu.math.DFloNum;
 import gnu.math.IntNum;
@@ -1177,7 +1177,7 @@ public class Translator extends Compilation
                         Expression uref = tr.rewrite(usym);
                         IntNum uexp = (IntNum) vec.get(2 * i + 1);
                         if (uexp.longValue() != 1)
-                            uref = new ApplyExp(expt.expt,
+                            uref = new ApplyExp(Expt.expt,
                                                 new Expression[] {
                                     uref, makeQuoteExp(uexp)
                                 });
