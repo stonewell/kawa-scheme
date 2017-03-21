@@ -24,9 +24,10 @@ and @code{string-length} are (roughly) constant-time, rather than
 having to linearly scan the string.
 @item
 @emph{Incompatible change:} The procedures @code{string-append},
-@code{substring}, @code{list->string}, and the constructor @code{string}
+@code{substring}, @code{list->string}, @code{vector->string},
+and the constructor @code{string}
 return an immutable string (an @code{IString}).
-(The functions @code{string-copy} is similar to @code{substring},
+(The function @code{string-copy} is similar to @code{substring},
 but returns a mutable string.)
 This is a work-in-progress with the goal of implementing
 @uref{http://srfi.schemers.org/srfi-140/srfi-140.html,SRFI-140}:

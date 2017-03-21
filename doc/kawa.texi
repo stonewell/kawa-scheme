@@ -11332,19 +11332,6 @@ using @code{string-append!}.
 @end example
 @end deffn
 
-@deffn Procedure string->list @var{string} [@var{start} [@var{end}]]
-@deffnx Procedure list->string @var{list}
-It is an error if any element of @var{list} is not a character.
-
-The @func{string->list} procedure returns a newly allocated list of the
-characters of @var{string} between @var{start} and @var{end}.
-The @func{list->string} procedure returns a newly allocated string
-formed from the characters in @var{list}.
-In both procedures, order is preserved.
-The @func{string->list} and @func{list->string} procedures are inverses
-so far as @func{equal?} is concerned.
-@end deffn
-
 @deffn Procedure string-for-each @var{proc} @vari{string} @varii{string} @dots{}
 @deffnx Procedure string-for-each @var{proc} @vari{string} [start [end]]
 The @var{string}s must all have the same length.  @var{proc} should
@@ -11516,7 +11503,45 @@ before invoking the corresponding procedures without @code{-ci}.
 @end example
 @end deffn
 
-@subsection String Conversions
+@subsection Conversions
+
+@deffn Procedure list->string @var{list}
+The @func{list->string} procedure returns an istring
+formed from the characters in @var{list}, in order.
+It is an error if any element of @var{list} is not a character.
+
+@CompatibilityNote{} The result is an istring,
+except in compatibility mode, when it is an mstring.
+@end deffn
+
+@deffn Procedure string->list @var{string} [@var{start} [@var{end}]]
+The @func{string->list} procedure returns a newly allocated list of the
+characters of @var{string} between @var{start} and @var{end}, in order.
+The @func{string->list} and @func{list->string} procedures are inverses
+so far as @func{equal?} is concerned.
+@end deffn
+
+@deffn Procedure vector->string vector [start [end]]
+The @code{vector->string} procedure returns a newly allocated
+string of the objects contained in the elements of @var{vector}
+between @var{start} and @var{end}.
+It is an error if any element of @var{vector} between @var{start}
+and @var{end} is not a character, or is a character forbidden in strings.
+@example
+(vector->string #(#\1 #\2 #\3))             @result{} "123"
+(vector->string #(#\1 #\2 #\3 #\4 #\5) 2 4) @result{} "34"
+@end example
+@end deffn
+
+@deffn Procedure string->vector string [start [end]]
+The @code{string->vector} procedure
+returns a newly created vector initialized to the elements
+of the string @var{string} between @var{start} and @var{end}.
+@example
+(string->vector "ABC")       @result{} #(#\A #\B #\C)
+(string->vector "ABCDE" 1 3) @result{} #(#\B #\C)
+@end example
+@end deffn
 
 @deffn Procedure string-upcase @var{string}
 @deffnx Procedure string-downcase @var{string}
@@ -13004,28 +13029,6 @@ The @func{list->vector} procedure returns a newly created vector
 initialized to the elements of the list @var{list}, in order.
 @example
 (list->vector '(dididit dah))           @result{}  #(dididit dah)
-@end example
-@end deffn
-
-@deffn Procedure vector->string vector [start [end]]
-The @code{vector->string} procedure returns a newly allocated
-string of the objects contained in the elements of @var{vector}
-between @var{start} and @var{end}.
-It is an error if any element of @var{vector} between @var{start}
-and @var{end} is not a character, or is a character forbidden in strings.
-@example
-(vector->string #(#\1 #\2 #\3))             @result{} "123"
-(vector->string #(#\1 #\2 #\3 #\4 #\5) 2 4) @result{} "34"
-@end example
-@end deffn
-
-@deffn Procedure string->vector string [start [end]]
-The @code{string->vector} procedure
-returns a newly created vector initialized to the elements
-of the string @var{string} between @var{start} and @var{end}.
-@example
-(string->vector "ABC")       @result{} #(#\A #\B #\C)
-(string->vector "ABCDE" 1 3) @result{} #(#\B #\C)
 @end example
 @end deffn
 
