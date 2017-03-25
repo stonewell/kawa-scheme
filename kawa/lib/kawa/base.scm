@@ -129,7 +129,8 @@
         receive record? record-accessor record-constructor record-modifier
         record-predicate record-type-descriptor record-type-field-names
         record-type-name
-        repl resolve-uri resource-url reverse! run-process
+        repl resolve-uri resource-url reverse! reverse-list->string
+        run-process
         s8vector s8vector? s8vector-length
         s8vector-ref s8vector-set! s8vector->list
         s16vector s16vector? s16vector-length

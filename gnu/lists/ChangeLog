@@ -1,3 +1,7 @@
+2017-03-25  Per Bothner  <per@bothner.com>
+
+	* FString.java (prependCharacter): New method.
+
 2017-03-20  Per Bothner  <per@bothner.com>
 
 	* Strings.java (replicate): Change return type to plain String.

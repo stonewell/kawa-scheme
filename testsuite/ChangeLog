@@ -1,3 +1,7 @@
+2017-03-25  Per Bothner  <per@bothner.com>
+
+	* text-test.scm Add tests for reverse-list->string.
+
 2017-03-15  Per Bothner  <per@bothner.com>
 
 	* text-test.scm: Add some tests for new string-replicate procedure.

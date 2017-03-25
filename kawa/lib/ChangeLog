@@ -1,3 +1,8 @@
+2017-03-25  Per Bothner  <per@bothner.com>
+
+	* strings.scm (reverse-list->string): Add SRFI-140 procedure.
+	* kawa/base.scm: Export reverse-list->string.
+
 2017-03-20  Per Bothner  <per@bothner.com>
 
 	Change vector->string to (by default) return an istring.

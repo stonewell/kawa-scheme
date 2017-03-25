@@ -171,6 +171,10 @@
   (test-equal #\x1f602 (str 3))
   (test-equal #\c (str 4)))
 
+(test-equal "" (reverse-list->string '()))
+(test-equal "cba" (reverse-list->string '(#\a #\b #\c)))
+(test-equal "c😼b😂a" (reverse-list->string '(#\a #\😂 #\b #\😼 #\c)))
+
 (let ((str1 (string-copy "abcdef")))
   (test-equal "ef" (str1 [4 <:]))
   (test-equal "bfdc" (str1 [1 5 3 2]))
