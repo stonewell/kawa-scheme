@@ -6736,8 +6736,8 @@ It is an error if no @var{match-clause} matches.
 @example
 (match value
   (0 (found-zero))
-  (x #if (> x 0) (found-positive x))
-  (x #if (< x 0) (found-negative x))
+  (x #!if (> x 0) (found-positive x))
+  (x #!if (< x 0) (found-negative x))
   (x::symbol (found-symbol x))
   (_ (found-other)))
 @end example
@@ -11296,14 +11296,6 @@ from the characters of @var{string} beginning with index @var{start}
 (inclusive) and ending with index @var{end} (exclusive).
 @end deffn
 
-@deffn Procedure string-append @var{string} @dots{}
-Returns a string whose characters form the concatenation
-of the given strings.
-
-@CompatibilityNote{} The result is an istring,
-except in compatibility mode, when it is an mstring.
-@end deffn
-
 @deffn Procedure string-append! @var{string} @var{value} @dots{}
 The @var{string} must be a mutable string, such as one returned
 by @code{make-string} or @code{string-copy}.
@@ -11514,6 +11506,16 @@ It is an error if any element of @var{list} is not a character.
 except in compatibility mode, when it is an mstring.
 @end deffn
 
+@deffn Procedure reverse-list->string @var{list}
+An efficient implementation of @code{(compose list->text reverse)}:
+@example
+(reverse-list->text '(#\a #\B #\c))  @result{} "cBa"
+@end example
+This is a common idiom in the epilogue of string-processing loops
+that accumulate their result using a list in reverse order.
+(See also @code{string-concatenate-reverse} for the ``chunked'' variant.)
+@end deffn
+
 @deffn Procedure string->list @var{string} [@var{start} [@var{end}]]
 The @func{string->list} procedure returns a newly allocated list of the
 characters of @var{string} between @var{start} and @var{end}, in order.
@@ -11631,6 +11633,102 @@ the argument instead of a newly allocated string.
 (string-normalize-nfd "\x65;\x301;")    @result{} "\x65;\x301;"
 (string-normalize-nfc "\x65;\x301;")    @result{} "\xE9;"
 @end example
+@end deffn
+
+@subsection Concatenation
+
+Also see @code{string-append!},
+for destructive appending of a mutable string.
+
+@deffn Procedure string-append @var{string} @dots{}
+Returns a string whose characters form the concatenation
+of the given strings.
+
+@CompatibilityNote{} The result is an istring,
+except in compatibility mode, when it is an mstring.
+@end deffn
+
+@deffn Procedure string-concatenate string-list
+Concatenates the elements of @var{string-list} together into a single istring.
+
+@emph{Rationale:} Some implementations of Scheme limit the number of
+arguments that may be passed to an n-ary procedure, so the
+@code{(apply string-append @var{string-list})} idiom,
+which is otherwise equivalent to using this procedure, is not as portable.
+@end deffn
+
+@deffn Procedure string-concatenate-reverse string-list [final-string [end]])
+With no optional arguments, calling this procedure is equivalent to
+@code{(string-concatenate (reverse @var{string-list}))}.
+If the optional argument @var{final-string} is specified,
+it is effectively consed onto the beginning of @var{string-list}
+before performing the list-reverse and string-concatenate operations.
+
+If the optional argument @var{end} is given, only the characters up to but not including @var{end} in @var{final-string} are added to the result,
+thus producing
+@example
+(string-concatenate 
+  (reverse (cons (substring final-string 0 end)
+                 string-list)))
+@end example
+For example:
+@example
+(string-concatenate-reverse '(" must be" "Hello, I") " going.XXXX" 7)
+  @result{} "Hello, I must be going."
+@end example
+
+@emph{Rationale:} This procedure is useful when constructing
+procedures that accumulate character data into lists of string
+buffers, and wish to convert the accumulated data into a single string
+when done. The optional end argument accommodates that use case when
+@var{final-string} is a bob-full mutable string,
+and is allowed (for uniformity) when
+@var{final-string} is an immutable string.
+@end deffn
+
+@deffn Procedure string-join string-list [delimiter [grammar]])
+This procedure is a simple unparser; it pastes strings together
+using the @var{delimiter} string, returning an istring.
+
+The @var{string-list} is a list of strings.
+The @var{delimiter} is the string used to delimit elements; it defaults to a single space @code{" "}.
+
+The @var{grammar} argument is a symbol that determines how the @var{delimiter}
+is used, and defaults to @code{'infix}.
+It is an error for @var{grammar} to be any symbol other than these four:
+@table @code
+@item 'infix
+An infix or separator grammar: insert the delimiter between list elements. An empty list will produce an empty string.
+@item 'strict-infix
+Means the same as @code{'infix} if the string-list is non-empty,
+but will signal an error if given an empty list.
+(This avoids an ambiguity shown in the examples below.)
+@item 'suffix
+Means a suffix or terminator grammar: insert the @var{delimiter}
+after every list element.
+@item 'prefix
+Means a prefix grammar: insert the @var{delimiter} before every list element.
+@end table
+
+@example
+(string-join '("foo" "bar" "baz"))
+         @result{} "foo bar baz"
+(string-join '("foo" "bar" "baz") "")
+         @result{} "foobarbaz"
+(string-join '("foo" "bar" "baz") ":")
+         @result{} "foo:bar:baz"
+(string-join '("foo" "bar" "baz") ":" 'suffix)
+         @result{} "foo:bar:baz:"
+
+;; Infix grammar is ambiguous wrt empty list vs. empty string:
+(string-join '()   ":") @result{} ""
+(string-join '("") ":") @result{} ""
+
+;; Suffix and prefix grammars are not:
+(string-join '()   ":" 'suffix)) @result{} ""
+(string-join '("") ":" 'suffix)) @result{} ":"
+@end example
+
 @end deffn
 
 @subsection Strings as sequences

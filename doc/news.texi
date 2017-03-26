@@ -17,6 +17,9 @@ of @code{case} using patterns.
 The internal calling convention used for ``apply'' (ie. calling
 an unknown-at-compile-time procedure) has been completely changed.
 @item
+Major changes to string:
+@itemize
+@item
 @emph{Incompatible change:} String literals are now
 @code{gnu.lists.IString} rather than @code{java.lang.String}.
 The advantage of using @code{gnu.lists.IString} is that @code{string-ref}
@@ -53,6 +56,13 @@ unless the string is an @code{IString} (in which case it is constant-time),
 was @code{java.lang.String} Kawa would accept any value, converting it
 using Object's @code{toString} method.
 Now Kawa will reject an argument if it is not a @code{java.lang.CharSequence}.
+@item
+New procedures: @code{reverse-list->string}, @code{string-join},
+@code{string-concatenate}, @code{string-concatenate-reverse}.
+These follow SRFI-140 and return immutable strings.
+(Some of these had previously been available in SRFI-13,
+but the older versions return mutable strings.)
+@end itemize
 @item
 @emph{Incompatible change:} Kawa traditionally followed Java in allowing you
 to pass an array with the ``rest'' arguments to a varargs method.
