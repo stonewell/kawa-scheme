@@ -147,6 +147,7 @@
         string-titlecase
         string-capitalize
         string-capitalize! ;; ???
+        string-concatenate string-concatenate-reverse
         string-normalize-nfd string-normalize-nfkd
         string-normalize-nfc string-normalize-nfkc string-replicate
         subtype?
@@ -194,6 +195,7 @@
    kawa.lib.prim_imports
    kawa.lib.reflection
    kawa.lib.strings
+   kawa.lib.strings_ext
    kawa.lib.std_syntax
    kawa.lib.syntax
    kawa.lib.system

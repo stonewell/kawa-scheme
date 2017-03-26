@@ -1,3 +1,7 @@
+2017-03-26  Per Bothner  <per@bothner.com>
+
+	* FString.java (prepend *2): Two new methods.
+
 2017-03-25  Per Bothner  <per@bothner.com>
 
 	* FString.java (prependCharacter): New method.

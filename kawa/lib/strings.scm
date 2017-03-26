@@ -2,10 +2,10 @@
                string-ref string-set!
                char=? char<? char>? char<=? char>=?
                char-ci=? char-ci<? char-ci>? char-ci<=? char-ci>=?
-               reverse-list->string
                string=? string<? string>? string<=? string>=?
 	       string-ci=? string-ci<? string-ci>? string-ci<=? string-ci>=?
-               string->list string-copy string-copy!
+               string->list
+               string-copy string-copy!
                string-fill! string-upcase! string-downcase!
                string-capitalize string-capitalize!
                string-append! string-replace! string-replicate
@@ -287,12 +287,3 @@
   (let* ((end (if supplied-end end (gnu.lists.Strings:sizeInCodePoints str))))
     (gnu.lists.IString
      (gnu.lists.Strings:replicate from to supplied-to str start end supplied-end))))
-
-(define (reverse-list->string (lst ::list)) ::string
-  (let* ((len ::int (lst:size))
-	 (result (gnu.lists.FString:alloc len)))
-    (do ((i ::int 0 (+ i 1)))
-	((>= i len) (gnu.lists.IString (result:toString)))
-      (let ((pair ::pair lst))
-        (result:prependCharacter (as int (as character pair:car)))
-	(set! lst pair:cdr)))))

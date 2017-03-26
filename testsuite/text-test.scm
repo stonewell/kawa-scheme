@@ -175,6 +175,29 @@
 (test-equal "cba" (reverse-list->string '(#\a #\b #\c)))
 (test-equal "c😼b😂a" (reverse-list->string '(#\a #\😂 #\b #\😼 #\c)))
 
+(test-equal "" (string-concatenate '()))
+(test-equal "abcdef"
+            (string-concatenate '("" "a" "bcd" "" "ef" "" "")))
+
+(test-equal "" (string-concatenate-reverse '()))
+
+(test-equal "efbcda"
+            (string-concatenate-reverse
+             '("" "a" "bcd" "" "ef" "" "")))
+
+(test-equal "huh?"
+            (string-concatenate-reverse '() "huh?"))
+
+(test-equal "efbcdaxy"
+            (string-concatenate-reverse '("" "a" "bcd" "" "ef" "" "") "xy"))
+
+(test-equal "huh"
+            (string-concatenate-reverse '() "huh?" 3))
+
+(test-equal "efbcdax"
+            (string-concatenate-reverse
+             '("" "a" "bcd" "" "ef" "" "") "x" 1))
+
 (let ((str1 (string-copy "abcdef")))
   (test-equal "ef" (str1 [4 <:]))
   (test-equal "bfdc" (str1 [1 5 3 2]))

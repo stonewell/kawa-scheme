@@ -523,27 +523,6 @@ public class FString extends AbstractCharVector<Char>
         return this;
     }
 
-    public FString prependCharacter(int c) {
-        int delta;
-        if (c < 0x10000)
-            delta = 1;
-        else if (c == Char.IGNORABLE_CHAR)
-            return this;
-        else
-            delta = 2;
-        int sz = length();
-        gapReserve(0, delta);
-        int p = getGapEnd()-delta;
-        setGapBounds(getGapStart(), p);
-        char[] d = data;
-        if (delta > 1) {
-            d[p++] = (char) (((c - 0x10000) >> 10) + 0xD800);
-            c = (c & 0x3FF) + 0xDC00;
-        }
-        d[p++] = (char) c;
-        return this;
-    }
-
     public FString append(CharSequence csq) {
         if (csq == null)
             csq = "null";
@@ -574,8 +553,62 @@ public class FString extends AbstractCharVector<Char>
             appendCharacter(((gnu.text.Char) obj).intValue());
         else if (obj instanceof java.lang.Character)
             appendCharacter(((java.lang.Character) obj).charValue());
+        else {
+            CharSequence str = obj instanceof CharSequence ? (CharSequence) obj
+                : obj.toString();
+            append(str, 0, str.length());
+        }
+        return this;
+    }
+
+    public FString prependCharacter(int c) {
+        int delta;
+        if (c < 0x10000)
+            delta = 1;
+        else if (c == Char.IGNORABLE_CHAR)
+            return this;
         else
-            append(obj.toString());
+            delta = 2;
+        int sz = length();
+        gapReserve(0, delta);
+        int p = getGapEnd()-delta;
+        setGapBounds(getGapStart(), p);
+        char[] d = data;
+        if (delta > 1) {
+            d[p++] = (char) (((c - 0x10000) >> 10) + 0xD800);
+            c = (c & 0x3FF) + 0xDC00;
+        }
+        d[p++] = (char) c;
+        return this;
+    }
+
+    public FString prepend(CharSequence str, int start, int end) {
+        int len = end - start;
+        gapReserve(0, len);
+        int p = getGapEnd()-len;
+        setGapBounds(getGapStart(), p);
+        char[] d = data;
+        if (str instanceof String)
+            ((String) str).getChars(start, end, d, p);
+        else if (str instanceof CharSeq)
+            ((CharSeq) str).getChars(start, end, d, p);
+        else {
+            for (int i = start; i < end;  i++)
+                d[p++] = str.charAt(i);;
+        }
+        return this;
+    }
+
+    public FString prepend(Object obj) {
+        if (obj instanceof gnu.text.Char)
+            prependCharacter(((gnu.text.Char) obj).intValue());
+        else if (obj instanceof java.lang.Character)
+            prependCharacter(((java.lang.Character) obj).charValue());
+        else {
+            CharSequence str = obj instanceof CharSequence ? (CharSequence) obj
+                : obj.toString();
+            prepend(str, 0, str.length());
+        }
         return this;
     }
 

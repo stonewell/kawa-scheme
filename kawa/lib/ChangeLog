@@ -1,3 +1,8 @@
+2017-03-26  Per Bothner  <per@bothner.com>
+
+	Add string-concatenate and string-concatenate-reverse procedures.
+	* kawa/strings_ext.scm: New file.
+
 2017-03-25  Per Bothner  <per@bothner.com>
 
 	* strings.scm (reverse-list->string): Add SRFI-140 procedure.

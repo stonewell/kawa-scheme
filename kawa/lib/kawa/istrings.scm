@@ -9,8 +9,6 @@
               (vector->string vector->mstring)
               (list->string list->mstring)))
 
-;;(import (only kawa.lib.kawa.mstrings (list->string list->mstring)))
-
 (define ($make$string$ #!rest args ::object[]) :: <string>
   (let* ((n :: <int> args:length)
 	 (str (gnu.lists.FString:alloc n)))

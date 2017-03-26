@@ -44,7 +44,7 @@ java_SCM_ALWAYS1 =\
 # The following files may import (scheme base).
 java_SCM_ALWAYS2 = enums.scm srfi/8.scm srfi/26.scm srfi/95.scm \
   rnrs/hashtables.scm rnrs/lists.scm rnrs/arithmetic/bitwise.scm \
-  rnrs/unicode.scm rnrs/sorting.scm rnrs/programs.scm \
+  rnrs/unicode.scm rnrs/sorting.scm rnrs/programs.scm strings_ext.scm \
   kawa/base.scm
 # The following files may import (kawa base).
 java_SCM_ALWAYS3 = kawa/quaternions.scm kawa/pprint.scm kawa/rotations.scm \
