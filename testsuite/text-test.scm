@@ -134,18 +134,6 @@
                    str1 1 4)
   (test-equal '(128514 98 128572) (reverse str)))
 
-(import (srfi :13 strings))
-(test-equal 15 (string-contains "eek -- what a geek." "ee" 12 18))
-
-;;; Test SRFI-13 string-append/shared
-(let ((str "abc"))
-  (test-equal "" (string-append/shared))
-  (test-equal "" (string-append/shared ""))
-  (test-equal "abc" (string-append/shared str))
-  (set! str (string-append/shared str "123" "xy"))
-  (test-equal "abc123xy" (string-append/shared str))
-  (test-equal "abc123xy" str))
-
 (define (translate-space-to-newline str::string)::string
   (let ((result (make-string 0)))
     (string-for-each
@@ -197,6 +185,19 @@
 (test-equal "efbcdax"
             (string-concatenate-reverse
              '("" "a" "bcd" "" "ef" "" "") "x" 1))
+
+(test-equal "foo bar baz" (string-join '("foo" "bar" "baz")))
+(test-equal "foobarbaz" (string-join '("foo" "bar" "baz") ""))
+(test-equal "foo:bar:baz" (string-join '("foo" "bar" "baz") ":"))
+(test-equal "foo:bar:baz:" (string-join '("foo" "bar" "baz") ":" 'suffix))
+(test-equal "" (string-join '() ":"))
+(test-equal "" (string-join '("") ":"))
+(test-equal "" (string-join '()  ":" 'infix))
+(test-error (string-join '()  ":" 'strict-infix))
+(test-equal "A" (string-join '("A")  ":" 'strict-infix))
+(test-equal "A:B" (string-join '("A" "B")  ":" 'strict-infix))
+(test-equal "" (string-join '()  ":" 'suffix))
+(test-equal ":" (string-join '("") ":" 'suffix))
 
 (let ((str1 (string-copy "abcdef")))
   (test-equal "ef" (str1 [4 <:]))

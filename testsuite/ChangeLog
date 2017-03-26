@@ -1,7 +1,7 @@
 2017-03-26  Per Bothner  <per@bothner.com>
 
-	* text-test.scm: Add tests for string-concatenate and
-	string-concatenate-reverse.
+	* text-test.scm: Add tests for string-concatenate,
+	string-concatenate-reverse, and string-join.
 
 2017-03-25  Per Bothner  <per@bothner.com>
 

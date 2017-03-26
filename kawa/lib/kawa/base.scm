@@ -147,7 +147,7 @@
         string-titlecase
         string-capitalize
         string-capitalize! ;; ???
-        string-concatenate string-concatenate-reverse
+        string-concatenate string-concatenate-reverse string-join
         string-normalize-nfd string-normalize-nfkd
         string-normalize-nfc string-normalize-nfkc string-replicate
         subtype?
