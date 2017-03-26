@@ -1619,7 +1619,7 @@ public class LambdaExp extends ScopeExp {
                 }
                 comp.callContextVar = ctxArg ? var : null;
                 int toCall = i + 1;
-                for (int j = i; j < toCall;  j++, decl = decl.nextDecl()) {
+                for (int j = i; j < toCall;  j++) {
                     Target paramTarget = StackTarget.getInstance(decl.getType());
                     Expression defaultArg = decl.getInitValue();
                     defaultArg.compile(comp, paramTarget);
@@ -1628,7 +1628,9 @@ public class LambdaExp extends ScopeExp {
                     // That way any given default argument expression is only
                     // compiled into a single stub.  However, if the default is a
                     // constant it makes sense to call stub[j] (where j>i+1) directly.
-                    if (toCall < numStubs && defaultArg instanceof QuoteExp)
+                    decl = decl.nextDecl();
+                    if (toCall < numStubs
+                        && decl.getInitValue() instanceof QuoteExp)
                         toCall++;
                 }
                 boolean varArgs = toCall == numStubs && restArgType != null;

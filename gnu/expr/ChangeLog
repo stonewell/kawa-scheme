@@ -1,3 +1,7 @@
+2017-03-26  Per Bothner  <per@bothner.com>
+
+	* LambdaExp.java (compileAsMethod): Fix default-arg optimization.
+
 2017-03-20  Per Bothner  <per@bothner.com>
 
 	* Compilation.java (pushPendingImport): Also push DeclSetMapper.
