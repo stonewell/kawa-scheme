@@ -1,3 +1,6 @@
+2017-03-25 Vasantha Ganesh K <vasanthaganesh.k@tuta.io>
+	* .gitlab-ci.yml GitLab's CI support
+
 2017-03-19  Sudarshan S Chawathe  <chaw@eip10.org>
 
 	* gnu/mapping/RunnableClosure.java (getResult): Add public
