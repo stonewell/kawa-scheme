@@ -1,3 +1,11 @@
+2017-04-01  Vasantha Ganesh <vasanthaganesh.k@gmail.com>
+            Per Bothner  <per@bothner.com>
+
+	* reflect-fname.scm (kitten-class): New test of T:class,
+	where T is a class defined in the current compilation unit.
+	* Makefiler.am (inlining.log): Check code-generation of kitten-class.
+	* inlining.expected: Update accordingly.
+
 2017-02-27  Per Bothner  <per@bothner.com>
 
 	* lib-test.scm: Added a string-cursor test.

@@ -255,6 +255,12 @@ public class SlotGet extends Procedure2
       {
 	ObjectType ctype = (ObjectType) type;
         Object part = ((QuoteExp) arg1).getValue();
+        if (isStatic && part instanceof SimpleSymbol
+            && "class".equals(((SimpleSymbol) part).getName())) {
+            comp.loadClassRef((ObjectType) type);
+            target.compileFromStack(comp, Compilation.typeClass);
+            return;
+        }
         if (part instanceof gnu.bytecode.Field)
           {
             gnu.bytecode.Field field = (gnu.bytecode.Field) part;
