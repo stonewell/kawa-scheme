@@ -53,7 +53,7 @@
                       (start ::int 0)
                       (end ::int (v:size)))
   ::string
-  (v:toUtf8 start (- end start)))
+  (v:utf8ToString start (- end start)))
 
 (define (string->utf8
          (v ::string)

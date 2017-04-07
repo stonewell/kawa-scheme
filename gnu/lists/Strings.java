@@ -271,8 +271,8 @@ public class Strings
         }
     }
 
-    public static String toUtf8(byte[] bytes, int start, int length) {
-        /* #ifdef JAVA7 */  
+    public static String fromUtf8(byte[] bytes, int start, int length) {
+        /* #ifdef JAVA7 */
         return new String(bytes, start, length, java.nio.charset.StandardCharsets.UTF_8);
         /* #else */
         // try {

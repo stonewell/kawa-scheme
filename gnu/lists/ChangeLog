@@ -1,5 +1,8 @@
 2017-04-06  Per Bothner  <per@bothner.com>
 
+	* ByteVector.java (toUtf8): Rename to utf8ToString.
+	* Strings.java (toUtf8): Rename to fromUtf8.
+
 	* PrimVector.template: Fix castOrNull/cast for FVector.
 	FVector.java is a generated class. Fixes bug from 2017-02-03.
 

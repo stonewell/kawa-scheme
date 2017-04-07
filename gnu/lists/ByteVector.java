@@ -153,7 +153,7 @@ public abstract class ByteVector<E> extends PrimIntegerVector<E>
     }
 
     /** Covert bytes, interpreted as UTF-8 characters, to a String. */
-    public String toUtf8(int start, int length) {
+    public String utf8ToString(int start, int length) {
         if (start+length>size()) throw new IndexOutOfBoundsException();
         int seg = getSegmentReadOnly(start, length);
         byte[] buf;
@@ -165,6 +165,6 @@ public abstract class ByteVector<E> extends PrimIntegerVector<E>
             for (int i = 0; i < length; i++)
                 buf[i] = getByte(start+i);
         }
-        return Strings.toUtf8(buf, start, length);
+        return Strings.fromUtf8(buf, start, length);
     }
 }
