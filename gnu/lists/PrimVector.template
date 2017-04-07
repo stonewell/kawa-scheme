@@ -209,18 +209,16 @@ public @Abstract class $CNAME$ extends $SUPER$
         return new $CNAME$(newLength < 0 ? data : new $ptype$[newLength]);
     }
 
-    /* #endif */
-    /* #ifdef BIT|S8|S16|S32|S64|U8|U16|U32|U64|F32|F64 */
-    public static $CNAME$ castOrNull(Object obj) {
+    public static $TAG$Vector castOrNull(Object obj) {
         if (obj instanceof $ptype$[])
-            return new $CNAME$(($ptype$[]) obj);
-        if (obj instanceof $CNAME$)
-            return ($CNAME$) obj;
+            return new $TAG$Vector(($ptype$[]) obj);
+        if (obj instanceof $TAG$Vector)
+            return ($TAG$Vector) obj;
         return null;
     }
 
-    public static $CNAME$ cast(Object value) {
-        $CNAME$ vec = castOrNull(value);
+    public static $TAG$Vector cast(Object value) {
+        $TAG$Vector vec = castOrNull(value);
         if (vec == null) {
             String msg;
             if (value == null)
@@ -231,6 +229,8 @@ public @Abstract class $CNAME$ extends $SUPER$
         }
         return vec;
     }
+    /* #endif */
+    /* #ifdef BIT|S8|S16|S32|S64|U8|U16|U32|U64|F32|F64 */
     public int getElementKind() { return $KIND$_VALUE; }
 
     public String getTag() { return "$tag$"; }
@@ -398,7 +398,7 @@ public @Abstract class $CNAME$ extends $SUPER$
     }
 
     /** Covert bytes, interpreted as UTF-8 characters, to a String. */
-    public String toUtf8(int start, int length) {
+    public String utf8ToString(int start, int length) {
         if (start+length>size()) throw new IndexOutOfBoundsException();
         int seg = getSegmentReadOnly(start, length);
         byte[] buf;
@@ -410,7 +410,7 @@ public @Abstract class $CNAME$ extends $SUPER$
             for (int i = 0; i < length; i++)
                 buf[i] = getByte(start+i);
         }
-        return Strings.toUtf8(buf, start, length);
+        return Strings.fromUtf8(buf, start, length);
     }
     /* #endif */
 }

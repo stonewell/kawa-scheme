@@ -1,3 +1,8 @@
+2017-04-06  Per Bothner  <per@bothner.com>
+
+	* PrimVector.template: Fix castOrNull/cast for FVector.
+	FVector.java is a generated class. Fixes bug from 2017-02-03.
+
 2017-03-26  Per Bothner  <per@bothner.com>
 
 	* FString.java (prepend *2): Two new methods.
