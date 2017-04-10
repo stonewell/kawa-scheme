@@ -150,6 +150,7 @@
         string-concatenate string-concatenate-reverse string-join
         string-normalize-nfd string-normalize-nfkd
         string-normalize-nfc string-normalize-nfkc string-replicate
+        string->utf16 string->utf16le string->utf16be
         subtype?
         syntax-error syntax->expression syntax-body->expression
         syntax-column syntax-line syntax-object->datum syntax-source
@@ -169,6 +170,7 @@
         u32vector-ref u32vector-set! u32vector->list
         u64vector u64vector? u64vector-length
         u64vector-ref u64vector-set! u64vector->list
+        utf16->string utf16be->string utf16le->string
         unescaped-data unit untrace URI URI? values-append
         with-compile-options with-syntax
         )

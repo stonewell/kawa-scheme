@@ -1,3 +1,7 @@
+2017-04-09  Per Bothner  <per@bothner.com>
+
+	* lib-test.scm: Two string/bytevector-conversion tests.
+
 2017-03-26  Per Bothner  <per@bothner.com>
 
 	* text-test.scm: Add tests for string-concatenate,

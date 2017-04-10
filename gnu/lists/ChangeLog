@@ -1,3 +1,8 @@
+2017-04-09  Per Bothner  <per@bothner.com>
+
+	* ByteVector.java (utf16ToString): Two new methods.
+	* Strings.java (toUtf16): New static method.
+
 2017-04-06  Per Bothner  <per@bothner.com>
 
 	* ByteVector.java (toUtf8): Rename to utf8ToString.

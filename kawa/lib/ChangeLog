@@ -1,3 +1,11 @@
+2017-04-09  Per Bothner  <per@bothner.com>
+
+	* bytevectors.scm (string->utf8): Moved to strings.scm.
+	(utf16->string, utf16be->string, utf16le->string): New functions.
+	* strings.scm (string->utf8): Moved from bytevectors.scm.
+	(string->utf16, string->utf16be, string->utf16l2): New procedures.
+	* kawa/base.scm: Export new functions.
+
 2017-04-06  Per Bothner  <per@bothner.com>
 
 	* bytevectors.scm (utf8->string): Update for renamed method.

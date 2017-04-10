@@ -9,7 +9,8 @@
                string-fill! string-upcase! string-downcase!
                string-capitalize string-capitalize!
                string-append! string-replace! string-replicate
-               string-map string-for-each srfi-13-string-for-each)
+               string-map string-for-each srfi-13-string-for-each
+               string->utf8 string->utf16 string->utf16be string->utf16le)
 
 (require <kawa.lib.prim_imports>)
 (require <kawa.lib.std_syntax>)
@@ -33,9 +34,9 @@
 
 (define-syntax with-start-end
   (syntax-rules ()
-    ((_ str (start end) (cstart cend) . body)
+    ((_ str (start end supplied-end) (cstart cend) . body)
      (let* ((cstart (gnu.lists.Strings:offsetByCodePoints str start 0 0))
-            (cend (cond ((= end -1) (str:length))
+            (cend (cond ((not supplied-end) (str:length))
                         ((< end start)
                          (primitive-throw
                           (java.lang.StringIndexOutOfBoundsException)))
@@ -73,10 +74,10 @@
 (define-compare string>=? string >= %string-compare2)
 
 (define (string->list (str ::string)
-                      #!optional (start ::int 0) (end ::int -1))
+                      #!optional (start ::int 0) (end ::int 0 supplied-end))
   ::list
   (with-start-end 
-   str (start end) (cstart cend)
+   str (start end supplied-end) (cstart cend)
    (let loop ((result ::list '())
               (i ::string-cursor (as string-cursor cend)))
      (if (string-cursor<=? i (as string-cursor start))
@@ -87,9 +88,9 @@
 (define (string-copy (str ::java.lang.CharSequence)
                      #!optional
                      (start ::int 0)
-                     (end ::int -1))
+                     (end ::int 0 supplied-end))
   ::gnu.lists.FString
-  (with-start-end str (start end) (istart iend)
+  (with-start-end str (start end supplied-end) (istart iend)
                   (gnu.lists.FString str istart (- iend istart))))
 
 (define (string-copy! (to ::gnu.lists.FString)
@@ -107,12 +108,12 @@
                          (src ::java.lang.CharSequence)
                          #!optional
                          (sstart ::int 0)
-                         (send ::int -1))
+                         (send ::int 0 supplied-send))
   ::void
   (with-start-end 
-   src (sstart send) (csstart csend)
+   src (sstart send supplied-send) (csstart csend)
    (with-start-end
-    dst (dstart dend) (cdstart cdend)
+    dst (dstart dend #t) (cdstart cdend)
     (dst:replace src csstart csend cdstart cdend))))
 
 (define (string-fill! str ::abstract-string ch ::character
@@ -287,3 +288,48 @@
   (let* ((end (if supplied-end end (gnu.lists.Strings:sizeInCodePoints str))))
     (gnu.lists.IString
      (gnu.lists.Strings:replicate from to supplied-to str start end supplied-end))))
+
+(define (string->utf8
+         (v ::string)
+         #!optional
+         (start ::int 0)
+         (end ::int 0 supplied-end))
+  ::bytevector
+  (with-start-end
+   v (start end supplied-end) (cstart cend)
+   (gnu.lists.U8Vector
+    (((v:toString):substring cstart cend):getBytes
+     (cond-expand (java-7 java.nio.charset.StandardCharsets:UTF_8)
+                  (else "UTF-8"))))))
+
+(define (string->utf16
+         (v ::string)
+         #!optional
+         (start ::int 0)
+         (end ::int 0 supplied-end))
+  ::bytevector  (with-start-end
+   v (start end supplied-end) (cstart cend)
+   (gnu.lists.U8Vector
+    (gnu.lists.Strings:toUtf16 v cstart cend
+                               (cond-expand (big-endian #t) (else #f))
+                               #t))))
+
+(define (string->utf16be
+         (v ::string)
+         #!optional
+         (start ::int 0)
+         (end ::int 0 supplied-end))
+  ::bytevector  (with-start-end
+   v (start end supplied-end) (cstart cend)
+   (gnu.lists.U8Vector
+    (gnu.lists.Strings:toUtf16 v cstart cend #t #f))))
+
+(define (string->utf16le
+         (v ::string)
+         #!optional
+         (start ::int 0)
+         (end ::int 0 supplied-end))
+  ::bytevector  (with-start-end
+   v (start end supplied-end) (cstart cend)
+   (gnu.lists.U8Vector
+    (gnu.lists.Strings:toUtf16 v cstart cend #f #f))))

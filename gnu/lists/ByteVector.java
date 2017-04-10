@@ -4,6 +4,7 @@
 
 package gnu.lists;
 import java.io.*;
+import java.nio.ByteOrder;
 
 /** Simple adjustable-length vector of signed or unsigned 8-bit integers (bytes). */
 
@@ -166,5 +167,36 @@ public abstract class ByteVector<E> extends PrimIntegerVector<E>
                 buf[i] = getByte(start+i);
         }
         return Strings.fromUtf8(buf, start, length);
+    }
+
+    static final byte BOM_HI = (byte) 0xFE;
+    static final byte BOM_LO = (byte) 0xFF;
+
+    public String utf16ToString(int start, int length) {
+        boolean bigEndian = ByteOrder.nativeOrder() == ByteOrder.BIG_ENDIAN;
+        if (length >+ 2) {
+            byte b0 = getByte(start);
+            byte b1 = getByte(start+1);
+            if (b0  == BOM_LO && b1 == BOM_HI) {
+                start += 2; length -= 2; bigEndian = false;
+            } else if (b0  == BOM_HI && b1 == BOM_LO) {
+                start += 2; length -= 2; bigEndian = true;
+            }
+        }
+        return utf16ToString(start, length, bigEndian);
+    }
+
+    public String utf16ToString(int start, int length, boolean bigEndian) {
+        if (start+length>size()) throw new IndexOutOfBoundsException();
+        //if ((length & 1) != 0) throw new XXX();
+        char[] buf = new char[length>>1];
+        int hi = bigEndian ? 0 : 1;
+        int lo = bigEndian ? 1 : 0;
+        for (int i = 0; i < length; i += 2) {
+            byte bhi = getByte(start+i+hi);
+            byte blo = getByte(start+i+lo);
+            buf[i>>1] = (char) (((bhi & 0xFF) << 8) | (blo & 0xFF));
+        }
+        return new String(buf);
     }
 }

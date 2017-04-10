@@ -1,6 +1,6 @@
 ;; -*- coding: utf-8 -*-
 
-(test-begin "libs" 276)
+(test-begin "libs" 278)
 
 (test-begin "vectors")
 (test-equal '(dah dah didah)
@@ -65,6 +65,12 @@
 (test-equal #u8(#xCE #xBB) (string->utf8 "λ"))
 (test-equal bytes1 (string->utf8 lambda-string))
 (test-equal lambda-string (utf8->string bytes1))
+(! hellox-str "Hæll◉ 😂!")
+(! hellox-utf8 #u8(#x48 #xc3 #xa6 #x6c #x6c #xe2 #x97 #x89
+                   #x20 #xf0 #x9f #x98 #x82 #x21))
+(test-equal hellox-utf8 (string->utf8 hellox-str))
+(test-equal hellox-str (utf8->string hellox-utf8))
+
 (test-end)
 
 (import (srfi :2 and-let*))

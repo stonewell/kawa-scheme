@@ -283,6 +283,29 @@ public class Strings
         /* #endif */
     }
 
+    public static byte[] toUtf16(CharSequence str, int start, int end,
+                                 boolean bigEndian, boolean writeBOM) {
+        int blen = 2*(end-start)+(writeBOM?2:0);
+        byte[] buf = new byte[blen];
+        int hi = bigEndian ? 0 : 1;
+        int lo = bigEndian ? 1 : 0;
+        int i = start;
+        int j = 0;
+        while (j < blen) {
+            char ch;
+            if (writeBOM) {
+                ch = '\uFEFF';
+                writeBOM = false;
+            }
+            else
+                ch = str.charAt(i++);
+            buf[j + lo] = (byte) ch;
+            buf[j + hi] = (byte) (ch >> 8);
+            j += 2;
+        }
+        return buf;
+    }
+
     public static int compareTo(CharSequence str1, CharSequence str2) {
         int n1 = str1.length();
         int n2 = str2.length();
