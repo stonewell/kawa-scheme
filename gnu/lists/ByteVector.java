@@ -188,7 +188,8 @@ public abstract class ByteVector<E> extends PrimIntegerVector<E>
 
     public String utf16ToString(int start, int length, boolean bigEndian) {
         if (start+length>size()) throw new IndexOutOfBoundsException();
-        //if ((length & 1) != 0) throw new XXX();
+        if ((length & 1) != 0)
+            throw new IllegalArgumentException("number of bytes must be even");
         char[] buf = new char[length>>1];
         int hi = bigEndian ? 0 : 1;
         int lo = bigEndian ? 1 : 0;
