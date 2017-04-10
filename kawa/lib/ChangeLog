@@ -1,3 +1,10 @@
+2017-04-10  Per Bothner  <per@bothner.com>
+
+	* strings.scm (string-fold, string-fold-right, string-for-each-index,
+	string-map-index, string-tabulate, string-unfold, string-unfold-right):
+	New procedures.
+	* kawa/base.scm: Export new functions.
+
 2017-04-09  Per Bothner  <per@bothner.com>
 
 	* bytevectors.scm (string->utf8): Moved to strings.scm.

@@ -147,9 +147,12 @@
         string-titlecase
         string-capitalize
         string-capitalize! ;; ???
-        string-concatenate string-concatenate-reverse string-join
+        string-concatenate string-concatenate-reverse
+        string-fold string-fold-right string-for-each-index
+        string-join string-map-index
         string-normalize-nfd string-normalize-nfkd
         string-normalize-nfc string-normalize-nfkc string-replicate
+        string-tabulate string-unfold string-unfold-right
         string->utf16 string->utf16le string->utf16be
         subtype?
         syntax-error syntax->expression syntax-body->expression

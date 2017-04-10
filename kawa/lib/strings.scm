@@ -4,12 +4,14 @@
                char-ci=? char-ci<? char-ci>? char-ci<=? char-ci>=?
                string=? string<? string>? string<=? string>=?
 	       string-ci=? string-ci<? string-ci>? string-ci<=? string-ci>=?
-               string->list
+               string-fold string-fold-right string->list
                string-copy string-copy!
                string-fill! string-upcase! string-downcase!
                string-capitalize string-capitalize!
                string-append! string-replace! string-replicate
-               string-map string-for-each srfi-13-string-for-each
+               string-map string-map-index
+               string-for-each string-for-each-index srfi-13-string-for-each
+               string-tabulate string-unfold string-unfold-right
                string->utf8 string->utf16 string->utf16be string->utf16le)
 
 (require <kawa.lib.prim_imports>)
@@ -272,7 +274,68 @@
                     (set! (chs i) (string-cursor-ref str curs-i))
                     (set! (cursors i) (string-cursor-next str curs-i))
                     (loop2 (+ i 1))))))))
+  ;; FIXME should be IString
   result)
+
+(define (string-for-each-index proc str::string #!optional
+                                 (start::int 0) (end::int -1))
+  ::void
+  (let* ((cstart ::string-cursor
+                 (string-cursor-next str
+                                     (as string-cursor 0)
+                                     start))
+         (cend ::string-cursor
+             (if (= end -1) (as string-cursor (str:length))
+                 (string-cursor-next str cstart (- end start)))))
+    (do ((cursor::string-cursor cstart
+                                (string-cursor-next str cursor))
+         (i ::int start (+ i 1)))
+        ((string-cursor>=? cursor cend))
+      (proc i))))
+
+(define (string-fold kons knil str::string #!optional
+                     (start::int 0) (end::int -1))
+  (let* ((cstart ::string-cursor
+                 (string-cursor-next str
+                                     (as string-cursor 0)
+                                     start))
+         (cend ::string-cursor
+             (if (= end -1) (as string-cursor (str:length))
+                 (string-cursor-next str cstart (- end start))))
+         (result knil))
+    (do ((cursor::string-cursor cstart
+                                (string-cursor-next str cursor)))
+        ((string-cursor>=? cursor cend)
+         result)
+      (set! result (kons (string-cursor-ref str cursor) result)))))
+
+(define (string-fold-right kons knil str::string #!optional
+                     (start::int 0) (end::int 0 supplied-end))
+  (with-start-end 
+   str (start end supplied-end) (cstart cend)
+   (let loop ((result knil)
+              (i ::string-cursor (as string-cursor cend)))
+     (if (string-cursor<=? i (as string-cursor start))
+         result
+         (let ((prev (string-cursor-prev str i)))
+           (loop (kons (string-cursor-ref str prev) result) prev))))))
+
+(define (string-map-index proc str::string #!optional
+                          (start::int 0) (end::int -1))
+  (let* ((cstart ::string-cursor
+                 (string-cursor-next str
+                                     (as string-cursor 0)
+                                     start))
+         (cend ::string-cursor
+             (if (= end -1) (as string-cursor (str:length))
+                 (string-cursor-next str cstart (- end start))))
+         (result (gnu.lists.FString)))
+    (do ((cursor::string-cursor cstart
+                                (string-cursor-next str cursor))
+         (i ::int start (+ i 1)))
+        ((string-cursor>=? cursor cend)
+         result)
+      (result:append (proc i)))))
 
 (define (string-append! str::gnu.lists.FString #!rest args :: object[]) ::void
   validate-apply: "kawa.lib.compile_misc:stringAppendToValidateApply"
@@ -333,3 +396,34 @@
    v (start end supplied-end) (cstart cend)
    (gnu.lists.U8Vector
     (gnu.lists.Strings:toUtf16 v cstart cend #f #f))))
+
+(define (string-tabulate proc (len ::int))
+  (let ((result (gnu.lists.FString:alloc len)))
+    (do ((i ::int 0 (+ i 1)))
+        ((>= i len)
+         (gnu.lists.IString result))
+      (result:append (proc i)))))
+
+(define (string-unfold p f g seed #!optional (base "") (make-final #!null))
+  (let ((result (gnu.lists.FString)))
+    (result:append base)
+    (let recur ((seed seed))
+      (cond ((p seed)
+             (if (not (eq? make-final #!null))
+                 (result:append (make-final seed))))
+            (else
+             (result:append (f seed))
+             (recur (g seed)))))
+    (gnu.lists.IString result)))
+
+(define (string-unfold-right p f g seed #!optional (base "") (make-final #!null))
+  (let ((result (gnu.lists.FString)))
+    (result:prepend base)
+    (let recur ((seed seed))
+      (cond ((p seed)
+             (if (not (eq? make-final #!null))
+                 (result:prepend (make-final seed))))
+            (else
+             (result:prepend (f seed))
+             (recur (g seed)))))
+    (gnu.lists.IString result)))
