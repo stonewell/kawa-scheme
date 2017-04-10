@@ -231,3 +231,4 @@ map1.vector2VmapFormat(gnu.lists.FVector,gnu.lists.FVector)gnu.lists.FVector: 93
 values2.test1()void: 7 bytes
 values2.test2()void: 19 bytes
 values2.test3(java.lang.Object)gnu.mapping.Values: 29 bytes
+reflect-fname.kittensClass()java.lang.Object: 3 bytes

@@ -115,16 +115,8 @@ public class CompileReflect
       {
         type = language.getTypeFor(arg0);
         int known = checkKnownClass(type, comp);
-        if (known < 0)
+        if (known < 0 || "class".equals(name))
           return exp;
-        if ("class".equals(name))
-          {
-            if (known > 0)
-              return QuoteExp.getInstance(type.getReflectClass());
-            Method method
-              = Compilation.typeType.getDeclaredMethod("getReflectClass", 0);
-            return new ApplyExp(method, new Expression[] { arg0 });
-          }
         if (type != null)
           {
             Expression[] nargs

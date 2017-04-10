@@ -552,7 +552,7 @@ InliningTest.class: $(srcdir)/inlining-test.scm
 LIST_CODE_SIZE = $(CPJAVA) gnu.bytecode.ListCodeSize
 
 inlining.log: InliningTest.class cycle1.class cycle2.class \
-  binarytrees.class fannkuch.class fannkuchredux.class fasta.class mandelbrot.class nbody.class pidigits.class regexdna.class revcomp1.class revcomp2.class spectralnorm.class map1.class values2.class Makefile
+  binarytrees.class fannkuch.class fannkuchredux.class fasta.class mandelbrot.class nbody.class pidigits.class regexdna.class revcomp1.class revcomp2.class spectralnorm.class map1.class values2.class reflect-fname.class Makefile
 	$(LIST_CODE_SIZE) InliningTest.class \
 	setCar getCar getHome setHome isPair isEmpty castToPair newPair tohex \
 	make lengthIarr getIarr setIarr varargs \
@@ -587,6 +587,7 @@ inlining.log: InliningTest.class cycle1.class cycle2.class \
 	  listMapFormat stringMapFormat charArrayMapFormat vector1VmapFormat \
 	  vector2VmapFormat >>inlining.log
 	$(LIST_CODE_SIZE) values2.class test1 test2 test3 >>inlining.log
+	$(LIST_CODE_SIZE) reflect-fname.class kittensClass >>inlining.log
 
 check-inlining: inlining.log $(srcdir)/inlining.expected
 	@if $(DIFF) $(srcdir)/inlining.expected inlining.log; \

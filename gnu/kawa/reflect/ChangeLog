@@ -1,3 +1,9 @@
+2017-04-01  Per Bothner  <per@bothner.com>
+
+	* CompileReflect.java (validate): Optimize 'class' static pseudo-field.
+	* SlotGet.java (validateApplySlotGet): Don't optimize 'class' here.
+	This fixes problem of T:class where T is a not-yet-compiled ClassExp.
+
 2017-01-06  Per Bothner  <per@bothner.com>
 
 	* ClassMemberLocation.java (define): Check SourceName attribute.

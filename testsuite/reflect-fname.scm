@@ -39,3 +39,11 @@
 (format #t "Name of e: ~A~%" (procedure-property e 'name))
 ;; Output: Name of e: foo
 
+(define-simple-class kittens ()
+  (a::long))
+
+(define (kittens-class)
+  kittens:class)
+
+(format #t "kittens.class: ~w~%" (kittens-class))
+;; Output: kittens.class: class kittens
