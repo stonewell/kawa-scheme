@@ -17,7 +17,7 @@ of @code{case} using patterns.
 The internal calling convention used for ``apply'' (ie. calling
 an unknown-at-compile-time procedure) has been completely changed.
 @item
-Major changes to string:
+Major changes to strings:
 @itemize
 @item
 @emph{Incompatible change:} String literals are now
@@ -58,7 +58,9 @@ using Object's @code{toString} method.
 Now Kawa will reject an argument if it is not a @code{java.lang.CharSequence}.
 @item
 New procedures: @code{reverse-list->string}, @code{string-join},
-@code{string-concatenate}, @code{string-concatenate-reverse}.
+@code{string-concatenate}, @code{string-concatenate-reverse},
+@code{string->utf16}, @code{string->utf16be}, @code{string->utf16le},
+@code{utf16->string}, @code{utf16be->string}, @code{utf16le->string}.
 These follow SRFI-140 and return immutable strings.
 (Some of these had previously been available in SRFI-13,
 but the older versions return mutable strings.)

@@ -13544,6 +13544,8 @@ the concatenation of the elements in the given bytevectors.
 @end example
 @end deffn
 
+@subsection Converting to or from strings
+
 @deffn Procedure utf8->string bytevector [start [end]]
 This procedure decodes the bytes of a bytevector between @var{start}
 and @var{end}, interpreting as a UTF-8-encoded string,
@@ -13554,6 +13556,31 @@ It is an error for @var{bytevector} to contain invalid UTF-8 byte sequences.
 @end example
 @end deffn
 
+@deffn Procedure utf16->string bytevector [start [end]]
+@deffnx Procedure utf16be->string bytevector [start [end]]
+@deffnx Procedure utf16le->string bytevector [start [end]]
+These procedures interpret their <var>bytevector</var> argument as
+a UTF-16 encoding of a sequence of characters,
+and return an istring containing that sequence.
+
+The bytevector subrange given to @code{utf16->string}
+may begin with a byte order mark (BOM); if so, that BOM
+determines whether the rest of the subrange is to be
+interpreted as big-endian or little-endian; in either case,
+the BOM will not become a character in the returned string.
+If the subrange does not begin with a BOM, it is decoded using
+the same implementation-dependent endianness used by
+@code{string->utf16}.
+
+The @code{utf16be->string} and @code{utf16le->string}
+procedures interpret their inputs as big-endian or little-endian,
+respectively.  If a BOM is present, it is treated as a normal
+character and will become part of the result.
+
+It is an error if @code{(- @var{end} @var{start})} is odd,
+or if the bytevector subrange contains invalid UTF-16 byte sequences.
+@end deffn
+
 @deffn Procedure string->utf8 string [start [end]]
 This procedure encodes the characters of a string between
 @var{start} and @var{end} and returns the corresponding bytevector,
@@ -13561,6 +13588,29 @@ in UTF-8 encoding.
 @example
 (string->utf8 "λ")     @result{} " #u8(#xCE #xBB)
 @end example
+@end deffn
+
+@deffn Procedure string->utf16 string [start [end]]
+@deffnx Procedure string->utf16be string [start [end]]
+@deffnx Procedure string->utf16le string [start [end]]
+These procedures return a newly allocated (unless empty)
+bytevector containing a UTF-16 encoding of the given substring.
+
+The bytevectors returned by @code{string->utf16be}
+and @code{string->utf16le}
+do not contain a byte-order mark (BOM);
+@code{string->utf16be}> returns a big-endian encoding,
+while @code{string->utf16le} returns a little-endian encoding.
+
+The bytevectors returned by @code{string->utf16}
+begin with a BOM that declares an implementation-dependent
+endianness, and the bytevector elements following that BOM
+encode the given  substring using that endianness.
+
+@emph{Rationale:}
+These procedures are consistent with the Unicode standard.
+Unicode suggests UTF-16 should default to big-endian, but
+Microsoft prefers little-endian.
 @end deffn
 
 @node Ranges
