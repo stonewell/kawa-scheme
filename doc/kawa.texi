@@ -7653,7 +7653,7 @@ except that the current exception handler is that of the
       @result{} (b . 23)
 @end example
 
-@emph{Performance note:} Using @code{guard} is moderately efficient:
+@PerformanceNote{} Using @code{guard} is moderately efficient:
 there is some overhead compared to using native exception handling,
 but both the @var{body} and the handlers in the @var{cond-clause}
 are inlined.
@@ -11229,13 +11229,6 @@ This is analogous to @var{list}.
 except in compatibility mode, when it is a new allocated mstring.
 @end deffn
 
-@deffn Procedure make-string [@var{k} [@var{char}]]
-Return a newly allocated mstring of @var{k} characters,
-where @var{k} defaults to 0.  If @var{char} is
-given, then all elements of the string are initialized to @var{char},
-otherwise the contents of the @var{string} are unspecified.
-@end deffn
-
 @deffn Procedure string-length @var{string}
 Return the number of characters in the given @var{string} as an exact
 integer object.
@@ -11258,29 +11251,11 @@ An alternative is to use @code{string-cursor-ref}.
 If iterating through a string, use @code{string-for-each}.
 @end deffn
 
-@deffn Procedure string-set! string k char
-This procedure stores @var{char} in element @var{k} of @var{string}.
-
-@example
-(define s1 (make-string 3 #\*))
-(define s2 "***")
-(string-set! s1 0 #\?) @result{} @emph{void}
-s1 @result{} "?**"
-(string-set! s2 0 #\?) @result{} @emph{error}
-(string-set! (symbol->string 'immutable) 0 #\?) @result{} @emph{error}
-@end example
-
-@PerformanceNote{} Calling @code{string-set!} may take time proportional
-to the length of the string:  First it must scan for the right position,
-like @code{string-ref} does. Then if the new character requires
-using a surrogate pair (and the old one doesn't) then we have to make room
-in the string, possibly re-allocating a new @code{char} array.
-Alternatively, if the old character requires using a surrogate pair
-(and the new one doesn't) then following characters need to be moved.
-
-The function @code{string-set!} is deprecated: It is inefficient,
-and it very seldom does the correct thing.  Instead, you can
-construct a string with @code{string-append!}.
+@deffn Procedure string-repeat string-or-character len
+Create an istring by repeating the first argument @var{len} times.
+If the first argument is a character, it is as if it were wrapped with
+the @code{string} constructor.
+@c FIXME note definition in terms of string-replicate/xsubstring
 @end deffn
 
 @deffn Procedure substring @var{string} @var{start} @var{end}
@@ -11296,149 +11271,84 @@ from the characters of @var{string} beginning with index @var{start}
 (inclusive) and ending with index @var{end} (exclusive).
 @end deffn
 
-@deffn Procedure string-append! @var{string} @var{value} @dots{}
-The @var{string} must be a mutable string, such as one returned
-by @code{make-string} or @code{string-copy}.
-The @code{string-append!} procedure extends @var{string}
-by appending each @var{value} (in order) to the end of @var{string}.
-Each @code{value} should be a character or a string.
+@subsection Immutable String Constructors
 
-@PerformanceNote{} The compiler converts a call with multiple @var{value}s
-to multiple @code{string-append!} calls.
-If a @var{value} is known to be a @code{character}, then
-no boxing (object-allocation) is needed.
+@deffn Procedure string-tabulate proc len
 
-The following example shows how to efficiently process a string
-using @code{string-for-each} and incrementally ``build'' a result string
-using @code{string-append!}.
+Constructs a string of size @var{len} by calling @var{proc} on
+each value from 0 (inclusive) to @var{len} (exclusive) to produce
+the corresponding element of the string.
+The procedure @var{proc} accepts an exact integer as its argument and returns a character.
+The order in which @var{proc} is called on those indexes is not specifified.
 
-@example
-(define (translate-space-to-newline str::string)::string
-  (let ((result (make-string 0)))
-    (string-for-each
-     (lambda (ch)
-       (string-append! result
-                       (if (char=? ch #\Space) #\Newline ch)))
-     str)
-    result))
-@end example
+@emph{Rationale:} Although @code{string-unfold} is more general,
+@code{string-tabulate} is likely to run faster for the common special
+case it implements.
 @end deffn
 
-@deffn Procedure string-for-each @var{proc} @vari{string} @varii{string} @dots{}
-@deffnx Procedure string-for-each @var{proc} @vari{string} [start [end]]
-The @var{string}s must all have the same length.  @var{proc} should
-accept as many arguments as there are @var{string}s.
+@deffn Procedure string-unfold stop? mapper successor seed [base make-final]
+@deffnx Procedure string-unfold-right stop? mapper successor seed [base make-final]
+This is a fundamental and powerful constructor for strings.
+@itemize
+@item
+@var{successor} is used to generate a series of ``seed'' values from the initial seed:
+@var{seed}, @code{(}@var{successor} @var{seed}@code{)}, @code{(}@var{successor}@sup{2} @var{seed}@code{)}, @code{(}@var{successor}@sup{3} @var{seed}@code{)}, ...
+@item 
+@var{stop?} tells us when to stop — when it returns true when applied to one of these seed values.
+@item 
+@var{mapper} maps each seed value to the corresponding character(s) in the result string, which are assembled into that string in left-to-right order. It is an error for @var{mapper} to return anything other than a character or string.
+@item 
+@var{base} is the optional initial/leftmost portion of the constructed string, which defaults to the empty string @code{""}.
+It is an error if @var{base} is anything other than a character or string.
+@item 
+@var{make-final} is applied to the terminal seed value (on which @var{stop?} returns true) to produce the final/rightmost portion of the constructed string. It defaults to @code{(lambda (x) "")}.
+It is an error for @var{make-final} to return anything other than
+a character or string.
+@end itemize
 
-The @var{start}-@var{end} variant is provided for compatibility
-with the SRFI-13 version.  (In that case @var{start} and @var{end}
-count code Unicode scalar values (@code{character} values),
-not Java 16-bit @code{char} values.)
+@code{string-unfold-right} is the same as @code{string-unfold} except the
+results of @var{mapper} are assembled into the string in right-to-left order,
+@var{base} is the optional rightmost portion of the constructed string, and
+@var{make-final} produces the leftmost portion of the constructed string.
 
-The @func{string-for-each} procedure applies @var{proc} element--wise to
-the characters of the @var{string}s for its side effects, in order from
-the first characters to the last.  @var{proc} is always called in the
-same dynamic environment as @func{string-for-each} itself.
-@c  The return values of @func{string-for-each} are unspecified.
-
-Analogous to @func{for-each}.
-
+You can use it @code{string-unfold} to convert a list to a string,
+read a port into a string, reverse a string, copy a string, and so forth.
+Examples:
 @example
-(let ((v '()))
-  (string-for-each
-    (lambda (c) (set! v (cons (char->integer c) v)))
-    "abcde")
-   v)
-  @result{} (101 100 99 98 97)
+(define (port->string p)
+  (string-unfold eof-object? values
+                 (lambda (x) (read-char p))
+                 (read-char p)))
+
+(define (list->string lis)
+  (string-unfold null? car cdr lis))
+
+(define (string-tabulate f size)
+  (string-unfold (lambda (i) (= i size)) f add1 0))
+@end example
+To map @var{f} over a list @var{lis}, producing a string:
+@example
+(string-unfold null? (compose @var{f} car) cdr @var{lis})
 @end example
 
-@PerformanceNote{} The compiler generates efficient code
-for @code{string-for-each}.
-If @var{proc} is a lambda expression, it is inlined.
-@end deffn
-
-@deffn Procedure string-map @var{proc} @vari{string} @varii{string} @dots{}
-The @code{string-map} procedure applies @var{proc} element-wise to
-the elements of the strings and returns a string of the results, in order.
-It is an error if @var{proc} does not accept as many arguments as there
-are strings, or return other than a single character.
-If more than one string is given and not all strings have the same length,
-@code{string-map} terminates when the shortest string runs out.
-The dynamic order in
-which @var{proc} is applied to the elements of the strings is unspecified.
-@c If multiple returns occur from string-map, the
-@c values returned by earlier returns are not mutated.
-
+Interested functional programmers may enjoy noting that @code{string-fold-right}
+and @code{string-unfold} are in some sense inverses.
+That is, given operations @var{knull?}, @var{kar}, @var{kdr},
+@var{kons}, and @var{knil} satisfying
 @example
-(string-map char-foldcase "AbdEgH")  @result{} "abdegh"
+(@var{kons} (@var{kar} x) (@var{kdr} x)) = x  and  (@var{knull?} @var{knil}) = #t
 @end example
+then
 @example
-(string-map
-  (lambda (c) (integer->char (+ 1 (char->integer c))))
-  "HAL")
-        @result{} "IBM"
+(string-fold-right @var{kons} @var{knil} (string-unfold @var{knull?} @var{kar} @var{kdr} @var{x})) = @var{x}
 @end example
+and
 @example
-(string-map
-  (lambda (c k)
-    ((if (eqv? k #\u) char-upcase char-downcase) c))
-  "studlycaps xxx"
-  "ululululul")
-        @result{} "StUdLyCaPs"
+(string-unfold @var{knull?} @var{kar} @var{kdr} (string-fold-right @var{kons} @var{knil} @var{string})) = @var{string}.
 @end example
 
-@PerformanceNote{} The @code{string-map} procedure has not been
-optimized (mainly because it is not very useful):
-The characters are boxed, and the @var{proc} is not inlined even if
-it is a lambda expression.
-@end deffn
+This combinator pattern is sometimes called an ``anamorphism.''
 
-@deffn Procedure string-copy @var{string} [@var{start} [@var{end}]]
-Returns a newly allocated mutable (mstring) copy of the part of the given
-@var{string} between @var{start} and @var{end}.
-@end deffn
-
-@deffn Procedure string-replace!  @var{dst} @var{dst-start} @var{dst-end} @var{src} [@var{src-start} [@var{src-end}]]
-Replaces the characters of string @var{dst} (between @var{dst-start} and @var{dst-end}) with the characters of @var{src} (between @var{src-start} and @var{src-end}).
-The number of characters from @var{src} may be different than the
-number replaced in @var{dst}, so the string may grow or contract.
-The special case where @var{dst-start} is equal to @var{dst-end} corresponds to
-insertion; the case where @var{src-start} is equal to @var{src-end}
-corresponds to deletion.
-The order in which characters are copied
-is unspecified, except that if the source and destination overlap,
-copying takes place as if the source is first copied into a
-temporary string and then into the destination.
-(This is achieved without allocating storage by making sure to copy in
-the correct direction in such circumstances.)
-@end deffn
-
-@deffn Procedure string-copy!  @var{to}  @var{at}  @var{from} [@var{start} [@var{end}]]
-Copies the characters of the string @var{from} that are between
-@var{start} end @var{end} into the string @var{to},
-starting at index @var{at}.  The order in which characters are copied
-is unspecified, except that if the source and destination overlap,
-copying takes place as if the source is first copied into a
-temporary string and then into the destination.
-(This is achieved without allocating storage by making sure to copy in
-the correct direction in such circumstances.)
-
-This is equivalent to (and implemented as):
-@example
-(string-replace! to at (+ at (- end start)) from start end))
-@end example
-
-@example
-(define a "12345")
-(define b (string-copy "abcde"))
-(string-copy! b 1 a 0 2)
-b  @result{}  "a12de"
-@end example
-@end deffn
-
-@deffn Procedure string-fill! @var{string} @var{fill} [@var{start} [@var{end}]]
-The @code{string-fill!} procedure stores @var{fill} in the elements
-of @var{string} between @var{start} and @var{end}.
-It is an error if @var{fill} is not a character or is forbidden in strings.
 @end deffn
 
 @subsection String Comparisons
@@ -11731,9 +11641,286 @@ Means a prefix grammar: insert the @var{delimiter} before every list element.
 
 @end deffn
 
+@subsection Mapping and folding
+
+@deffn Procedure string-fold kons knil string [start end]
+@deffnx Procedure string-fold-right kons knil string [start end]
+These are the fundamental iterators for strings.
+
+The @code{string-fold} procedure maps the @var{kons} procedure across
+the given @var{string} from left to right:
+@example
+(... (@var{kons} @var{string}@sub{2} (@var{kons} @var{string}@sub{1} (@var{kons} @var{string}@sub{0} @var{knil}))))
+@end example
+In other words, string-fold obeys the (tail) recursion
+@example
+  (string-fold @var{kons} @var{knil} @var{string} @var{start} @var{end})
+= (string-fold @var{kons} (@var{kons} @var{string}@sub{start} @var{knil}) @var{start+1} @var{end})
+@end example
+The @code{string-fold-right} procedure maps @var{kons} across the given
+string @var{string} from right to left:
+@example
+(@var{kons} @var{string}@sub{0}
+      (... (@var{kons} @var{string}@sub{@var{end-3}}
+                 (@var{kons} @var{string}@sub{@var{end-2}}
+                       (@var{kons} @var{string}@sub{@var{end-1}}
+                             @var{knil})))))
+@end example
+obeying the (tail) recursion
+@example
+  (string-fold-right @var{kons} @var{knil} @var{string} @var{start} @var{end})
+= (string-fold-right @var{kons} (@var{kons} @var{string}@sub{@var{end-1}} @var{knil}) @var{start} @var{end-1})
+@end example
+Examples:
+@example
+;;; Convert a string or string to a list of chars.
+(string-fold-right cons '() string)
+
+;;; Count the number of lower-case characters in a string or string.
+(string-fold (lambda (c count)
+                (if (char-lower-case? c)
+                    (+ count 1)
+                    count))
+              0
+              string)
+@end example
+The string-fold-right combinator is sometimes called a "catamorphism."
+@end deffn
+
+@deffn Procedure string-for-each @var{proc} @vari{string} @varii{string} @dots{}
+@deffnx Procedure string-for-each @var{proc} @vari{string} [start [end]]
+The @var{string}s must all have the same length.  @var{proc} should
+accept as many arguments as there are @var{string}s.
+
+The @var{start}-@var{end} variant is provided for compatibility
+with the SRFI-13 version.  (In that case @var{start} and @var{end}
+count code Unicode scalar values (@code{character} values),
+not Java 16-bit @code{char} values.)
+
+The @func{string-for-each} procedure applies @var{proc} element--wise to
+the characters of the @var{string}s for its side effects, in order from
+the first characters to the last.  @var{proc} is always called in the
+same dynamic environment as @func{string-for-each} itself.
+@c  The return values of @func{string-for-each} are unspecified.
+
+Analogous to @func{for-each}.
+
+@example
+(let ((v '()))
+  (string-for-each
+    (lambda (c) (set! v (cons (char->integer c) v)))
+    "abcde")
+   v)
+  @result{} (101 100 99 98 97)
+@end example
+
+@PerformanceNote{} The compiler generates efficient code
+for @code{string-for-each}.
+If @var{proc} is a lambda expression, it is inlined.
+@end deffn
+
+@deffn Procedure string-map @var{proc} @vari{string} @varii{string} @dots{}
+The @code{string-map} procedure applies @var{proc} element-wise to
+the elements of the strings and returns a string of the results, in order.
+It is an error if @var{proc} does not accept as many arguments as there
+are strings, or return other than a single character.
+If more than one string is given and not all strings have the same length,
+@code{string-map} terminates when the shortest string runs out.
+The dynamic order in
+which @var{proc} is applied to the elements of the strings is unspecified.
+@c If multiple returns occur from string-map, the
+@c values returned by earlier returns are not mutated.
+
+@example
+(string-map char-foldcase "AbdEgH")  @result{} "abdegh"
+@end example
+@example
+(string-map
+  (lambda (c) (integer->char (+ 1 (char->integer c))))
+  "HAL")
+        @result{} "IBM"
+@end example
+@example
+(string-map
+  (lambda (c k)
+    ((if (eqv? k #\u) char-upcase char-downcase) c))
+  "studlycaps xxx"
+  "ululululul")
+        @result{} "StUdLyCaPs"
+@end example
+
+@PerformanceNote{} The @code{string-map} procedure has not been
+optimized (mainly because it is not very useful):
+The characters are boxed, and the @var{proc} is not inlined even if
+it is a lambda expression.
+@end deffn
+
+@deffn Procedure string-map-index proc string [start end]
+
+Calls @var{proc} on each valid index of the specified substring, converts
+the results of those calls into strings, and returns the concatenation
+of those strings. It is an error for @var{proc} to return anything other
+than a character or string. The dynamic order in which proc is called
+on the indexes is unspecified, as is the dynamic order in which the
+coercions are performed. If any strings returned by @var{proc} are mutated
+after they have been returned and before the call to @code{string-map-index}
+has returned, then @code{string-map-index} returns a string with unspecified
+contents; the @var{string-map-index} procedure itself does not mutate those
+strings.
+@end deffn
+
+@deffn Procedure string-for-each-index proc string [start en
+
+Calls @var{proc} on each valid index of the specified substring, in
+increasing order, discarding the results of those calls. This is
+simply a safe and correct way to loop over a substring.
+
+Example:
+@example
+(let ((txt (string->string "abcde"))
+      (v '()))
+  (string-for-each-index
+    (lambda (cur) (set! v (cons (char->integer (string-ref txt cur)) v)))
+    txt)
+  v) @result{} (101 100 99 98 97)
+@end example
+@end deffn
+
+@subsection String mutation
+
+The following procedures create a mutable string,
+i.e. one that you can modify.
+
+@deffn Procedure make-string [@var{k} [@var{char}]]
+Return a newly allocated mstring of @var{k} characters,
+where @var{k} defaults to 0.  If @var{char} is
+given, then all elements of the string are initialized to @var{char},
+otherwise the contents of the @var{string} are unspecified.
+
+The 1-argument version is deprecated as poor style, except when k is 0.
+
+@emph{Rationale:} In many languags the most common pattern for mutable strings
+is to allocate an empty string and incrementally append to it.
+It seems natural to initialize the string
+with @code{(make-string)}, rather than @code{(make-string 0)}.
+
+To return an immutable string that repeats @var{k} times a character
+@var{char} use @code{string-repeat}.
+
+This is as R7RS, except the result is variable-size and we allow
+leaving out @var{k} when it is zero.
+
+@end deffn
+
+@deffn Procedure string-copy @var{string} [@var{start} [@var{end}]]
+Returns a newly allocated mutable (mstring) copy of the part of the given
+@var{string} between @var{start} and @var{end}.
+@end deffn
+
+The following procedures modify a mutable string.
+
+@deffn Procedure string-set! string k char
+This procedure stores @var{char} in element @var{k} of @var{string}.
+
+@example
+(define s1 (make-string 3 #\*))
+(define s2 "***")
+(string-set! s1 0 #\?) @result{} @emph{void}
+s1 @result{} "?**"
+(string-set! s2 0 #\?) @result{} @emph{error}
+(string-set! (symbol->string 'immutable) 0 #\?) @result{} @emph{error}
+@end example
+
+@PerformanceNote{} Calling @code{string-set!} may take time proportional
+to the length of the string:  First it must scan for the right position,
+like @code{string-ref} does. Then if the new character requires
+using a surrogate pair (and the old one doesn't) then we have to make room
+in the string, possibly re-allocating a new @code{char} array.
+Alternatively, if the old character requires using a surrogate pair
+(and the new one doesn't) then following characters need to be moved.
+
+The function @code{string-set!} is deprecated: It is inefficient,
+and it very seldom does the correct thing.  Instead, you can
+construct a string with @code{string-append!}.
+@end deffn
+
+@deffn Procedure string-append! @var{string} @var{value} @dots{}
+The @var{string} must be a mutable string, such as one returned
+by @code{make-string} or @code{string-copy}.
+The @code{string-append!} procedure extends @var{string}
+by appending each @var{value} (in order) to the end of @var{string}.
+Each @code{value} should be a character or a string.
+
+@PerformanceNote{} The compiler converts a call with multiple @var{value}s
+to multiple @code{string-append!} calls.
+If a @var{value} is known to be a @code{character}, then
+no boxing (object-allocation) is needed.
+
+The following example shows how to efficiently process a string
+using @code{string-for-each} and incrementally ``build'' a result string
+using @code{string-append!}.
+
+@example
+(define (translate-space-to-newline str::string)::string
+  (let ((result (make-string 0)))
+    (string-for-each
+     (lambda (ch)
+       (string-append! result
+                       (if (char=? ch #\Space) #\Newline ch)))
+     str)
+    result))
+@end example
+@end deffn
+
+@deffn Procedure string-copy!  @var{to}  @var{at}  @var{from} [@var{start} [@var{end}]]
+Copies the characters of the string @var{from} that are between
+@var{start} end @var{end} into the string @var{to},
+starting at index @var{at}.  The order in which characters are copied
+is unspecified, except that if the source and destination overlap,
+copying takes place as if the source is first copied into a
+temporary string and then into the destination.
+(This is achieved without allocating storage by making sure to copy in
+the correct direction in such circumstances.)
+
+This is equivalent to (and implemented as):
+@example
+(string-replace! to at (+ at (- end start)) from start end))
+@end example
+
+@example
+(define a "12345")
+(define b (string-copy "abcde"))
+(string-copy! b 1 a 0 2)
+b  @result{}  "a12de"
+@end example
+@end deffn
+
+@deffn Procedure string-replace!  @var{dst} @var{dst-start} @var{dst-end} @var{src} [@var{src-start} [@var{src-end}]]
+Replaces the characters of string @var{dst} (between @var{dst-start} and @var{dst-end}) with the characters of @var{src} (between @var{src-start} and @var{src-end}).
+The number of characters from @var{src} may be different than the
+number replaced in @var{dst}, so the string may grow or contract.
+The special case where @var{dst-start} is equal to @var{dst-end} corresponds to
+insertion; the case where @var{src-start} is equal to @var{src-end}
+corresponds to deletion.
+The order in which characters are copied
+is unspecified, except that if the source and destination overlap,
+copying takes place as if the source is first copied into a
+temporary string and then into the destination.
+(This is achieved without allocating storage by making sure to copy in
+the correct direction in such circumstances.)
+@end deffn
+
+@deffn Procedure string-fill! @var{string} @var{fill} [@var{start} [@var{end}]]
+The @code{string-fill!} procedure stores @var{fill} in the elements
+of @var{string} between @var{start} and @var{end}.
+It is an error if @var{fill} is not a character or is forbidden in strings.
+@end deffn
+
 @subsection Strings as sequences
 
 @subsubsection Indexing a string
+
+@emph{This needs updating}
 
 Using function-call syntax with strings is convenient
 and efficient.  However, it has some ``gotchas''.
@@ -11757,19 +11944,23 @@ and so it must be encoded by a surrogate pair
 The number of scalar values (@code{character}s) is 8,
 while the number of 16-bits code units (@code{char}s) is 9.
 The @code{java.lang.CharSequence#length} method
-counts @code{char}s; the @code{length} function calls that method;
-the @code{string-length} procedure counts @code{character}s.  Thus:
+counts @code{char}s. Both the @code{length} and the
+@code{string-length} procedures count @code{character}s.  Thus:
 
 @example
-(length str1)          @result{} 9
+(length str1)          @result{} 8
 (str1:length)          @result{} 9
 (string-length str1)   @result{} 8
 @end example
 
 Counting @code{char}s is a constant-time operation (since it
-is stored in the data structure), while counting @code{character}s
-takes time proportional to the length of the string,
-since it has to subtract one for each surrogate pair.
+is stored in the data structure).
+Counting @code{character}s depends on the representation used:
+In geneeral it may take time proportional to the length of
+the string, since it has to subtract one for each surrogate pair;
+however the @var{istring} type (@code{gnu.lists.IString} class)
+uses a extra structure so it can count characters sing
+constant-time.
 
 Similarly we can can index the string in 3 ways:
 
@@ -11791,9 +11982,10 @@ Things become interesting when we reach the emoticon:
 
 Both @code{string-ref} and the function-call syntax return the
 real character, while the @code{charAt} methods returns a partial character.
-However, @code{string-ref} needs to linearly count from the
+In general, @code{string-ref} needs to linearly count from the
 start of the string, while the function-call syntax can do a constant-time
-lookup.  It does this by calling @code{(str1:charAt 6)} first.
+lookup.
+It does this by calling @code{(str1:charAt 6)} first.
 If that returns a leading-surrogate character, it checks that the
 next character (i.e. @code{(str1:charAt 7)}) is a trailing-surrogate character,
 and if so combines the two.  (If there is no next character or it is not
@@ -11812,8 +12004,8 @@ Kawa functions including @code{write-char}, @code{string-append!},
 and the @code{string} constructor.)
 
 @example
-(str1 7)              @result{} #\ignorable-char :: character
-(str1 8)              @result{} #\! :: character
+(str1 7)              @result{} #\! :: character
+(str1 8)              @result{} @i{throws} StringIndexOutOfBoundsException
 (str1:charAt 7)       @result{} #\de03 :: char
 (str1:charAt 8)       @result{} #\! :: char
 (string-ref str1 7)   @result{} #\! :: character
@@ -11852,19 +12044,19 @@ most commonly a range:
 @end example
 is basically the same as:
 @example
-(string (@var{str}:charAt @var{i}) ...)
+(string (string-ref @var{str} @var{i}) ...)
 @end example
-This is usually the same as the following:
+or equivalently:
 @example
 (string (@var{str} @var{i}) ...)
 @end example
-(The exception is if you select only part of a surrogate pair.)
 
 Generally when working with strings it is best to
 work with substrings rather than individual characters:
 @example
 (@var{str} [@var{start} <: @var{end}])
 @end example
+
 This is equivalent to invoking the @code{CharSequence:subSequence} method:
 @example
 (@var{str}:subSequence @var{start} @var{end})

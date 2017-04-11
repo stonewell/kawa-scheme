@@ -59,6 +59,9 @@ Now Kawa will reject an argument if it is not a @code{java.lang.CharSequence}.
 @item
 New procedures: @code{reverse-list->string}, @code{string-join},
 @code{string-concatenate}, @code{string-concatenate-reverse},
+@code{string-fold}, @code{string-fold-right},
+@code{string-for-each-index}, @code{string-map-index}, @code{string-repeat},
+@code{string-tabulate}, @code{string-unfold}, @code{string-unfold-right},
 @code{string->utf16}, @code{string->utf16be}, @code{string->utf16le},
 @code{utf16->string}, @code{utf16be->string}, @code{utf16le->string}.
 These follow SRFI-140 and return immutable strings.
