@@ -151,7 +151,8 @@
         string-fold string-fold-right string-for-each-index
         string-join string-map-index
         string-normalize-nfd string-normalize-nfkd
-        string-normalize-nfc string-normalize-nfkc string-replicate
+        string-normalize-nfc string-normalize-nfkc
+        string-repeat string-replicate
         string-tabulate string-unfold string-unfold-right
         string->utf16 string->utf16le string->utf16be
         subtype?

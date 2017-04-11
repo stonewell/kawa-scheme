@@ -11,7 +11,7 @@
                string-append! string-replace! string-replicate
                string-map string-map-index
                string-for-each string-for-each-index srfi-13-string-for-each
-               string-tabulate string-unfold string-unfold-right
+               string-repeat string-tabulate string-unfold string-unfold-right
                string->utf8 string->utf16 string->utf16be string->utf16le)
 
 (require <kawa.lib.prim_imports>)
@@ -53,6 +53,13 @@
 (define (make-string #!optional (n ::int 0) (ch ::character #\Space))
   ::gnu.lists.FString
   (make <gnu.lists.FString> n (as int ch)))
+
+(define (string-repeat ch count::int) ::string
+  (let ((result (gnu.lists.FString:alloc count)))
+    (do ((i ::int 0 (+ i 1)))
+        ((>= i count)
+         (gnu.lists.IString result))
+      (result:append ch))))
 
 (define (string-length str ::string) ::int
   (gnu.lists.Strings:sizeInCodePoints str))
