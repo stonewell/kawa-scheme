@@ -1,3 +1,8 @@
+2017-04-15  Per Bothner  <per@bothner.com>
+
+	* lang/TemplateScope.java: Commented-out possible-future hygiene idea.
+	Use alias symbols instead of alias declarations.
+
 2017-03-21  Per Bothner  <per@bothner.com>
 
 	* standard/expt.java: Moved to gnu.kawa.functions.Expt.

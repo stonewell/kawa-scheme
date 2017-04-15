@@ -92,4 +92,45 @@ public class TemplateScope extends LetExp implements Externalizable
   {
     in.readObject(); // ignore, for now
   }
+
+    /* FUTURE
+    // This may be a cleaner way to implement hygiene renaming.
+    // Instead of alias declaration use alias symbols.
+    // When NameLookup.lookup fails for an alias symbol, we seach for
+    // the original symbol, but starting withe tscope.getOuter().
+    // Another complication is dealing with quoted symbols (use the unaliased).
+    // Note there may be multiple levels of aliasing in case of a macro
+    // generating a macro.
+
+    AliasNamespace aliasNamespaces;
+
+    public Symbol getAliasSymbol(Symbol symbol) {
+        Namespace ns = symbol.getNamespace();
+        if (ns == null)
+            return symbol;
+        return getAliasNamespace(ns).getSymbol(symbol.getLocalPart());
+    }
+
+    AliasNamespace getAliasNamespace(Namespace baseNamespace) {
+        for (AliasNamespace ns = aliasNamespaces; ns != null; ns = ns.next)
+            if (ns.baseNamespace == baseNamespace)
+                return ns;
+        AliasNamespace ns = new AliasNamespace(baseNamespace, this);
+        ns.next = aliasNamespaces;
+        aliasNamespaces = ns;
+        return ns;
+    }
+
+    public static class AliasNamespace extends Namespace {
+        public Namespace baseNamespace;
+        AliasNamespace next;
+        public TemplateScope tscope;
+
+        public AliasNamespace(Namespace base, TemplateScope tscope) {
+            this.prefix = base.getPrefix();
+            this.setName(base.getName());
+            this.tscope = tscope;
+        }
+    }
+    */
 }

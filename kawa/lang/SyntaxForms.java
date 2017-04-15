@@ -26,6 +26,10 @@ public class SyntaxForms {
                                                   scope);
         if (datum instanceof Pair)
             return new PairSyntaxForm((Pair) datum, scope);
+        /* FUTURE
+        if (datum instanceof Symbol)
+            return scope.getAliasSymbol((Symbol) datum);
+        */
         return new SimpleSyntaxForm(datum, scope);
     }
 
