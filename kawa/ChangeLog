@@ -1,5 +1,8 @@
 2017-04-15  Per Bothner  <per@bothner.com>
 
+	* lang/Lambda.java: Fix hygiene handling.
+	(class LambdaBindDecls): New class, extends BindDecls.
+
 	* lang/TemplateScope.java: Commented-out possible-future hygiene idea.
 	Use alias symbols instead of alias declarations.
 

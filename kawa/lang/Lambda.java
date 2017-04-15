@@ -19,7 +19,7 @@ public class Lambda extends Syntax
   public Object restKeyword;
   public Object keyKeyword;
 
-    static BindDecls defaultBindParser = new BindDecls();
+    static BindDecls defaultBindParser = new LambdaBindDecls();
     public BindDecls bindParser = defaultBindParser;
     static {
         defaultBindParser.allowShadowing = true;
@@ -307,7 +307,6 @@ public class Lambda extends Syntax
             decl.setFlag(Declaration.IS_SINGLE_VALUE
                          |Declaration.IS_PARAMETER
                          |Declaration.IS_REST_PARAMETER);
-            decl.noteValueUnknown();
             // For compatibility
             decl.setFlag(Declaration.KEYWORDS_OK);
             lexp.setFlag(LambdaExp.ALLOW_OTHER_KEYWORDS);
@@ -572,40 +571,37 @@ public class Lambda extends Syntax
     Expression[] exps;
     int len;
     Object val;
-    try { // FIXME re-indent
-    if (tform != null)
-      {
-        Expression texp = tr.rewrite_car((Pair) tform[0],
-                                         (SyntaxForm) tform[1]);
-        lexp.setCoercedReturnValue(texp, tr.getLanguage());
-      }
-    else if (lexp.body instanceof BeginExp
-        && body instanceof Pair
-        && ((Pair) body).getCar() instanceof Symbol
-        && (len = (exps = ((BeginExp) lexp.body).getExpressions()).length) > 1
-        && (exps[0] instanceof ReferenceExp
-            || ((val = exps[0].valueIfConstant()) instanceof Type
-                || val instanceof Class)))
-      {
-	// Handle '<TYPENAME> BODY':
-        tr.error('w', "deprecated return-type specifier - use '::TYPE'");
-        Expression rexp = exps[0];
-        len--;
-        if (len == 1)
-          lexp.body = exps[1];
-        else
-          {
-            Expression[] new_body = new Expression[len];
-            System.arraycopy(exps, 1, new_body, 0, len);
-            lexp.body = BeginExp.canonicalize(new_body);
-          }
-        lexp.setCoercedReturnValue(rexp, tr.getLanguage());
-      }
-    else
-      lexp.setCoercedReturnType(rtype);
+    try {
+        if (tform != null) {
+            Expression texp = tr.rewrite_car((Pair) tform[0],
+                                             (SyntaxForm) tform[1]);
+            lexp.setCoercedReturnValue(texp, tr.getLanguage());
+        } else if (lexp.body instanceof BeginExp
+                   && body instanceof Pair
+                   && ((Pair) body).getCar() instanceof Symbol
+                   && (len = (exps = ((BeginExp) lexp.body).getExpressions()).length) > 1
+                   && (exps[0] instanceof ReferenceExp
+                       || ((val = exps[0].valueIfConstant()) instanceof Type
+                           || val instanceof Class))) {
+             // Handle '<TYPENAME> BODY':
+            tr.error('w', "deprecated return-type specifier - use '::TYPE'");
+            Expression rexp = exps[0];
+            len--;
+            if (len == 1)
+                lexp.body = exps[1];
+            else  {
+                Expression[] new_body = new Expression[len];
+                System.arraycopy(exps, 1, new_body, 0, len);
+                lexp.body = BeginExp.canonicalize(new_body);
+            }
+            lexp.setCoercedReturnValue(rexp, tr.getLanguage());
+        } else
+            lexp.setCoercedReturnType(rtype);
     } finally {
-    tr.pop(lexp);
-    tr.popRenamedAlias(numRenamedAlias);
+        tr.pop(lexp);
+        lexp.countDecls();
+        tr.popRenamedAlias(numRenamedAlias);
+        lexp.countDecls();
     }
     if (tr.curMethodLambda == lexp)
       tr.curMethodLambda = null;
@@ -657,5 +653,26 @@ public class Lambda extends Syntax
                                     LambdaExp lexp, Translator comp) {
         return bindParser.parsePatternCar(patList, null, templateScope, 0,
                                           lexp, comp);
+    }
+
+    static class LambdaBindDecls extends BindDecls {
+        @Override
+        public Declaration define(Symbol name,
+                                  TemplateScope templateScope,
+                                  ScopeExp lexp, Translator tr) {
+            Declaration decl0 = new Declaration(name);
+            Declaration decl = decl0;
+            if (templateScope != null)
+                decl = tr.makeRenamedAlias(decl, templateScope);
+            lexp.addDeclaration(decl);
+            if (templateScope != null)
+                decl.context = templateScope;
+            Declaration old = tr.lexical.lookup(name, -1);
+            if (old != null && old.context == decl.context)
+                ScopeExp.duplicateDeclarationError((Declaration) old,
+                                                   decl, tr);
+            tr.push(decl);
+            return decl0;
+        }
     }
 }
