@@ -1,3 +1,8 @@
+2017-04-15  Per Bothner  <per@bothner.com>
+
+	* LambdaExp.java (declareClosureEnv): Fix for inlining.
+	If declareClosureEnv has not been called on our inlineHome, do so.
+
 2017-03-26  Per Bothner  <per@bothner.com>
 
 	* LambdaExp.java (compileAsMethod): Fix default-arg optimization.

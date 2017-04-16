@@ -546,6 +546,8 @@ public class LambdaExp extends ScopeExp {
                     closureEnv.setParameter(true);
                 }
             } else {
+                if (inlineHome != null)
+                    inlineHome.declareClosureEnv();
                 closureEnv =
                     parent.heapFrame != null && parent == outerLambda()
                     ? parent.heapFrame
