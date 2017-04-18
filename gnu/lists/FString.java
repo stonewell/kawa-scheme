@@ -409,7 +409,9 @@ public class FString extends AbstractCharVector<Char>
                 return;
             }
         }
-        if (! Sequences.copyInPlaceIsSafe(this, src)) {
+        if (src != this
+            && ! (src instanceof IString || src instanceof String)
+            && ! Sequences.copyInPlaceIsSafe(this, src)) {
             src = src.subSequence(srcStart, srcEnd).toString();
             srcEnd = srcLength;
             srcStart = 0;
@@ -418,10 +420,17 @@ public class FString extends AbstractCharVector<Char>
             delete(dstEnd+grow, dstEnd);
         else if (grow > 0)
             setGapBounds(getGapStart()+grow, getGapEnd());
-        int i = dstStart;
-        int j = srcStart;
-        for (; j < srcEnd; i++, j++) {
-            data[i] = src.charAt(j);
+
+        if (srcStart < dstStart) {
+            int i = dstStart + srcLength;
+            int j = srcEnd;
+            while (--j >= srcStart)
+                data[--i] = src.charAt(j);
+         } else {
+            int i = dstStart;
+            int j = srcStart;
+            for (; j < srcEnd; i++, j++)
+                data[i] = src.charAt(j);
         }
     }
 

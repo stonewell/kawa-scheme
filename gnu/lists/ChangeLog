@@ -1,5 +1,7 @@
 2017-04-18  Per Bothner  <per@bothner.com>
 
+	* FString.java (replace): Avoid needlessly making a copy of source.
+
 	* IString.java (subSequence): Fix so it works for SubString.
 
 2017-04-10  Per Bothner  <per@bothner.com>
