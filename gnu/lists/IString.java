@@ -131,7 +131,15 @@ public class IString extends AbstractSequence<Char>
 
     /** Substring using offsets in code-units (16-bit chars). */
     public IString subSequence(int from, int to) {
-        return new IString(str.substring(from, to));
+        /* FIXME
+        int ifrom = indexFromCharOffset(from);
+        int iend = indexFromCharOffset(end);
+        return new SubString(this, ifrom, ident, from, to);
+        */
+        if (to < from || to-from > length())
+                throw new StringIndexOutOfBoundsException();
+        int jlStart = jlStart();
+        return new IString(str.substring(from+jlStart, to+jlStart));
     }
 
     public void writeExternal(ObjectOutput out) throws IOException {
