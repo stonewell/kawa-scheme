@@ -11271,6 +11271,39 @@ from the characters of @var{string} beginning with index @var{start}
 (inclusive) and ending with index @var{end} (exclusive).
 @end deffn
 
+@deffn Procedure string-null? @var{string}
+Is @var{string} the empty string?
+Same result as @code{(= (string-length @var{string}) 0)} but
+executes in O(1) time.
+@end deffn
+
+@deffn Procedure string-every pred string [start end])
+@deffnx Procedure string-any pred string [start end])
+
+Checks to see if every/any character in @var{string} satisfies @var{pred},
+proceeding from left (index @var{start}) to right (index @var{end}). These
+procedures are short-circuiting: if @var{pred} returns false,
+@code{string-every} does not call @var{pred} on subsequent characters;
+if @var{pred} returns true, @code{string-any} does not call @var{pred}
+on subsequent characters. Both procedures are ``witness-generating'':
+@itemize
+@item
+If @code{string-every} is given an empty interval (with @var{start} = @var{end}),
+it returns @code{#t}.
+@item
+If @code{string-every} returns true for a non-empty interval
+(with @var{start} < @var{end}), the returned true value is the one returned by the final call to the predicate on
+@code{(string-ref @var{string} (- @var{end} 1))}.
+@item
+If @code{string-any} returns true, the returned true value is the one
+returned by the predicate.
+@end itemize
+
+@emph{Note:} The names of these procedures do not end with a question
+mark. This indicates a general value is returned instead of a simple
+boolean (@code{#t} or @code{#f}).
+@end deffn
+
 @subsection Immutable String Constructors
 
 @deffn Procedure string-tabulate proc len
@@ -11545,6 +11578,49 @@ the argument instead of a newly allocated string.
 @end example
 @end deffn
 
+@subsection Searching
+
+@deffn Procedure string-index       string pred [start end]
+@deffnx Procedure string-index-right string pred [start end]
+@deffnx Procedure string-skip        string pred [start end]
+@deffnx Procedure string-skip-right  string pred [start end]
+
+@code{string-index} searches through the given substring from the
+left, returning the index of the leftmost character satisfying the
+predicate @var{pred}.
+@code{string-index-right} searches from the right, returning
+the index of the rightmost character satisfying the predicate @var{pred}.
+If no match is found, these procedures return @code{#f}.
+
+The @var{start} and @var{end} arguments specify the beginning and end
+of the search; the valid indexes relevant to the search include @var{start}
+but exclude @var{end}. Beware of ``fencepost''" errors: when searching
+right-to-left, the first index considered is @code{(- @var{end} 1)},
+whereas when searching left-to-right, the first index considered is @var{start}.
+That is, the start/end indexes describe the same half-open interval
+@code{[@var{start},@var{end})}
+in these procedures that they do in other string procedures.
+
+The @code{-skip} functions are similar, but use the complement of the
+criterion: they search for the first char that @emph{doesn't} satisfy
+@var{pred}. To skip over initial whitespace, for example, say
+
+@example
+(substring string
+            (or (string-skip string char-whitespace?)
+                (string-length string))
+            (string-length string))
+@end example
+
+These functions can be trivially composed with @code{string-take} and
+@code{string-drop} to produce @code{take-while}, @code{drop-while},
+@code{span}, and @code{break} procedures without loss of efficiency.
+@end deffn
+
+@c SRFI-13 and Guile generalizes pred to char_pred, which can be a
+@c predicate, a character, or a character set. That seems
+@c convenient.
+
 @subsection Concatenation
 
 Also see @code{string-append!},
@@ -11769,7 +11845,7 @@ contents; the @var{string-map-index} procedure itself does not mutate those
 strings.
 @end deffn
 
-@deffn Procedure string-for-each-index proc string [start en
+@deffn Procedure string-for-each-index proc string [start end]
 
 Calls @var{proc} on each valid index of the specified substring, in
 increasing order, discarding the results of those calls. This is
@@ -11784,6 +11860,19 @@ Example:
     txt)
   v) @result{} (101 100 99 98 97)
 @end example
+@end deffn
+
+@deffn Procedure string-count string pred [start end]
+Returns a count of the number of characters in the specified substring
+of @var{string} that satisfy the predicate @var{pred}.
+@end deffn
+
+@deffn Procedure string-filter pred string [start end]
+@deffnx Procedure string-remove pred string [start end]
+Return an immutable string consisting of only selected characters, in order:
+@code{string-filter} selects only the characters that satisfy @var{pred};
+@code{string-remove} selects only the characters that @emph{not}
+satisfy @var{pred}
 @end deffn
 
 @subsection String mutation
