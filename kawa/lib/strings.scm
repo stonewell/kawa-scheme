@@ -4,20 +4,24 @@
                char-ci=? char-ci<? char-ci>? char-ci<=? char-ci>=?
                string=? string<? string>? string<=? string>=?
 	       string-ci=? string-ci<? string-ci>? string-ci<=? string-ci>=?
-               string-fold string-fold-right string->list
                string-copy string-copy!
+               string-fold string-fold-right
+               string->list string-null?
                string-fill! string-upcase! string-downcase!
                string-capitalize string-capitalize!
                string-append! string-replace! string-replicate
                string-map string-map-index
                string-for-each string-for-each-index srfi-13-string-for-each
-               string-repeat string-tabulate string-unfold string-unfold-right
+               string-pad string-pad-right
+               string-repeat string-tabulate
+               string-unfold string-unfold-right
                string->utf8 string->utf16 string->utf16be string->utf16le)
 
 (require <kawa.lib.prim_imports>)
 (require <kawa.lib.std_syntax>)
 (require <kawa.lib.syntax>)
 (require <kawa.lib.lists>)
+(require kawa.lib.strings_syntax)
 (import (kawa lib kawa string-cursors))
 
 (define-syntax define-compare
@@ -49,6 +53,9 @@
 
 (define (string? x) :: <boolean>
   (instance? x <string>))
+
+(define (string-null? str::string)
+  (= 0 (str:length)))
 
 (define (make-string #!optional (n ::int 0) (ch ::character #\Space))
   ::gnu.lists.FString
@@ -208,26 +215,20 @@
 ;; Hook for backward compatibility with SRFI-13's string-for-each,
 ;; which differs from the R7RS version.
 (define (srfi-13-string-for-each proc str::string #!optional
-                                 (start::int 0) (end::int -1))
+                                 (start::int 0) (end::int 0 end-supplied))
   ::void
-  validate-apply: "kawa.lib.compile_map:stringForEach1ValidateApply" 
-  (let* ((cstart ::string-cursor
-                 (string-cursor-next str
-                                     (as string-cursor 0)
-                                     start))
-         (cend ::string-cursor
-             (if (= end -1) (as string-cursor (str:length))
-                 (string-cursor-next str cstart (- end start)))))
-    (string-cursor-for-each proc str cstart cend)))
-  
+  validate-apply: "kawa.lib.compile_map:stringForEach1ValidateApply"
+  (string-for-each-forwards proc str start end end-supplied))
+
 (define (string-for-each proc str1::string #!rest rst::object[])::void
   validate-apply: "kawa.lib.compile_map:stringForEachValidateApply"
   (define nrst rst:length)
   (cond ((= nrst 0)
          (string-cursor-for-each proc str1))
         ((and (< nrst 3) (not (instance? (rst 0) string)))
-         (srfi-13-string-for-each proc str1 (rst 0)
-                           (if (= nrst 2) (rst 1) -1)))
+         (string-for-each-forwards proc str1 (rst 0)
+                                   (if (= nrst 2) (rst 1) -1)
+                                   (= nrst 2)))
         (else
          (define n::int (+ nrst 1))
          (define cursors::string-cursor[] (string-cursor[] length: n))
@@ -434,3 +435,80 @@
              (result:prepend (f seed))
              (recur (g seed)))))
     (gnu.lists.IString result)))
+
+(define (string-pad (str ::java.lang.CharSequence)
+                    len::int
+                    #!optional
+                    (start ::int 0)
+                    (ch ::character #\Space)
+                    (end ::int (gnu.lists.Strings:sizeInCodePoints str)))
+  (let ((olen (- end start)))
+    (if (<= len olen)
+        (gnu.lists.IString:valueOf str start len)
+        (let ((result (gnu.lists.FString:alloc len)))
+          (do ((i ::int (- len olen) (- i 1)))
+              ((<= i 0))
+            (result:appendCharacter (as int ch)))
+          (result:append str)
+          result))))
+
+(define (string-pad-right (str ::java.lang.CharSequence)
+                          len::int
+                          #!optional
+                          (start ::int 0)
+                          (ch ::character #\Space)
+                          (end ::int (gnu.lists.Strings:sizeInCodePoints str)))
+  (let ((olen (- end start)))
+    (if (<= len olen)
+        (gnu.lists.IString:valueOf str start len)
+        (let ((result (gnu.lists.FString:alloc len)))
+          (result:append str)
+          (do ((i ::int (- len olen) (- i 1)))
+              ((<= i 0))
+            (result:appendCharacter (as int ch)))
+          result))))
+
+#|
+(define (string-trim (str ::java.lang.CharSequence)
+                     #!optional pred
+                     (start ::int 0)
+                     (end ::int 0 supplied-end))
+  (%string-trim #t #f str pred start end supplied-end))
+
+(define (string-trim-right (str ::java.lang.CharSequence)
+                     #!optional pred
+                     (start ::int 0)
+                     (end ::int 0 supplied-end))
+  (%string-trim #f #t str pred start end supplied-end))
+
+(define (string-trim-both (str ::java.lang.CharSequence)
+                     #!optional pred
+                     (start ::int 0)
+                     (end ::int 0 supplied-end))
+  (%string-trim #t #t str pred start end supplied-end))
+
+(define (%string-trim trim-left:boolean trim-right::boolean
+                      str pred start::int end::int supplied-end::boolean)
+ (with-start-end 
+  str (start end supplied-end) (cstart cend)
+  (let* ((rstart
+          (if trim-left
+              ....
+              cstart))
+         (rend
+          (if trim-right
+              ...
+              cend)))
+    (gnu.lists.IString:valueOf
+     (str:substring rstart rend)))))
+|#
+#| TODP:
+string-trim-{left,right,both}
+string-{take,drop}{,-right}
+string-replace
+string-{prefix,suffix}?
+string-{prefix,suffix}-length
+string-contains string-contains-right
+string-split
+string-titlecase etc
+|#

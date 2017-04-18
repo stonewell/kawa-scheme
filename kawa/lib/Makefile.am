@@ -19,7 +19,7 @@ java_SCM_ALWAYS1 =\
   characters.scm \
   keywords.scm \
   numbers.scm \
-  strings.scm \
+  strings_syntax.scm strings.scm \
   parameters.scm \
   parameterize.scm \
   ports.scm \

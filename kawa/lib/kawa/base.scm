@@ -143,16 +143,19 @@
         scheme-window sequence set-input-port-line-number! sleep
         set-input-port-prompter! set-port-line!
         slot-ref slot-set! srfi-13-string-for-each static-field
-        string-append! string-replace!
+        string-append! string-any string-count
+        string-replace!
         string-titlecase
         string-capitalize
         string-capitalize! ;; ???
         string-concatenate string-concatenate-reverse
-        string-fold string-fold-right string-for-each-index
+        string-every string-filter string-fold string-fold-right
+        string-for-each-index string-index string-index-right
         string-join string-map-index
         string-normalize-nfd string-normalize-nfkd
-        string-normalize-nfc string-normalize-nfkc
-        string-repeat string-replicate
+        string-normalize-nfc string-normalize-nfkc string-null?
+        string-pad string-pad-right string-remove
+        string-repeat string-replicate string-skip string-skip-right
         string-tabulate string-unfold string-unfold-right
         string->utf16 string->utf16le string->utf16be
         subtype?

@@ -1,3 +1,9 @@
+2017-04-18  Per Bothner  <per@bothner.com>
+
+	Implement more SRFI-140 string functions.
+	* strings_syntax.scm (string-for-each-forward, string-for-each-backward):
+	New macros useful for efficiently implementing many string functions.
+
 2017-04-10  Per Bothner  <per@bothner.com>
 
 	* strings.scm (string-fold, string-fold-right, string-for-each-index,
