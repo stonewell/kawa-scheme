@@ -1,3 +1,8 @@
+2017-04-19  Per Bothner  <per@bothner.com>
+
+	Fix so functions like '=' throw exception on bad arguments.
+	* NumberCompare.java (compareStrict): New method.
+
 2016-12-03  Per Bothner  <per@bothner.com>
 
 	* CompileMisc.java (validateApplyFormat): Generalize optimitation
