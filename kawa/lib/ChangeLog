@@ -1,3 +1,7 @@
+2017-04-19  Per Bothner  <per@bothner.com>
+
+	* bytevectors.scm: Fix incorrect parentheses.
+
 2017-04-18  Per Bothner  <per@bothner.com>
 
 	Implement more SRFI-140 string functions.

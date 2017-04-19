@@ -67,11 +67,11 @@
                       (start ::int 0)
                       (end ::int (v:size)))
   ::string
-  (gnu.lists.IString (v:utf16ToString start (- end start)) #f))
+  (gnu.lists.IString (v:utf16ToString start (- end start) #f)))
 
 (define (utf16be->string (v ::bytevector)
                       #!optional
                       (start ::int 0)
                       (end ::int (v:size)))
   ::string
-  (gnu.lists.IString (v:utf16ToString start (- end start)) #t))
+  (gnu.lists.IString (v:utf16ToString start (- end start) #t)))
