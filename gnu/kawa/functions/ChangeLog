@@ -1,3 +1,8 @@
+2017-04-19  Per Bothner  <per@bothner.com>
+
+	Fix so functions like '=' throw exception on bad arguments.
+	* NumberCompare.java (compareStrict): New method.
+
 2017-03-21  Per Bothner  <per@bothner.com>
 
 	* Expt.java: Moved from from kawa/standard/expt.java.

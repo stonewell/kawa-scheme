@@ -120,7 +120,7 @@ public class NumberCompare extends ProcedureN
 
   static public boolean apply2 (int flags, Object arg1, Object arg2)
   {
-    return ((1 << (3 + compare(arg1, arg2, true))) & flags) != 0;
+    return ((1 << (3 + compareStrict(arg1, arg2, true))) & flags) != 0;
   }
   
   public static boolean checkCompareCode (int code, int flags)
@@ -130,7 +130,7 @@ public class NumberCompare extends ProcedureN
 
   static public boolean applyWithPromotion (int flags, Object arg1, Object arg2)
   {
-    return checkCompareCode(compare(arg1, arg2, false), flags);
+    return checkCompareCode(compareStrict(arg1, arg2, false), flags);
   }
   
   /** Compare two numbers.
@@ -145,6 +145,16 @@ public class NumberCompare extends ProcedureN
     int code1 = Arithmetic.classifyValue(arg1);
     int code2 = Arithmetic.classifyValue(arg2);
     return compare(arg1, code1, arg2, code2, exact);
+  }
+
+  static public int compareStrict (Object arg1, Object arg2, boolean exact)
+  {
+    int code1 = Arithmetic.classifyValue(arg1);
+    int code2 = Arithmetic.classifyValue(arg2);
+    int r = compare(arg1, code1, arg2, code2, exact);
+    if (r == -3)
+        throw new IllegalArgumentException("bad value for numeric compare");
+    return r;
   }
 
   static public int compare (Object arg1, int code1,
