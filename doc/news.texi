@@ -70,6 +70,9 @@ New procedures: @code{reverse-list->string},
 @code{utf16->string}, @code{utf16be->string}, @code{utf16le->string}.
 @c , @code{xsubstring}
 @c DOC NEEDED:
+@c string-{prefix,suffix}?
+@c string-{prefix,suffix}-length
+@c string-trim-{left,right,both}
 @c string-{pad,skip}{,-right} ALSO srfi-140.html
 @c string-replicate (should rename to xsubstring)
 These follow SRFI-140 and return immutable strings.

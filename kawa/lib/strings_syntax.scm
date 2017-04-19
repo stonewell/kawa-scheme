@@ -32,3 +32,16 @@
                 (let ((prev (string-cursor-prev s cursor)))
                   (proc (string-cursor-ref s prev))
                   (loop prev)))))))))
+
+(define-syntax with-start-end
+  (syntax-rules ()
+    ((_ str (start end supplied-end) (cstart cend) . body)
+     (let* ((cstart (gnu.lists.Strings:offsetByCodePoints str start 0 0))
+            (cend (cond ((not supplied-end) (str:length))
+                        ((< end start)
+                         (primitive-throw
+                          (java.lang.StringIndexOutOfBoundsException)))
+                        (else
+                         (gnu.lists.Strings:offsetByCodePoints
+                          str (- end start) cstart start)))))
+       . body))))

@@ -1,5 +1,9 @@
 2017-04-19  Per Bothner  <per@bothner.com>
 
+	* strings_ext.scm (strim-trim, string-trim-right, string-trim-both,
+	string-prefix?, string-suffix?, string-prefix-length,
+	string-suffix-length, string-contains): More string procedures.
+	((* strings.scm (string-pad, string-pad-right): Fix parameter order.
 	* bytevectors.scm: Fix incorrect parentheses.
 
 2017-04-18  Per Bothner  <per@bothner.com>

@@ -38,19 +38,6 @@
                       (and (OP (COMP2 prev next) 0)
                            (loop (+ i 1) next)))))))))))
 
-(define-syntax with-start-end
-  (syntax-rules ()
-    ((_ str (start end supplied-end) (cstart cend) . body)
-     (let* ((cstart (gnu.lists.Strings:offsetByCodePoints str start 0 0))
-            (cend (cond ((not supplied-end) (str:length))
-                        ((< end start)
-                         (primitive-throw
-                          (java.lang.StringIndexOutOfBoundsException)))
-                        (else
-                         (gnu.lists.Strings:offsetByCodePoints
-                          str (- end start) cstart start)))))
-       . body))))
-
 (define (string? x) :: <boolean>
   (instance? x <string>))
 
@@ -439,8 +426,8 @@
 (define (string-pad (str ::java.lang.CharSequence)
                     len::int
                     #!optional
-                    (start ::int 0)
                     (ch ::character #\Space)
+                    (start ::int 0)
                     (end ::int (gnu.lists.Strings:sizeInCodePoints str)))
   (let ((olen (- end start)))
     (if (<= len olen)
@@ -455,8 +442,8 @@
 (define (string-pad-right (str ::java.lang.CharSequence)
                           len::int
                           #!optional
-                          (start ::int 0)
                           (ch ::character #\Space)
+                          (start ::int 0)
                           (end ::int (gnu.lists.Strings:sizeInCodePoints str)))
   (let ((olen (- end start)))
     (if (<= len olen)
@@ -467,48 +454,10 @@
               ((<= i 0))
             (result:appendCharacter (as int ch)))
           result))))
-
-#|
-(define (string-trim (str ::java.lang.CharSequence)
-                     #!optional pred
-                     (start ::int 0)
-                     (end ::int 0 supplied-end))
-  (%string-trim #t #f str pred start end supplied-end))
-
-(define (string-trim-right (str ::java.lang.CharSequence)
-                     #!optional pred
-                     (start ::int 0)
-                     (end ::int 0 supplied-end))
-  (%string-trim #f #t str pred start end supplied-end))
-
-(define (string-trim-both (str ::java.lang.CharSequence)
-                     #!optional pred
-                     (start ::int 0)
-                     (end ::int 0 supplied-end))
-  (%string-trim #t #t str pred start end supplied-end))
-
-(define (%string-trim trim-left:boolean trim-right::boolean
-                      str pred start::int end::int supplied-end::boolean)
- (with-start-end 
-  str (start end supplied-end) (cstart cend)
-  (let* ((rstart
-          (if trim-left
-              ....
-              cstart))
-         (rend
-          (if trim-right
-              ...
-              cend)))
-    (gnu.lists.IString:valueOf
-     (str:substring rstart rend)))))
-|#
-#| TODP:
-string-trim-{left,right,both}
+#| TODO:
 string-{take,drop}{,-right}
 string-replace
-string-{prefix,suffix}?
-string-{prefix,suffix}-length
-string-contains string-contains-right
+string-contains-right
 string-split
 string-titlecase etc
 |#
