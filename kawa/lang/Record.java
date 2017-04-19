@@ -170,8 +170,9 @@ public class Record
   public static ClassType makeRecordType (String name, LList fnames)
   {
     ClassType superClass = ClassType.make("kawa.lang.Record");
-    String mangledName = Mangling.mangleNameIfNeeded(name);
+    String mangledName = Mangling.mangleClassName(name);
     ClassType clas = new ClassType(mangledName);
+    clas.setClassfileVersion(Compilation.defaultClassFileVersion);
     clas.setSuper(superClass);
     clas.setModifiers(Access.PUBLIC|Access.SUPER);
 

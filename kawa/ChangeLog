@@ -1,3 +1,8 @@
+2017-04-19  Per Bothner  <per@bothner.com>
+
+	* kawa/Record.java (makeRecordType): Update mangling to symbolic.
+	Also set classfile-version.
+
 2017-04-15  Per Bothner  <per@bothner.com>
 
 	* lang/Lambda.java: Fix hygiene handling.
