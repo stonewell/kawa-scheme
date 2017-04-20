@@ -1,3 +1,7 @@
+2017-04-20  Per Bothner  <per@bothner.com>
+
+	* numbers.scm: Annotate various predicates with 'inline-if-constant.
+
 2017-04-19  Per Bothner  <per@bothner.com>
 
 	* strings_ext.scm (strim-trim, string-trim-right, string-trim-both,

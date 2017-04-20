@@ -44,6 +44,8 @@ public class Procedure extends PropertySet
     Namespace.EmptyNamespace.getSymbol("validate-xapply");
   public static final Symbol compilerXKey =
     Namespace.EmptyNamespace.getSymbol("compile-apply");
+  public static final Symbol inlineIfConstantSymbol =
+    Namespace.EmptyNamespace.getSymbol("inline-if-constant");
 
   // This should be a LazyPropertyKey<gnu.expr.Inlineable>, but we want
   // to avoid any strict dependency on gnu.expr for run-time classes.

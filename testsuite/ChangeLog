@@ -1,5 +1,7 @@
 2017-04-20  Per Bothner  <per@bothner.com>
 
+	* bad-voidexp.scm: Fix to avoid unwanted constant-folding.
+
 	* r7rs-tests.scm (is-number): Separate method to reduce code size.
 	Also avoids some bogus warnings.
 

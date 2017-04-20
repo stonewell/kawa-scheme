@@ -1,3 +1,7 @@
+2017-04-20  Per Bothner  <per@bothner.com>
+
+	* lang-test.lisp: Some new expected failures.
+
 2014-02-25  Charles Turner  <chturne@gmail.com>
 
 	* lang-test.lisp: New tests for labels, multiple-value-bind, and

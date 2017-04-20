@@ -1,3 +1,11 @@
+2017-04-20  Per Bothner  <per@bothner.com>
+
+	* InlineCalls.java (maybeInline): Extended constant-folding.
+	If validate-apply property is 'inline-if-constant, optimize.
+	(visitIfExp): Don't visit never-used branches.
+	This avoids some bogus error messages - as well as some useful ones.
+	(visitTryExp): Optimize if body is constant.
+
 2017-04-15  Per Bothner  <per@bothner.com>
 
 	* LambdaExp.java (declareClosureEnv): Fix for inlining.

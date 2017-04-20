@@ -96,9 +96,13 @@
 (test nil 'numberp-3 (numberp nil))
 (test nil 'numberp-4 (numberp (cons 1 2)))
 
+(setq fail-expected "zerop returns Scheme boolean type")
 (test t 'zerop-1 (zerop 0))
+(setq fail-expected "zerop returns Scheme boolean type")
 (test nil 'zerop-2 (zerop 1))
+(setq fail-expected "zerop returns Scheme boolean type")
 (test t 'zerop-3 (zerop -0.0))
+(setq fail-expected "zerop returns Scheme boolean type")
 (test t 'zerop-4 (zerop 0/100))
 
 (test nil 'consp-1 (consp nil))

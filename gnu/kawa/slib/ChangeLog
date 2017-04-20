@@ -1,3 +1,7 @@
+2017-04-20  Per Bothner  <per@bothner.com>
+
+	* testing.scm (%test-error): Fix/update.
+
 2017-04-09  Per Bothner  <per@bothner.com>
 
 	* testing.scm: Some minor performance improvements.

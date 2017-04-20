@@ -866,8 +866,7 @@
 				   #f)
 				 (ex <java.lang.Throwable>
 				     (test-result-set! r 'actual-error ex)
-				     (cond ((and (instance? et <gnu.bytecode.ClassType>)
-						 (gnu.bytecode.ClassType:isSubclass et <java.lang.Throwable>))
+				     (cond ((instance? et java.lang.Class)
 					    (instance? ex et))
 					   (else #t)))))
 	     (%test-report-result)))))))

@@ -418,6 +418,11 @@ public class InlineCalls extends ExpExpVisitor<Type> {
                     test = value;
             }
         }
+        // truth: 1 - test is true; 0: test is false; -1 - test is unknown.
+        int truth = ! (test instanceof QuoteExp) ? -1
+            : comp.getLanguage().isTrue(((QuoteExp) test).getValue()) ? 1 : 0;
+        if (truth == 1 || (truth == 0 && exp.else_clause != null))
+            return visit(exp.select(truth != 0), required);
         exp.test = test;
         VarValueTracker.forkPush(this);
         if (exitValue == null)
@@ -426,9 +431,6 @@ public class InlineCalls extends ExpExpVisitor<Type> {
         if (exitValue == null && exp.else_clause != null)
             exp.else_clause = visit(exp.else_clause, required);
         VarValueTracker.forkPop(this);
-        // truth: 1 - test is true; 0: test is false; -1 - test is unknown.
-        int truth = ! (test instanceof QuoteExp) ? -1
-            : comp.getLanguage().isTrue(((QuoteExp) test).getValue()) ? 1 : 0;
         if (exp.else_clause == null && truth <= 0
             && required instanceof ValueNeededType) {
             if (comp.warnVoidUsed())
@@ -436,8 +438,6 @@ public class InlineCalls extends ExpExpVisitor<Type> {
             if (truth == 0)
                 return QuoteExp.voidObjectExp;
         }
-        if (truth >= 0)
-            return exp.select(truth != 0);
         if (test.getType().isVoid()) {
             boolean voidTrue = comp.getLanguage().isTrue(Values.empty);
 
@@ -781,6 +781,8 @@ public class InlineCalls extends ExpExpVisitor<Type> {
         VarValueTracker.forkPop(this);
         if (exp.finally_clause != null)
             exp.finally_clause = exp.finally_clause.visit(this, null);
+        if (exp.try_clause instanceof QuoteExp && exp.finally_clause == null)
+            return exp.try_clause;
         return exp;
     }
 
@@ -907,6 +909,11 @@ public class InlineCalls extends ExpExpVisitor<Type> {
                 inliner = proc.getProperty(Procedure.validateXApplyKey, null);
                 if (inliner == null && exp.firstSpliceArg < 0)
                     inliner = proc.getProperty(Procedure.validateApplyKey, null);
+                if (inliner == Procedure.inlineIfConstantSymbol) {
+                    Expression e = exp.inlineIfConstant(proc, this);
+                    if (e != exp)
+                        return visit(e, required);
+                }
                 if (inliner instanceof CharSequence) {
                     inliner = resolveInliner(proc, inliner.toString(),
                                              inlinerMethodType);
