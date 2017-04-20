@@ -1,3 +1,10 @@
+2017-04-19  William D Clinger
+            Per Bothner  <per@bothner.com>
+
+	* strings-test.scm: New tests for extended srfi-140 stings.
+	This is a work-in-progess - a fair number fail.
+	This is based on texts-test.sps from srfi-135, by William Clinger.
+
 2017-04-09  Per Bothner  <per@bothner.com>
 
 	* lib-test.scm: Two string/bytevector-conversion tests.
