@@ -29,8 +29,6 @@ public class CharBuffer extends FString
         manager = new StableManager(this);
     }
 
-    public int length() { return size(); }
-
     public char[] getArray() { return (char[]) getBuffer(); }
 
     @Override public int startPos() { return manager.startPos(); }

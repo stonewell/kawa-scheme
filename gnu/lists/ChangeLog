@@ -1,3 +1,8 @@
+2017-04-20  Per Bothner  <per@bothner.com>
+
+	* CharBuffer.java (length): Remove method -causes infinite recursion.
+	The inherited method works fine.
+
 2017-04-18  Per Bothner  <per@bothner.com>
 
 	* FString.java (replace): Avoid needlessly making a copy of source.
