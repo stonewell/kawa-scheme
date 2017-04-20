@@ -1,3 +1,8 @@
+2017-04-20  Per Bothner  <per@bothner.com>
+
+	* r7rs-tests.scm (is-number): Separate method to reduce code size.
+	Also avoids some bogus warnings.
+
 2017-04-19  William D Clinger
             Per Bothner  <per@bothner.com>
 
