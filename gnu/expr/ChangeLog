@@ -1,5 +1,12 @@
 2017-04-20  Per Bothner  <per@bothner.com>
 
+	* Mangling.java: Use "symbolic" mangling for fields and variables.
+	(mangleVariable, mangleField, demangleField, mangleMethod)
+	demangleMethod): New convenience methods.
+	(* InlineCalls.java (isCompatibleWithValue): New helper method.
+	Takes into account LazyType.
+	* Language.java (mangleNameIfNeeded): Removed method.
+
 	* InlineCalls.java (maybeInline): Extended constant-folding.
 	If validate-apply property is 'inline-if-constant, optimize.
 	(visitIfExp): Don't visit never-used branches.

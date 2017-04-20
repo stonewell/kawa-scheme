@@ -120,6 +120,9 @@ array, so changes in one will update the other.
 @item
 The expression @code{(module-class)} evaluates to the
 containing module class.
+@item
+Change the @ref{Mangling,mangling} for field and local variables names
+to match the @uref{https://blogs.oracle.com/jrose/entry/symbolic_freedom_in_the_vm,Symbolic Freedom} style.
 @end itemize
 
 @c @subheading In Git repository (master branch) since last release

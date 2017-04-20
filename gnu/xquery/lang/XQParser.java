@@ -1307,7 +1307,7 @@ public class XQParser extends Lexer
     switch (op)
       {
       case OP_ADD: 
-	func = makeFunctionExp("gnu.xquery.util.ArithOp", "add", "+");
+        func = makeFunctionExp("gnu.xquery.util.ArithOp", "add", "+");
 	break;
       case OP_SUB:
 	func = makeFunctionExp("gnu.xquery.util.ArithOp", "sub", "-");
@@ -1343,22 +1343,22 @@ public class XQParser extends Lexer
 	func = makeFunctionExp("gnu.xquery.util.Compare", "valGe", "ge");
 	break;
       case OP_EQU:
-	func = makeFunctionExp("gnu.xquery.util.Compare", "=");
+        func = makeFunctionExp("gnu.xquery.util.Compare", "$Eq", "=");
 	break;
       case OP_NEQ:
-	func = makeFunctionExp("gnu.xquery.util.Compare", "!=");
+        func = makeFunctionExp("gnu.xquery.util.Compare", "$Ex$Eq", "!=");
 	break;
       case OP_LSS:
-	func = makeFunctionExp("gnu.xquery.util.Compare", "<");
+        func = makeFunctionExp("gnu.xquery.util.Compare", "$Ls", "<");
 	break;
       case OP_LEQ:
-	func = makeFunctionExp("gnu.xquery.util.Compare", "<=");
+        func = makeFunctionExp("gnu.xquery.util.Compare", "$Ls$Eq", "<=");
 	break;
       case OP_GRT:
-	func = makeFunctionExp("gnu.xquery.util.Compare", ">");
+        func = makeFunctionExp("gnu.xquery.util.Compare", "$Gr", ">");
 	break;
       case OP_GEQ:
-	func = makeFunctionExp("gnu.xquery.util.Compare", ">=");
+        func = makeFunctionExp("gnu.xquery.util.Compare", "$Gr$Eq", ">=");
 	break;
       case OP_IS:
 	func = makeFunctionExp("gnu.kawa.xml.NodeCompare", "$Eq", "is");
@@ -4326,7 +4326,7 @@ public class XQParser extends Lexer
   public static Expression makeFunctionExp(String className, String name)
   {
     return makeFunctionExp(className,
-			   Mangling.mangleNameIfNeeded(name),
+			   Mangling.mangleField(name),
 			   name);
   }
 

@@ -670,7 +670,7 @@ public class LambdaExp extends ScopeExp {
             : comp.mainClass;
         String name = getName();
         String fname
-            = name == null ? "lambda" : Mangling.mangleNameIfNeeded(name);
+            = name == null ? "lambda" : Mangling.mangleField(name);
         int fflags = Access.FINAL;
         if (nameDecl != null && nameDecl.context instanceof ModuleExp) {
             boolean external_access = nameDecl.needsExternalAccess();

@@ -19861,8 +19861,8 @@ languages) can in principle contain any character (if using a
 suitable quoting convention), but typically names consist of
 "words" (one or more letters) separated by hyphens, such
 as @samp{make-temporary-file}.  Digits
-and some special symbols are also used.  Standard Scheme
-is case-insensitive;  this means that the names @samp{loop},
+and some special symbols are also used.  Traditionally, Scheme is
+case-insensitive;  this means that the names @samp{loop},
 @samp{Loop}, and @samp{LOOP} are all the same name.  Kawa
 is by default case-sensitive, but we recommend that you
 avoid using upper-case letters as a general rule.
@@ -19871,18 +19871,24 @@ The Java language and the Java virtual machine uses names for
 classes, variables, fields and methods.
 Names in the Java language can contain upper- and lower-case letters,
 digits, and the special symbols @samp{_} and @samp{$}.
-The Java virtual machine allows most characters, but still
-has some limitations.  Kawa limits characters in generated names to those
-allowed by Java language (rather than those allowed by the
-virtual machine), for simplify and Java interoperatbility.
+The Java virtual machine (JVM) allows most characters, but still
+has some limitations.
 
-Given a name in a Scheme program,
-Kawa needs to map that name into a valid Java name.  A typical
-Scheme name such as @samp{make-temporary-file} is not a valid
-Java name.  The convention for Java names is to use
+Kawa translates class names, package names, field names, and local variable
+names using the
+@uref{https://blogs.oracle.com/jrose/entry/symbolic_freedom_in_the_vm,''symbolic'' convention}, so most characters are unchanged.
+For example the Scheme function @samp{file-exists?}
+becomes the field @samp{file-exists?}, but @code{dotted.name}
+becomes @samp{dotted\,name}.
+Such names may not be valid Java name, so to access them from a
+Java program you might have to use reflection.
+
+When translating procedure names to method names,
+Kawa uses a different translation, in order to achieve
+more ``Java-like'' names. This means translating a
+Scheme-style name like @samp{make-temporary-file} to
 "mixed-case" words, such as @samp{makeTemporaryFile}.
-So Kawa will translate a Scheme-style name into a Java-style
-name.  The basic rule is simple:  Hyphens are dropped, and
+The basic rule is simple:  Hyphens are dropped, and
 a letter that follows a hyphen is translated to its
 upper-case (actually "title-case") equivalent.  Otherwise,
 letters are translated as is.
@@ -19900,7 +19906,7 @@ Some symbols are mapped to a mnemonic sequence, starting with a dollar-sign,
 followed by a two-character abbreviation.  For example, the less-than
 symbol @samp{<} is mangled as @samp{$Ls}.
 See the source code to the @code{mangleName} method in the
-@code{gnu.expr.Compilation} class for the full list.
+@code{gnu.expr.Mangling} class for the full list.
 Characters that do not have a mnemonic abbreviation are
 mangled as @samp{$} followed by a four-hex-digit unicode value.
 For example @samp{Tamil vowel sign ai} is mangled as @samp{$0bc8}.
@@ -19917,19 +19923,6 @@ Kawa depend on being able to map Scheme name to Java names
 naturally, so we urge you to @emph{not} write code that
 "mixes" naming conventions by using (say) the names @samp{open-file}
 and @samp{openFile} to name two different objects.
-
-The above mangling is used to generate Java method names.
-Each top-level definition is also mapped to a Java field.
-The name of this field is also mangled, but using a mostly
-reversible mapping:  The Scheme function @samp{file-exists?}
-is mapped to the method name @samp{file$Mnexists$Qu}.
-Because @samp{$} is used to encode special characters, you
-should avoid using it in names in your source file.
-
-Class and package name generally don't need to be mangled,
-as most characters are used directly.
-The exception is a few characters
-as described @uref{https://blogs.oracle.com/jrose/entry/symbolic_freedom_in_the_vm,here}.
 
 @node Scheme types in Java, Array operations, Mangling, Objects Classes and Modules
 @section Scheme types in Java

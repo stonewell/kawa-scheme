@@ -201,7 +201,7 @@ public abstract class ClassMemberLocation<T> extends Location<T>
     boolean isFinal = (rModifiers & Access.FINAL) != 0;
     Object fdname = (isFinal && (fvalue instanceof Named && ! isAlias)
 		     ? ((Named) fvalue).getSymbol()
-		     : Mangling.demangleName(rfield.getName(), true));
+		     : Mangling.demangleField(rfield.getName()));
     try {
         SourceName sourceName = rfield.getAnnotation(SourceName.class);
         if (sourceName != null) {

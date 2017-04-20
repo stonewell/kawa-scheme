@@ -400,7 +400,7 @@ public abstract class Language
    */
   protected void defProcStFld(String name, String cname)
   {
-    defProcStFld(name, cname, mangleNameIfNeeded(name));
+    defProcStFld(name, cname, Mangling.mangleField(name));
   }
   
   /**
@@ -411,7 +411,7 @@ public abstract class Language
    * @param mname The name of the (mangled) field in {@code cname}
    */
   protected void defProcStFldAs(String asName, String cname, String mname) {
-    defProcStFld(asName, cname, mangleNameIfNeeded(mname));
+    defProcStFld(asName, cname, Mangling.mangleField(mname));
   }
 
   /** Enter a named function into the current environment. */
@@ -533,14 +533,6 @@ public abstract class Language
         }
         return extensions;
     }
-
-  public static String mangleNameIfNeeded (String name)
-  {
-    if (name == null || isValidJavaName(name))
-      return name;
-    else
-      return mangleName(name, 0);
-  }
 
   public static boolean isValidJavaName(String name)
   {
@@ -1106,7 +1098,7 @@ public abstract class Language
             // FIXME move this to demangleName
             if (externalAccess)
                 fname = fname.substring(Declaration.PRIVATE_PREFIX.length());
-            fdname = Mangling.demangleName(fname, true).intern();
+            fdname = Mangling.demangleField(fname).intern();
         }
         try {
             SourceName sourceName = fld.getAnnotation(SourceName.class);

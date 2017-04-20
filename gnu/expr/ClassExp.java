@@ -151,7 +151,7 @@ public class ClassExp extends LambdaExp
                 int flags = decl.getAccessFlags(Access.PUBLIC);
                 if (decl.getFlag(Declaration.STATIC_SPECIFIED))
                     flags |= Access.STATIC;
-                String fname = Mangling.mangleNameIfNeeded(decl.getName());
+                String fname = Mangling.mangleField(decl.getName());
                 decl.setField(instanceType.addField(fname, null, flags));
                 Declaration old = seenFields.get(fname);
                 if (old != null)

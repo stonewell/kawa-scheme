@@ -82,8 +82,7 @@ public class CompiledProc extends MethodProc {
             try {
                 Class moduleClass = getModuleClass();
                 Method[] methods = moduleClass.getDeclaredMethods();
-                //String mangledName = Mangling.mangleName(name); IS CORRECT
-                String mangledName = Mangling.mangleNameIfNeeded(name);
+                String mangledName = Mangling.mangleMethod(name);
                 for (int i = methods.length;  --i >= 0; ) {
                     if (methods[i].getName().equals(mangledName)) {
                         if (method != null) {

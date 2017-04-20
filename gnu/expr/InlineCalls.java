@@ -4,6 +4,7 @@
 package gnu.expr;
 import gnu.bytecode.*;
 import gnu.kawa.reflect.CompileReflect;
+import gnu.kawa.reflect.LazyType;
 import gnu.kawa.reflect.Invoke;
 import gnu.kawa.functions.Convert;
 import gnu.kawa.util.IdentityHashTable;
@@ -85,14 +86,20 @@ public class InlineCalls extends ExpExpVisitor<Type> {
         return checkType(exp, required);
     }
 
+    public static int isCompatibleWithValue(Type required, Type expType) {
+        if (required == null || expType == Type.neverReturnsType
+            || required == Type.neverReturnsType)
+            return 1;
+        if (expType instanceof LazyType && ! LazyType.maybeLazy(required))
+            expType = ((LazyType) expType).getValueType();
+        return required.isCompatibleWithValue(expType);
+    }
+
     public Expression checkType(Expression exp, Type required) {
         Type expType = exp.getType();
         if (expType == Type.toStringType)
             expType = Type.javalangStringType;
-        int cmp = required == null || expType == Type.neverReturnsType
-            || required == Type.neverReturnsType
-            ? 1
-            : required.isCompatibleWithValue(expType);
+        int cmp = isCompatibleWithValue(required, expType);
         if (cmp < 0
             || (cmp == 0 && required.isInterface()
                 && (exp instanceof QuoteExp || exp instanceof LambdaExp))) {
@@ -145,7 +152,7 @@ public class InlineCalls extends ExpExpVisitor<Type> {
                         +" is incompatible with required type "
                         +language.formatType(required)),
                        exp);
-           
+
             // Box if needed to force a run-time ClassCastException.
             if (required instanceof PrimType)
                 required = ((PrimType) required).boxedType();

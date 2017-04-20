@@ -191,7 +191,7 @@ public abstract class LispLanguage extends Language
 
   protected void defSntxStFld(String name, String cname)
   {
-    defSntxStFld(name, cname, mangleNameIfNeeded(name));
+    defSntxStFld(name, cname, Mangling.mangleField(name));
   }
 
     /**

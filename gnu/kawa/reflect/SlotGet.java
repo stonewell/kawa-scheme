@@ -51,7 +51,7 @@ public class SlotGet extends Procedure2
     if (arg2 instanceof gnu.bytecode.Field)
       {
         fname = ((gnu.bytecode.Field) arg2).getName();
-        name = Mangling.demangleName(fname, true);
+        name = Mangling.demangleField(fname);
       }
     else if (arg2 instanceof gnu.bytecode.ClassType)
       {
@@ -60,7 +60,7 @@ public class SlotGet extends Procedure2
     else if (arg2 instanceof gnu.bytecode.Method)
       {
         String mname = ((gnu.bytecode.Method) arg2).getName();
-        name = Mangling.demangleName(mname, false);
+        name = Mangling.demangleMethod(mname);
         if (mname.startsWith("get"))
           getName = mname;
         else if (mname.startsWith("is"))

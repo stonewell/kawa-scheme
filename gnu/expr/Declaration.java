@@ -1025,7 +1025,7 @@ public class Declaration
       {
         String vname = null;
         if (symbol != null)
-          vname = Mangling.mangleNameIfNeeded(getName());
+          vname = Mangling.mangleVariable(getName());
 	if (isAlias() && getValue() instanceof ReferenceExp)
 	  {
 	    Declaration base = followAliases(this);
@@ -1272,7 +1272,7 @@ public class Declaration
           }
         else
           {
-            fname = Mangling.mangleNameIfNeeded(fname);
+            fname = Mangling.mangleField(fname);
             if (getFlag(IS_UNKNOWN))
               {
                 fname = UNKNOWN_PREFIX + fname;
@@ -1321,7 +1321,7 @@ public class Declaration
               }
             // FIXME should optimize if uri == module.getNamespaceUri()
             if (haveUri || havePrefix
-                || ! Mangling.demangleName(fname, true).equals(dname))
+                || ! Mangling.demangleField(fname).equals(dname))
               {
                 AnnotationEntry ae = new AnnotationEntry(ClassType.make("gnu.expr.SourceName"));
                 ae.addMember("name", dname, Type.javalangStringType);
@@ -1435,7 +1435,7 @@ public class Declaration
                 ClassType procType
                   = (ClassType) ClassType.make(name.substring(0, colon));
                 name = name.substring(colon+1);
-                String fname = Mangling.mangleNameIfNeeded(name);
+                String fname = Mangling.mangleField(name);
                 procField = procType.getDeclaredField(fname);
               }
             catch (Exception ex)
@@ -1451,7 +1451,7 @@ public class Declaration
             if (procClass != null)
               {
                 ClassType procType = (ClassType) Type.make(procClass);
-                String fname = Mangling.mangleNameIfNeeded(name);
+                String fname = Mangling.mangleField(name);
                 procField = procType.getDeclaredField(fname);
               }
           }
