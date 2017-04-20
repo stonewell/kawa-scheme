@@ -1,12 +1,21 @@
+BEFORE Kawa 3.0
+
+- Make 2.4 release from master.
+- Merge invoke branch and set version number to 2.92
+- Make JAVA8 the default.
+- Get JavaFX script applications to work again.
+- Fix nested scan patterns.
+- Change compilation of optional parameters with supplied-p.
+- Finish SRFI-140.
+- Go through Savannah and GitLab bugs.
+- Document in-http-server and in-servlet cond-expand options.
+
 A GRAB-BAG OF IDEAS AND THINGS TO DO, SOME QUITE OLD
 
 Consider using Unsafe.defineAnonymousClass
 
 Optimize splicing of methods calls.
 Remove createVarargsArrayIfNeeded logic from PrimProcedure.
-
-Document:
-  in-http-server and in-servlet cond-expand options.
 
 SRFI-46
 
@@ -16,7 +25,6 @@ Use Parboiled as parser library?  https://github.com/sirthias/parboiled/wiki
 
 Before Kawa 1.12:
 - Jemacs type ctrl-C --> TooLongAction
-- Go through Savannah bugs.
 - Evaluate reported JEmacs bugs.
 - Go through remaining "news" entries and update manual.
 - go through Evaluating-Scheme-expressions-from-Java.
@@ -94,8 +102,6 @@ intermediate functions), then add the variable as an extra implicit
 parameter to thse intermediate functions, instead of storing the
 variable in a frame.
 
-Perhaps CallFrame should extend ModuleBody.
-
 Should inline when accessing a final static field (using static-field),
 for int (or shorter) types - but only for "compile-time constants".
 (Needs checking .class file that field is given ConstantValue.)
@@ -134,8 +140,6 @@ TO BE DONE FOR 2.0:
 'object': being able to pass constructor arguments. eg., to simulate:
    new javax.swing.JDialog(myFrame) {  public void foo() {} };
 Perhaps:  (object ((<javax.swing.JDialog> myFrame)) ...)
-
-Fix scheme-window in misc.scm.
 
 Generate better code for `(and test1 test2 test3)'.
 [See maybe-report-section in testing.scm]
