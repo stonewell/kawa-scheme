@@ -2581,13 +2581,13 @@
 (test-equal "abcabcabc" (string-repeat "abc" 3))
 
 (test-equal "cdefabcdefabcd"
-              (string-replicate "abcdef" -4 10))
+              (xsubstring "abcdef" -4 10))
 
 (test-equal "bcdefbcdefbcd"
-              (string-replicate "abcdef" 90 103 1))
+              (xsubstring "abcdef" 90 103 1))
 
 (test-equal "ecdecdecde"
-              (string-replicate "abcdef" -13 -3 2 5))
+              (xsubstring "abcdef" -13 -3 2 5))
 
 (test-equal '() (map string->string (string-split "" "")))
 

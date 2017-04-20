@@ -9,13 +9,14 @@
                string->list string-null?
                string-fill! string-upcase! string-downcase!
                string-capitalize string-capitalize!
-               string-append! string-replace! string-replicate
+               string-append! string-replace!
                string-map string-map-index
                string-for-each string-for-each-index srfi-13-string-for-each
                string-pad string-pad-right
                string-repeat string-tabulate
                string-unfold string-unfold-right
-               string->utf8 string->utf16 string->utf16be string->utf16le)
+               string->utf8 string->utf16 string->utf16be string->utf16le
+               xsubstring)
 
 (require <kawa.lib.prim_imports>)
 (require <kawa.lib.std_syntax>)
@@ -339,9 +340,9 @@
       ((>= i len))
       (str:append (args i)))))
 
-(define (string-replicate str::string
-                          #!optional (from::int 0) (to::int 0 supplied-to)
-                          (start::int 0) (end::int 0 supplied-end))
+(define (xsubstring str::string
+                    #!optional (from::int 0) (to::int 0 supplied-to)
+                    (start::int 0) (end::int 0 supplied-end))
   ::string
   (let* ((end (if supplied-end end (gnu.lists.Strings:sizeInCodePoints str))))
     (gnu.lists.IString

@@ -114,11 +114,11 @@
   (test-equal 3 (string-length str))
   (test-equal #\😂 (string-ref str 2)))
 
-(test-equal "cdefab" (string-replicate "abcdef" 2 8))
-(test-equal "efabcd" (string-replicate "abcdef" -2 4))
-(test-equal "abcabca" (string-replicate "abc" 0 7))
-(test-equal "y😂a😼xy" (string-replicate "a😼xy😂" 3 9))
-(test-equal "y😂a😼" (string-replicate "a😼xy😂" -2 2))
+(test-equal "cdefab" (xsubstring "abcdef" 2 8))
+(test-equal "efabcd" (xsubstring "abcdef" -2 4))
+(test-equal "abcabca" (xsubstring "abc" 0 7))
+(test-equal "y😂a😼xy" (xsubstring "a😼xy😂" 3 9))
+(test-equal "y😂a😼" (xsubstring "a😼xy😂" -2 2))
 
 (let ((str '()))
   (string-for-each (lambda (x y)

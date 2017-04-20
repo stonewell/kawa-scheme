@@ -1,5 +1,7 @@
 2017-04-20  Per Bothner  <per@bothner.com>
 
+	* strings.scm (string-replicate): Rename to xsubstring.
+
 	* strings_ext.scm (string-take, string-take-right, string-drop)
 	string-drop-right, string-contains-right): New procedures.
 	(string-contains): Fix bug.

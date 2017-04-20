@@ -156,7 +156,7 @@
         string-normalize-nfd string-normalize-nfkd
         string-normalize-nfc string-normalize-nfkc string-null?
         string-pad string-pad-right string-prefix? string-prefix-length
-        string-remove string-repeat string-replicate
+        string-remove string-repeat
         string-skip string-skip-right string-suffix? string-suffix-length
         string-tabulate string-take string-take-right
         string-trim string-trim-right string-trim-both
@@ -183,7 +183,7 @@
         u64vector-ref u64vector-set! u64vector->list
         utf16->string utf16be->string utf16le->string
         unescaped-data unit untrace URI URI? values-append
-        with-compile-options with-syntax
+        with-compile-options with-syntax xsubstring
         )
 (import (only kawa.istrings list->string string-append substring vector->string))
 (require kawa.lib.DefineRecordType)
