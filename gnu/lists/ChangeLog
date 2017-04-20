@@ -1,5 +1,7 @@
 2017-04-20  Per Bothner  <per@bothner.com>
 
+	* IString.java (SubString): New constructor for member class.
+
 	* CharBuffer.java (length): Remove method -causes infinite recursion.
 	The inherited method works fine.
 

@@ -455,9 +455,7 @@
             (result:appendCharacter (as int ch)))
           result))))
 #| TODO:
-string-{take,drop}{,-right}
 string-replace
-string-contains-right
 string-split
 string-titlecase etc
 |#

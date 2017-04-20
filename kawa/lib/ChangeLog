@@ -1,5 +1,9 @@
 2017-04-20  Per Bothner  <per@bothner.com>
 
+	* strings_ext.scm (string-take, string-take-right, string-drop)
+	string-drop-right, string-contains-right): New procedures.
+	(string-contains): Fix bug.
+
 	* numbers.scm: Annotate various predicates with 'inline-if-constant.
 
 2017-04-19  Per Bothner  <per@bothner.com>

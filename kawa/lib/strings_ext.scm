@@ -293,6 +293,62 @@
       (let ((limit (- cend1 (- cend2 cstart2))))
         (let loop ((i ::int cstart1) (r ::int start1))
           (cond ((> i limit) #f) 
-                ((%string16-prefix? string2 string1 cstart2 cend2 cstart1 cend1)
+                ((%string16-prefix? string2 string1 cstart2 cend2 i cend1)
                  r
                  (loop (+ i 1) (+ r 1))))))))) ;; FIXME adjust for surrogates
+
+(define (string-contains-right string1::string string2::string
+                         #!optional
+                         (start1::int 0) (end1::int 0 supplied-end1)
+                         (start2::int 0) (end2::int 0 supplied-end2))
+  (with-start-end string1 (start1 end1 supplied-end1) (cstart1 cend1)
+    (with-start-end string2 (start2 end2 supplied-end2) (cstart2 cend2)
+      (let ((limit (- cend1 (- cend2 cstart2))))
+        (let loop ((i ::int limit) (r ::int start1))
+          (cond ((< i cstart1) #f) 
+                ((%string16-prefix? string2 string1 cstart2 cend2 i cend1)
+                 r
+                 (loop (- i 1) (+ r 1))))))))) ;; FIXME adjust for surrogates
+
+(define (string-take str::string nchars::int)::string
+  (let ((noff (gnu.lists.Strings:offsetByCodePoints str nchars 0 0)))
+    (if (gnu.lists.IString? str)
+        (gnu.lists.IString$SubString str 0 nchars 0 noff)
+        (gnu.lists.IString (str:subSequence 0 noff)))))
+
+(define (string-take-right str::string nchars::int)::string
+  ;;(gnu.lists.Strings:takeRight str nchars))
+  (! end (str:length))
+  (if (? istr::gnu.lists.IString str)
+      (let* ((cp-end (istr:size))
+             (cp-start (- cp-end nchars)))
+        (if (= cp-start 0)
+            istr
+            (gnu.lists.IString$SubString istr cp-start cp-end
+                                         (istr:offsetByCodePoints cp-start)
+                                         end)))
+      (gnu.lists.IString:valueOf(str:subSequence
+                                 0
+                                 (java.lang.Character:offsetByCodePoints
+                                  str end (- nchars))))))
+
+(define (string-drop str::string nchars::int)::string
+  (let ((noff (gnu.lists.Strings:offsetByCodePoints str nchars 0 0))
+        (nlen (str:length)))
+    (if (? istr::gnu.lists.IString str)
+        (gnu.lists.IString$SubString istr nchars (istr:size) noff nlen)
+        (gnu.lists.IString (str:subSequence noff nlen)))))
+
+(define (string-drop-right str::string nchars::int)::string
+  (! end (str:length))
+  (if (? istr::gnu.lists.IString str)
+      (let* ((cp-end (istr:size))
+             (cp-start (- cp-end nchars)))
+        (if (= cp-start 0)
+            istr
+            (gnu.lists.IString$SubString istr 0 cp-start 0
+                                         (istr:offsetByCodePoints cp-start))))
+      (gnu.lists.IString:valueOf(str:subSequence
+                                 (java.lang.Character:offsetByCodePoints
+                                  str end (- nchars))
+                                 end))))

@@ -143,12 +143,13 @@
         scheme-window sequence set-input-port-line-number! sleep
         set-input-port-prompter! set-port-line!
         slot-ref slot-set! srfi-13-string-for-each static-field
-        string-append! string-any string-contains string-count
+        string-append! string-any string-contains string-contains-right
         string-replace!
         string-titlecase
         string-capitalize
         string-capitalize! ;; ???
-        string-concatenate string-concatenate-reverse
+        string-concatenate string-concatenate-reverse string-count
+        string-drop string-drop-right
         string-every string-filter string-fold string-fold-right
         string-for-each-index string-index string-index-right
         string-join string-map-index
@@ -157,7 +158,8 @@
         string-pad string-pad-right string-prefix? string-prefix-length
         string-remove string-repeat string-replicate
         string-skip string-skip-right string-suffix? string-suffix-length
-        string-tabulate string-trim string-trim-right string-trim-both
+        string-tabulate string-take string-take-right
+        string-trim string-trim-right string-trim-both
         string-unfold string-unfold-right
         string->utf16 string->utf16le string->utf16be
         subtype?

@@ -188,10 +188,15 @@ public class IString extends AbstractSequence<Char>
          * Assumes caller has validated start and end.
          */
         public SubString(IString base, int start, int end) {
+            this(base, start, end,
+                 base.offsetByCodePoints(start),
+                 base.offsetByCodePoints(end));
+        }
+
+        public SubString(IString base, int start, int end,
+                         int jlStart, int jlEnd) {
             super();
             this.str = base.str;
-            int jlStart = base.offsetByCodePoints(start);
-            int jlEnd = base.offsetByCodePoints(end);
             this.jlStart = jlStart;
             this.jlLength = jlEnd - jlStart;
             this.cpStart = start + base.cpStart();
