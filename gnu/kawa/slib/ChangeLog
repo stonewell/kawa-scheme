@@ -1,5 +1,8 @@
 2017-04-20  Per Bothner  <per@bothner.com>
 
+	* srfi13.scm: Add export specifier.
+	Replace some implementations by those in (kawa mstring).
+
 	* testing.scm (%test-error): Fix/update.
 
 2017-04-09  Per Bothner  <per@bothner.com>

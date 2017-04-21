@@ -13,7 +13,8 @@
 (require <kawa.lib.enums>)
 (require <kawa.lib.srfi.26>)
 
-(export list->string string-append substring vector->string)
+(export list->string string-append substring vector->string
+        string-downcase string-foldcase string-upcase string-titlecase)
 (export case-lambda read interaction-environment null-environment
         exact->inexact inexact->exact)
 (export ! ? => $<<$ $>>$
@@ -145,7 +146,6 @@
         slot-ref slot-set! srfi-13-string-for-each static-field
         string-append! string-any string-contains string-contains-right
         string-replace!
-        string-titlecase
         string-capitalize
         string-capitalize! ;; ???
         string-concatenate string-concatenate-reverse string-count
@@ -185,7 +185,9 @@
         unescaped-data unit untrace URI URI? values-append
         with-compile-options with-syntax xsubstring
         )
-(import (only kawa.istrings list->string string-append substring vector->string))
+(import (only kawa.istrings
+              list->string string-append substring vector->string
+              string-upcase string-downcase string-foldcase string-titlecase))
 (require kawa.lib.DefineRecordType)
 (import (rename kawa.lib.prim_imports (letrec letrec*)))
 (import
@@ -235,7 +237,8 @@
    (only kawa.lib.numbers( bitwise-bit-field bit-extract))
    (only kawa.lib.srfi.8 receive)
    (rnrs arithmetic bitwise)
-   (rnrs unicode)
+   (except (rnrs unicode)
+           string-upcase string-foldcase string-downcase string-titlecase)
    (only kawa.standard.define_autoload
          (define_autoload define-autoload)
          (define_autoloads_from_file define-autoloads-from-file))

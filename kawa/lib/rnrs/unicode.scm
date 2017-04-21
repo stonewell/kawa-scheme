@@ -12,6 +12,8 @@
 (require <kawa.lib.characters>)
 (require kawa.lib.exceptions)
 (require <kawa.lib.compile_misc>)
+(import (only kawa.lib.kawa.mstrings
+         string-upcase string-downcase string-titlecase string-foldcase))
 
 (define (char-upcase (ch :: character)) :: character
   (integer->char (java.lang.Character:toUpperCase (char->integer ch))))
@@ -50,18 +52,6 @@
 
 (define (char-general-category (ch :: character)) :: symbol
   (gnu.kawa.functions.UnicodeUtils:generalCategory (char->integer ch)))
-
-(define (string-upcase (str :: string)) :: string
-  (gnu.lists.FString ((str:toString):toUpperCase java.util.Locale:ENGLISH)))
-
-(define (string-downcase (str :: string)) :: string
-  (gnu.lists.FString ((str:toString):toLowerCase java.util.Locale:ENGLISH)))
-
-(define (string-titlecase (str :: string)) :: string
-  (gnu.lists.FString (gnu.kawa.functions.UnicodeUtils:capitalize str)))
-
-(define (string-foldcase (str :: string)) :: string
-  (gnu.lists.FString (gnu.kawa.functions.UnicodeUtils:foldCase str)))
 
 (define-syntax string-normalize
   (syntax-rules ()

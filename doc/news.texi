@@ -28,7 +28,8 @@ having to linearly scan the string.
 @item
 @emph{Incompatible change:} The procedures @code{string-append},
 @code{substring}, @code{list->string}, @code{vector->string},
-and the constructor @code{string}
+@code{string-downcase}, @code{string-upcase}, @code{string-foldcase}, 
+@code{string-titlecase}, and the constructor @code{string}
 return an immutable string (an @code{IString}).
 (The function @code{string-copy} is similar to @code{substring},
 but returns a mutable string.)

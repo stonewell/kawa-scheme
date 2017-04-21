@@ -1,6 +1,7 @@
 (module-name (kawa mstrings))
 
 (export list->string (rename mstring string) string-append substring
+        string-upcase string-downcase string-titlecase string-foldcase
         vector->string)
 
 (require kawa.lib.prim_imports)
@@ -45,3 +46,15 @@
 (define (substring str::<string> start::<int> end::<int>)
   :: <string>
   (string-copy str start end))
+
+(define (string-upcase (str :: string)) :: string
+  (gnu.lists.FString ((str:toString):toUpperCase java.util.Locale:ENGLISH)))
+
+(define (string-downcase (str :: string)) :: string
+  (gnu.lists.FString ((str:toString):toLowerCase java.util.Locale:ENGLISH)))
+
+(define (string-titlecase (str :: string)) :: string
+  (gnu.lists.FString (gnu.kawa.functions.UnicodeUtils:capitalize str)))
+
+(define (string-foldcase (str :: string)) :: string
+  (gnu.lists.FString (gnu.kawa.functions.UnicodeUtils:foldCase str)))

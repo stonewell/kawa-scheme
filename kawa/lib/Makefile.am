@@ -31,7 +31,7 @@ java_SCM_ALWAYS1 =\
   bytevectors.scm \
   arrays.scm \
   system.scm \
-  kawa/istrings.scm kawa/mstrings.scm \
+  rnrs/unicode.scm kawa/istrings.scm kawa/mstrings.scm \
   kawa/string-cursors.scm kawa/arglist.scm \
   kawa/process-keywords.scm \
   kawa/hashtable.scm kawa/regex.scm \
@@ -44,7 +44,7 @@ java_SCM_ALWAYS1 =\
 # The following files may import (scheme base).
 java_SCM_ALWAYS2 = enums.scm srfi/8.scm srfi/26.scm srfi/95.scm \
   rnrs/hashtables.scm rnrs/lists.scm rnrs/arithmetic/bitwise.scm \
-  rnrs/unicode.scm rnrs/sorting.scm rnrs/programs.scm strings_ext.scm \
+  rnrs/sorting.scm rnrs/programs.scm strings_ext.scm \
   kawa/base.scm
 # The following files may import (kawa base).
 java_SCM_ALWAYS3 = kawa/quaternions.scm kawa/pprint.scm kawa/rotations.scm \

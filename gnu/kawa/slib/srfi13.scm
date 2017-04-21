@@ -114,6 +114,91 @@
 ;;; Require SRFI-14 for char-sets
 (require 'srfi-14 "srfi14.scm")
 
+(export
+ substring/shared
+ string-copy
+ string-map
+ string-map!
+ string-fold
+ string-fold-right
+ string-unfold
+ string-unfold-right
+ string-for-each
+ string-every
+ string-any
+ string-tabulate
+ string-prefix-length
+ string-suffix-length
+ string-prefix-length-ci
+ string-suffix-length-ci
+ string-prefix?
+ string-suffix?
+ string-prefix-ci?
+ string-suffix-ci?
+ string-compare
+ string-compare-ci
+ string=
+ string<>
+ string<
+ string>
+ string<=
+ string>=
+ string-ci=
+ string-ci<>
+ string-ci<
+ string-ci>
+ string-ci<=
+ string-ci>=
+ string-hash
+ string-hash-ci
+ string-upcase
+ string-upcase!
+ string-downcase
+ string-downcase!
+ string-titlecase!
+ string-titlecase
+ string-take
+ string-take-right
+ string-drop
+ string-drop-right
+ string-trim
+ string-trim-right
+ string-trim-both
+ string-pad-right
+ string-pad
+ string-delete
+ string-filter
+ string-index
+ string-index-right
+ string-skip
+ string-skip-right
+ string-count
+ string-fill!
+ string-copy!
+ string-contains
+ string-contains-ci
+ make-kmp-restart-vector
+ kmp-step
+ string-kmp-partial-search
+ string-null?
+ string-reverse
+ string-reverse!
+ reverse-list->string
+ string->list
+ string-append/shared
+ string-concatenate/shared
+ string-concatenate
+ string-concatenate-reverse
+ string-concatenate-reverse/shared
+ string-replace
+ string-tokenize
+ xsubstring
+ string-xcopy!
+ string-join
+)
+
+(import (only (kawa mstrings) string-upcase string-downcase string-titlecase))
+
 ;;; check-arg taken from comments above
 (define-private (check-arg pred val proc)
   (if (pred val) val (error "Bad arg" val pred proc)))
@@ -204,6 +289,7 @@
 
 	(values '() 0 slen))))
 
+#|
 (define (%check-bounds proc (s :: string) (start :: int) (end :: int))
   (cond ((< start 0)
 	 (error "Illegal substring START spec" proc start s))
@@ -211,6 +297,7 @@
 	 (error "Illegal substring START/END spec"))
 	((> end (string-length s))
 	 (error "Illegal substring END spec" proc end s))))
+|#
 
 (define (string-parse-final-start+end proc s args)
   (receive (rest start end) (string-parse-start+end proc s args)
@@ -983,17 +1070,21 @@
 ;;;   Capitalize every contiguous alpha sequence: capitalise
 ;;;   first char, lowercase rest.
 
+#|
 (define (string-upcase  s . maybe-start+end)
   (let-string-start+end (start end) string-upcase s maybe-start+end
     (%string-map char-upcase s start end)))
+|#
 
 (define (string-upcase! s . maybe-start+end)
   (let-string-start+end (start end) string-upcase! s maybe-start+end
     (%string-map! char-upcase s start end)))
 
+#|
 (define (string-downcase  s . maybe-start+end)
   (let-string-start+end (start end) string-downcase s maybe-start+end
     (%string-map char-downcase s start end)))
+|#
 
 (define (string-downcase! s . maybe-start+end)
   (let-string-start+end (start end) string-downcase! s maybe-start+end
@@ -1013,13 +1104,15 @@
 
 (define (string-titlecase! s . maybe-start+end)
   (let-string-start+end (start end) string-titlecase! s maybe-start+end
-    (%string-titlecase! s start end)))
+                        (%string-titlecase! s start end)))
 
+#|
 (define (string-titlecase s . maybe-start+end)
   (let-string-start+end (start end) string-titlecase! s maybe-start+end
     (let ((ans (substring s start end)))
       (%string-titlecase! ans 0 (- end start))
       ans)))
+|#
 
 
 ;;; Cutting & pasting strings

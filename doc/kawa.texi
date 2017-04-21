@@ -11534,30 +11534,17 @@ all other cased characters.
 (string-titlecase "R6RS")         @result{} "R6rs"
 @end example
 
-@quotation
-@emph{Note:} The case mappings needed for implementing these procedures
-can be extracted from @file{UnicodeData.txt}, @file{SpecialCasing.txt},
-@file{WordBreakProperty.txt} (the ``MidLetter'' property partly defines
-case--ignorable characters), and @file{CaseFolding.txt} from the Unicode
-Consortium.
-
 Since these procedures are locale--independent, they may not be
 appropriate for some locales.
-@end quotation
 
-@quotation
-@emph{Note:} Word breaking, as needed for the correct casing of the
-upper case greek sigma and for @func{string-titlecase}, is specified in
-Unicode Standard Annex #29.
-@end quotation
-
-@quotation
 @emph{Kawa Note:}  The implementation of @func{string-titlecase}
 does not correctly handle the case where an initial character
 needs to be converted to multiple characters, such as
 ``LATIN SMALL LIGATURE FL'' which should be converted to
 the two letters @code{"Fl"}.
-@end quotation
+
+@CompatibilityNote{} The result is an istring,
+except in compatibility mode, when it is an mstring.
 @end deffn
 
 @deffn Procedure string-normalize-nfd @var{string}

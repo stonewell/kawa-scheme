@@ -458,5 +458,4 @@
 #| TODO:
 string-replace
 string-split
-string-titlecase etc
 |#

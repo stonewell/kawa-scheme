@@ -1,5 +1,9 @@
 2017-04-20  Per Bothner  <per@bothner.com>
 
+	Case-converting string functions now default to returning istrings.
+	* kawa/istrings.scm (string-upcase, string-downcase, string-foldcase,
+	string-titlecase): New istring-returning functions.
+
 	* strings.scm (string-replicate): Rename to xsubstring.
 
 	* strings_ext.scm (string-take, string-take-right, string-drop)
