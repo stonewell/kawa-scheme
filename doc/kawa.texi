@@ -8513,7 +8513,7 @@ but is useful when interfacing to low-level Java code.
 @node Application and Arguments Lists
 @section Application and Arguments Lists
 
-When a procedure called, the actual argument expression are evaluated,
+When a procedure is called, the actual argument expression are evaluated,
 and the resulting values becomes the actual argument list.
 This is then matched against the formal parameter list
 (in the procedure definition), and assuming they match,
@@ -8539,7 +8539,7 @@ receives any remaining arguments.
 
 If there are no keyword arguments, then it ambiguous where
 prefix arguments and and where postfix arguments start.
-This is normally not the problem: the called procedure can
+This is normally not a problem: the called procedure can
 split them up however it wishes.
 @end itemize
 

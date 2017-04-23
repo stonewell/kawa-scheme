@@ -5,10 +5,13 @@ BEFORE Kawa 3.0
 - Make JAVA8 the default.
 - Get JavaFX script applications to work again.
 - Fix nested scan patterns.
+- Document scan patterns.
 - Change compilation of optional parameters with supplied-p.
 - Finish SRFI-140.
 - Go through Savannah and GitLab bugs.
 - Document in-http-server and in-servlet cond-expand options.
+- Update "Extended formal arguments list" documentation.
+- Fix awkward or missing errors for wrong argument with keyrs for rest.
 
 A GRAB-BAG OF IDEAS AND THINGS TO DO, SOME QUITE OLD
 
