@@ -333,7 +333,7 @@ public class Strings
         // startOffset = modulo(from, slen)
         int startOffset = from % slen;
         if (startOffset < 0) startOffset += slen;
-        int ptr = Strings.offsetByCodePoints(string, startOffset-start,
+        int ptr = Strings.offsetByCodePoints(string, startOffset,
                                              sstart, start);
         int send = ! suppliedEnd ? string.length()
             : Strings.offsetByCodePoints(string, end-startOffset, ptr, startOffset);

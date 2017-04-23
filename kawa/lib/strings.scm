@@ -259,8 +259,7 @@
   (let loop1 ()
     (let loop2 ((i::int 0))
       (cond ((= i n)
-             (let ((ch::character (proc @chs)))
-               (result:appendCharacter (as int ch)))
+             (result:append (proc @chs))
              (loop1))
             (else
              (define curs-i (cursors i))
@@ -432,13 +431,14 @@
                     (end ::int (gnu.lists.Strings:sizeInCodePoints str)))
   (let ((olen (- end start)))
     (if (<= len olen)
-        (gnu.lists.IString:valueOf str start len)
+        (gnu.lists.IString:valueOf str (- end len) len)
         (let ((result (gnu.lists.FString:alloc len)))
           (do ((i ::int (- len olen) (- i 1)))
               ((<= i 0))
             (result:appendCharacter (as int ch)))
-          (result:append str)
-          result))))
+          (with-start-end str (start end #t) (cstart cend)
+                          (result:append str cstart cend))
+          (gnu.lists.IString result)))))
 
 (define (string-pad-right (str ::java.lang.CharSequence)
                           len::int
@@ -450,12 +450,9 @@
     (if (<= len olen)
         (gnu.lists.IString:valueOf str start len)
         (let ((result (gnu.lists.FString:alloc len)))
-          (result:append str)
+          (with-start-end str (start end #t) (cstart cend)
+                          (result:append str cstart cend))
           (do ((i ::int (- len olen) (- i 1)))
               ((<= i 0))
             (result:appendCharacter (as int ch)))
           result))))
-#| TODO:
-string-replace
-string-split
-|#

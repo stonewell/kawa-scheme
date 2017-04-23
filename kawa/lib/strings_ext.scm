@@ -3,6 +3,7 @@
  kawa.lib.syntax
  kawa.lib.std_syntax
  kawa.lib.strings
+ kawa.lib.lists
  kawa.lib.case_syntax
  kawa.lib.exceptions
  kawa.lib.strings_syntax
@@ -59,7 +60,7 @@
        (error "string-join: grammar symbol must be one of 'prefix 'suffix 'infix 'strict-index")))
     (gnu.lists.IString (result:toString))))
 
-(define (string-count pred str::string #!optional
+(define (string-count str::string pred #!optional
                       (start::int 0) (end::int 0 end-supplied))
   (let ((n ::int 0))
     (string-for-each-forwards
@@ -86,7 +87,7 @@
                             (start::int 0) (end::int 0 end-supplied))
   (call/cc
    (lambda (exit)
-     (let ((i ::int start))
+     (let ((i ::int 0))
        (string-for-each-backwards
         (lambda (ch)
           (set! i (+ i 1))
@@ -112,7 +113,7 @@
                            (start::int 0) (end::int 0 end-supplied))
   (call/cc
    (lambda (exit)
-     (let ((i ::int start))
+     (let ((i ::int 0))
        (string-for-each-backwards
         (lambda (ch)
           (set! i (+ i 1))
@@ -238,9 +239,9 @@
                         (start2::int 0) (end2::int 0 supplied-end2))::boolean
   (with-start-end string1 (start1 end1 supplied-end1) (cstart1 cend1)
     (with-start-end string2 (start2 end2 supplied-end2) (cstart2 cend2)
-      (let loop ((i1 ::int end1) (i2 ::int end2))
-        (cond ((= i1 start1) #t)
-              ((= i2 start2) #f)
+      (let loop ((i1 ::int cend1) (i2 ::int cend2))
+        (cond ((= i1 cstart1) #t)
+              ((= i2 cstart2) #f)
               ((char=? (string1:charAt (- i1 1)) (string2:charAt (- i2 1)))
                (loop (- i1 1) (- i2 1)))
               (else #f))))))
@@ -257,9 +258,7 @@
             (let ((c1 ::int (string1:charAt i1)) (c2 ::int (string2:charAt i2)))
               (if (= c1 c2)
                   (loop (+ i1 1) (+ i2 1)
-                        (+ n (if (and (> c1 #xDC00) (<= c1 #xDFFF)
-                                      (> n 0)
-                                      (> cx #xD800) (<= cx #xDBFF))
+                        (+ n (if (and (> n 0) (surrogate-pair? cx c1))
                                  0 1))
                         c1)
                   n)))))))
@@ -277,9 +276,7 @@
                   (c2 ::int (string2:charAt (- i2 1))))
               (if (= c1 c2)
                   (loop (- i1 1) (- i2 1)
-                        (+ n (if (and (> c1 #x8C00) (<= c1 #xDBFF)
-                                      (> n 0)
-                                      (> cx #xDC00) (<= cx #xDFFF))
+                        (+ n (if (and (> n 0) (surrogate-pair? c1 cx))
                                  0 1))
                         c1)
                   n)))))))
@@ -290,25 +287,34 @@
                          (start2::int 0) (end2::int 0 supplied-end2))
   (with-start-end string1 (start1 end1 supplied-end1) (cstart1 cend1)
     (with-start-end string2 (start2 end2 supplied-end2) (cstart2 cend2)
-      (let ((limit (- cend1 (- cend2 cstart2))))
-        (let loop ((i ::int cstart1) (r ::int start1))
-          (cond ((> i limit) #f) 
-                ((%string16-prefix? string2 string1 cstart2 cend2 i cend1)
-                 r
-                 (loop (+ i 1) (+ r 1))))))))) ;; FIXME adjust for surrogates
+      (if (= cend2 cstart2) start1
+          (let ((limit (- cend1 (- cend2 cstart2))))
+            (let loop ((i ::int cstart1) (r ::int start1) (c1 ::int 0))
+              (cond ((> i limit) #f)
+                    ((%string16-prefix? string2 string1 cstart2 cend2 i cend1)
+                     r)
+                    (else
+                     (let* ((c2 (string1:charAt i))
+                            (w (if (surrogate-pair? c1 c2) 0 1)))
+                       (loop (+ i 1) (+ r w) c2))))))))))
 
 (define (string-contains-right string1::string string2::string
                          #!optional
-                         (start1::int 0) (end1::int 0 supplied-end1)
-                         (start2::int 0) (end2::int 0 supplied-end2))
-  (with-start-end string1 (start1 end1 supplied-end1) (cstart1 cend1)
-    (with-start-end string2 (start2 end2 supplied-end2) (cstart2 cend2)
-      (let ((limit (- cend1 (- cend2 cstart2))))
-        (let loop ((i ::int limit) (r ::int start1))
-          (cond ((< i cstart1) #f) 
-                ((%string16-prefix? string2 string1 cstart2 cend2 i cend1)
-                 r
-                 (loop (- i 1) (+ r 1))))))))) ;; FIXME adjust for surrogates
+                         (start1::int 0) (end1::int (string-length string1))
+                         (start2::int 0) (end2::int (string-length string2)))
+  (with-start-end string1 (start1 end1 #t) (cstart1 cend1)
+    (with-start-end string2 (start2 end2 #t) (cstart2 cend2)
+      (if (= cend2 cstart2) end1
+          (let ((limit (- cend1 (- cend2 cstart2))))
+            (let loop ((i ::int limit) (r ::int (- end1 (- end2 start2)))
+                       (c2 ::int (string1:charAt limit)))
+              (cond ((< i cstart1) #f)
+                    ((%string16-prefix? string2 string1 cstart2 cend2 i cend1)
+                     r)
+                    (else
+                     (let* ((c1 ::int (string1:charAt i))
+                            (w (if (surrogate-pair? c1 c2) 0 1)))
+                       (loop (- i 1) (- r w) c1))))))))))
 
 (define (string-take str::string nchars::int)::string
   (let ((noff (gnu.lists.Strings:offsetByCodePoints str nchars 0 0)))
@@ -352,3 +358,59 @@
                                  (java.lang.Character:offsetByCodePoints
                                   str end (- nchars))
                                  end))))
+
+(define (string-replace string1::string string2::string start1::int end1::int
+                        #!optional (start2::int 0) (end2::int 0 supplied-end2))
+  (with-start-end string1 (start1 end1 #t) (cstart1 cend1)
+    (with-start-end string2 (start2 end2 supplied-end2) (cstart2 cend2)
+      (let* ((len1 (string1:length))
+             (result (gnu.lists.FString:alloc
+                       (+ len1 (- cstart1 cend1) (- cend2 cstart2)))))
+        (result:append string1 0 cstart1)
+        (result:append string2 cstart2 cend2)
+        (result:append string1 cend1 len1)
+        result))))
+
+(define (%substring16 str::string cstart::int cend::int)
+  (gnu.lists.IString (str:subSequence cstart cend)))
+
+(define (string-split str::string delimiter::string
+                      #!optional
+                      (grammar ::symbol 'infix)
+                      (limit #f)
+                      (start ::int 0)
+                      (end ::int 0 supplied-end))
+  (with-start-end str (start end supplied-end) (cstart cend)
+    (let* ((dlen (delimiter:length))
+           (lend (- cend dlen))
+           (rlist '())
+           (skip-last ::boolean (= dlen 0)))
+      (let loop ((i ::int cstart) (wstart ::int cstart)
+                 (limit ::int (if limit limit -1)))
+        (cond ((or (> i lend) (= limit 0))
+               (set! rlist (cons (%substring16 str wstart cend) rlist)))
+              ((%string16-prefix? delimiter str 0 dlen i cend)
+               (cond ((and (= wstart i) (= i cstart)
+                           (or (= dlen 0) (eq? grammar 'prefix)))
+                      (loop (+ i 1) (+ i dlen)
+                            (if (= dlen 0) limit (- limit 1))))
+                     (else
+                      (set! rlist (cons (%substring16 str wstart i) rlist))
+                      (loop (+ i 1) (+ i dlen) (- limit 1)))))
+              (else
+               (loop (+ i 1) wstart limit))))
+      (case grammar
+        ((prefix infix)
+         #t)
+        ((strict-infix)
+         (if (= cstart cend)
+            (error "string-split: empty string-list with 'strict-infix option")))
+        ((suffix)
+         (if (and (pair? rlist)  (string-null? (car rlist)))
+             (set! skip-last #t)))
+        (else
+         (error "string-split: grammar symbol must be one of 'prefix 'suffix 'infix 'strict-index")))
+      (if skip-last
+          (set! rlist (cdr rlist)))
+      (set! rlist (reverse! rlist))
+      rlist)))

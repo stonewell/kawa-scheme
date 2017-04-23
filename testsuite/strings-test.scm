@@ -1323,7 +1323,7 @@
 
 (test-assert (string=? "Strasse" "Strasse" "Strasse"))
 
-(test-assert (string<? "z" "z"))
+(test-equal #f (string<? "z" "z"))
 (test-assert (string<? "z" "zz"))
 (test-equal #f (string<? "z" "Z"))
 (test-assert (string<=? "z" "zz"))
@@ -1456,9 +1456,9 @@
   (test-equal #t (string>? (string eszett) "z"))
   (test-equal #f (string>=? "z" (string eszett)))
   (test-equal #t (string>=? (string eszett) "z"))
-  (test-assert (string-li=? fuss "Fuss"))
-  (test-assert (string-li=? fuss "FUSS"))
-  (test-assert (string-li=? chaos0 chaos1 chaos2)))
+  (test-assert (string-ci=? fuss "Fuss"))
+  (test-assert (string-ci=? fuss "FUSS"))
+  (test-assert (string-ci=? chaos0 chaos1 chaos2)))
  (else))
 
 
@@ -1471,13 +1471,6 @@
 (test-equal 0 (string-prefix-length ABCDEF DEFABC))
 
 (test-equal 6 (string-prefix-length DEFABC DEFABC))
-
-(test-equal 6 (string-prefix-length (string->string DEFABC) DEFABC))
-
-(test-equal 6 (string-prefix-length DEFABC (string->string DEFABC)))
-
-(test-equal 6 (string-prefix-length (string->string DEFABC)
-                                (string->string DEFABC)))
 
 (test-equal 0 (string-prefix-length "" ""))
 
@@ -1579,12 +1572,6 @@
 (test-equal 0 (string-suffix-length ABCDEF DEFABC))
 
 (test-equal 6 (string-suffix-length DEFABC DEFABC))
-
-(test-equal 6 (string-suffix-length (string->string DEFABC) DEFABC))
-
-(test-equal 6 (string-suffix-length DEFABC (string->string DEFABC)))
-
-(test-equal 6 (string-suffix-length (string->string DEFABC) (string->string DEFABC)))
 
 (test-equal 0 (string-suffix-length "" ""))
 
@@ -1691,12 +1678,6 @@
 
 (test-equal #t (string-prefix? DEFABC DEFABC))
 
-(test-equal #t (string-prefix? (string->string DEFABC) DEFABC))
-
-(test-equal #t (string-prefix? DEFABC (string->string DEFABC)))
-
-(test-equal #t (string-prefix? (string->string DEFABC) (string->string DEFABC)))
-
 (test-equal #t (string-prefix? "" ""))
 
 (test-equal #t (string-prefix? "" "abc"))
@@ -1718,10 +1699,6 @@
 (test-equal #f (string-suffix? ABCDEF DEFABC))
 
 (test-equal #t (string-suffix? DEFABC DEFABC))
-
-(test-equal #t (string-suffix? (string->string DEFABC) DEFABC))
-
-(test-equal #t (string-suffix? DEFABC (string->string DEFABC)))
 
 (test-equal #t (string-suffix? "" ""))
 
@@ -2264,8 +2241,7 @@
 (test-equal "" (string-concatenate '()))
 
 (test-equal "abcdef"
-              (string-concatenate
-               (map string->string '("" "a" "bcd" "" "ef" "" ""))))
+            (string-concatenate '("" "a" "bcd" "" "ef" "" "")))
 
 ;;; string-concatenate is likely to have special cases for longer strings.
 
@@ -2307,8 +2283,7 @@
 (test-equal "" (string-concatenate-reverse '()))
 
 (test-equal "efbcda"
-            (string-concatenate-reverse
-             (map string->string '("" "a" "bcd" "" "ef" "" ""))))
+            (string-concatenate-reverse '("" "a" "bcd" "" "ef" "" "")))
 
 (test-equal "huh?"
               (string-concatenate-reverse '() "huh?"))
@@ -2327,7 +2302,7 @@
 (test-equal "" (string-join '()))
 
 (test-equal " ab cd  e f "
-              (string-join (map string->string '("" "ab" "cd" "" "e" "f" ""))))
+              (string-join '("" "ab" "cd" "" "e" "f" "")))
 
 (test-equal ""
               (string-join '() ""))
@@ -2589,244 +2564,185 @@
 (test-equal "ecdecdecde"
               (xsubstring "abcdef" -13 -3 2 5))
 
-(test-equal '() (map string->string (string-split "" "")))
+(test-equal '() (string-split "" ""))
 
-(test-equal '("a" "b" "c") (map string->string (string-split "abc" "")))
+(test-equal '("a" "b" "c") (string-split "abc" ""))
 
 (test-equal '("too" "" "much" "" "data")
-            (map string->string
-                 (string-split "too  much  data" " ")))
+            (string-split "too  much  data" " "))
 
 (test-equal '("" "there" "ya" "go" "")
-            (map string->string
-                 (string-split "***there***ya***go***" "***")))
+            (string-split "***there***ya***go***" "***"))
 
-(test-equal '() (map string->string (string-split "" "" 'infix)))
+(test-equal '() (string-split "" "" 'infix))
 
 (test-equal '("a" "b" "c")
-            (map string->string (string-split "abc" "" 'infix)))
+            (string-split "abc" "" 'infix))
 
 (test-equal '("too" "" "much" "" "data")
-            (map string->string
-                 (string-split "too  much  data" " " 'infix)))
+            (string-split "too  much  data" " " 'infix))
 
 (test-equal '("" "there" "ya" "go" "")
-            (map string->string
-                 (string-split "***there***ya***go***" "***" 'infix)))
+            (string-split "***there***ya***go***" "***" 'infix))
 
 (test-equal 'error
             (guard (exn (else 'error))
-                   (map string->string
-                        (string-split "" "" 'strict-infix))))
+                   (string-split "" "" 'strict-infix)))
 
 (test-equal '("a" "b" "c")
-            (map string->string
-                 (string-split "abc" "" 'strict-infix)))
+            (string-split "abc" "" 'strict-infix))
 
 (test-equal '("too" "" "much" "" "data")
-            (map string->string
-                 (string-split "too  much  data" " " 'strict-infix)))
+            (string-split "too  much  data" " " 'strict-infix))
 
 (test-equal '("" "there" "ya" "go" "")
-            (map string->string
-                 (string-split "***there***ya***go***" "***" 'strict-infix)))
+            (string-split "***there***ya***go***" "***" 'strict-infix))
 
 (test-equal '()
-            (map string->string
-                 (string-split "" "" 'prefix)))
+                 (string-split "" "" 'prefix))
 
 (test-equal '("a" "b" "c")
-            (map string->string
-                 (string-split "abc" "" 'prefix)))
+            (string-split "abc" "" 'prefix))
 
 (test-equal '("too" "" "much" "" "data")
-            (map string->string
-                 (string-split "too  much  data" " " 'prefix)))
+            (string-split "too  much  data" " " 'prefix))
 
 (test-equal '("there" "ya" "go" "")
-            (map string->string
-                 (string-split "***there***ya***go***" "***" 'prefix)))
+            (string-split "***there***ya***go***" "***" 'prefix))
 
 (test-equal '()
-            (map string->string
-                 (string-split "" "" 'suffix)))
+            (string-split "" "" 'suffix))
 
 (test-equal '("a" "b" "c")
-            (map string->string
-                 (string-split "abc" "" 'suffix)))
+            (string-split "abc" "" 'suffix))
 
 (test-equal '("too" "" "much" "" "data")
-            (map string->string
-                 (string-split "too  much  data" " " 'suffix)))
+            (string-split "too  much  data" " " 'suffix))
 
 (test-equal '("" "there" "ya" "go")
-            (map string->string
-                 (string-split "***there***ya***go***" "***" 'suffix)))
+            (string-split "***there***ya***go***" "***" 'suffix))
 
 
-(test-equal '()
-            (map string->string
-                 (string-split "" "" 'infix #f)))
+(test-equal '() (string-split "" "" 'infix #f))
 
-(test-equal '("a" "b" "c")
-            (map string->string
-                 (string-split "abc" "" 'infix #f)))
+(test-equal '("a" "b" "c") (string-split "abc" "" 'infix #f))
 
 (test-equal '("too" "" "much" "" "data")
-            (map string->string
-                 (string-split "too  much  data" " " 'infix #f)))
+            (string-split "too  much  data" " " 'infix #f))
 
 (test-equal '("" "there" "ya" "go" "")
-            (map string->string
-                 (string-split "***there***ya***go***" "***" 'infix #f)))
+            (string-split "***there***ya***go***" "***" 'infix #f))
 
 (test-equal 'error
             (guard (exn (else 'error))
-                   (map string->string
-                        (string-split "" "" 'strict-infix #f))))
+                   (string-split "" "" 'strict-infix #f)))
 
 (test-equal '("a" "b" "c")
-            (map string->string
-                 (string-split "abc" "" 'strict-infix #f)))
+            (string-split "abc" "" 'strict-infix #f))
 
 (test-equal '("too" "" "much" "" "data")
-            (map string->string
-                 (string-split "too  much  data" " " 'strict-infix #f)))
+            (string-split "too  much  data" " " 'strict-infix #f))
 
 (test-equal '("" "there" "ya" "go" "")
-            (map string->string
-                 (string-split "***there***ya***go***" "***" 'strict-infix #f)))
+            (string-split "***there***ya***go***" "***" 'strict-infix #f))
 
-(test-equal '()
-            (map string->string
-                 (string-split "" "" 'prefix #f)))
+(test-equal '() (string-split "" "" 'prefix #f))
 
 (test-equal '("a" "b" "c")
-            (map string->string
-                 (string-split "abc" "" 'prefix #f)))
+            (string-split "abc" "" 'prefix #f))
 
 (test-equal '("too" "" "much" "" "data")
-            (map string->string
-                 (string-split "too  much  data" " " 'prefix #f)))
+            (string-split "too  much  data" " " 'prefix #f))
 
 (test-equal '("there" "ya" "go" "")
-            (map string->string
-                 (string-split "***there***ya***go***" "***" 'prefix #f)))
+            (string-split "***there***ya***go***" "***" 'prefix #f))
 
 (test-equal '()
-            (map string->string
-                 (string-split "" "" 'suffix #f)))
+            (string-split "" "" 'suffix #f))
 
 (test-equal '("a" "b" "c")
-            (map string->string
-                 (string-split "abc" "" 'suffix #f)))
+            (string-split "abc" "" 'suffix #f))
 
 (test-equal '("too" "" "much" "" "data")
-            (map string->string
-                 (string-split "too  much  data" " " 'suffix #f)))
+            (string-split "too  much  data" " " 'suffix #f))
 
 (test-equal '("" "there" "ya" "go")
-            (map string->string
-                 (string-split "***there***ya***go***" "***" 'suffix #f)))
+            (string-split "***there***ya***go***" "***" 'suffix #f))
 
 
 (test-equal 'error
             (guard (exn (else 'error))
-                   (map string->string
-                        (string-split "" "" 'strict-infix 3))))
+                   (string-split "" "" 'strict-infix 3)))
 
 (test-equal '("a" "b" "c")
-            (map string->string
-                 (string-split "abc" "" 'strict-infix 3)))
+            (string-split "abc" "" 'strict-infix 3))
 
 (test-equal '("too" "" "much" " data")
-            (map string->string
-                 (string-split "too  much  data" " " 'strict-infix 3)))
+            (string-split "too  much  data" " " 'strict-infix 3))
 
 (test-equal '("" "there" "ya" "go***")
-            (map string->string
-                 (string-split "***there***ya***go***" "***" 'strict-infix 3)))
+            (string-split "***there***ya***go***" "***" 'strict-infix 3))
 
 (test-equal '()
-            (map string->string
-                 (string-split "" "" 'prefix 3)))
+            (string-split "" "" 'prefix 3))
 
 (test-equal '("a" "b" "c")
-            (map string->string
-                 (string-split "abc" "" 'prefix 3)))
+            (string-split "abc" "" 'prefix 3))
 
 (test-equal '("too" "" "much" " data")
-            (map string->string
-                 (string-split "too  much  data" " " 'prefix 3)))
+            (string-split "too  much  data" " " 'prefix 3))
 
 (test-equal '("there" "ya" "go***")
-            (map string->string
-                 (string-split "***there***ya***go***" "***" 'prefix 3)))
+            (string-split "***there***ya***go***" "***" 'prefix 3))
 
 (test-equal '()
-            (map string->string
-                 (string-split "" "" 'suffix 3)))
+            (string-split "" "" 'suffix 3))
 
 (test-equal '("a" "b" "c")
-            (map string->string
-                 (string-split "abc" "" 'suffix 3)))
+            (string-split "abc" "" 'suffix 3))
 
 (test-equal '("too" "" "much" " data")
-            (map string->string
-                 (string-split "too  much  data" " " 'suffix 3)))
+            (string-split "too  much  data" " " 'suffix 3))
 
 (test-equal '("" "there" "ya" "go***")
-            (map string->string
-                 (string-split "***there***ya***go***" "***" 'suffix 3)))
+            (string-split "***there***ya***go***" "***" 'suffix 3))
 
 (test-equal 'error
             (guard (exn (else 'error))
-                   (map string->string
-                        (string-split "" "" 'strict-infix 3 0))))
+                   (string-split "" "" 'strict-infix 3 0)))
 
 (test-equal '("b" "c")
-            (map string->string
-                 (string-split "abc" "" 'strict-infix 3 1)))
+            (string-split "abc" "" 'strict-infix 3 1))
 
 (test-equal '("oo" "" "much" " data")
-            (map string->string
-                 (string-split "too  much  data" " " 'strict-infix 3 1)))
+            (string-split "too  much  data" " " 'strict-infix 3 1))
 
 (test-equal '("**there" "ya" "go" "")
-            (map string->string
-                 (string-split "***there***ya***go***" "***" 'strict-infix 3 1)))
+            (string-split "***there***ya***go***" "***" 'strict-infix 3 1))
 
 (test-equal '()
-            (map string->string
-                 (string-split "" "" 'prefix 3 0)))
+                 (string-split "" "" 'prefix 3 0))
 
 (test-equal '("b" "c")
-            (map string->string
-                 (string-split "abc" "" 'prefix 3 1)))
+            (string-split "abc" "" 'prefix 3 1))
 
 (test-equal '("oo" "" "much" " data")
-            (map string->string
-                 (string-split "too  much  data" " " 'prefix 3 1)))
+            (string-split "too  much  data" " " 'prefix 3 1))
 
 (test-equal '("**there" "ya" "go" "")
-            (map string->string
-                 (string-split "***there***ya***go***" "***" 'prefix 3 1)))
+            (string-split "***there***ya***go***" "***" 'prefix 3 1))
 
 (test-equal '()
-            (map string->string
-                 (string-split "" "" 'suffix 3 0)))
+            (string-split "" "" 'suffix 3 0))
 
 (test-equal '("b" "c")
-            (map string->string
-                 (string-split "abc" "" 'suffix 3 1)))
+            (string-split "abc" "" 'suffix 3 1))
 
 (test-equal '("oo" "" "much" " data")
-            (map string->string
-                 (string-split "too  much  data" " " 'suffix 3 1)))
+            (string-split "too  much  data" " " 'suffix 3 1))
 
 (test-equal '("**there" "ya" "go")
-            (map string->string
-                 (string-split "***there***ya***go***" "***" 'suffix 3 1)))
+            (string-split "***there***ya***go***" "***" 'suffix 3 1))
 
 
 (test-equal 'error
@@ -2849,8 +2765,7 @@
             (string-split "too  much  data" " " 'prefix 3 1 11))
 
 (test-equal '()
-            (map string->string
-                 (string-split "" "" 'suffix 3 0 0)))
+            (string-split "" "" 'suffix 3 0 0))
 
 (test-equal '("b")
             (string-split "abc" "" 'suffix 3 1 2))

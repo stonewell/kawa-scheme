@@ -71,6 +71,8 @@ New procedures: @code{reverse-list->string},
 @code{utf16->string}, @code{utf16be->string}, @code{utf16le->string}.
 @c , @code{xsubstring}
 @c DOC NEEDED:
+@c string-map with proc returning string
+@c string-replace string-split
 @c string-{take,drop}{,-right}
 @c string-contains-right
 @c string-{prefix,suffix}?

@@ -1,3 +1,7 @@
+2017-04-23  Per Bothner  <per@bothner.com>
+
+	* Makefile.am (check-strings): Run strings-test.scm.
+
 2017-04-20  Per Bothner  <per@bothner.com>
 
 	* bad-voidexp.scm: Fix to avoid unwanted constant-folding.

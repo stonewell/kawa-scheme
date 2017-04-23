@@ -46,8 +46,8 @@ check-no-inline:
 check1:  check-num check-arr check-java-array check-lazy check-lib \
   check-srfi-16 check-srfi-38 check-srfi-64 check-srfi-69 \
   check-srfi-101 check-srfi-108 check-srfi-109 check-resolve-uri \
-  check-format check-ppfile check-system check-text check-regex check-xml \
-  scribble.class check-run-test-scripts check-moduleM \
+  check-format check-ppfile check-system check-strings check-text check-regex \
+  check-xml scribble.class check-run-test-scripts check-moduleM \
   check-annotations1 check-annotations2\
   check-binarytrees check-chameneosredux check-fannkuch check-fannkuchredux check-fasta \
   check-knucleotide check-mandelbrot check-meteor check-nbody \
@@ -119,6 +119,9 @@ check-resolve-uri:
 
 check-system:
 	$(KAWA) $(OPTIONS) -e '(set! port-char-encoding "UTF-8")' -f "$(srcdir)/system-test.scm"
+
+check-strings:
+	$(KAWA) $(OPTIONS) -f "$(srcdir)/strings-test.scm"
 
 check-text:
 	$(KAWA) $(OPTIONS) -e '(set! port-char-encoding "UTF-8")' -f "$(srcdir)/text-test.scm"

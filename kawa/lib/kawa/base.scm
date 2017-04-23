@@ -145,7 +145,7 @@
         set-input-port-prompter! set-port-line!
         slot-ref slot-set! srfi-13-string-for-each static-field
         string-append! string-any string-contains string-contains-right
-        string-replace!
+        string-replace string-replace!
         string-capitalize
         string-capitalize! ;; ???
         string-concatenate string-concatenate-reverse string-count
@@ -158,7 +158,7 @@
         string-pad string-pad-right string-prefix? string-prefix-length
         string-remove string-repeat
         string-skip string-skip-right string-suffix? string-suffix-length
-        string-tabulate string-take string-take-right
+        string-split string-tabulate string-take string-take-right
         string-trim string-trim-right string-trim-both
         string-unfold string-unfold-right
         string->utf16 string->utf16le string->utf16be

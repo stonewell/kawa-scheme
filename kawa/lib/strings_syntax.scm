@@ -45,3 +45,9 @@
                          (gnu.lists.Strings:offsetByCodePoints
                           str (- end start) cstart start)))))
        . body))))
+
+(define-syntax surrogate-pair?
+  (syntax-rules ()
+    ((_ c1 c2)
+     (and (> c1 #xD800) (<= c1 #xDBFF)
+          (> c2 #xDC00) (<= c2 #xDFFF)))))
