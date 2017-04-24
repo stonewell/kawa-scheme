@@ -86,7 +86,7 @@
         input-port-column-number input-port-line-number
         input-port-prompter input-port-read-state
         instance? integer-length
-        invoke invoke-static invoke-special
+        invoke invoke-static invoke-special istring?
         lazy load load-relative location logop logtest
         logand logior logxor lognot logcount
         keyword? keyword->string string->keyword

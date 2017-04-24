@@ -1,5 +1,7 @@
 2017-04-23  Per Bothner  <per@bothner.com>
 
+	* strings.scm (istring?): New predicate.
+
 	Fixes for strings-test.scm testsuite.
 	* strings_ext.scm (string-replace, string-split): New procedures.
 

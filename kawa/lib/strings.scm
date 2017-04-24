@@ -1,4 +1,4 @@
-(module-export string? make-string string-length
+(module-export istring? string? make-string string-length
                string-ref string-set!
                char=? char<? char>? char<=? char>=?
                char-ci=? char-ci<? char-ci>? char-ci<=? char-ci>=?
@@ -41,6 +41,9 @@
 
 (define (string? x) :: <boolean>
   (instance? x <string>))
+
+(define (istring? x) ::boolean
+  (instance? x gnu.lists.IString))
 
 (define (string-null? str::string)
   (= 0 (str:length)))

@@ -95,6 +95,50 @@
 
 (test-assert (not (string-null? ABC)))
 
+(define (check-istring str)
+  (list (istring? str) (string-length str)))
+
+(test-equal '(#t 0) (check-istring ""))
+(test-equal '(#t 4) (check-istring "abcd"))
+(test-equal '(#t 4) (check-istring (string #\A #\b #\c #\d)))
+(test-equal '(#t 3) (check-istring (substring (make-string 4 #\X) 1 4)))
+(test-equal '(#f 4) (check-istring (make-string 4 #\X)))
+(test-equal '(#f 4) (check-istring (string-copy (make-string 4 #\X))))
+(test-equal '(#f 3) (check-istring (string-copy (make-string 4 #\X) 1 4)))
+(test-equal '(#t 3) (check-istring (vector->string #(#\x #\y #\z))))
+(test-equal '(#t 3) (check-istring (vector->string #(#\x #\y #\z))))
+(test-equal '(#t 3) (check-istring (list->string '(#\x #\y #\z))))
+(test-equal '(#t 3) (check-istring (reverse-list->string '(#\x #\y #\z))))
+(test-equal '(#t 3) (check-istring (utf8->string (string->utf8 "abc"))))
+(test-equal '(#t 3) (check-istring (utf16->string (string->utf16 "abc"))))
+(test-equal '(#t 3) (check-istring (utf16be->string (string->utf16be "abc"))))
+(test-equal '(#t 3) (check-istring (utf16le->string (string->utf16le "abc"))))
+(test-equal '(#t 2) (check-istring (string-take "abcd" 2)))
+(test-equal '(#t 2) (check-istring (string-drop "abcd" 2)))
+(test-equal '(#t 2) (check-istring (string-take-right "abcd" 2)))
+(test-equal '(#t 2) (check-istring (string-drop-right "abcd" 2)))
+(test-equal '(#t 5) (check-istring (string-pad "abcd" 5)))
+(test-equal '(#t 3) (check-istring (string-pad-right "abcd" 3)))
+(test-equal '(#t 2) (check-istring (string-trim "  A ")))
+(test-equal '(#t 3) (check-istring (string-trim-right "  A ")))
+(test-equal '(#t 1) (check-istring (string-trim-both "  A ")))
+(test-equal '(#t 3) (check-istring (string-replace "AB" "X" 1 1)))
+(test-equal '(#t 3) (check-istring (string-upcase (make-string 3 #\X))))
+(test-equal '(#t 3) (check-istring (string-downcase (make-string 3 #\x))))
+(test-equal '(#t 3) (check-istring (string-foldcase (make-string 3 #\x))))
+(test-equal '(#t 3) (check-istring (string-titlecase (make-string 3 #\X))))
+(test-equal '(#t 6) (check-istring (string-append "abcd" "XY")))
+(test-equal '(#t 6) (check-istring (string-concatenate (list "abcd" "XY"))))
+(test-equal '(#t 6) (check-istring
+                     (string-concatenate-reverse  (list "abcd" "XY"))))
+(test-equal '(#t 7) (check-istring (string-join (list "abc" "xyz"))))
+(test-expect-fail 1)
+(test-equal '(#t 3) (check-istring (string-map char-upcase "abc")))
+(test-equal '(#t 6) (check-istring (string-repeat "ab" 3)))
+(test-equal '(#t 14) (check-istring (xsubstring "abcdef" -4 10)))
+(test-equal '(#t 3) (check-istring (cadr (string-split "ab cef" " "))))
+(test-expect-fail 1)
+(test-equal '(#t 5) (check-istring (symbol->string 'Hello)))
 
 (test-equal #t (string-every (lambda (c) (if (char? c) c #f))
                             (string)))
@@ -154,17 +198,19 @@
                                (integer->char (+ i (char->integer #\a))))
                              0))
 
-(test-equal "abc"
-            (string-tabulate (lambda (i)
-                               (integer->char (+ i (char->integer #\a))))
-                             3))
+(let ((r (string-tabulate (lambda (i)
+                            (integer->char (+ i (char->integer #\a))))
+                          3)))
+  (test-equal '(#t 3) (check-istring r))
+  (test-equal "abc" r))
 
-(test-equal "abc"
-              (let ((p (open-input-string "abc")))
-                (string-unfold eof-object?
-                             values
-                             (lambda (x) (read-char p))
-                             (read-char p))))
+(let* ((p (open-input-string "abc"))
+       (r (string-unfold eof-object?
+                         values
+                         (lambda (x) (read-char p))
+                         (read-char p))))
+  (test-equal '(#t 3) (check-istring r))
+  (test-equal "abc" r))
 
 (test-equal "" (string-unfold null? car cdr '()))
 
@@ -189,6 +235,8 @@
 
 (test-equal "def"
               (string-unfold-right null? car cdr '() "def"))
+(test-equal '(#t 3)
+            (check-istring (string-unfold-right null? car cdr '() "def")))
 
 (test-equal "Gcbadef"
               (string-unfold-right null?
@@ -2454,10 +2502,12 @@
                                    (integer->char (+ i (char->integer #\a))))
                                  "xyz"))
 
-(test-equal "def"
-              (string-map-index (lambda (i)
-                                   (integer->char (+ i (char->integer #\a))))
-                                 "xyz***" 3))
+(let ((r (string-map-index (lambda (i)
+                             (integer->char (+ i (char->integer #\a))))
+                           "xyz***" 3)))
+  (test-expect-fail 1)
+  (test-equal '#(t 3) (check-istring r))
+  (test-equal "def" r))
 
 (test-equal "cde"
               (string-map-index (lambda (i)
@@ -2500,13 +2550,15 @@
                         2 8))
 
 
-(test-equal "aiueaaaoi"
-              (string-filter (lambda (c) (memv c (string->list "aeiou")))
-                              "What is number, that man may know it?"))
+(let ((r (string-filter (lambda (c) (memv c (string->list "aeiou")))
+                        "What is number, that man may know it?")))
+  (test-equal "aiueaaaoi" r)
+  (test-equal '(#t 9) (check-istring r)))
 
-(test-equal "And wmn, tht sh my knw nmbr?"
-              (string-remove (lambda (c) (memv c (string->list "aeiou")))
-                              "And woman, that she may know number?"))
+(let ((r (string-remove (lambda (c) (memv c (string->list "aeiou")))
+                        "And woman, that she may know number?")))
+  (test-equal "And wmn, tht sh my knw nmbr?" r)
+  (test-equal '(#t 28) (check-istring r)))
 
 (test-equal "iueaaaoi"
               (string-filter (lambda (c) (memv c (string->list "aeiou")))

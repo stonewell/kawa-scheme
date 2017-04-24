@@ -1,5 +1,7 @@
 2017-04-23  Per Bothner  <per@bothner.com>
 
+	* strings-test.scm: A bunch of tests using istring?.
+
 	* Makefile.am (check-strings): Run strings-test.scm.
 
 2017-04-20  Per Bothner  <per@bothner.com>

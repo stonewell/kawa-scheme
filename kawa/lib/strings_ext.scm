@@ -369,7 +369,7 @@
         (result:append string1 0 cstart1)
         (result:append string2 cstart2 cend2)
         (result:append string1 cend1 len1)
-        result))))
+        (gnu.lists.IString:valueOf result)))))
 
 (define (%substring16 str::string cstart::int cend::int)
   (gnu.lists.IString (str:subSequence cstart cend)))
