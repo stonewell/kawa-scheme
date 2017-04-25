@@ -11024,7 +11024,7 @@ The following @meta{character-name} forms are recognized:
 @itemx @b{#\linefeed}
 @code{#\x001a} - the linefeed character
 @item @b{#\null}
-@item @b{#\nul}
+@itemx @b{#\nul}
 @code{#\x0000} - the null character
 @item @b{#\page}
 @code{#\000c} - the formfeed character
@@ -11211,7 +11211,7 @@ options, or you can @code{import} a standard library like @code{(scheme base)}.
 @deffn Type string
 The type of string objects.
 The underlying type is the interface @code{java.lang.CharSequence}.
-Immultable strings are @code{java.lang.String},
+Immultable strings are @code{gnu.lists.IString} or @code{java.lang.String},
 while mutable strings are @code{gnu.lists.FString}.
 @end deffn
 
@@ -11745,7 +11745,7 @@ and is allowed (for uniformity) when
 @var{final-string} is an immutable string.
 @end deffn
 
-@deffn Procedure string-join string-list [delimiter [grammar]])
+@deffn Procedure string-join string-list [delimiter [grammar]]
 This procedure is a simple unparser; it pastes strings together
 using the @var{delimiter} string, returning an istring.
 
@@ -11806,20 +11806,20 @@ Examples:
 @example
 (string-replace "The TCL programmer endured daily ridicule."
                  "another miserable perl drone" 4 7 8 22)
-    => "The miserable perl programmer endured daily ridicule."
+    @result{} "The miserable perl programmer endured daily ridicule."
 
 (string-replace "It's easy to code it up in Scheme." "lots of fun" 5 9)
-    => "It's lots of fun to code it up in Scheme."
+    @result{} "It's lots of fun to code it up in Scheme."
 
 (define (string-insert s i t) (string-replace s t i i))
 
 (string-insert "It's easy to code it up in Scheme." 5 "really ")
-    => "It's really easy to code it up in Scheme."
+    @result{} "It's really easy to code it up in Scheme."
 
 (define (string-set s i c) (string-replace s (string c) i (+ i 1)))
 
 (string-set "String-ref runs in O(n) time." 19 #\1)
-    => "String-ref runs in O(1) time."
+    @result{} "String-ref runs in O(1) time."
 @end example
 @end deffn
 
@@ -12207,8 +12207,6 @@ It is an error if @var{fill} is not a character or is forbidden in strings.
 
 @subsubsection Indexing a string
 
-@emph{This needs updating}
-
 Using function-call syntax with strings is convenient
 and efficient.  However, it has some ``gotchas''.
 
@@ -12230,14 +12228,14 @@ and so it must be encoded by a surrogate pair
 
 The number of scalar values (@code{character}s) is 8,
 while the number of 16-bits code units (@code{char}s) is 9.
-The @code{java.lang.CharSequence#length} method
+The @code{java.lang.CharSequence:length} method
 counts @code{char}s. Both the @code{length} and the
 @code{string-length} procedures count @code{character}s.  Thus:
 
 @example
 (length str1)          @result{} 8
-(str1:length)          @result{} 9
 (string-length str1)   @result{} 8
+(str1:length)          @result{} 9
 @end example
 
 Counting @code{char}s is a constant-time operation (since it
@@ -12246,80 +12244,34 @@ Counting @code{character}s depends on the representation used:
 In geneeral it may take time proportional to the length of
 the string, since it has to subtract one for each surrogate pair;
 however the @var{istring} type (@code{gnu.lists.IString} class)
-uses a extra structure so it can count characters sing
-constant-time.
+uses a extra structure so it can count characters in constant-time.
 
 Similarly we can can index the string in 3 ways:
 
 @example
 (str1 1)              @result{} #\m :: character
-(str1:charAt 1)       @result{} #\m :: char
 (string-ref str1 1)   @result{} #\m :: character
+(str1:charAt 1)       @result{} #\m :: char
 @end example
 
-Note using the function-call syntax returns a @code{character}.
+Using function-call syntax when the ``function'' is a string
+and a single integer argument is the same as using @code{string-ref}.
 
 Things become interesting when we reach the emoticon:
 
 @example
 (str1 6)              @result{} #\😃 :: character
 (str1:charAt 6)       @result{} #\d83d :: char
-(string-ref str1 6)   @result{} #\😃 :: character
 @end example
 
 Both @code{string-ref} and the function-call syntax return the
 real character, while the @code{charAt} methods returns a partial character.
-In general, @code{string-ref} needs to linearly count from the
-start of the string, while the function-call syntax can do a constant-time
-lookup.
-It does this by calling @code{(str1:charAt 6)} first.
-If that returns a leading-surrogate character, it checks that the
-next character (i.e. @code{(str1:charAt 7)}) is a trailing-surrogate character,
-and if so combines the two.  (If there is no next character or it is not
-a trailing-surrogate, then indexing just returns the leading-surrogate
-partial character.)
-
-In other words @code{(string-ref s i)} returns the @code{i}'th
-@code{character}, while @code{(s i)} return the @code{character}
-at the @code{i}'th index.
-
-If the character at the @code{i}'th index is a surrogate pair,
-then @code{(s (+ i 1))} returns a special pseudo-character
-named @code{#\ignorable-char}.  This pseudo-character should
-generally be ignored.  (It is automatically ignored by
-Kawa functions including @code{write-char}, @code{string-append!},
-and the @code{string} constructor.)
 
 @example
 (str1 7)              @result{} #\! :: character
-(str1 8)              @result{} @i{throws} StringIndexOutOfBoundsException
 (str1:charAt 7)       @result{} #\de03 :: char
+(str1 8)              @result{} @i{throws} StringIndexOutOfBoundsException
 (str1:charAt 8)       @result{} #\! :: char
-(string-ref str1 7)   @result{} #\! :: character
-(string-ref str1 8)   @result{} @i{throws} StringIndexOutOfBoundsException
-@end example
-
-Following are two possible implementations
-of a single-string version of @code{string-for-each}.
-The @code{string-for-each-1} version is simple,
-obvious, and traditional - but the execution time is
-quadratic in the string length.
-The @code{string-for-each-2} version requires filtering
-out any @code{#\ignorable-char}, but the execution time
-is only linear.
-
-@example
-(define (string-for-each-1 proc s::string)
-  (! slen (string-length s))
-  (do ((i ::int 0 (+ i 1))) ((= i slen))
-    (proc (string-ref s i))))
-
-(define (string-for-each-2 proc s::string)
-  (! slen (length s))
-  (do ((i ::int 0 (+ i 1))) ((= i slen))
-    (let ((ch (s i)))
-      (if (not (char=? ch #\ignorable-char))
-          (proc ch)))))
 @end example
 
 @subsubsection Indexing with a sequence
@@ -12331,10 +12283,6 @@ most commonly a range:
 @end example
 is basically the same as:
 @example
-(string (string-ref @var{str} @var{i}) ...)
-@end example
-or equivalently:
-@example
 (string (@var{str} @var{i}) ...)
 @end example
 
@@ -12344,13 +12292,10 @@ work with substrings rather than individual characters:
 (@var{str} [@var{start} <: @var{end}])
 @end example
 
-This is equivalent to invoking the @code{CharSequence:subSequence} method:
+This is equivalent to invoking the @code{substring} procedure:
 @example
-(@var{str}:subSequence @var{start} @var{end})
+(substring @var{str} @var{start} @var{end})
 @end example
-This is much more efficient than the @code{substring} procedure,
-since the latter has to convert @code{character} indexes
-to @code{char} offsets.
 
 @c not implemented yet
 @c @subsubsection Assigning to a subsequence
@@ -13346,14 +13291,14 @@ Returns the number of elements of the @var{seq}.
 (length (int[] 7 6))          @result{}  2
 @end example
 
-The length of a string is the number of 16-bit code units,
-not the number the code points.
-@strong{Warning: This will change in Kawa 3.x!}
+The length of a string is the number of characters (Unicode code points).
+In contrast, the @code{length} @emph{method} (of the @code{CharSequence} interface)
+returns the number of 16-bit code points:
 @example
 (length "Hello")              @result{}  5
 (define str1 "Hello \x1f603;!")
 (invoke str1 'length)         @result{}  9
-(length str1)                 @result{}  9 ;; 8 in Kawa 3.x
+(length str1)                 @result{}  8 ; Used to return 9 in Kawa 2.x.
 (string-length str1)          @result{}  8
 @end example
 @end deffn

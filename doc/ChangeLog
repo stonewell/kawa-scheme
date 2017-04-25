@@ -1,6 +1,7 @@
 2017-04-25  Per Bothner  <per@bothner.com>
 
 	* kawa.texi: Document remaining new string procedures.
+	Various string-related fixes and updates.
 	* news.texi: Likewise update.
 
 2017-04-10  Per Bothner  <per@bothner.com>
