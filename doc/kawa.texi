@@ -11221,6 +11221,10 @@ while mutable strings are @code{gnu.lists.FString}.
 Return @true{} if @var{obj} is a string, @false{} otherwise.
 @end deffn
 
+@deffn Procedure {istring?} @var{obj}
+Return @true{} if @var{obj} is a istring (a immutable, constant-time-indexable string); @false{} otherwise.
+@end deffn
+
 @deffn Constructor string @var{char} @dots{}
 Return a string composed of the arguments.
 This is analogous to @var{list}.
@@ -11249,26 +11253,6 @@ then calling @code{string-ref} may take time proportional
 to @var{k} because of the need to check for surrogate pairs.
 An alternative is to use @code{string-cursor-ref}.
 If iterating through a string, use @code{string-for-each}.
-@end deffn
-
-@deffn Procedure string-repeat string-or-character len
-Create an istring by repeating the first argument @var{len} times.
-If the first argument is a character, it is as if it were wrapped with
-the @code{string} constructor.
-@c FIXME note definition in terms of string-replicate/xsubstring
-@end deffn
-
-@deffn Procedure substring @var{string} @var{start} @var{end}
-@var{string} must be a string, and @var{start} and @var{end} must be
-exact integer objects satisfying:
-
-@example
-0 <= @var{start} <= @var{end} <= (string-length @var{string})
-@end example
-
-The @func{substring} procedure returns a newly allocated string formed
-from the characters of @var{string} beginning with index @var{start}
-(inclusive) and ending with index @var{end} (exclusive).
 @end deffn
 
 @deffn Procedure string-null? @var{string}
@@ -11382,6 +11366,74 @@ and
 
 This combinator pattern is sometimes called an ``anamorphism.''
 
+@end deffn
+
+@subsection Selection
+
+@deffn Procedure substring @var{string} @var{start} @var{end}
+@var{string} must be a string, and @var{start} and @var{end} must be
+exact integer objects satisfying:
+
+@example
+0 <= @var{start} <= @var{end} <= (string-length @var{string})
+@end example
+
+The @func{substring} procedure returns a newly allocated string formed
+from the characters of @var{string} beginning with index @var{start}
+(inclusive) and ending with index @var{end} (exclusive).
+@end deffn
+
+@deffn Procedure string-take string nchars
+@deffnx Procedure string-drop       string nchars
+@deffnx Procedure string-take-right string nchars
+@deffnx Procedure string-drop-right string nchars
+@code{string-take} returns an immutable string containing the
+first @var{nchars} of @var{string};
+@code{string-drop} returns a string containing all but the first @var{nchars}
+of @var{string}.
+@code{string-take-right} returns a string containing the last @var{nchars}
+of @var{string}; @code{string-drop-right} returns a string containing all
+but the last @var{nchars} of @var{string}.
+
+@example
+(string-take "Pete Szilagyi" 6) @result{} "Pete S"
+(string-drop "Pete Szilagyi" 6) @result{} "zilagyi"
+
+(string-take-right "Beta rules" 5) @result{} "rules"
+(string-drop-right "Beta rules" 5) @result{} "Beta "
+@end example
+It is an error to take or drop more characters than are in the string:
+@example
+(string-take "foo" 37) @result{} @i{error}
+@end example
+@end deffn
+
+@deffn Procedure string-pad       string len [char start end]
+@deffnx Procedure string-pad-right string len [char start end]
+Returns an istring of length @var{len} comprised of the characters
+drawn from the given subrange of @var{string},
+padded on the left (right) by as many occurrences of the
+character @var{char} as needed.
+If @var{string} has more than @var{len} chars, it is truncated on the
+left (right) to length @var{len}.
+The @var{char} defaults to @code{#\space}
+@example.
+(string-pad     "325" 5) @result{} "  325"
+(string-pad   "71325" 5) @result{} "71325"
+(string-pad "8871325" 5) @result{} "71325"
+@end example
+@end deffn
+
+@deffn Procedure string-trim       string [pred start end]
+@deffnx Procedure string-trim-right string [pred start end]
+@deffnx Procedure string-trim-both  string [pred start end]
+Returns an istring obtained from the given subrange of @var{string}
+by skipping over all characters on the left / on the right / on both sides that satisfy the second argument @var{pred}:
+@var{pred} defaults to @code{char-whitespace?}.
+@example
+(string-trim-both "  The outlook wasn't brilliant,  \n\r")
+    @result{} "The outlook wasn't brilliant,"
+@end example
 @end deffn
 
 @subsection String Comparisons
@@ -11565,7 +11617,26 @@ the argument instead of a newly allocated string.
 @end example
 @end deffn
 
-@subsection Searching
+@subsection Searching and matching
+
+@deffn Procedure string-prefix-length string@sub{1} string@sub{2} [start@sub{1} end@sub{1} start@sub{2} end@sub{2}]
+@deffnx Procedure string-suffix-length string@sub{1} string@sub{2} [start@sub{1} end@sub{1} start@sub{2} end@sub{2}]
+Return the length of the longest common prefix/suffix of @var{string@sub{1}}
+and @var{string@sub{2}}.
+For prefixes, this is equivalent to their ``mismatch index''
+(relative to the start indexes).
+
+The optional @var{start}/@var{end} indexes restrict the comparison
+to the indicated substrings of @var{string@sub{1}} and @var{string@sub{2}}.
+@end deffn
+
+@deffn Procedure string-prefix? string@sub{1} string@sub{2} [start@sub{1} end@sub{1} start@sub{2} end@sub{2}]
+@deffnx Procedure string-suffix? string@sub{1} string@sub{2} [start@sub{1} end@sub{1} start@sub{2} end@sub{2}]
+Is @var{string@sub{1}} a prefix/suffix of @var{string@sub{2}}?
+
+The optional @var{start}/@var{end} indexes restrict the comparison
+to the indicated substrings of @var{string@sub{1}} and @var{string@sub{2}}.
+@end deffn
 
 @deffn Procedure string-index       string pred [start end]
 @deffnx Procedure string-index-right string pred [start end]
@@ -11608,10 +11679,25 @@ These functions can be trivially composed with @code{string-take} and
 @c predicate, a character, or a character set. That seems
 @c convenient.
 
-@subsection Concatenation
+@deffn Procedure string-contains       string@sub{1} string@sub{2} [start@sub{1} end@sub{1} start@sub{2} end@sub{2}]
+@deffnx Procedure string-contains-right string@sub{1} string@sub{2} [start@sub{1} end@sub{1} start@sub{2} end@sub{2}]
+Does the substring of @var{string@sub{1}} specified by @var{start@sub{1}} and @var{end@sub{1}} contain the sequence of characters given by the substring of @var{string@sub{2}} specified by @var{start@sub{2}} and @var{end@sub{2}}?
 
-Also see @code{string-append!},
-for destructive appending of a mutable string.
+Returns @code{#f} if there is no match.
+If @var{start@sub{2}} = @var{end@sub{2}}, @code{string-contains}
+returns @var{start@sub{1}} but @code{string-contains-right}
+returns @var{end@sub{1}}. Otherwise returns the index in @var{string@sub{1}} for the first character of the first/last match; that index lies within the half-open interval [@var{start@sub{1}},@var{end@sub{1}}), and the match lies entirely within the [@var{start@sub{1}},@var{end@sub{1}}) range of @var{string@sub{1}}.
+
+@example
+(string-contains "eek -- what a geek." "ee" 12 18) ; Searches "a geek"
+    @result{} 15
+@end example
+Note: The names of these procedures do not end with a question mark. This indicates a useful value is returned when there is a match.
+
+
+@end deffn
+
+@subsection Concatenation and replacing
 
 @deffn Procedure string-append @var{string} @dots{}
 Returns a string whose characters form the concatenation
@@ -11704,6 +11790,42 @@ Means a prefix grammar: insert the @var{delimiter} before every list element.
 
 @end deffn
 
+@deffn Procedure string-replace string@sub{1} string@sub{2} start@sub{1} end@sub{1} [start@sub{2} end@sub{2}]
+Returns
+@example
+(string-append (substring @var{string@sub{1}} 0 @var{start@sub{1}})
+               (substring @var{string@sub{2}} @var{start@sub{2}} @var{end@sub{2}})
+               (substring @var{string@sub{1}} @var{end@sub{1}} (string-length @var{string@sub{1}})))
+@end example
+That is, the segment of characters in @var{string@sub{1}} from @var{start@sub{1}}
+to @var{end@sub{1}} is replaced by the segment of characters in @var{string@sub{2}} from @var{start@sub{2}} to @var{end@sub{2}}.
+If @var{start@sub{1}}=@var{end@sub{1}}, this simply splices the characters
+drawn from @var{string@sub{2}} into @var{string@sub{1}} at that position.
+
+Examples:
+@example
+(string-replace "The TCL programmer endured daily ridicule."
+                 "another miserable perl drone" 4 7 8 22)
+    => "The miserable perl programmer endured daily ridicule."
+
+(string-replace "It's easy to code it up in Scheme." "lots of fun" 5 9)
+    => "It's lots of fun to code it up in Scheme."
+
+(define (string-insert s i t) (string-replace s t i i))
+
+(string-insert "It's easy to code it up in Scheme." 5 "really ")
+    => "It's really easy to code it up in Scheme."
+
+(define (string-set s i c) (string-replace s (string c) i (+ i 1)))
+
+(string-set "String-ref runs in O(n) time." 19 #\1)
+    => "String-ref runs in O(1) time."
+@end example
+@end deffn
+
+Also see @code{string-append!} and @code{string-replace!}
+for destructive changes to a mutable string.
+
 @subsection Mapping and folding
 
 @deffn Procedure string-fold kons knil string [start end]
@@ -11786,7 +11908,7 @@ If @var{proc} is a lambda expression, it is inlined.
 The @code{string-map} procedure applies @var{proc} element-wise to
 the elements of the strings and returns a string of the results, in order.
 It is an error if @var{proc} does not accept as many arguments as there
-are strings, or return other than a single character.
+are strings, or return other than a single character or a string.
 If more than one string is given and not all strings have the same length,
 @code{string-map} terminates when the shortest string runs out.
 The dynamic order in
@@ -11811,6 +11933,9 @@ which @var{proc} is applied to the elements of the strings is unspecified.
   "ululululul")
         @result{} "StUdLyCaPs"
 @end example
+
+Traditionally the result of @var{proc} had to be a character,
+but Kawa (and SRFI-140) allows the result to be a string.
 
 @PerformanceNote{} The @code{string-map} procedure has not been
 optimized (mainly because it is not very useful):
@@ -11860,6 +11985,92 @@ Return an immutable string consisting of only selected characters, in order:
 @code{string-filter} selects only the characters that satisfy @var{pred};
 @code{string-remove} selects only the characters that @emph{not}
 satisfy @var{pred}
+@end deffn
+
+@subsection Replication & splitting
+
+@deffn Procedure string-repeat string-or-character len
+Create an istring by repeating the first argument @var{len} times.
+If the first argument is a character, it is as if it were wrapped with
+the @code{string} constructor.
+We can define string-repeat in terms of the more general @code{xsubstring}
+procedure:
+@example
+(define (string-repeat S N)
+   (let ((T (if (char? S) (string S) S)))
+     (xsubstring T 0 (* N (string-length T))))
+@end example
+@end deffn
+
+@deffn Procedure xsubstring string [from to [start end]]
+This is an extended substring procedure that implements replicated copying of a substring.
+The @var{string} is a string; @var{start} and @var{end} are optional arguments that specify a substring of @var{string},
+defaulting to 0 and the length of @var{string}.
+This substring is conceptually replicated both up and down the index space,
+in both the positive and negative directions.
+For example, if @var{string} is @code{"abcdefg"}, @var{start} is 3,
+and @var{end} is 6, then we have the conceptual bidirectionally-infinite string
+@example
+  ...  d  e  f  d  e  f  d  e  f  d  e  f  d  e  f  d  e  f  d ...
+      -9 -8 -7 -6 -5 -4 -3 -2 -1  0 +1 +2 +3 +4 +5 +6 +7 +8 +9
+@end example
+@code{xsubstring} returns the substring of the @var{string} beginning
+at index @var{from}, and ending at @var{to}.
+It is an error if @var{from} is greater than @var{to}.
+
+If @var{from} and @var{to} are missing they default to 0 and
+@var{from}+(@var{end}-@var{start}), respectively.
+This variant is a generalization of using @code{substring},
+but unlike @code{substring} never shares substructures that would
+retain characters or sequences of characters that are substructures of
+its first argument or previously allocated objects.
+
+You can use @code{xsubstring} to perform a variety of tasks:
+@itemize
+@item
+To rotate a string left: @code{(xsubstring "abcdef" 2 8) @result{} "cdefab"}
+@item
+To rotate a string right: @code{(xsubstring "abcdef" -2 4) @result{} "efabcd"}
+@item
+To replicate a string: @code{(xsubstring "abc" 0 7) @result{} "abcabca"}
+@end itemize
+
+Note that
+@itemize
+@item
+The @var{from}/@var{to} arguments give a half-open range containing the
+characters from index @var{from} up to, but not including, index @var{to}.
+@item
+The @var{from}/@var{to} indexes are not expressed in the index space of
+@var{string}. They refer instead to the replicated index space of the
+substring defined by @var{string}, @var{start}, and @var{end}.
+@end itemize
+
+It is an error if @var{start}=@var{end}, unless @var{from}=@var{to},
+which is allowed as a special case.
+@end deffn
+
+@deffn Procedure string-split string delimiter [grammar limit start end]
+Returns a list of strings representing the words contained in the substring of @var{string} from @var{start} (inclusive) to @var{end} (exclusive).
+The @var{delimiter} is a string to be used as the word separator.
+This will often be a single character, but multiple characters are
+allowed for use cases such as splitting on @code{"\r\n"}.
+The returned list will have one more item than the number of non-overlapping
+occurrences of the @var{delimiter} in the string.
+If @var{delimiter} is an empty string, then the returned list contains a
+list of strings, each of which contains a single character.
+
+The @var{grammar} is a symbol with the same meaning as in
+the @code{string-join} procedure.
+If it is @code{infix}, which is the default, processing is done as
+described above, except an empty string produces the empty list;
+if grammar is @code{strict-infix}, then an empty string signals an error.
+The values @code{prefix} and @code{suffix} cause a leading/trailing empty string in the result to be suppressed.
+
+If @var{limit} is a non-negative exact integer, at most that many splits occur, and the remainder of string is returned as the final element of the list (so the result will have at most limit+1 elements). If limit is not specified or is #f, then as many splits as possible are made. It is an error if limit is any other value.
+
+To split on a regular expression, you can use SRFI 115's @code{regexp-split}
+procedure.
 @end deffn
 
 @subsection String mutation

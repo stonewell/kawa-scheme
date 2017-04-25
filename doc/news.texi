@@ -26,7 +26,8 @@ The advantage of using @code{gnu.lists.IString} is that @code{string-ref}
 and @code{string-length} are (roughly) constant-time, rather than
 having to linearly scan the string.
 @item
-@emph{Incompatible change:} The procedures @code{string-append},
+@emph{Incompatible change:}
+The procedures @code{string-append}, @code{string-map},
 @code{substring}, @code{list->string}, @code{vector->string},
 @code{string-downcase}, @code{string-upcase}, @code{string-foldcase}, 
 @code{string-titlecase}, and the constructor @code{string}
@@ -58,29 +59,24 @@ was @code{java.lang.String} Kawa would accept any value, converting it
 using Object's @code{toString} method.
 Now Kawa will reject an argument if it is not a @code{java.lang.CharSequence}.
 @item
-New procedures: @code{reverse-list->string},
+New procedures: @code{istring?}, @code{reverse-list->string},
 @code{string-any}, @code{string-concatenate}, @code{string-concatenate-reverse},
-@code{string-count}, @code{string-every}, @code{string-filter}, @code{string-fold}, @code{string-fold-right},
-@code{string-for-each-index},
+@code{string-contains}, @code{string-contains-right},
+@code{string-count}, @code{string-drop},  @code{string-drop-right},
+@code{string-every}, @code{string-filter}, @code{string-fold},
+@code{string-fold-right}, @code{string-for-each-index},
 @code{string-index}, @code{string-index-right}, @code{string-join},
 @code{string-map-index}, @code{string-null?},
-@code{string-repeat}, @code{string-remove},
-@code{string-skip}, @code{string-skip-right},
-@code{string-tabulate}, @code{string-unfold}, @code{string-unfold-right},
+@code{string-prefix?}, @code{string-prefix-length},
+@code{string-repeat}, @code{string-remove}, @code{string-replace},
+@code{string-skip}, @code{string-skip-right}, @code{string-split},
+@code{string-suffix?}, @code{string-suffix-length},
+@code{string-tabulate}, @code{string-take}, @code{string-take-right},
+@code{string-trim}, @code{string-trim-right}, @code{string-trim-both},
+@code{string-unfold}, @code{string-unfold-right},
 @code{string->utf16}, @code{string->utf16be}, @code{string->utf16le},
-@code{utf16->string}, @code{utf16be->string}, @code{utf16le->string}.
-@c , @code{xsubstring}
-@c DOC NEEDED:
-@c istring?
-@c string-map with proc returning string
-@c string-replace string-split
-@c string-{take,drop}{,-right}
-@c string-contains-right
-@c string-{prefix,suffix}?
-@c string-{prefix,suffix}-length
-@c string-trim-{left,right,both}
-@c string-{pad,skip}{,-right} ALSO srfi-140.html
-@c string-replicate (should rename to xsubstring)
+@code{utf16->string}, @code{utf16be->string}, @code{utf16le->string},
+@code{xsubstring}.
 These follow SRFI-140 and return immutable strings.
 (Some of these had previously been available in SRFI-13,
 but the older versions return mutable strings.)
