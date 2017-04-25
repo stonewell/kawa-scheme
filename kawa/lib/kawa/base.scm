@@ -13,7 +13,7 @@
 (require <kawa.lib.enums>)
 (require <kawa.lib.srfi.26>)
 
-(export list->string string-append substring vector->string
+(export list->string string-append string-map substring vector->string
         string-downcase string-foldcase string-upcase string-titlecase)
 (export case-lambda read interaction-environment null-environment
         exact->inexact inexact->exact)
@@ -186,7 +186,7 @@
         with-compile-options with-syntax xsubstring
         )
 (import (only kawa.istrings
-              list->string string-append substring vector->string
+              list->string string-append string-map substring vector->string
               string-upcase string-downcase string-foldcase string-titlecase))
 (require kawa.lib.DefineRecordType)
 (import (rename kawa.lib.prim_imports (letrec letrec*)))

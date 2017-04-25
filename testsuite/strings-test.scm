@@ -132,7 +132,6 @@
 (test-equal '(#t 6) (check-istring
                      (string-concatenate-reverse  (list "abcd" "XY"))))
 (test-equal '(#t 7) (check-istring (string-join (list "abc" "xyz"))))
-(test-expect-fail 1)
 (test-equal '(#t 3) (check-istring (string-map char-upcase "abc")))
 (test-equal '(#t 6) (check-istring (string-repeat "ab" 3)))
 (test-equal '(#t 14) (check-istring (xsubstring "abcdef" -4 10)))
@@ -2505,8 +2504,7 @@
 (let ((r (string-map-index (lambda (i)
                              (integer->char (+ i (char->integer #\a))))
                            "xyz***" 3)))
-  (test-expect-fail 1)
-  (test-equal '#(t 3) (check-istring r))
+  (test-equal '(#t 3) (check-istring r))
   (test-equal "def" r))
 
 (test-equal "cde"

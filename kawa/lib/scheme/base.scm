@@ -20,6 +20,6 @@
 (import (only kawa.lib.prim_imports (letrec letrec*)))
 (import (only kawa.lib.rnrs.unicode string-upcase string-downcase string-foldcase))
 (import kawa.mstrings)
-(export list->string string-append substring vector->string
+(export list->string string-append string-map substring vector->string
         string-downcase string-foldcase string-upcase)
 (include "base-exports")

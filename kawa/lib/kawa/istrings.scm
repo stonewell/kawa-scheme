@@ -1,12 +1,13 @@
 (module-name (kawa istrings))
 
-(module-export $make$string$ list->string string-append
+(module-export $make$string$ list->string string-append string-map
                string-downcase string-upcase string-foldcase string-titlecase
                substring vector->string)
 
 (require <kawa.lib.prim_imports>)
 (require <kawa.lib.std_syntax>)
 (import (only kawa.mstrings
+              (string-map mstring-map)
               (vector->string vector->mstring)
               (list->string list->mstring)))
 
@@ -37,6 +38,9 @@
 (define (substring str::string start::int end::int)
   :: <string>
   (gnu.lists.IString:valueOf str start (- end start)))
+
+(define (string-map proc str1::string #!rest rst::string[])::string
+  (gnu.lists.IString (mstring-map proc str1 @rst)))
 
 (define (string-upcase (str :: string)) :: string
   (gnu.lists.IString ((str:toString):toUpperCase java.util.Locale:ENGLISH)))

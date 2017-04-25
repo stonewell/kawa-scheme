@@ -414,3 +414,21 @@
           (set! rlist (cdr rlist)))
       (set! rlist (reverse! rlist))
       rlist)))
+
+
+(define (string-map-index proc str::string #!optional
+                          (start::int 0) (end::int -1))
+  (let* ((cstart ::string-cursor
+                 (string-cursor-next str
+                                     (as string-cursor 0)
+                                     start))
+         (cend ::string-cursor
+             (if (= end -1) (as string-cursor (str:length))
+                 (string-cursor-next str cstart (- end start))))
+         (result (gnu.lists.FString)))
+    (do ((cursor::string-cursor cstart
+                                (string-cursor-next str cursor))
+         (i ::int start (+ i 1)))
+        ((string-cursor>=? cursor cend)
+         (gnu.lists.IString:valueOf result))
+      (result:append (proc i)))))

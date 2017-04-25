@@ -1,3 +1,7 @@
+2017-04-24  Per Bothner  <per@bothner.com>
+
+	Make string-map default to returning an istring.
+
 2017-04-23  Per Bothner  <per@bothner.com>
 
 	* strings.scm (istring?): New predicate.

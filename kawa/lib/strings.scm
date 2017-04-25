@@ -10,7 +10,6 @@
                string-fill! string-upcase! string-downcase!
                string-capitalize string-capitalize!
                string-append! string-replace!
-               string-map string-map-index
                string-for-each string-for-each-index srfi-13-string-for-each
                string-pad string-pad-right
                string-repeat string-tabulate
@@ -245,45 +244,15 @@
                            (set! (cursors i) (string-cursor-next str curs-i))
                            (loop2 (+ i 1)))))))))))
 
-(define (string-map proc str1::string #!rest rst::string[])::string
-  (define nrst rst:length)
-  (define n::int (+ nrst 1))
-  (define cursors::string-cursor[] (string-cursor[] length: n))
-  (define ends::string-cursor[] (string-cursor[] length: n))
-  (define chs::gnu.text.Char[] (gnu.text.Char[] length: n))
-  (define len1 (str1:length))
-  (define result (gnu.lists.FString:alloc len1))
-  (set! (cursors 0) 0)
-  (set! (ends 0) len1)
-  (do ((i ::int 1 (+ i 1))) ((>= i n))
-    (let ((str ::string (rst (- i 1))))
-      (set! (cursors i) 0)
-      (set! (ends i) (str:length))))
-  (let loop1 ()
-    (let loop2 ((i::int 0))
-      (cond ((= i n)
-             (result:append (proc @chs))
-             (loop1))
-            (else
-             (define curs-i (cursors i))
-             (define end-i (ends i))
-             (define str ::string (if (= i 0) str1 (rst (- i 1))))
-             (cond ((string-cursor<? curs-i end-i)
-                    (set! (chs i) (string-cursor-ref str curs-i))
-                    (set! (cursors i) (string-cursor-next str curs-i))
-                    (loop2 (+ i 1))))))))
-  ;; FIXME should be IString
-  result)
-
 (define (string-for-each-index proc str::string #!optional
-                                 (start::int 0) (end::int -1))
+                               (start::int 0) (end::int 0 end-supplied))
   ::void
   (let* ((cstart ::string-cursor
                  (string-cursor-next str
                                      (as string-cursor 0)
                                      start))
          (cend ::string-cursor
-             (if (= end -1) (as string-cursor (str:length))
+             (if (not end-supplied) (as string-cursor (str:length))
                  (string-cursor-next str cstart (- end start)))))
     (do ((cursor::string-cursor cstart
                                 (string-cursor-next str cursor))
@@ -317,23 +286,6 @@
          result
          (let ((prev (string-cursor-prev str i)))
            (loop (kons (string-cursor-ref str prev) result) prev))))))
-
-(define (string-map-index proc str::string #!optional
-                          (start::int 0) (end::int -1))
-  (let* ((cstart ::string-cursor
-                 (string-cursor-next str
-                                     (as string-cursor 0)
-                                     start))
-         (cend ::string-cursor
-             (if (= end -1) (as string-cursor (str:length))
-                 (string-cursor-next str cstart (- end start))))
-         (result (gnu.lists.FString)))
-    (do ((cursor::string-cursor cstart
-                                (string-cursor-next str cursor))
-         (i ::int start (+ i 1)))
-        ((string-cursor>=? cursor cend)
-         result)
-      (result:append (proc i)))))
 
 (define (string-append! str::gnu.lists.FString #!rest args :: object[]) ::void
   validate-apply: "kawa.lib.compile_misc:stringAppendToValidateApply"
