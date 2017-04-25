@@ -172,7 +172,7 @@
      (cond ((atype:isSubtype (Type:make java.util.List))
             (apply-exp invoke arg 'size))
            ((atype:isSubtype (Type:make java.lang.CharSequence))
-            (apply-exp invoke arg 'length))
+            (apply-exp invoke gnu.lists.Strings:sizeInCodePoints arg))
            ((gnu.bytecode.ArrayType? atype)
             (apply-exp field arg 'length))
            (else

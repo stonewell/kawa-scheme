@@ -78,7 +78,7 @@ public class Sequences {
         if (values instanceof Object[])
             return ((Object[]) values).length;
         else if (values instanceof CharSequence)
-            return ((CharSequence) values).length();
+            return Strings.sizeInCodePoints((CharSequence) values);
         else if (values instanceof List<?>)
             return ((List<?>) values).size();
         else if (values.getClass().isArray())
