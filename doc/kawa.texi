@@ -5088,7 +5088,8 @@ and is different from Common Lisp and some other Scheme dialects.)
 
 An expression prefixed by @code{@@} or @code{@@:} is
 a splice argument.  The following expression must evaluate to an
-``argument list'' (see XXX for details); each element in the argument
+``argument list'' (see @ref{Application and Arguments Lists} for details);
+each element in the argument
 becomes a separate argument when call the @var{operator}.
 (This is very similar to the ``spread'' operator is EcmaScript 6.)
 
@@ -8521,7 +8522,7 @@ the procedure body is called.
 
 @subsection Arguments lists
 
-An argument list has tree parts:
+An argument list has three parts:
 @itemize @bullet
 @item
 Zero or more @dfn{prefix arguments}, each of which is a value.
@@ -8909,9 +8910,8 @@ You can of course also use the extended format in a @ref{Definitions,@code{defin
 @stxdef{optional-arg} @var{variable} [@stxlit{::} @stxref{type}]
   | @stxlit{(} @stxref{pattern} [@stxlit{::} @stxref{type}] [@var{initializer} [@stxref{supplied-var}]]@stxlit{)}
 @stxdef{supplied-var} @var{variable}
-@stxdef{key-arg} @stxref{arg-with-default}
-@stxdef{arg-with-default} @var{variable} [@stxlit{::} @var{type}]
-    | @stxlit{(} @var{variable} [@stxlit{::} @var{type} [@var{initializer}] | @var{initializer} [@stxlit{::} @var{type}]] @stxlit{)}
+@stxdef{key-arg} @var{variable} [@stxlit{::} @stxref{type}]
+    | @stxlit{(} @var{variable} [@stxlit{::} @stxref{type}] [@var{initializer} [@stxref{supplied-var}]] @stxlit{)}
 @stxdef{rest-arg} @var{variable}
 @end display
 
