@@ -1,5 +1,10 @@
 2017-04-26  Per Bothner  <per@bothner.com>
 
+	* Makefile.am (kawa.xml): Change Top node to index.html, not start.html.
+	(kawa-manual.epub): Update to deal with above change.
+	* style/kawa-ebook.js: Update sidebar handling for index.html.
+	Also, various changes in readiness for html (not xml) files.
+
 	* kawa.texi: Some minor fixes.
 
 2017-04-25  Per Bothner  <per@bothner.com>

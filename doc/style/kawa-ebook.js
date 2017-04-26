@@ -23,7 +23,7 @@ var sidebarFrame = null;
 var mainFilename;
 
 function withSidebarQuery(href) {
-    var nodeName = href.replace(/[.]xhtml.*/, "");
+    var nodeName = href.replace(/[.]x?html.*/, "");
     if (href==mainFilename || href==mainName || nodeName == "start")
         return mainFilename;
     var h = href.indexOf('#');
@@ -87,9 +87,9 @@ function fixLink(link, href) {
 }
 
 function clearTocStyles(node) {
-    if (node.tagName == "ul")
+    if (node.tagName == "ul" || node.tagName == "UL")
         node.removeAttribute("toc-detail");
-    if (node.tagName == "a")
+    if (node.tagName == "a" || node.tagName == "A")
         node.removeAttribute("toc-current");
     for (var child = node.firstElementChild; child;
          child = child.nextElementSibling) {
@@ -120,34 +120,46 @@ function addSidebarHeader(sidebarDoc) {
     }
 }
 
-function scanToc(node, current) {
-    scanToc1(node.getElementsByTagName("ul")[0], withSidebarQuery(current));
-}
-/** Scan ToC entries to see which should be hidden.
- * Return 2 if node matches current; 1 if node is ancestor of current; else 0.
- */
-function scanToc1(node, current) {
-    if (node.tagName == "a") { // lowercase "A" for xhtml
-        var href = node.getAttribute("href");
-        if (href == current) {
-            node.setAttribute("toc-current", "yes");
-            var ul = node.nextElementSibling;
-            if (ul && ul.tagName == "ul") {
+function hideGrandChildNodes(ul) {
                 // keep children but remove grandchildren
                 // (Exception: don't remove anything on the current page;
                 // however, that's not a problem in the Kawa manual.)
                 for (var li = ul.firstElementChild; li; li = li.nextElementSibling) {
-                    if (li.tagName == "li" && li.firstElementChild
-                        && li.firstElementChild.tagName == "a") {
-                        var achild = li.firstElementChild;
+                    var achild = li.firstElementChild;
+                    if (achild && (li.tagName == "li" || li.tagName == "LI")
+                        && (achild.tagName == "a" || achild.tagName == "A")) {
                         var lichild = achild.nextElementSibling;
-                        if (lichild && lichild.tagName == "ul"
+                        if (lichild
+                            && (lichild.tagName == "ul"
+                                || lichild.tagName == "UL")
                             // never remove Overall-Index
                             && achild.getAttribute("href") != "Overall-Index.xhtml") {
                             lichild.setAttribute("toc-detail", "yes");
                         }
                     }
                 }
+}
+
+
+function scanToc(node, filename) {
+    var current = withSidebarQuery(filename);
+    var ul = node.getElementsByTagName("ul")[0];
+    if (filename == "index.html")
+        hideGrandChildNodes(ul);
+    else
+        scanToc1(ul, current);
+}
+/** Scan ToC entries to see which should be hidden.
+ * Return 2 if node matches current; 1 if node is ancestor of current; else 0.
+ */
+function scanToc1(node, current) {
+    if (node.tagName == "a" || node.tagName == "A") {
+        var href = node.getAttribute("href");
+        if (href == current) {
+            node.setAttribute("toc-current", "yes");
+            var ul = node.nextElementSibling;
+            if (ul && (ul.tagName == "ul" || ul.tagName == "UL")) {
+                hideGrandChildNodes(ul);
             }
             return 2;
         }
@@ -188,14 +200,14 @@ function onSidebarLoad(evt) {
 
     var tocA = document.createElementNS(xhtmlNamespace, "a");
     tocA.setAttribute("href", tocFilename);
-        tocA.appendChild(document.createTextNode("Table of Contents"));
-        var tocLi = document.createElementNS(xhtmlNamespace, "li");
-        tocLi.appendChild(tocA);
-        var indexLi = links[links.length-1].parentNode;
-        var indexGrand = indexLi.parentNode.parentNode;
-        if (indexGrand.nodeName == "li") //hack
-            indexLi = indexGrand;
-        indexLi.parentNode.insertBefore(tocLi, indexLi.nextSibling);
+    tocA.appendChild(document.createTextNode("Table of Contents"));
+    var tocLi = document.createElementNS(xhtmlNamespace, "li");
+    tocLi.appendChild(tocA);
+    var indexLi = links[links.length-1].parentNode;
+    var indexGrand = indexLi.parentNode.parentNode;
+    if (indexGrand.nodeName == "li") //hack
+        indexLi = indexGrand;
+    indexLi.parentNode.insertBefore(tocLi, indexLi.nextSibling);
 
     var prevNode = null;
     var nodes = new Array();
@@ -205,7 +217,7 @@ function onSidebarLoad(evt) {
         if (href) {
             fixLink(link, href);
             if (href.indexOf(':') <= 0) {
-                var nodeName = href.replace(/[.]xhtml.*/, "");
+                var nodeName = href.replace(/[.]x?html.*/, "");
                 if (prevNode != nodeName) {
                     prevNode = nodeName;
                     nodes.push(nodeName);
@@ -227,7 +239,7 @@ function onSidebarLoad(evt) {
 }
 
 function loadPage(url, hash) {
-    var nodeName = url.replace(/[.]xhtml.*/, "");
+    var nodeName = url.replace(/[.]x?html.*/, "");
     var path = (window.location.pathname + window.location.search)
         .replace(/#.*/, "") + hash;
     var div = document.getElementById(nodeName);

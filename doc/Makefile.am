@@ -95,7 +95,7 @@ kawa.xml: $(srcdir)/kawa.texi
 	-e '/<!DOCTYPE book/,/^\]>/d' \
 	-e 's|_002d|-|g' \
 	-e 's|<book id="-" lang="en">|<book id="book" xmlns="http://docbook.org/ns/docbook" lang="en"><?dbhtml filename="top.html"?>|' \
-	-e 's|<chapter label="" id="Top">|<chapter label="Top" id="Top"><?dbhtml filename="start.html"?>|' \
+	-e 's|<chapter label="" id="Top">|<chapter label="Top" id="Top"><?dbhtml filename="index.html"?>|' \
 	-e 's|<chapter label="1" id="News">|<chapter label="1" id="News"><?dbhtml filename="news.html"?>|' \
 	-e 's|id="Tutorial">|\0<?dbhtml filename="tutorial/index.html"?>|' \
 	-e 's|id="Tutorial---\([^"]*\)">|\0<?dbhtml filename="tutorial/\1.html"?>|' \
@@ -154,7 +154,7 @@ $(HTML_TARGET_DIRECTORY)/index.html: kawa.xml Makefile
 kawa-manual.epub: kawa.xml
 	sed \
 	  -e 's|<?dbhtml filename="tutorial/\([^".]*\)\.html|<?dbhtml filename="tutorial-\1.xhtml|'\
-	  -e 's|<?dbhtml filename="\([^"]*\)\.html|<?dbhtml filename="\1.xhtml|'\
+	  -e '/id="News"/s|<?dbhtml filename="\([^"]*\)\.html|<?dbhtml filename="\1.xhtml|'\
 	  < $< | \
 	$(XSLT) --path $(DOCBOOK_XSL_DIR)/epub3$(pathsep)$(srcdir)/style \
 	  --stringparam base.dir ebook/OEBPS/ \
@@ -179,7 +179,8 @@ kawa-manual.epub: kawa.xml
 	sed -e '/<footer>/,/<.footer>/d' <ebook/OEBPS/bk01-toc.xhtml \
 	  >ebook/OEBPS/ToC.xhtml
 	rm ebook/OEBPS/bk01-toc.xhtml
-	sed -e '/<script/s|/>|> </script>|' <ebook/OEBPS/start.xhtml > ebook/OEBPS/index.html
+	for file in ebook/OEBPS/*.html; do \
+	  sed -e '/<?xml .*>/d' -e '/<script/s|/>|> </script>|' -i $$file; done
 	cp style/kawa-ebook.css ebook/OEBPS/kawa.css
 	cp style/kawa-ebook.js ebook/OEBPS/kawa-ebook.js
 	cp style/kawa-logo.png ebook/OEBPS/kawa-logo.png
