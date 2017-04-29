@@ -6,6 +6,7 @@ import java.io.*;
 
 public final class StringCursor implements Comparable, Externalizable {
     int value;
+    public String toString() { return "(string-cursor "+value+")"; }
 
     public static StringCursor valueOf(int value) {
         StringCursor sc = new StringCursor();

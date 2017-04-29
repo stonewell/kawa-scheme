@@ -1,3 +1,7 @@
+2017-04-29  Per Bothner  <per@bothner.com>
+
+	* StringCursor.java (toString): New method.
+
 2017-02-27  Per Bothner  <per@bothner.com>
 
 	* Char.java (append): Trivial optimization.
