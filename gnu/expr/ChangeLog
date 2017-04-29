@@ -1,3 +1,8 @@
+2017-04-29  Per Bothner  <per@bothner.com>
+
+	Better compilation even if supplied-optional booleans are used.
+	Don't disable generatation of direct-callable overladed methods.
+
 2017-04-20  Per Bothner  <per@bothner.com>
 
 	* Mangling.java: Use "symbolic" mangling for fields and variables.

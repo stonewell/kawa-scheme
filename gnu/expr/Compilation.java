@@ -1483,8 +1483,12 @@ public class Compilation implements SourceLocator
         else {
             param.var = scope.addVariable(code, itype, null/*vname*/);
         }
-        if (param.parameterForMethod())
+        if (param.parameterForMethod()
+            && (lexp.inlinedInCheckMethod()
+                || ! param.getFlag(Declaration.IS_SUPPLIED_PARAMETER)
+                || param.getFlag(Declaration.IS_PARAMETER))) {
             argVariables.add(param.var);
+        }
         if (! convertNeeded) {
             if (incoming == null)
                 code.emitStore(param.var);

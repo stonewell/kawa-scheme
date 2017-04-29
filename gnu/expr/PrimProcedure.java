@@ -657,8 +657,11 @@ public class PrimProcedure extends MethodProc {
           }
         if (i >= fix_arg_count)
           code.emitArrayStore(arg_type);
-	if (argDecl != null && (is_static || i > 0))
+	if (argDecl != null && (is_static || i > 0)) {
+          if (argDecl.getFlag(Declaration.IS_SUPPLIED_PARAMETER))
+              argDecl = argDecl.nextDecl();
 	  argDecl = argDecl.nextDecl();
+        }
       }
   }
 

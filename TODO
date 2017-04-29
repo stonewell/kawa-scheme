@@ -6,7 +6,6 @@ BEFORE Kawa 3.0
 - Get JavaFX script applications to work again.
 - Fix nested scan patterns.
 - Document scan patterns.
-- Change compilation of optional parameters with supplied-p.
 - Finish SRFI-140.
 - Go through Savannah and GitLab bugs.
 - Document in-http-server and in-servlet cond-expand options.

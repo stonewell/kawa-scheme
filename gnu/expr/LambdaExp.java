@@ -174,7 +174,13 @@ public class LambdaExp extends ScopeExp {
     public static final int ALLOW_OTHER_KEYWORDS = 0x8000;
 
     protected static final int HAS_NONTRIVIAL_PATTERN = 0x10000;
-    protected static final int NEXT_AVAIL_FLAG = 0x20000;
+    /** True if IS_SUPPLIED_PARAMETER is set on a parameter.
+     * In that case we generate an extra foo$P method for the actual body.
+     * (It might make sense to also do this whenever a default expression
+     * is non-literal, but we current don't do that.)
+     */
+    protected static final int HAS_NONTRIVIAL_DEFAULT = 0x20000;
+    protected static final int NEXT_AVAIL_FLAG = 0x40000;
 
     /** True iff this lambda is only "called" inline. */
     public final boolean getInlineOnly() { return (flags & INLINE_ONLY) != 0; }
@@ -415,6 +421,7 @@ public class LambdaExp extends ScopeExp {
      * primMethods[0] is used if the argument count is min_args;
      * primMethods[1] is used if the argument count is min_args+1;
      * primMethods[primMethods.length-1] is used otherwise.
+     * If HAS_NONTRIVIAL_DEFAULT there is one extra.
      */
     Method[] primMethods;
     /** If in a ClassExp which isMakingClassPair, the static body methods.
@@ -433,6 +440,8 @@ public class LambdaExp extends ScopeExp {
         int length = primMethods.length;
         if (spliceCount > 0)
             return length == 1 ? primMethods[0] : null;
+        if (getFlag(HAS_NONTRIVIAL_DEFAULT))
+            length--;
         return primMethods[index < length ? index : length - 1];
     }
 
@@ -440,7 +449,8 @@ public class LambdaExp extends ScopeExp {
      * (The other methods are just stubs that call that method.) */
     public final Method getMainMethod() {
         Method[] methods = primBodyMethods;
-        return methods == null ? null : methods[methods.length-1];
+        return methods == null ? null
+            : methods[methods.length-(getFlag(HAS_NONTRIVIAL_DEFAULT)?2:1)];
     }
 
     /** Return the parameter type of the "keyword/rest" parameters. */
@@ -925,6 +935,9 @@ public class LambdaExp extends ScopeExp {
             || getFlag(HAS_NONTRIVIAL_PATTERN)) { simpleMatch = false; numStubs = 0; } // For simplicity - FIXME?
         boolean varArgs = max_args < 0 || min_args + numStubs < max_args;
 
+        boolean handleSuppliedArg = numStubs > 0 && getFlag(HAS_NONTRIVIAL_DEFAULT);
+        if (handleSuppliedArg)
+            numStubs++;
         Method[] methods = new Method[numStubs + 1];
         // We assume that for "pair" class methods that ClassExp.declareParts first
         // calls this method to create the interface method, and then calls us
@@ -1083,21 +1096,24 @@ public class LambdaExp extends ScopeExp {
             if (var != null && var.isThisParameter())
                 var = var.nextDecl();
             int argi = 0;
-            while (var != null) {
-                if (numStubs > 0 && argi >= min_args + i)
-                    break;
+            for (; var != null; var = var.nextDecl()) {
+                if (var.getFlag(Declaration.IS_SUPPLIED_PARAMETER)
+                    && ! var.getFlag(Declaration.IS_PARAMETER )
+                    && i < numStubs)
+                    continue;
                 if (var.getFlag(Declaration.IS_REST_PARAMETER)) {
                 Type lastType = var.getType();
                 String lastTypeName = lastType.getName();
                 if (! simpleMatch)
                     ;
-                else if (ctype.getClassfileVersion() >= ClassType.JDK_1_5_VERSION
-                    && lastType instanceof ArrayType)
+                else if (handleSuppliedArg && i == numStubs)
+                    nameBuf.append("$P");
+                else if (lastType instanceof ArrayType)
                     mflags |= Access.VARARGS;
                 else 
                     nameBuf.append("$V");
-                //argTypes.add(lastType);
-                }
+                } else if (numStubs > 0 && argi >= min_args + i)
+                    break;
             
                 if (var.parameterForMethod())
                     argTypes.add(var.getType().promoteIfUnsigned().getImplementationType());
@@ -1109,7 +1125,6 @@ public class LambdaExp extends ScopeExp {
                 encTypes.add(encType);
                 if (var.getFlag(Declaration.IS_PARAMETER))
                     argi++;
-                var = var.nextDecl();
             }
             if (ctxArg != 0)
                 argTypes.add(Compilation.typeCallContext);
@@ -1121,7 +1136,7 @@ public class LambdaExp extends ScopeExp {
                    || (outer instanceof ModuleExp
                        && (((ModuleExp) outer)
                            .getFlag(ModuleExp.SUPERTYPE_SPECIFIED))));
-            if (! simpleMatch) // ??? never happens - inlinedInCheckMethod
+            if (! simpleMatch)
                 nameBuf.append("$P");
             name = nameBuf.toString();
             Type[] atypes = argTypes.toArray(new Type[argTypes.size()]);
@@ -1493,10 +1508,10 @@ public class LambdaExp extends ScopeExp {
 
         long[] saveDeclFlags = null;
         if (numStubs > 0) {
-            saveDeclFlags = new long[min_args + numStubs];
+            saveDeclFlags = new long[countDecls()];
             int k = 0;
             for (Declaration decl = firstDecl();
-                 k < min_args + numStubs; decl = decl.nextDecl())
+                 decl != null; decl = decl.nextDecl())
                 saveDeclFlags[k++] = decl.flags;
         }
 
@@ -1519,30 +1534,51 @@ public class LambdaExp extends ScopeExp {
                     var = code.getArg(1);
                 }
                 decl = firstDecl();
-                for (int j = 0;  j < min_args + i;
+                int copied = min_args + i;
+                if (getFlag(HAS_NONTRIVIAL_DEFAULT)
+                    && i == numStubs-1
+                    && restArgType != null)
+                    copied++;
+                for (int j = 0;  j < copied;
                      j++, decl = decl.nextDecl()) {
                     decl.flags |= Declaration.IS_SIMPLE;
                     decl.var = var;
                     code.emitLoad(var);
                     var = var.nextVar();
+                    if (decl.getFlag(Declaration.IS_SUPPLIED_PARAMETER)) {
+                        code.emitPushInt(1);
+                        decl = decl.nextDecl();
+                    }
                 }
                 comp.callContextVar = ctxArg ? var : null;
-                int toCall = i + 1;
-                for (int j = i; j < toCall;  j++) {
-                    Target paramTarget = StackTarget.getInstance(decl.getType());
+                boolean suppliedFlags = getFlag(HAS_NONTRIVIAL_DEFAULT);
+                int toCall = suppliedFlags ? numStubs : i + 1;
+                for (int j = i; decl != null && j < toCall && ! decl.getFlag(Declaration.IS_REST_PARAMETER); ) {
                     Expression defaultArg = decl.getInitValue();
-                    defaultArg.compile(comp, paramTarget);
+                    if (decl.getFlag(Declaration.IS_SUPPLIED_PARAMETER)
+                        && ! (defaultArg instanceof QuoteExp)) {
+                        code.emitPushDefaultValue(decl.getType());
+                    } else {
+                        Target paramTarget =
+                            StackTarget.getInstance(decl.getType());
+                        defaultArg.compile(comp, paramTarget);
+                    }
+                    if (decl.getFlag(Declaration.IS_SUPPLIED_PARAMETER)) {
+                        code.emitPushInt(0);
+                        decl = decl.nextDecl();
+                    }
+                    decl = decl.nextDecl();
+                    j++;
                     // Minor optimization: Normally stub[i] calls stub[i+1],
                     // which calls stub[i+2] etc until we get to stub[numStubs].
                     // That way any given default argument expression is only
                     // compiled into a single stub.  However, if the default is a
                     // constant it makes sense to call stub[j] (where j>i+1) directly.
-                    decl = decl.nextDecl();
                     if (toCall < numStubs
                         && decl.getInitValue() instanceof QuoteExp)
                         toCall++;
                 }
-                boolean varArgs = toCall == numStubs && restArgType != null;
+                boolean varArgs = toCall == numStubs && i < opt_args && restArgType != null;
                 if (varArgs) {
                     Expression arg;
                     String lastTypeName = restArgType.getName();
@@ -1567,7 +1603,7 @@ public class LambdaExp extends ScopeExp {
                 if (saveDeclFlags != null) {
                     int k = 0;
                     for (Declaration decl = firstDecl();
-                         k < min_args + numStubs; decl = decl.nextDecl()) {
+                         decl != null; decl = decl.nextDecl()) {
                         decl.flags = saveDeclFlags[k++];
                         decl.var = null;
                     }
@@ -1575,6 +1611,29 @@ public class LambdaExp extends ScopeExp {
                 comp.method.initCode();
                 allocChildClasses(comp);
                 allocParameters(comp);
+                if (getFlag(HAS_NONTRIVIAL_DEFAULT)) {
+                    for (Declaration decl = firstDecl();
+                         decl != null; decl = decl.nextDecl()) {
+                        Expression defaultArg = decl.getInitValue();
+                        if (decl.getFlag(Declaration.IS_SUPPLIED_PARAMETER)) {
+                            Declaration supp = decl.nextDecl();
+                            if (! (defaultArg instanceof QuoteExp)) {
+                                CodeAttr code = comp.method.getCode();
+                                supp.load(null, 0, comp,
+                                          Target.pushValue(Type.booleanType));
+                                Label doneDefault = new Label(code);
+                                code.emitGotoIfIntNeZero(doneDefault);
+                                code.emitIfThen();
+                                Target paramTarget =
+                                    StackTarget.getInstance(decl.getType());
+                                defaultArg.compile(comp, paramTarget);
+                                decl.compileStore(comp);
+                                doneDefault.define(code);
+                            }
+                            decl = supp;
+                        }
+                    }
+                }
                 enterFunction(comp);
 
                 compileBody(comp);

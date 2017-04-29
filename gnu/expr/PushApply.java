@@ -268,13 +268,36 @@ public class PushApply extends ExpVisitor<Expression,Void>
         else if (! (exp instanceof ModuleExp))
         for (Declaration decl = exp.firstDecl();
              decl != null;  decl = decl.nextDecl()) {
-            if (decl.getFlag(Declaration.IS_SUPPLIED_PARAMETER|Declaration.SKIP_FOR_METHOD_PARAMETER|Declaration.PATTERN_NESTED)) {
+            if (decl.getFlag(Declaration.SKIP_FOR_METHOD_PARAMETER|Declaration.PATTERN_NESTED))
                 exp.setFlag(LambdaExp.HAS_NONTRIVIAL_PATTERN);
-                break;
-            }
+            if (decl.getFlag(Declaration.IS_SUPPLIED_PARAMETER))
+                exp.setFlag(LambdaExp.HAS_NONTRIVIAL_DEFAULT);
         }
         if (exp.getFlag(LambdaExp.HAS_NONTRIVIAL_PATTERN))
             exp.setFlag(LambdaExp.CANNOT_INLINE);
+        else if (exp.getFlag(LambdaExp.HAS_NONTRIVIAL_DEFAULT)) {
+            // If a default expression is non-literal, add a
+            // IS_SUPPLIED_PARAMETER argument.  This way non-trivial
+            // defaults only get compiled once, in the foo$P method.
+            // (This is handled differently if either HAS_NONTRIVIAL_PATTERN
+            // is set or HAS_NONTRIVIAL_DEFAULT is unset.)
+            int i = 0;
+            for (Declaration decl = exp.firstDecl();
+                 i < exp.min_args + exp.opt_args;
+                 decl = decl.nextDecl(), i++) {
+                if (decl.getFlag(Declaration.IS_SUPPLIED_PARAMETER))
+                    decl = decl.nextDecl();
+                else if (decl.getFlag(Declaration.IS_PARAMETER)
+                         && i >= exp.min_args) {
+                    Declaration suppliedDecl =
+                        new Declaration(null, Type.booleanType);
+                    exp.add(decl, suppliedDecl);
+                    decl.setFlag(Declaration.IS_SUPPLIED_PARAMETER);
+                    suppliedDecl.setFlag(Declaration.IS_SUPPLIED_PARAMETER);
+                    decl = suppliedDecl;
+                }
+            }
+        }
         CanFinishTracker oldTracker = canFinishTracker;
         CanFinishTracker newTracker = new CanFinishTracker();
         newTracker.outer = oldTracker;
