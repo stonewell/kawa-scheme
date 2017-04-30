@@ -1,4 +1,4 @@
-AC_INIT([kawa-bin],[2.3.1])
+AC_INIT([kawa-bin],[2.4])
 AM_INIT_AUTOMAKE([foreign])
 AM_MAINTAINER_MODE
 AC_CANONICAL_HOST

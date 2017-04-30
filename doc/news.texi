@@ -6,6 +6,14 @@ changes}.
 
 @c @subheading In Git repository (master branch) since last release
 
+@subheading Kawa 2.4 (April 30, 2017)
+
+@itemize
+@item
+Final 2.x release.
+Minor updates and fixes.
+@end itemize
+
 @subheading Kawa 2.3 (January 13, 2017)
 
 @itemize
