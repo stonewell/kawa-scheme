@@ -1,5 +1,7 @@
 2017-04-30  Per Bothner  <per@bothner.com>
 
+	* texinfo.tex: Use newer version.
+
 	* kawa.texi: Update for Java 8 now being the default.
 
 2017-04-26  Per Bothner  <per@bothner.com>
