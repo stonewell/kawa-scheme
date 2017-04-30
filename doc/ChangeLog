@@ -1,5 +1,7 @@
 2017-04-30  Per Bothner  <per@bothner.com>
 
+	* kawa.texi (Extended formals): Refactor to avoid texinfo.tex bug.
+
 	* texinfo.tex: Use newer version.
 
 	* kawa.texi: Update for Java 8 now being the default.

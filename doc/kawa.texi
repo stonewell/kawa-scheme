@@ -8883,10 +8883,10 @@ You can of course also use the extended format in a @ref{Definitions,@code{defin
 @end example
 @display
 @stxdef{formal-arguments}
-    @stxref{req-opt-args} (@stxref{rest-key-args} | @stxlit{.} @stxref{rest-arg})
+    @arbno{@stxref{required-or-guard}} [@stxlit{#!optional} @stxref{optional-arg} ...] (@stxref{rest-key-args} | @stxlit{.} @stxref{rest-arg})
 @end display
 @display
-@stxdef{req-opt-args} @arbno{(@stxref{required-arg}|@stxref{guard})} [@stxlit{#!optional} @stxref{optional-arg} ...]
+@stxdef{required-or-guard} @stxref{required-arg} |@stxref{guard}
 @stxdef{rest-key-args} [@stxlit{#!rest} @stxref{rest-arg}] [@stxlit{#!key} @stxref{key-arg} ...]
   | [@stxlit{#!key} @stxref{key-arg} ...] [@stxlit{#!rest} @stxref{rest-arg}]
 @stxdef{required-arg} @stxref{pattern} [@stxlit{::} @stxref{type}]
