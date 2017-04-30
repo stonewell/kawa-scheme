@@ -2,7 +2,6 @@ BEFORE Kawa 3.0
 
 - Make 2.4 release from master.
 - Merge invoke branch and set version number to 2.92
-- Make JAVA8 the default.
 - Get JavaFX script applications to work again.
 - Fix nested scan patterns.
 - Document scan patterns.
@@ -10,7 +9,7 @@ BEFORE Kawa 3.0
 - Go through Savannah and GitLab bugs.
 - Document in-http-server and in-servlet cond-expand options.
 - Update "Extended formal arguments list" documentation.
-- Fix awkward or missing errors for wrong argument with keyrs for rest.
+- Fix awkward or missing errors for wrong argument with keys for rest.
 
 A GRAB-BAG OF IDEAS AND THINGS TO DO, SOME QUITE OLD
 

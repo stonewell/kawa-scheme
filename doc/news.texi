@@ -7,6 +7,11 @@ changes}.
 @subheading In Git repository (invoke branch) since last release
 @itemize
 @item
+Binary release are now built for Java 8.
+The repository source code is now set up for Java 8.
+(Biulding fro Java 6 or 7 is still supported.
+Java 5 might also work, but not not been tested recently.)
+@item
 Most places where you could declare a new identifier
 binding have been generalized to accept @ref{Variables and Patterns,patterns},
 including literals and boolean @stxref{guard}s.
