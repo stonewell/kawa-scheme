@@ -304,20 +304,20 @@ public abstract class SimpleVector<E> extends AbstractSequence<E>
   }
 
     /* #ifdef JAVA8 */
-    // @Override
-    // public void forEach(java.util.function.Consumer<? super E> action) {
-    //     int len = size();
-    //     int index = 0;
-    //     while (len > 0) {
-    //         long result = getSegment(index);
-    //         int where = (int) result;
-    //         int size = (int) (result >> 32);
-    //         for (int i = 0; i < size; i++)
-    //             action.accept(getRaw(where+i));
-    //         len -= size;
-    //         index += size;
-    //     }
-    // }
+    @Override
+    public void forEach(java.util.function.Consumer<? super E> action) {
+        int len = size();
+        int index = 0;
+        while (len > 0) {
+            long result = getSegment(index);
+            int where = (int) result;
+            int size = (int) (result >> 32);
+            for (int i = 0; i < size; i++)
+                action.accept(getRaw(where+i));
+            len -= size;
+            index += size;
+        }
+    }
     /* #endif */
 
     public void fill(E value) {

@@ -263,11 +263,11 @@ public class PictureToSvg extends PictureVisitor {
                 javax.imageio.ImageIO.write(image, "png", bout);
                 byte[] imgbytes = bout.toByteArray();
                 /* #ifdef JAVA8 */
-                // String b64 = java.util.Base64.getEncoder()
-                //     .withoutPadding().encodeToString(imgbytes);
+                String b64 = java.util.Base64.getEncoder()
+                    .withoutPadding().encodeToString(imgbytes);
                 /* #else */
-                String b64 = javax.xml.bind.DatatypeConverter
-                    .printBase64Binary(imgbytes);
+                // String b64 = javax.xml.bind.DatatypeConverter
+                //     .printBase64Binary(imgbytes);
                 /* #endif */
                 out.startAttribute(xlinkTag("href"));
                 out.write("data:image/png;base64,");

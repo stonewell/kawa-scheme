@@ -297,11 +297,11 @@ public class Arithmetic
       case Arithmetic.ULONG_CODE:
           long lval = Arithmetic.asLong(number);
           /* #ifdef JAVA8 */
-          // return Long.toUnsignedString(lval, radix);
+          return Long.toUnsignedString(lval, radix);
           /* #else */
-          if (lval >= 0)
-              return Long.toString(lval, radix);
-          return IntNum.valueOfUnsigned(lval).toString(radix);
+          // if (lval >= 0)
+          //     return Long.toString(lval, radix);
+          // return IntNum.valueOfUnsigned(lval).toString(radix);
           /* #endif */
       case Arithmetic.BIGINTEGER_CODE:
         return Arithmetic.asBigInteger(number).toString(radix);

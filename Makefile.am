@@ -111,6 +111,8 @@ kawa-doc-$(VERSION).tar.gz:  doc/kawa.texi
 
 JLINE_VERSION_MAJOR=3
 
+DEFAULT_JAVA_VERSION = 8
+
 dist-kawa.jar: dist
 	srcdir=`(cd $(srcdir); /bin/pwd)` \
 	  && rm -rf tmpdir \
@@ -118,11 +120,11 @@ dist-kawa.jar: dist
 	  && cd tmpdir \
 	  && tar xzf ../$(distdir).tar.gz \
 	  && rm -f ./patch-source-list \
-	  && ./kawa-$(VERSION)/configure --with-java-source=7 \
+	  && ./kawa-$(VERSION)/configure --with-java-source=$(DEFAULT_JAVA_VERSION) \
 	    --with-domterm="@WITH_DOMTERM_ARG@" \
 	    --with-jline$(JLINE_VERSION_MAJOR)="@WITH_JLINE_PATH@" \
 	    --with-servlet=@WITH_SERVLET_ARG@ --with-javafx=@WITH_JAVAFX_ARG@ \
-	  && CLASSPATH=@conf_classpath@.$(CLASSPATH_SEPARATOR)$$CLASSPATH $(MAKE) all JAVAC="$(JAVAC) -source 7 -target 7" \
+	  && CLASSPATH=@conf_classpath@.$(CLASSPATH_SEPARATOR)$$CLASSPATH $(MAKE) all JAVAC="$(JAVAC) -source $(DEFAULT_JAVA_VERSION) -target $(DEFAULT_JAVA_VERSION)" \
 	  && mv lib/kawa.jar ../dist-kawa.jar \
 	  && cd .. && rm -rf tmpdir
 

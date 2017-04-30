@@ -135,9 +135,9 @@ public class Sequences {
         }
 
         /* #ifndef JAVA8 */
-        public void remove() {
-            throw new UnsupportedOperationException("remove");
-        }
+        // public void remove() {
+        //     throw new UnsupportedOperationException("remove");
+        // }
         /* #endif */
     }
 

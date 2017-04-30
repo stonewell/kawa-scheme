@@ -219,7 +219,7 @@ public class NodeType extends ObjectType implements TypeValue, NodePredicate, Ex
   }
 
     /* #ifndef JAVA8 */
-    public String encodeType(Language language) { return null; }
+    // public String encodeType(Language language) { return null; }
     /* #endif */
 
   public static final NodeType documentNodeTest =

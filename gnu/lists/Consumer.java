@@ -16,10 +16,10 @@ package gnu.lists;
 public interface Consumer
   extends Appendable
   /* #ifdef JAVA8 */
-  //         , java.util.function.Consumer<Object>,
-  //         java.util.function.IntConsumer,
-  //         java.util.function.LongConsumer,
-  //         java.util.function.DoubleConsumer
+          , java.util.function.Consumer<Object>,
+          java.util.function.IntConsumer,
+          java.util.function.LongConsumer,
+          java.util.function.DoubleConsumer
   /* #endif */
 {
   public void writeBoolean(boolean v);
@@ -61,9 +61,9 @@ public interface Consumer
   public Consumer append (CharSequence csq, int start, int end);
 
   /* #ifdef JAVA8 */
-  // default public void accept(Object t) { writeObject(t); }
-  // default public void accept(int t) { writeInt(t); }
-  // default public void accept(long t) { writeLong(t); }
-  // default public void accept(double t) { writeDouble(t); }
+  default public void accept(Object t) { writeObject(t); }
+  default public void accept(int t) { writeInt(t); }
+  default public void accept(long t) { writeLong(t); }
+  default public void accept(double t) { writeDouble(t); }
   /* #endif */
 }

@@ -8,7 +8,7 @@ import java.util.List;
 public interface IntSequence
     extends AVector<Integer>
             /* #ifdef JAVA8 */
-            // , java.util.function.IntUnaryOperator
+            , java.util.function.IntUnaryOperator
             /* #endif */
 {
     public int getInt(int index);
@@ -16,8 +16,8 @@ public interface IntSequence
     public int size();
 
     /* #ifdef JAVA8 */
-    // default int applyAsInt(int operand) {
-    //     return getInt(operand);
-    // }
+    default int applyAsInt(int operand) {
+        return getInt(operand);
+    }
     /* #endif */
 }

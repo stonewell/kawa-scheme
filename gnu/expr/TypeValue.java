@@ -51,8 +51,8 @@ public interface TypeValue extends java.lang.reflect.Type {
     public Expression convertValue (Expression value);
 
     /* #ifdef JAVA8 */
-    // default public String encodeType(Language language) { return null; }
+    default public String encodeType(Language language) { return null; }
     /* #else */
-    public String encodeType(Language language);
+    // public String encodeType(Language language);
     /* #endif */
 }

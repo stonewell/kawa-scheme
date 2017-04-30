@@ -215,10 +215,10 @@ public class Compilation implements SourceLocator
     // ClassType.JAVA_9_VERSION
     /* #else */
     /* #ifdef JAVA8 */
-    // ClassType.JDK_1_8_VERSION
+    ClassType.JDK_1_8_VERSION
     /* #else */
     /* #ifdef JAVA7 */
-    ClassType.JDK_1_7_VERSION
+    // ClassType.JDK_1_7_VERSION
     /* #else */
     /* #ifdef JAVA6 */
     // ClassType.JDK_1_6_VERSION
