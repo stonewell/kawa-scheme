@@ -1873,7 +1873,15 @@ public class Compilation implements SourceLocator
         apply_method = startClassInit();
     } else {
         Type[] arg_types = { typeCallContext };
-        apply_method = curClass.addMethod ("run", arg_types, Type.voidType,
+        ClassType sup = module.getSuperType();
+        Method srun = sup.getMethod("run", arg_types);
+        String mname = "run";
+        if (srun != null && ! srun.isAbstract()) {
+            Method srunx = sup.getMethod("$run$", arg_types);
+            if (srunx != null && srunx.isAbstract())
+                mname = "$run$";
+        }
+        apply_method = curClass.addMethod (mname, arg_types, Type.voidType,
                                            Access.PUBLIC+Access.FINAL);
         apply_method.initCode();
     }

@@ -1,3 +1,10 @@
+2017-04-30  Per Bothner  <per@bothner.com>
+
+	* Compilation.java (generateBytecode):Sometimes create "$run$" method..
+	If the super class defines a non-abstract "run" and an abstract "$run$"
+	generate the latter rather then the former for the body method. This is
+	useful for a superclass "wrapping" the run method, as used for JavaFX.
+
 2017-04-29  Per Bothner  <per@bothner.com>
 
 	Better compilation even if supplied-optional booleans are used.

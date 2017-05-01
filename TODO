@@ -1,8 +1,6 @@
 BEFORE Kawa 3.0
 
-- Make 2.4 release from master.
-- Merge invoke branch and set version number to 2.92
-- Get JavaFX script applications to work again.
+- Merge invoke branch and set version number to 2.93
 - Fix nested scan patterns.
 - Document scan patterns.
 - Finish SRFI-140.

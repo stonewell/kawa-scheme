@@ -54,7 +54,9 @@
   (title ::java.lang.String)
   (*stage* ::javafx.stage.Stage)
   ((run-scene)::void #!void)
-  ((run ctx::gnu.mapping.CallContext)::void #!abstract)
+  ((run ctx::gnu.mapping.CallContext)::void
+   (javafx.application.Application:launch ((this):getClass)))
+  (($run$ ctx::gnu.mapping.CallContext)::void #!abstract)
   ((run)::void
    (javafx.application.Application:launch ((this):getClass) @gnu.expr.ApplicationMainSupport:commandLineArgArray))
   ((runAsMain)::void
@@ -62,7 +64,7 @@
   ((start (stage ::javafx.stage.Stage))::void
    (set! *stage* stage)
    (let ((ctx (gnu.mapping.CallContext:getInstance)))
-     ((this):run ctx)
+     ((this):$run$ ctx)
      (ctx:runUntilDone))))
 
 (define-constant {gnu.kawa.reflect/ObjectBuilder}:javafx.animation.Timeline

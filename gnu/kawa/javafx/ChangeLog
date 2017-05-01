@@ -1,3 +1,8 @@
+2017-04-30  Per Bothner  <per@bothner.com>
+
+	* defs.scm: Change how 'start' method wraps module body.
+	This broke at some point in the invoke branch.
+
 2016-11-28  Per Bothner  <per@bothner.com>
 
 	* defs.scm: Add missing splice operators.
