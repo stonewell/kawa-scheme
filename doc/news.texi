@@ -133,6 +133,14 @@ to match the @uref{https://blogs.oracle.com/jrose/entry/symbolic_freedom_in_the_
 @c @subheading In Git repository (master branch) since last release
 @c @anchor{#in-git-repository-since-last-release}
 
+@subheading Kawa 2.4 (April 30, 2017)
+
+@itemize
+@item
+Final 2.x release.
+Minor updates and fixes.
+@end itemize
+
 @subheading Kawa 2.3 (January 13, 2017)
 
 @itemize
