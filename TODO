@@ -1,6 +1,5 @@
 BEFORE Kawa 3.0
 
-- Merge invoke branch and set version number to 2.93
 - Fix nested scan patterns.
 - Document scan patterns.
 - Finish SRFI-140.
