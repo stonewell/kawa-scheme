@@ -2,7 +2,6 @@ package gnu.kawa.reflect;
 import gnu.mapping.*;
 import gnu.bytecode.*;
 import gnu.expr.*;
-import gnu.lists.FString;
 import gnu.kawa.lispexpr.LangObjType;
 
 public class CompileReflect

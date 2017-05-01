@@ -90,8 +90,8 @@ public class CompileBuildObject {
                     if (builderDecl != null) {
                         builderDecl = Declaration.followAliases(builderDecl);
                         Object val = builderDecl.getValue().valueIfConstant();
-                        if (val instanceof String)
-                            builderName = (String) val;
+                        if (val instanceof CharSequence)
+                            builderName = val.toString();
                         if (val instanceof Class) {
                             builderClass = (Class) val;
                             builderName = builderClass.getName();

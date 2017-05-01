@@ -2,7 +2,6 @@ package gnu.kawa.reflect;
 import gnu.mapping.*;
 import gnu.expr.*;
 import gnu.bytecode.*;
-import gnu.lists.FString;
 import gnu.lists.FVector;
 import java.lang.reflect.Array;
 import gnu.kawa.lispexpr.ClassNamespace; // FIXME
@@ -76,7 +75,7 @@ public class Invoke extends Procedure
       arg = Type.make((Class) arg);
     if (arg instanceof ObjectType)
       return (ObjectType) arg;
-    if (arg instanceof String || arg instanceof FString)
+    if (arg instanceof CharSequence)
       return ClassType.make(arg.toString());
     if (arg instanceof Symbol)
       return ClassType.make(((Symbol) arg).getName());

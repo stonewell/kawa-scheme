@@ -3,7 +3,6 @@ import gnu.bytecode.*;
 import gnu.bytecode.ClassType;
 import gnu.mapping.*;
 import gnu.expr.*;
-import gnu.lists.FString;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -13,9 +12,9 @@ public class ClassMethods extends Procedure2
   static { classMethods.setName("class-methods"); }
 
   /** Create a method or generic of the matching methods.
-   * @param arg0 a Class, ClassType, or a String, FString or Symbol
+   * @param arg0 a Class, ClassType, or a CharSequence or Symbol
    *  that names a class.
-   * @param arg1 a method name (a String, FString, or Symbol)
+   * @param arg1 a method name (a CharSequence, or Symbol)
    * Loosely the same as GetNamedPart.make(arg0, arg1),
    * but with some extra conversions and checks.
    */
@@ -32,13 +31,11 @@ public class ClassMethods extends Procedure2
       arg0 = Type.make((Class) arg0);
     if (arg0 instanceof ClassType)
       dtype = (ClassType) arg0;
-    else if (arg0 instanceof String || arg0 instanceof FString
-	     || arg0 instanceof Symbol)
+    else if (arg0 instanceof CharSequence || arg0 instanceof Symbol)
       dtype = ClassType.make(arg0.toString());
     else
       throw new WrongType(thisProc, 0, null);
-    if (arg1 instanceof String || arg1 instanceof FString
-	|| arg1 instanceof Symbol)
+    if (arg1 instanceof CharSequence || arg1 instanceof Symbol)
       mname = arg1.toString();
     else
       throw new WrongType(thisProc, 1, null);
@@ -280,7 +277,7 @@ public class ClassMethods extends Procedure2
       {
         Object name = ((QuoteExp) exp).getValue();
 	String nam;
-        if (name instanceof FString || name instanceof String)
+        if (name instanceof CharSequence)
 	  nam = name.toString();
 	else if (name instanceof Symbol)
 	  nam = ((Symbol) name).getName();
@@ -302,7 +299,7 @@ public class ClassMethods extends Procedure2
     if (exp instanceof QuoteExp)
       {
         Object name = ((QuoteExp) exp).getValue();
-        if (name instanceof FString || name instanceof String)
+        if (name instanceof CharSequence)
 	  return name.toString();
 	else if (name instanceof Symbol)
 	  return ((Symbol) name).getName();
