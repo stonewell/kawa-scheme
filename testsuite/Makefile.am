@@ -635,7 +635,7 @@ check-bridge:
 	$(KAWA) $(OPTIONS) "$(srcdir)/bridge.scm"
 
 check-life-grid:
-	$(KAWA) $(srcdir)/life-grid.scm >& life-grid.log
+	$(KAWA) $(srcdir)/life-grid.scm > life-grid.log 2>&1
 	@if $(DIFF) $(srcdir)/life-grid.expected life-grid.log; \
 	  then echo '# check-life-grid passes'; \
 	  else echo FAIL check-life-grid passes; fi
