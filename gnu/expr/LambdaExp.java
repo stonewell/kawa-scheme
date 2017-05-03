@@ -1059,6 +1059,7 @@ public class LambdaExp extends ScopeExp {
                     }
                 }
                 if (type != null) {
+                    type = comp.getLanguage().getLangTypeFor(type);
                     if (param != null)
                         param.setType(type);
                     else

@@ -1,3 +1,8 @@
+2017-05-03  Per Bothner  <per@bothner.com>
+
+	* LambdaExp.java (addMethodFor): Add a getLangTypeFor call.
+	This was for unspecified but inherited parameter or result type.
+
 2017-04-30  Per Bothner  <per@bothner.com>
 
 	* Compilation.java (generateBytecode):Sometimes create "$run$" method..
