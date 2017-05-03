@@ -1,3 +1,8 @@
+2017-05-03  Per Bothner  <per@bothner.com>
+
+	* LispLanguage.java (getTypeFor): Add missing semicolon.
+	Was only a problem if JAVA7 wasn't selected.
+
 2017-02-03  Per Bothner  <per@bothner.com>
 
 	* LangObjType.java: (bitvectorType, c16vectorType): New static.

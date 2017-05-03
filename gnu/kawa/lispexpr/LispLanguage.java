@@ -343,7 +343,7 @@ public abstract class LispLanguage extends Language
         if (clas.isPrimitive())
             return getNamedType(name);
         if (clas.isArray())
-            return ArrayType.make(getTypeFor(clas.getComponentType()))
+            return ArrayType.make(getTypeFor(clas.getComponentType()));
         /* #ifdef JAVA7 */
         ; // FIXME - FUTURE: Use a switch with string keys.
         /* #endif */
