@@ -1,3 +1,7 @@
+2017-05-03  Per Bothner  <per@bothner.com>
+
+	* build.xml: Various fixes and updates.
+
 2017-04-30  Per Bothner  <per@bothner.com>
 
         * configure.in (AC_INIT): Set version to 2.93.

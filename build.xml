@@ -194,6 +194,10 @@
       <istrue value="${enable-xml}"/>
     </condition>
 
+    <condition property="preprocess-awt" value="+use:java.awt" else="-use:java.awt">
+      <istrue value="${with-awt}"/>
+    </condition>
+
     <condition property="preprocess-HttpServer" value="+use:com.sun.net.httpserver"
 	       else="-use:com.sun.net.httpserver">
       <available classname="com.sun.net.httpserver.HttpServer"/>
@@ -300,7 +304,7 @@
     </pathconvert>
     <java classname="gnu.kawa.util.PreProcess">
       <classpath location="${build.tools}"/>
-      <arg line="%java1 ${preprocess-xml} -use:com.sun.net.httpserver"/>
+      <arg line="%java1 ${preprocess-xml} ${preprocess-awt} -use:com.sun.net.httpserver"/>
       <arg line="${fileList}"/>
     </java>
   </target>
@@ -311,7 +315,7 @@
     </pathconvert>
     <java classname="gnu.kawa.util.PreProcess">
       <classpath location="${build.tools}"/>
-      <arg line="%java2 ${preprocess-xml} -use:com.sun.net.httpserver"/>
+      <arg line="%java2 ${preprocess-xml} ${preprocess-awt} -use:com.sun.net.httpserver"/>
       <arg line="${fileList}"/>
     </java>
   </target>
@@ -322,7 +326,7 @@
     </pathconvert>
     <java classname="gnu.kawa.util.PreProcess">
       <classpath location="${build.tools}"/>
-      <arg line="%java4 ${preprocess-xml} -use:com.sun.net.httpserver"/>
+      <arg line="%java4 ${preprocess-xml} ${preprocess-awt} -use:com.sun.net.httpserver"/>
       <arg line="${fileList}"/>
     </java>
   </target>
@@ -333,7 +337,7 @@
     </pathconvert>
     <java classname="gnu.kawa.util.PreProcess">
       <classpath location="${build.tools}"/>
-      <arg line="%java5 ${preprocess-xml} -use:com.sun.net.httpserver"/>
+      <arg line="%java5 ${preprocess-xml} ${preprocess-awt} -use:com.sun.net.httpserver"/>
       <arg line="${fileList}"/>
     </java>
   </target>
@@ -344,7 +348,7 @@
     </pathconvert>
     <java classname="gnu.kawa.util.PreProcess">
       <classpath location="${build.tools}"/>
-      <arg line="%java6 ${preprocess-xml} ${preprocess-HttpServer}"/>
+      <arg line="%java6 ${preprocess-xml} ${preprocess-awt} ${preprocess-HttpServer}"/>
       <arg line="${fileList}"/>
     </java>
   </target>
@@ -355,7 +359,7 @@
     </pathconvert>
     <java classname="gnu.kawa.util.PreProcess">
       <classpath location="${build.tools}"/>
-      <arg line="%android ${preprocess-xml} -use:com.sun.net.httpserver"/>
+      <arg line="%android ${preprocess-xml} ${preprocess-awt} -use:com.sun.net.httpserver"/>
       <arg line="${fileList}"/>
     </java>
   </target>
@@ -366,7 +370,7 @@
     </pathconvert>
     <java classname="gnu.kawa.util.PreProcess">
       <classpath location="${build.tools}"/>
-      <arg line="%java7 ${preprocess-xml} ${preprocess-HttpServer}"/>
+      <arg line="%java7 ${preprocess-xml} ${preprocess-awt} ${preprocess-HttpServer}"/>
       <arg line="${fileList}"/>
     </java>
   </target>
@@ -377,7 +381,7 @@
     </pathconvert>
     <java classname="gnu.kawa.util.PreProcess">
       <classpath location="${build.tools}"/>
-      <arg line="%java8 ${preprocess-xml} ${preprocess-HttpServer}"/>
+      <arg line="%java8 ${preprocess-xml} ${preprocess-awt} ${preprocess-HttpServer}"/>
       <arg line="${fileList}"/>
     </java>
   </target>
@@ -667,6 +671,7 @@
         <file name="characters.scm"/>
         <file name="keywords.scm"/>
         <file name="numbers.scm"/>
+        <file name="strings_syntax.scm"/>
         <file name="strings.scm"/>
         <file name="parameters.scm"/>
         <file name="parameterize.scm"/>
@@ -679,12 +684,14 @@
         <file name="bytevectors.scm"/>
         <file name="arrays.scm"/>
         <file name="system.scm"/>
-        <file name="kawa/pictures.scm"/>
+        <file name="kawa/istrings.scm"/>
+        <file name="kawa/mstrings.scm"/>
+        <file name="kawa/arglist.scm"/>
         <file name="kawa/process-keywords.scm"/>
         <file name="kawa/string-cursors.scm"/>
         <file name="kawa/hashtable.scm"/>
         <file name="kawa/regex.scm"/>
-        <file name="kawa/reflect.scm"/>
+        <file name="rnrs/unicode.scm"/>
         <file name="scheme/base.scm"/>
         <file name="scheme/case-lambda.scm"/>
         <file name="scheme/char.scm"/>
@@ -709,23 +716,33 @@
       <arg line="--warn-undefined-variable --warn-unknown-member --warn-as-error"/>
       <filelist dir="${src.dir}/kawa/lib">
         <file name="enums.scm"/>
-        <file name="kawa/quaternions.scm"/>
-        <file name="kawa/rotations.scm"/>
-        <file name="kawa/base.scm"/>
-        <file name="rnrs/hashtables.scm"/>
-        <file name="rnrs/lists.scm"/>
-        <file name="rnrs/arithmetic/bitwise.scm"/>
-        <file name="rnrs/unicode.scm"/>
-        <file name="rnrs/sorting.scm"/>
-        <file name="rnrs/programs.scm"/>
         <file name="srfi/8.scm"/>
         <file name="srfi/26.scm"/>
         <file name="srfi/95.scm"/>
+        <file name="strings_ext.scm"/>
+        <file name="rnrs/hashtables.scm"/>
+        <file name="rnrs/lists.scm"/>
+        <file name="rnrs/arithmetic/bitwise.scm"/>
+        <file name="rnrs/sorting.scm"/>
+        <file name="rnrs/programs.scm"/>
+        <file name="kawa/base.scm"/>
       </filelist>
       <fileset dir="${src.dir}/kawa/lib">
+        <include name="kawa/pictures.scm" if="${with-awt}"/>
         <include name="windows.scm" if="${with-swing}"/>
         <include name="kawa/swing.scm" if="${with-swing}"/>
       </fileset>
+    </kawac>
+    <kawac failonerror="true" destdir="${build.classes}"
+	   prefix="kawa.lib." modulestatic="run" language="scheme">
+      <arg line="--warn-undefined-variable --warn-unknown-member --warn-as-error"/>
+      <filelist dir="${src.dir}/kawa/lib">
+        <file name="kawa/quaternions.scm"/>
+        <file name="kawa/pprint.scm"/>
+        <file name="kawa/rotations.scm"/>
+        <file name="kawa/null-5.scm"/>
+        <file name="kawa/reflect.scm"/>
+      </filelist>
     </kawac>
   </target>
 
