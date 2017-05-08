@@ -1,3 +1,8 @@
+2017-05-08  Peter Lane <peter@peterlane.info>
+	    Per Bothner  <per@bothner.com>
+
+	* srfi1.scm (list=): Fix logic error by variable renaming.
+
 2017-04-20  Per Bothner  <per@bothner.com>
 
 	* srfi13.scm: Add export specifier.
