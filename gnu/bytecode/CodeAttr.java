@@ -1748,11 +1748,10 @@ public class CodeAttr extends Attribute implements AttrContainer
    * The value of <var>x</var> must already have been pushed. */
   public final void emitIfCompare1 (int opcode)
   {
-    IfState new_if = pushIfState();
     if (popType().promote() != Type.intType)
       throw new Error ("non-int type to emitIfCompare1");
     reserve(3);
-    emitTransfer (new_if.end_label, opcode);
+    emitTransfer(emitIfRaw(), opcode);
   }
 
   /** Compile start of conditional:  <tt>if (x != 0) ...</tt>.
@@ -1786,11 +1785,10 @@ public class CodeAttr extends Attribute implements AttrContainer
    * reference type. */
   public final void emitIfRefCompare1 (int opcode)
   {
-    IfState new_if = pushIfState();
     if (! (popType() instanceof ObjectType))
       throw new Error ("non-ref type to emitIfRefCompare1");
     reserve(3);
-    emitTransfer (new_if.end_label, opcode);
+    emitTransfer(emitIfRaw(), opcode);
   }  
   
   /** Compile start of conditional:  {@code if (x != null) ...}. */
@@ -1809,11 +1807,10 @@ public class CodeAttr extends Attribute implements AttrContainer
    * The value of x and y must already have been pushed. */
   public final void emitIfIntCompare(int opcode)
   {
-    IfState new_if = pushIfState();
     popType();
     popType();
     reserve(3);
-    emitTransfer(new_if.end_label, opcode);
+    emitTransfer(emitIfRaw(), opcode);
   }
 
   /* Compile start of a conditional:  {@code if (x < y) ...} */
@@ -1832,48 +1829,42 @@ public class CodeAttr extends Attribute implements AttrContainer
    * The values of x and y must already have been pushed. */
   public final void emitIfNEq ()
   {
-    IfState new_if = pushIfState();
-    emitGotoIfEq(new_if.end_label);
+    emitGotoIfEq(emitIfRaw());
   }
 
   /** Compile start of a conditional:  {@code if (x == y) ...}
    * The values of x and y must already have been pushed. */
   public final void emitIfEq ()
   {
-    IfState new_if = pushIfState();
-    emitGotoIfNE(new_if.end_label);
+    emitGotoIfNE(emitIfRaw());
   }
 
   /** Compile start of a conditional:  {@code if (x < y) ...}
    * The values of x and y must already have been pushed. */
   public final void emitIfLt ()
   {
-    IfState new_if = pushIfState();
-    emitGotoIfGe(new_if.end_label);
+    emitGotoIfGe(emitIfRaw());
   }
 
   /** Compile start of a conditional:  {@code if (x >= y) ...}
    * The values of x and y must already have been pushed. */
   public final void emitIfGe ()
   {
-    IfState new_if = pushIfState();
-    emitGotoIfLt(new_if.end_label);
+    emitGotoIfLt(emitIfRaw());
   }
 
   /** Compile start of a conditional:  {@code if (x > y) ...}
    * The values of x and y must already have been pushed. */
   public final void emitIfGt ()
   {
-    IfState new_if = pushIfState();
-    emitGotoIfLe(new_if.end_label);
+    emitGotoIfLe(emitIfRaw());
   }
 
   /** Compile start of a conditional:  {@code if (x <= y) ...}
    * The values of x and y must already have been pushed. */
   public final void emitIfLe ()
   {
-    IfState new_if = pushIfState();
-    emitGotoIfGt(new_if.end_label);
+    emitGotoIfGt(emitIfRaw());
   }
 
   /** Emit a 'ret' instruction.
@@ -1948,12 +1939,19 @@ public class CodeAttr extends Attribute implements AttrContainer
         if_stack.andThenSet = true;
     }
 
-    private IfState pushIfState() {
+    /** Start a new if/then/else block.
+     * The caller is responsible for evaluating the condition,
+     * and in the "false" case got the returned label.
+     * In the "true" case just continue inline.
+     * @return the else/end label to goto if the condition is false.
+     * A subsequent emitElse or emitFi defines the label.
+     */
+    public Label emitIfRaw() {
         if (if_stack!=null && if_stack.andThenSet) {
             if_stack.andThenSet = false;
-            return if_stack;
-        }
-        return new IfState(this);
+        } else
+            new IfState(this);
+        return if_stack.end_label;
     }
 
     public final void fixUnsigned(Type stackType) {
