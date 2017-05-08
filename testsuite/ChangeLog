@@ -1,3 +1,8 @@
+2017-05-08  Timo Myyrä <timo.myyra@wickedbsd.net>
+
+	* Makefile.am: Don't use --strip-trailing-c for diff.
+	It doesn't seem to be needed, and isn't available on OpenBSD.
+
 2017-05-03  Timo Myyrä <gitlab@mg.gitlab.com>
 
 	* Makefile.am: Avoid bash-specific syntax.

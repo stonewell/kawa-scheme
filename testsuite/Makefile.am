@@ -8,7 +8,7 @@ KAWA = ../bin/kawa.sh
 CPJAVA = CLASSPATH="..$(CLASSPATH_SEPARATOR)@conf_classpath@.$(CLASSPATH_SEPARATOR)$$CLASSPATH" $(JAVA)
 CPKAWA = CLASSPATH="@conf_classpath@.$(CLASSPATH_SEPARATOR)$$CLASSPATH" $(KAWA)
 KAWATEST = CLASSPATH=".$(CLASSPATH_SEPARATOR)$$CLASSPATH" $(KAWA) $(OPTIONS) -e '(load "testing.zip")'
-DIFF = diff --strip-trailing-cr
+DIFF = diff
 
 if ENABLE_SERVLET
 if ENABLE_XQUERY
