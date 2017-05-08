@@ -114,12 +114,6 @@
   (test-equal 3 (string-length str))
   (test-equal #\😂 (string-ref str 2)))
 
-(test-equal "cdefab" (xsubstring "abcdef" 2 8))
-(test-equal "efabcd" (xsubstring "abcdef" -2 4))
-(test-equal "abcabca" (xsubstring "abc" 0 7))
-(test-equal "y😂a😼xy" (xsubstring "a😼xy😂" 3 9))
-(test-equal "y😂a😼" (xsubstring "a😼xy😂" -2 2))
-
 (let ((str '()))
   (string-for-each (lambda (x y)
                      (set! str (cons (char->integer x) str))
@@ -134,70 +128,10 @@
                    str1 1 4)
   (test-equal '(128514 98 128572) (reverse str)))
 
-(define (translate-space-to-newline str::string)::string
-  (let ((result (make-string 0)))
-    (string-for-each
-     (lambda (ch)
-       (string-append! result
-                       (if (char=? ch #\Space) #\Newline ch)))
-     str)
-    result))
-(test-equal "ab\ncd\nx"
-            (translate-space-to-newline "ab cd x"))
-
 (let ((str (make-string 3 #\😂)))
   (test-equal 3 (string-length str))
   (test-equal 6 (str:length))
-  (string-replace! str 1 2 "abc")
-  (test-equal "😂abc😂" str)
-  (string-replace! str 5 5 str 3)
-  (test-equal "😂abc😂c😂" str)
-  (string-replace! str 0 2 "ABC" 1 2)
-  (test-equal "Bbc😂c😂" str)
-  (test-equal 6 (length str))
-  (test-equal #\c (str 2))
-  (test-equal #\x1f602 (str 3))
-  (test-equal #\c (str 4)))
-
-(test-equal "" (reverse-list->string '()))
-(test-equal "cba" (reverse-list->string '(#\a #\b #\c)))
-(test-equal "c😼b😂a" (reverse-list->string '(#\a #\😂 #\b #\😼 #\c)))
-
-(test-equal "" (string-concatenate '()))
-(test-equal "abcdef"
-            (string-concatenate '("" "a" "bcd" "" "ef" "" "")))
-
-(test-equal "" (string-concatenate-reverse '()))
-
-(test-equal "efbcda"
-            (string-concatenate-reverse
-             '("" "a" "bcd" "" "ef" "" "")))
-
-(test-equal "huh?"
-            (string-concatenate-reverse '() "huh?"))
-
-(test-equal "efbcdaxy"
-            (string-concatenate-reverse '("" "a" "bcd" "" "ef" "" "") "xy"))
-
-(test-equal "huh"
-            (string-concatenate-reverse '() "huh?" 3))
-
-(test-equal "efbcdax"
-            (string-concatenate-reverse
-             '("" "a" "bcd" "" "ef" "" "") "x" 1))
-
-(test-equal "foo bar baz" (string-join '("foo" "bar" "baz")))
-(test-equal "foobarbaz" (string-join '("foo" "bar" "baz") ""))
-(test-equal "foo:bar:baz" (string-join '("foo" "bar" "baz") ":"))
-(test-equal "foo:bar:baz:" (string-join '("foo" "bar" "baz") ":" 'suffix))
-(test-equal "" (string-join '() ":"))
-(test-equal "" (string-join '("") ":"))
-(test-equal "" (string-join '()  ":" 'infix))
-(test-error (string-join '()  ":" 'strict-infix))
-(test-equal "A" (string-join '("A")  ":" 'strict-infix))
-(test-equal "A:B" (string-join '("A" "B")  ":" 'strict-infix))
-(test-equal "" (string-join '()  ":" 'suffix))
-(test-equal ":" (string-join '("") ":" 'suffix))
+  (test-equal #\x1f602 (str 2)))
 
 (let ((str1 (string-copy "abcdef")))
   (test-equal "ef" (str1 [4 <:]))

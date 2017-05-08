@@ -1,3 +1,8 @@
+2017-05-08  Per Bothner  <per@bothner.com>
+
+	* strings-test.scm: Add/import some more SRFI-140 tests.
+	* text-test.scm: Remove duplicated tests.
+
 2017-05-08  Timo Myyrä <timo.myyra@wickedbsd.net>
 
 	* Makefile.am: Don't use --strip-trailing-c for diff.

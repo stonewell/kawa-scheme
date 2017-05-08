@@ -2375,6 +2375,19 @@
 (test-equal "xyzabxyzcdxyzxyzexyzfxyz"
               (string-join '("" "ab" "cd" "" "e" "f" "") "xyz" 'infix))
 
+(test-equal "foo bar baz" (string-join '("foo" "bar" "baz")))
+(test-equal "foobarbaz" (string-join '("foo" "bar" "baz") ""))
+(test-equal "foo:bar:baz" (string-join '("foo" "bar" "baz") ":"))
+(test-equal "foo:bar:baz:" (string-join '("foo" "bar" "baz") ":" 'suffix))
+(test-equal "" (string-join '() ":"))
+(test-equal "" (string-join '("") ":"))
+(test-equal "" (string-join '()  ":" 'infix))
+(test-error (string-join '()  ":" 'strict-infix))
+(test-equal "A" (string-join '("A")  ":" 'strict-infix))
+(test-equal "A:B" (string-join '("A" "B")  ":" 'strict-infix))
+(test-equal "" (string-join '()  ":" 'suffix))
+(test-equal ":" (string-join '("") ":" 'suffix))
+
 (test-equal 'horror
             (guard (exn (#t 'horror))
                    (string-join '() "" 'strict-infix)))
@@ -2614,6 +2627,10 @@
 (test-equal "ecdecdecde"
               (xsubstring "abcdef" -13 -3 2 5))
 
+(test-equal "cdefab" (xsubstring "abcdef" 2 8))
+(test-equal "efabcd" (xsubstring "abcdef" -2 4))
+(test-equal "abcabca" (xsubstring "abc" 0 7))
+
 (test-equal '() (string-split "" ""))
 
 (test-equal '("a" "b" "c") (string-split "abc" ""))
@@ -2822,5 +2839,40 @@
 
 (test-equal '("oo" "" "much" " ")
             (string-split "too  much  data" " " 'suffix 3 1 11))
+
+(define (translate-space-to-newline str::string)::string
+  (let ((result (make-string 0)))
+    (string-for-each
+     (lambda (ch)
+       (string-append! result
+                       (if (char=? ch #\Space) #\Newline ch)))
+     str)
+    result))
+(test-equal "ab\ncd\nx"
+            (translate-space-to-newline "ab cd x"))
+
+;; begin section with UTF-8 literals
+(cond-expand
+ (full-unicode
+  (let ((str (make-string 3 #\😂)))
+  (test-equal 3 (string-length str))
+ ;; (test-equal 6 (str:length))
+  (string-replace! str 1 2 "abc")
+  (test-equal "😂abc😂" str)
+  (string-replace! str 5 5 str 3)
+  (test-equal "😂abc😂c😂" str)
+  (string-replace! str 0 2 "ABC" 1 2)
+  (test-equal "Bbc😂c😂" str)
+  (test-equal 6 (length str))
+  (test-equal #\c (string-ref str 2))
+  (test-equal #\x1f602 (string-ref str 3))
+  (test-equal #\c (string-ref str 4)))
+
+  (test-equal "c😼b😂a" (reverse-list->string '(#\a #\😂 #\b #\😼 #\c)))
+
+  (test-equal "y😂a😼xy" (xsubstring "a😼xy😂" 3 9))
+  (test-equal "y😂a😼" (xsubstring "a😼xy😂" -2 2))
+))
+;; end section with UTF-8 literals
 
 (test-end)
