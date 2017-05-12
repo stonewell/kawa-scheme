@@ -1,3 +1,8 @@
+2017-05-12  Per Bothner  <per@bothner.com>
+
+	* vars-test.scm: New testsuite.
+	* Makefile.am (check-vars):  New rule.
+
 2017-05-08  Per Bothner  <per@bothner.com>
 
 	* strings-test.scm: Add/import some more SRFI-140 tests.

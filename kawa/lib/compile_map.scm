@@ -22,6 +22,9 @@
           ((? atype::gnu.bytecode.ArrayType stype)
            (let ((etype atype:componentType))
              (ArrayScanner comp: comp elementType: etype)))
+          ((? atype::gnu.kawa.reflect.MappedArrayType stype)
+           (let ((etype atype:componentType))
+             (ArrayScanner comp: comp elementType: etype for-pattern: #t)))
           ((stype:isSubtype (Type:make java.lang.CharSequence))
            (StringScanner comp: comp))
           ((and (stype:isSubtype (Type:make java.util.List))
@@ -250,12 +253,15 @@
 
 (define-simple-class ArrayScanner (ScanHelper)
   (elementType ::gnu.bytecode.Type)
+  (for-pattern ::boolean init: #f)
   (seqDecl ::Declaration)
   (idxDecl ::Declaration)
   (lenDecl ::Declaration)
   ((init arg)
    (let* ((arrayType (gnu.bytecode.ArrayType:make elementType))
-          (seqArg (visit-exp (apply-exp Convert:cast arrayType arg))))
+          (seqArg (visit-exp
+                   (if for-pattern arg
+                       (apply-exp Convert:cast arrayType arg)))))
      (set! seqDecl (comp:letVariable #!null arrayType seqArg))
      (seqDecl:setLocation arg)
      (set! idxDecl (comp:letVariable #!null int (->exp 0)))

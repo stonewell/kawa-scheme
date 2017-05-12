@@ -1,3 +1,7 @@
+2017-05-12  Per Bothner  <per@bothner.com>
+
+	* MappedArrayType.java: New class, extends ObjectType.
+
 2017-04-30  Per Bothner  <per@bothner.com>
 
 	* ClassMethods.java: Accept any CharSequence as a string.

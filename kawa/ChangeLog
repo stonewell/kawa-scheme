@@ -1,3 +1,7 @@
+2017-05-12  Per Bothner  <per@bothner.com>
+
+	* lang/BindDecl.java: Fix scan pattern (ellipsis) with type specifier.
+
 2017-04-19  Per Bothner  <per@bothner.com>
 
 	* kawa/Record.java (makeRecordType): Update mangling to symbolic.

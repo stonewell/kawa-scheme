@@ -54,7 +54,7 @@ check1:  check-num check-arr check-java-array check-lazy check-lib \
   check-nsieve check-pidigits check-regexdna check-revcomp \
   check-spectralnorm check-threadring
 check2:  check-scm check-r7rs check-misc check-mac check-obj check-polytype \
-  check-case
+  check-case check-vars
 
 check-run-test-scripts: $(BUILD_BEFORE_SCRIPTS_TO_RUN)
 	CLASSPATH=$(top_builddir):. $(JAVA) gnu.kawa.util.RunTestScript \
@@ -128,6 +128,9 @@ check-text:
 
 check-regex:
 	$(KAWA) $(OPTIONS) "$(srcdir)/regex-test.scm"
+
+check-vars:
+	$(KAWA) $(OPTIONS) "$(srcdir)/vars-test.scm"
 
 check-xml:
 	$(KAWA) $(OPTIONS) "$(srcdir)/xml-test.scm"

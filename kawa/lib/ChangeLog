@@ -1,3 +1,8 @@
+2017-05-12  Per Bothner  <per@bothner.com>
+
+	* compile_map.scm (scanner-for): Handle MappedArrayType.
+	This is used for scan patterns (ellipsis).
+
 2017-04-25  Per Bothner  <per@bothner.com>
 
 	* compile_misc.scm: Fix optimization of length for strings.

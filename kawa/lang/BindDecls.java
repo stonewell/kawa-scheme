@@ -12,6 +12,7 @@ import gnu.kawa.lispexpr.SeqSizeType;
 import gnu.kawa.lispexpr.LangObjType;
 import gnu.kawa.lispexpr.LangPrimType;
 import gnu.kawa.lispexpr.LispLanguage;
+import gnu.kawa.reflect.MappedArrayType;
 import gnu.mapping.Procedure;
 
 /** Methods for parsing patterns. */
@@ -185,6 +186,8 @@ public class BindDecls {
         if (decl != null) {
             decl.setScanNesting(scanNesting);
             if (type != null) {
+                while (--scanNesting >= 0)
+                    type = new MappedArrayType(type);
                 decl.setType(type);
                 decl.setFlag(Declaration.TYPE_SPECIFIED);
             }
@@ -218,8 +221,8 @@ public class BindDecls {
             boolean sawEllipsis = false;
             int curScanNesting = scanNesting;
             cdr = parsePatternNext(patpair, comp);
-            if (patpair.getCdr() instanceof Pair) {
-                Object nextCar = ((Pair) patpair.getCdr()).getCar();
+            if (cdr instanceof Pair) {
+                Object nextCar = ((Pair) cdr).getCar();
                 Object ellipsis = SyntaxRule.dots3Symbol;
                 if (SyntaxPattern.literalIdentifierEq(nextCar, null/*FIXME*/, ellipsis, null)) {
                     sawEllipsis = true;
@@ -227,7 +230,7 @@ public class BindDecls {
                     if (ellipsisCount > 0)
                         comp.error('e', "multiple '...' in pattern");
                     ellipsisCount++;
-                    cdr = ((Pair) patpair.getCdr()).getCdr();
+                    cdr = ((Pair) cdr).getCdr();
                 }
             }
             Expression init;

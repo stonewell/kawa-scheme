@@ -439,6 +439,7 @@ GNU_KAWA_REFLECT_JSOURCES = \
   gnu/kawa/reflect/Invoke.java \
   gnu/kawa/reflect/LazyType.java \
   gnu/kawa/reflect/MakeAnnotation.java \
+  gnu/kawa/reflect/MappedArrayType.java \
   gnu/kawa/reflect/MultValuesType.java \
   gnu/kawa/reflect/OccurrenceType.java \
   gnu/kawa/reflect/ProceduralProxy.java \
