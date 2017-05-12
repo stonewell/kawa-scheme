@@ -1,3 +1,9 @@
+2017-05-12  Per Bothner  <per@bothner.com>
+
+	* Declaration.java (ignorable): Remove strange test.
+	I'm not sure the motivation for checking isHandlingTailCalls;
+	it doesn't seem to be needed, and breaks new pattern code.
+
 2017-05-03  Per Bothner  <per@bothner.com>
 
 	* LambdaExp.java (addMethodFor): Add a getLangTypeFor call.

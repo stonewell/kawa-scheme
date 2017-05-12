@@ -839,7 +839,7 @@ public class Declaration
     if (value == null || ! (value instanceof LambdaExp))
       return false;
     LambdaExp lexp = (LambdaExp) value;
-    return ! lexp.isHandlingTailCalls() || lexp.getInlineOnly();
+    return lexp.getInlineOnly();
   }
 
   public boolean isStatic()
