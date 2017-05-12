@@ -48,10 +48,7 @@ public class MakeSplice extends Procedure1 {
     }
 
     public static int count(Object values) {
-        if (values instanceof CharSequence)
-            return Strings.sizeInCodePoints((CharSequence) values);
-        else
-            return Sequences.getSize(values);
+        return Sequences.getSize(values);
     }
 
     public static void copyTo(Object[] target, int start, int size,

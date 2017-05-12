@@ -1,3 +1,7 @@
+2017-05-12  Per Bothner  <per@bothner.com>
+
+	* MakeSplice.java (count); Simplify.
+
 2017-04-19  Per Bothner  <per@bothner.com>
 
 	Fix so functions like '=' throw exception on bad arguments.
