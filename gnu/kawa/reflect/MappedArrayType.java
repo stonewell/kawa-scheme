@@ -108,4 +108,8 @@ public class MappedArrayType extends ObjectType implements TypeValue {
                                Compilation comp, Target target) {
         InstanceOf.emitIsInstance(this, incoming, comp, target);
     };
+
+    /* #ifndef JAVA8 */
+    // public String encodeType(Language language) { return null; }
+    /* #endif */
 }
