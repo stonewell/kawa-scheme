@@ -34,7 +34,7 @@
    (if children
        (primitive-throw (java.lang.IllegalArgumentException "setting root after adding children")))
    (set! root r))
-  ((getChildren)::java.util.List
+  ((getChildren)::java.util.List access: 'private
    (cond ((not children)
           (if root
               (primitive-throw (java.lang.IllegalArgumentException "adding children after setting root")))
@@ -45,9 +45,7 @@
           (set! root #!null)
           (children:add n))
          (else
-           ((getChildren):add n)
-           (if (javafx.scene.Parent? n)
-               (set! root n)))))
+          ((getChildren):add n))))
   ((setNodes n::java.util.List)::void
    ((getChildren):addAll n))
   ((build)::javafx.scene.Scene
