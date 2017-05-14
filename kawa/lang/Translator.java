@@ -482,15 +482,30 @@ public class Translator extends Compilation
             LambdaExp dotsLambda = new LambdaExp();
             pushScanContext(dotsLambda);
             dotsLambda.body = rewrite_car(cdr_pair, false);
-            List<Expression> seqs = currentScanContext.sequences;
-            int nseqs = seqs.size();
-            Expression[] subargs = new Expression[nseqs + 1];
+            ScanContext scanContext = getScanContext();
+            LinkedHashMap<Declaration,Declaration> sdecls
+                = scanContext.decls;
+            int nseqs = sdecls.size();
+            ArrayList<Expression> scanExps = scanContext.scanExpressions;
+            int nexps = scanExps == null ? 0 : scanExps.size();
+            Expression[] subargs = new Expression[nseqs + nexps + 1];
             subargs[0] = dotsLambda;
-            for (int j = 0;  j < nseqs; j++)
-                subargs[j+1] = seqs.get(j);
+            popScanContext();
+            Iterator<Declaration> sit = sdecls.keySet().iterator();
+            int j = 1;
+            while (sit.hasNext()) {
+                Declaration sdecl = sit.next();
+                if (curScanNesting() > 0) {
+                    sdecl = getScanContext().addSeqDecl(sdecl);
+                }
+                ReferenceExp rexp = new ReferenceExp(sdecl);
+                subargs[j++] = rexp;
+            }
+            for (int k = 0; k < nexps; k++) {
+                subargs[j++] = scanExps.get(k);
+            }
             arg = new ApplyExp(Scheme.map, subargs);
             arg = new ApplyExp(MakeSplice.quoteInstance, arg);
-            popScanContext();
             cdr_cdr = ((Pair) cdr_cdr).getCdr();
             if (firstSpliceArg < 0)
                 firstSpliceArg = i + (applyFunction != null ? 1 : 0);
@@ -973,19 +988,17 @@ public class Translator extends Compilation
                 && nameToLookup==LispLanguage.lookup_sym)
                 decl = getNamedPartDecl;
             int scanNesting = decl == null ? 0 : decl.getScanNesting();
+            if (scanNesting > 0) {
+                if (scanNesting > curScanNesting())
+                    error('e', "using scan variable "+decl.getName()+" while not in scan context");
+                else {
+                    return new ReferenceExp
+                        (scanContextStack.get(scanNesting-1).addSeqDecl(decl));
+                }
+            }
             ReferenceExp rexp = new ReferenceExp (nameToLookup, decl);
             rexp.setContextDecl(cdecl);
             rexp.setLine(this);
-            if (scanNesting > 0) {
-                if (getScanContext() == null)
-                    error('e', "using scan variable "+decl.getName()+" while not in scan context");
-                else {
-                    Declaration paramDecl =
-                        currentScanContext.getLambda().addParameter(null);
-                    currentScanContext.addSeqExpression(rexp);
-                    return new ReferenceExp(paramDecl);
-                }
-            }
             if (function && separate)
                 rexp.setFlag(ReferenceExp.PREFER_BINDING2);
             return rexp;
@@ -2167,29 +2180,40 @@ public class Translator extends Compilation
         }
     }
 
-    private ScanContext currentScanContext;
+    Stack<ScanContext> scanContextStack = new Stack<ScanContext>();
 
-    public ScanContext getScanContext() { return currentScanContext; }
-    public void setScanContext(ScanContext ctx) { currentScanContext = ctx; }
+    public ScanContext getScanContext() { return scanContextStack.peek(); }
+    public int curScanNesting() { return scanContextStack.size(); }
+    public Stack<ScanContext> getScanContextStack() { return scanContextStack; }
 
     public void pushScanContext (LambdaExp lambda) {
         ScanContext newContext = new ScanContext();
-        newContext.outer = currentScanContext;
-        currentScanContext = newContext;
         newContext.lambda = lambda;
+        scanContextStack.push(newContext);
     }
     public void popScanContext() {
-        currentScanContext = currentScanContext.outer;
+        scanContextStack.pop();
     }
     public static class ScanContext {
-        ScanContext outer;
-        ArrayList<Expression> sequences = new ArrayList<Expression>();
+        LinkedHashMap<Declaration,Declaration> decls
+            = new LinkedHashMap<Declaration,Declaration>();
+        ArrayList<Expression> scanExpressions = null;
         LambdaExp lambda;
 
         public LambdaExp getLambda() { return lambda; }
 
-        public void addSeqExpression(Expression exp) {
-            sequences.add(exp);
+        public Declaration addSeqDecl(Declaration scanVar) {
+            Declaration param = decls.get(scanVar);
+            if (param == null) {
+                param = lambda.addParameter(null);
+                decls.put(scanVar, param);
+            }
+            return param;
+        }
+        public void addSeqExpression(Expression scanExp) {
+            if (scanExpressions == null)
+                scanExpressions = new ArrayList<Expression>();
+            scanExpressions.add(scanExp);
         }
     }
 }

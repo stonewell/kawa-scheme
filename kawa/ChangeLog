@@ -1,3 +1,9 @@
+2017-05-14  Per Bothner  <per@bothner.com>
+
+	* lang/Translator.java: Fix handling of nested ellipsis.
+	Also optimize to not use redundant parameters.
+	* standard/Scan.java (rewrite): Update accordingly.
+
 2017-05-12  Per Bothner  <per@bothner.com>
 
 	* lang/BindDecl.java: Fix scan pattern (ellipsis) with type specifier.

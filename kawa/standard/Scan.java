@@ -14,18 +14,17 @@ public class Scan extends Syntax {
     public Expression rewrite (Object obj, final Translator tr) {
         if (Translator.listLength(obj) != 1)
             return tr.syntaxError("'scan' requires a single argument");
-        Translator.ScanContext savedScanContext = tr.getScanContext();
-        if (savedScanContext == null)
+        if (tr.getScanContextStack().empty())
             return tr.syntaxError("'scan' not in a '...'- context");
+        Translator.ScanContext savedScanCtx = tr.getScanContextStack().pop();
         try {
-            tr.setScanContext(null);
             Expression scanExp = tr.rewrite_car((Pair) obj, false);
             Declaration paramDecl =
-                savedScanContext.getLambda().addParameter(null);
-            savedScanContext.addSeqExpression(scanExp);
+                savedScanCtx.getLambda().addParameter(null);
+            savedScanCtx.addSeqExpression(scanExp);
             return new ReferenceExp(paramDecl);
         } finally {
-            tr.setScanContext(savedScanContext);
+            tr.getScanContextStack().push(savedScanCtx);
         }
     }
 }
