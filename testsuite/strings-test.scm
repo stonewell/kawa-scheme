@@ -2840,12 +2840,12 @@
 (test-equal '("oo" "" "much" " ")
             (string-split "too  much  data" " " 'suffix 3 1 11))
 
-(define (translate-space-to-newline str::string)::string
+(define (translate-space-to-newline str)
   (let ((result (make-string 0)))
     (string-for-each
      (lambda (ch)
        (string-append! result
-                       (if (char=? ch #\Space) #\Newline ch)))
+                       (if (char=? ch #\space) #\newline ch)))
      str)
     result))
 (test-equal "ab\ncd\nx"
@@ -2863,7 +2863,7 @@
   (test-equal "😂abc😂c😂" str)
   (string-replace! str 0 2 "ABC" 1 2)
   (test-equal "Bbc😂c😂" str)
-  (test-equal 6 (length str))
+  (test-equal 6 (string-length str))
   (test-equal #\c (string-ref str 2))
   (test-equal #\x1f602 (string-ref str 3))
   (test-equal #\c (string-ref str 4)))
