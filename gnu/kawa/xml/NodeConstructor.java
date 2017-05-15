@@ -128,6 +128,8 @@ implements Inlineable
     return KNode.make((NodeTree) filter.out);
   }
 
+    public boolean isSideEffectFree() { return true; }
+
   public void compile (ApplyExp exp, Compilation comp, Target target)
   {
     if (target instanceof IgnoreTarget)

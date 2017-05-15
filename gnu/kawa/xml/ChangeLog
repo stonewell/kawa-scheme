@@ -1,3 +1,8 @@
+2017-05-15  Per Bothner  <per@bothner.com>
+
+	* NodeConstructor.java (isSideEffectFree): New method.
+	Fixes bug reported by Damien MATTEI <damien.mattei@oca.eu>,
+
 2016-11-28  Per Bothner  <per@bothner.com>
 
 	* XDataType.java (cast): Allow casting from CharSequence,
