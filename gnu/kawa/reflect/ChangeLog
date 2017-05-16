@@ -1,3 +1,7 @@
+2017-05-16  Per Bothner  <per@bothner.com>
+
+	* MappedArrayType.java (emitTestIf): Handle non-TypeValue element types.
+
 2017-05-12  Per Bothner  <per@bothner.com>
 
 	* MappedArrayType.java: New class, extends ObjectType.

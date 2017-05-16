@@ -1,3 +1,7 @@
+2017-05-16  Per Bothner  <per@bothner.com>
+
+	* vars-test.scm: Test scan pattern with primitive type specifier.
+
 2017-05-14  Jim Rees <jimreesma@gmail.com>
 
 	* strings-tests.scm: Some portability fixes.

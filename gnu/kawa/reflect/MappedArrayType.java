@@ -65,12 +65,16 @@ public class MappedArrayType extends ObjectType implements TypeValue {
         code.emitIfIntNotZero();
         code.emitLoad(iteratorVar);
         code.emitInvoke(iteratorClass.getDeclaredMethod("next", 0));
+        code.emitStore(incomingElementVar);
         if (elementType instanceof TypeValue) {
-            code.emitStore(incomingElementVar);
             ((TypeValue) elementType).emitTestIf(incomingElementVar, elementDecl, comp);
         } else {
+            code.emitLoad(incomingElementVar);
             elementType.emitIsInstance(code);
-
+            code.emitIfIntNotZero();
+            code.emitLoad(incomingElementVar);
+            elementType.emitCoerceFromObject(code);
+            code.emitStore(elementVar);
         }
         code.emitLoad(arrayVar);
         code.emitLoad(indexVar);

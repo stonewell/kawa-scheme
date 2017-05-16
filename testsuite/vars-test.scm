@@ -1,4 +1,4 @@
-(test-begin "variables-and-patterns" 6)
+(test-begin "variables-and-patterns" 10)
 
 (let ((foo (lambda ([x::integer ...]) (+ x ...))))
   (test-equal 9 (foo [2 3 4]))
@@ -6,6 +6,13 @@
   (test-equal 6 (foo (list 4 2)))
   (test-error #t
               (display (foo [3 4.5 8]))))
+
+(let ((foo (lambda ([x::long ...]) (+ x ...))))
+  (test-equal 9 (foo [2 3 4]))
+  (test-equal 0 (foo []))
+  (test-equal 6 (foo (list 4 2)))
+  (test-error #t
+              (display (foo [3 "4" 8]))))
 
 (let ((fun (lambda ([[x ...] ...] [y ...])
              [[(+ x y) ...] ...])))
