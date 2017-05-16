@@ -1210,10 +1210,6 @@ public class Compilation implements SourceLocator
         Method primMethod = lexp.getMainMethod();
         if (! lexp.inlinedInCheckMethod())
             curClass = primMethod.getDeclaringClass();
-	/* if not using MethodHandles:
-	if (! (curClass.getSuperclass().isSubtype(typeModuleBody)))
-	    curClass = moduleClass;
-	*/
 	Variable callContextSave = callContextVar;
         String primName = lexp.getMethodName(this);
         String checkName = primName  + "$check";
@@ -1221,7 +1217,7 @@ public class Compilation implements SourceLocator
 
         int mcount = 0;
         while (curClass.getDeclaredMethod(checkName, checkArgs) != null) {
-            checkName = primMethod.getName() + "$" + (++mcount) + "$check";
+            checkName = primName + "$" + (++mcount) + "$check";
         }
         Method checkMethod =
             curClass.addMethod(checkName, Access.PUBLIC|Access.STATIC,
