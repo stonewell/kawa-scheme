@@ -205,7 +205,10 @@ public class ApplyToArgs extends ProcedureN
               }
             */
         }
-        ctx.matchError(MethodProc.NO_MATCH_BAD_TYPE|1);
+        if (ctx.throwOnException())
+            throw new WrongType(ctx.proc, 1, arg0, "procedure, sequence, or other operator");
+        else
+            ctx.matchError(MethodProc.NO_MATCH_BAD_TYPE|1);
         return ctx;
     }
 

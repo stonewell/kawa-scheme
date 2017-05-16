@@ -147,7 +147,7 @@ public class CallContext // implements Runnable
 
     public void matchError(int code) {
         //new Error("matchError mp:"+proc+" code:"+Integer.toHexString(code)+" st:"+Integer.toHexString(matchState)).printStackTrace();
-        if (matchState == MATCH_THROW_ON_EXCEPTION) {
+        if (throwOnException()) {
             int arg = (short) code;
             code &= 0xffff0000;
             if (code == MethodProc.NO_MATCH_TOO_FEW_ARGS
@@ -190,6 +190,10 @@ public class CallContext // implements Runnable
 	}
         if (matchState == MATCH_CHECK || matchState == MATCH_CHECK_ONLY)
             matchState = code;
+    }
+
+    public boolean throwOnException() {
+        return matchState == MATCH_THROW_ON_EXCEPTION;
     }
 
     public boolean haveArg() {

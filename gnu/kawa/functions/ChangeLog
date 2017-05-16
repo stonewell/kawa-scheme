@@ -1,3 +1,8 @@
+2017-05-16  Per Bothner  <per@bothner.com>
+
+	* ApplyToArgs.java (applyRest): Better exception reporting.
+	More helpful WrongType message if operator is invalid.
+
 2017-05-12  Per Bothner  <per@bothner.com>
 
 	* MakeSplice.java (count); Simplify.

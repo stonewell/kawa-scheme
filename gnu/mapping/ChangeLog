@@ -1,3 +1,7 @@
+2017-05-16  Per Bothner  <per@bothner.com>
+
+	* CallContext.java (throwOnException): New method.
+
 2017-04-20  Per Bothner  <per@bothner.com>
 
 	* Procedure.java (inlineIfConstantSymbol): New constant.
