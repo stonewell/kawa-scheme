@@ -404,15 +404,6 @@ public class LangPrimType extends PrimType implements TypeValue {
                                   .getDeclaredMethod("checkStringCursor", 1));
         } else {
             emitTestIfNumber(incoming, decl, getImplementationType(), comp);
-            /*
-            Type.javalangNumberType.emitIsInstance(code);
-            code.emitIfIntNotZero();
-            if (decl != null) {
-                code.emitLoad(incoming);
-                super.emitCoerceFromObject(code);
-                decl.compileStore(comp);
-            }
-            */
             return;
         }
         if (decl != null) {
