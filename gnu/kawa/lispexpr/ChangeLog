@@ -1,3 +1,8 @@
+2017-05-23  Per Bothner  <per@bothner.com>
+
+	* ReaderXmlElement.java (readElementConstructor): Better error recovery.
+	Skip past malformed or unquoted atribute values.
+
 2017-05-03  Per Bothner  <per@bothner.com>
 
 	* LispLanguage.java (getTypeFor): Add missing semicolon.
