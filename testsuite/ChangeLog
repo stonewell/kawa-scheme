@@ -1,3 +1,8 @@
+2017-05-23  Per Bothner  <per@bothner.com>
+
+	* nesting-1.scm: New test for object form with statis link.
+	Simplified from an Android test case from Peter <craven@gmx.net>.
+
 2017-05-16  Per Bothner  <per@bothner.com>
 
 	* vars-test.scm: Test scan pattern with primitive type specifier.

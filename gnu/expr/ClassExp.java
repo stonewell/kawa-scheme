@@ -530,10 +530,11 @@ public class ClassExp extends LambdaExp
                 child.allocParameters(comp);
                 if ("*init*".equals(child.getName())) {
                     code = comp.getCode();
-
                     if (staticLinkField != null) {
                         code.emitPushThis();
-                        code.emitLoad(code.getCurrentScope().getVariable(1));
+                        Variable var = code.getArg(1);
+                        var.allocateLocal(code);
+                        code.emitLoad(var);
                         code.emitPutField(staticLinkField);
                     }
 
