@@ -1557,7 +1557,6 @@ public class Compilation implements SourceLocator
 	Variable ctxVar = callContextVar;
         if (lexp.inlinedInCheckMethod()) {
             lexp.compileBody(this);
-            lexp.compileEnd(this);
         } else {
             if (lexp.getNeedsClosureEnv() || ! primMethod.getStaticFlag()) {
                 ClassType mtype =
@@ -1908,7 +1907,6 @@ public class Compilation implements SourceLocator
             fswitch.addCase(0, code);
         }
         module.compileBody(this);
-        module.compileEnd(this);
     }
 
 

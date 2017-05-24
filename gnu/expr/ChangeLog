@@ -1,5 +1,16 @@
 2017-05-23  Per Bothner  <per@bothner.com>
 
+	Fix save/restore of callContextVar, used for CallContext in a method.
+	* LambdaExp.java (compileBody): Specifically restore *after* calling
+	compileEnd, since the latters calls compileAsInlined on pending inlines.
+	To do that, compileEnd needs to be inlined into compileEnd,
+	and (most) calls to compileEnd becomes redundant.
+	(compileAsMethod): Don't call compileEnd, now called by compileBody.
+	* ClassExp.java (compileMembers): Likewise.
+	* Compilation.java (generateBytecode, generateCheckCall): Likewise.
+	* CaseExp.java (compile): Save/restore callContextVar.
+	* TryExp.java (compile): Likewise.
+
 	* ClassExp.java (comp[ileMembers): Call allocateLocal for static link.
 	This applies to a construtor call.
 

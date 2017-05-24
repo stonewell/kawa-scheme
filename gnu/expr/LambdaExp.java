@@ -798,7 +798,6 @@ public class LambdaExp extends ScopeExp {
             enterFunction(comp);
 
             compileBody(comp);
-            compileEnd(comp);
             comp.curLambda = saveLambda;
             func_end.define(code);
             code.restoreStackTypeState(stackTypes);
@@ -1638,7 +1637,6 @@ public class LambdaExp extends ScopeExp {
                 enterFunction(comp);
 
                 compileBody(comp);
-                compileEnd(comp);
             }
         }
 
@@ -1663,6 +1661,7 @@ public class LambdaExp extends ScopeExp {
         body.compileWithPosition(comp, target,
                                  body.getLineNumber() > 0 ? body : this);
         comp.current_scope = savedScope;
+        compileEnd(comp);
         comp.callContextVar = callContextSave;
     }
 

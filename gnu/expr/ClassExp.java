@@ -554,7 +554,6 @@ public class ClassExp extends LambdaExp
                 }
                 child.enterFunction(comp);
                 child.compileBody(comp);
-                child.compileEnd(comp);
 
                 // Check to see if child overrides a superclass method and has
                 // a covariant return type. If so, generate a bridge method

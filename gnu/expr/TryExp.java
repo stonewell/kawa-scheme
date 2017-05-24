@@ -91,7 +91,9 @@ public class TryExp extends Expression
     CatchClause catch_clause = catch_clauses;
     for (; catch_clause != null;  catch_clause = catch_clause.getNext())
       {
+        Variable callContextSave = comp.callContextVar;
 	catch_clause.compile(comp, ttarg);
+        comp.callContextVar = callContextSave;
       }
 
     if (finally_clause != null)
