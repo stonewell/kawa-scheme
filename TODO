@@ -2,11 +2,12 @@ BEFORE Kawa 3.0
 
 - Fix nested scan patterns.
 - Document scan patterns.
-- Finish SRFI-140.
 - Go through Savannah and GitLab bugs.
 - Document in-http-server and in-servlet cond-expand options.
 - Update "Extended formal arguments list" documentation.
 - Fix awkward or missing errors for wrong argument with keys for rest.
+- Fix Damien MATTEI "xml literals" problem.  The problem is the isSimple call
+    in ApplyExp#inlineCompile is too conservative for MakeElement, which handles attributes.
 
 A GRAB-BAG OF IDEAS AND THINGS TO DO, SOME QUITE OLD
 
