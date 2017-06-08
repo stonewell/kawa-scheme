@@ -28,7 +28,7 @@
  quasiquote quasisyntax quote quotient regex remainder report-syntax-error
  s8vector s16vector s32vector s64vector
  symbol-read-case
- syntax->expression syntax-body->expression
+ syntax->expression syntax-pair->expression syntax-body->expression
  sequence set! setter slot-ref slot-set! static-field string
  syntax syntax-case syntax-error syntax-rules
  this truncate-quotient truncate-remainder
@@ -252,6 +252,11 @@
     ((syntax->expression x)
      (kawa.lang.SyntaxForms:rewrite x))))
 
+(%define-syntax syntax-pair->expression
+  (syntax-rules ()
+    ((syntax->expression x)
+     (kawa.lang.SyntaxForms:rewriteCar x))))
+
 (%define-syntax syntax-body->expression
   (syntax-rules ()
     ((syntax-body->expression x)
@@ -261,7 +266,7 @@
  (lambda (x)
    (syntax-case x (? :: and)
     ((_ k then)
-     (gnu.expr.ExitExp (syntax->expression #'then) #'k))
+     (gnu.expr.ExitExp (syntax-pair->expression #'(then)) #'k))
     ((_ k then test1 . rest)
      #`(if test1
          (%if-and-x k then . rest))))))
@@ -275,7 +280,7 @@
              (bl:setBody
               (gnu.expr.BeginExp
                (syntax->expression #`(%if-and-x #,bl then . tests))
-               (syntax->expression #`else)))
+               (syntax-pair->expression #'(else))))
              bl))
       ((_ (? . rest) then)
        #'(if (? . rest) then #!void))
@@ -293,14 +298,14 @@
           (lambda (unused) else)))
       ((_ test then)
        (make <gnu.expr.IfExp>
-         (syntax->expression (syntax test))
-         (syntax->expression (syntax then))
+         (syntax-pair->expression #'(test))
+         (syntax-pair->expression #'(then))
          #!null))
       ((_ test then else)
        (make <gnu.expr.IfExp>
-         (syntax->expression (syntax test))
-         (syntax->expression (syntax then))
-         (syntax->expression (syntax else))))
+         (syntax-pair->expression #'(test))
+         (syntax-pair->expression #'(then))
+         (syntax-pair->expression #'(else))))
       ((_ e1 e2 e3 . rest)
        (report-syntax-error #'rest
                             "too many expressions for 'if'"))
@@ -311,11 +316,13 @@
 (define-rewrite-syntax try-catch
   (lambda (x)
     (syntax-case x ()
-		 ((_ try-part (var type . catch-body) ...)
+      ((_ . try-rest)
+       (syntax-case (syntax try-rest) ()
+		 ((try-part (var type . catch-body) ...)
 		  (invoke-static <kawa.standard.try_catch> 'rewrite
-				 (syntax try-part)
+				 (syntax try-rest)
 				 (syntax
-				  #((((var :: type)) . catch-body) ...)))))))
+				  #((((var :: type)) . catch-body) ...)))))))))
 
 (%define-syntax letrec
   (lambda (form)

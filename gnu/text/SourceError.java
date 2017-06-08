@@ -5,7 +5,7 @@ import java.io.File;
 /** Represents an error message from processing a "source" file.
  */
 
-public class SourceError implements SourceLocator
+public class SourceError extends SourceLocator.Simple
 // FIXME: If JAVA6, should implement: javax.tools.Diagnostic<Path>
 {
     /** Used to chain to the "next" message. */
@@ -15,20 +15,8 @@ public class SourceError implements SourceLocator
      * 'w' (for warning), 'e' (for error), or 'f' (for fatal error). */
     public char severity;
 
-    /** The name or URL of the file containing the error. */
-    public String filename;
-
     /** If non-null, an error code, as might be specified by a standard. */
     public String code;
-
-    /** The line number of the error, with 1 being the top line.
-     * The value 0 means unknown or not applicable (such as the entire file). */
-    /** The (1-origin) location of the error. */
-    public int line;
-
-    /** The column number of the error, with 1 being the left-most column.
-     * The value 0 means unknown or not applicable (such as the entire line). */
-    public int column;
 
     /** The actual error message.
      * This is post-localization and -formatting.
@@ -44,8 +32,7 @@ public class SourceError implements SourceLocator
                        String message) {
         this.severity = severity;
         this.filename = filename;
-        this.line = line;
-        this.column = column;
+        this.position = SourceMapper.simpleEncode(line, column);
         this.message = message;
     }
 
@@ -58,10 +45,12 @@ public class SourceError implements SourceLocator
      * a <code>InPort</code>. */
     public SourceError(InPort port, char severity, String message) {
         this(severity, port.getName(),
-             port.getLineNumber() + 1, port.getColumnNumber(),
+             adjustFromPort(port.getLineNumber()),
+             adjustFromPort(port.getColumnNumber()),
              message);
-        if (column >= 0)
-            column++;
+    }
+    private static int adjustFromPort(int portPosition) {
+        return portPosition >= 0 ? portPosition + 1 : portPosition;
     }
 
     /** Convert the error to a String.
@@ -92,6 +81,8 @@ public class SourceError implements SourceLocator
                     fname = new File(fname).getName();
             }
             out.append(fname);
+            int line = getStartLine();
+            int column = getStartColumn();
             if (line > 0 || column > 0) {
                 out.append(':');
                 out.append(Integer.toString(line));
@@ -99,6 +90,7 @@ public class SourceError implements SourceLocator
                     out.append(':');
                     out.append(Integer.toString(column));
                 }
+                // FIXME show end position if non-empty
             }
             out.append(": ");
             if (severity == 'w')
@@ -135,11 +127,4 @@ public class SourceError implements SourceLocator
         appendTo(out, stripDirectories,
                  System.getProperty("line.separator", "\n"));
     }
-
-    public int getLineNumber () { return line == 0 ? -1 : line; }
-    public int getColumnNumber () { return column == 0 ? -1 : column; }
-    public String getPublicId() { return null; }
-    public String getSystemId() { return filename; }
-    public String getFileName() { return filename; }
-    public boolean isStableSourceLocation() { return true; }
 }

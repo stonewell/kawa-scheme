@@ -2,5 +2,5 @@
 (let ((abc 3)
       (abc 4))
   (list abc))
-;; Diagnostic: errors1.scm:3:7: duplicate declaration of 'abc'
-;; Diagnostic: errors1.scm:2:7: (this is the previous declaration of 'abc')
+;; Diagnostic: errors1.scm:3:8: duplicate declaration of 'abc'
+;; Diagnostic: errors1.scm:2:8: (this is the previous declaration of 'abc')

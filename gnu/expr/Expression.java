@@ -4,6 +4,7 @@ import gnu.bytecode.Type;
 import gnu.mapping.*;
 import gnu.kawa.format.Printable;
 import gnu.text.SourceLocator;
+import gnu.text.SourceMapper;
 import gnu.lists.Consumer;
 import java.io.PrintWriter;
 import gnu.kawa.io.CharArrayOutPort;
@@ -25,6 +26,9 @@ import java.lang.invoke.MethodHandle;
 public abstract class Expression extends Procedure
   implements Printable, SourceLocator
 {
+    String filename; // Future: union(String,SourceMapper)
+    long position; // See SourceMapper#simpleEncode
+
     public Expression() {
         super(true, applyMethodExpression);
     }
@@ -121,6 +125,20 @@ public abstract class Expression extends Procedure
 	    out.print(':');
 	    out.print(column);
 	  }
+        int endline = getEndLine();
+        int endcolumn = getEndColumn();
+        if (endline == line && column > 0
+            && endcolumn > 0 && endcolumn != column) {
+            out.print('-');
+	    out.print(endcolumn);
+        } else if (endline > 0 && (endline != line || endcolumn != column)) {
+            out.print('-');
+	    out.print(endline);
+            if (column > 0 || endcolumn > 0) {
+                out.print(':');
+                out.print(endcolumn);
+            }
+        }
 	out.writeSpaceFill();
       }
   }
@@ -143,16 +161,14 @@ public abstract class Expression extends Procedure
         int line = position.getLineNumber ();
         if (line > 0) {
             code.putLineNumber(position.getFileName(), line);
-            String saveFilename = comp.getFileName();
-            int saveLine = comp.getLineNumber();
-            int saveColumn = comp.getColumnNumber();
-            comp.setLine(position);
+            gnu.text.SourceMessages messages = comp.getMessages();
+            SourceLocator saveLoc = messages.swapSourceLocator(this);
             compile(comp, target);
             // This might logically belong in a `finally' clause. It is
             // intentionally not so, so that if there is an internal error
             // causing an exception, we get the line number where the
             // exception was thrown.
-            comp.setLine(saveFilename, saveLine, saveColumn);
+            messages.swapSourceLocator(saveLoc);
         } else
             compile(comp, target);
   }
@@ -241,9 +257,6 @@ public abstract class Expression extends Procedure
     return exp;
   }
 
-  String filename;
-  int position;
-
   public static final Expression[] noExpressions = new Expression[0];
 
   /** Helper method to create a `while' statement. */
@@ -260,7 +273,7 @@ public abstract class Expression extends Procedure
   public final void setLocation (SourceLocator location)
   {
     this.filename = location.getFileName();
-    setLine(location.getLineNumber(), location.getColumnNumber());
+    this.position = SourceMapper.simpleEncode(location);
   }
 
   public final Expression setLine(Expression old)
@@ -282,11 +295,7 @@ public abstract class Expression extends Procedure
 
   public final void setLine (int lineno, int colno)
   {
-    if (lineno < 0)
-      lineno = 0;
-    if (colno < 0)
-      colno = 0;
-    position = (lineno << 12) + colno;
+    position = SourceMapper.simpleEncode(lineno, colno);
   }
 
   public final void setLine (int lineno)
@@ -302,12 +311,8 @@ public abstract class Expression extends Procedure
   /** Set line number from current position in <code>Compilation</code>. */
   public void setLine (Compilation comp)
   {
-    int line = comp.getLineNumber();
-    if (line > 0)
-      {
-	setFile(comp.getFileName());
-	setLine(line, comp.getColumnNumber());
-      }
+    if (comp.getLineNumber() > 0)
+        setLocation(comp);
   }
 
   public String getPublicId ()
@@ -320,19 +325,29 @@ public abstract class Expression extends Procedure
     return filename;
   }
 
-  /** Get the line number of (the start of) this Expression.
-    * The "first" line is line 1; unknown is -1. */
-  public final int getLineNumber()
-  {
-    int line = position >> 12;
-    return line == 0 ? -1 : line;
-  }
+    public final int getLineNumber() {
+        return SourceMapper.simpleStartLine(position);
+    }
 
-  public final int getColumnNumber()
-  {
-    int column = position & ((1 << 12) - 1);
-    return column == 0 ? -1 : column;
-  }
+    public final int getColumnNumber() {
+        return SourceMapper.simpleStartColumn(position);
+    }
+
+    public final int getStartLine() {
+        return SourceMapper.simpleStartLine(position);
+    }
+
+    public final int getStartColumn() {
+        return SourceMapper.simpleStartColumn(position);
+    }
+
+    public final int getEndLine() {
+        return SourceMapper.simpleEndLine(position);
+    }
+
+    public final int getEndColumn() {
+        return SourceMapper.simpleEndColumn(position);
+    }
 
   public boolean isStableSourceLocation() { return true; }
 

@@ -1176,12 +1176,6 @@ so might have better hooks to the JVM and Java debugging architecture.
 @uref{http://cedet.sourceforge.net/,CEDET} is a more general
 framework of development tools.
 
-@subsubsection Implement @code{javax.tools} and code-range support in Kawa compiler
-
-Kawa currently records the line and column position of syntactic elements.
-For an IDE it is desirable to have both start and end position of an element,
-for example so it can put a squiggly line under an erroneous form.
-
 @subsection Hop-style web programming
 @uref{http://hop.inria.fr/,Hop} is an interesting design
 for integrating server-side and client-side programming using

@@ -1,3 +1,8 @@
+2017-06-08  Per Bothner  <per@bothner.com>
+
+	* kawa.texi (Ideas and tasks): End-position recording is now working.
+	* news.html: Note this.
+
 2017-04-30  Per Bothner  <per@bothner.com>
 
 	* kawa.texi (Source distribution):

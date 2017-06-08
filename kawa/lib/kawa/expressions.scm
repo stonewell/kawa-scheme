@@ -35,7 +35,7 @@
   (lambda (form)
     (syntax-case form ()
       ((_ expr)
-       (syntax->expression (syntax expr))))))
+       (syntax-pair->expression #'(expr))))))
 
 ;; FIXME Maybe #!rest args::object[]
 ;; FIXME maybe (Expression[] @(gnu.kawa.functions.Map:map1 ->exp args))

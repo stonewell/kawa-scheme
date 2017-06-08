@@ -128,6 +128,9 @@ containing module class.
 @item
 Change the @ref{Mangling,mangling} for field and local variables names
 to match the @uref{https://blogs.oracle.com/jrose/entry/symbolic_freedom_in_the_vm,Symbolic Freedom} style.
+@item
+Internally, expressions now record their ending position (line/column),
+in addition to the starting position.
 @end itemize
 
 @c @subheading In Git repository (master branch) since last release

@@ -2440,6 +2440,10 @@ public class Compilation implements SourceLocator
 
   public final int getLineNumber()  { return messages.getLineNumber(); }
   public final int getColumnNumber() { return messages.getColumnNumber(); }
+  public final int getStartLine()  { return messages.getStartLine(); }
+  public final int getStartColumn()  { return messages.getStartColumn(); }
+  public final int getEndLine()  { return messages.getEndLine(); }
+  public final int getEndColumn()  { return messages.getEndColumn(); }
   public final String getFileName() { return messages.getFileName(); }
   public String getPublicId() { return messages.getPublicId(); }
   public String getSystemId() { return messages.getSystemId(); }
@@ -2450,6 +2454,7 @@ public class Compilation implements SourceLocator
   public void setColumn(int column) { messages.setColumn(column); }
   public final void setLine(Expression position)
   { messages.setLocation(position); }
+
   public void setLine (Object location)
   {
     if (location instanceof SourceLocator)

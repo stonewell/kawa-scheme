@@ -1600,6 +1600,10 @@ public class XMLFilter implements
     int col;
     return in != null && (col = in.getColumnNumber()) > 0 ? col : -1;
   }
+    public int getStartLine() { return getLineNumber(); }
+    public int getStartColumn() { return getColumnNumber(); }
+    public int getEndLine() { return -1; }
+    public int getEndColumn() { return -1; }
 
   public boolean isStableSourceLocation()
   {

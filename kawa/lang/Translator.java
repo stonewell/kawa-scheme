@@ -704,8 +704,11 @@ public class Translator extends Compilation
 	for (int i = 0;  i < vals.length;  i++)
 	  rewriteInBody(vals[i]);
       }
-    else
-      pushForm(rewrite(exp, false));
+    else {
+        Expression e = rewrite(exp, false);
+        setLineOf(e);
+        pushForm(e);
+    }
   }
 
     public int getCompletions(Environment env,
@@ -791,11 +794,11 @@ public class Translator extends Compilation
             }
         }
         boolean function = mode != 'N';
-        if (exp instanceof PairWithPosition)
-            return rewrite_with_position (exp, function, (PairWithPosition) exp);
-        else if (exp instanceof Pair)
-            return rewrite_pair((Pair) exp, function);
-        else if (exp instanceof Symbol && ! selfEvaluatingSymbol(exp)) {
+        if (exp instanceof Pair) {
+            Expression e = rewrite_pair((Pair) exp, function);
+            setLineOf(e);
+            return e;
+        } else if (exp instanceof Symbol && ! selfEvaluatingSymbol(exp)) {
             Symbol s = (Symbol) exp;
 
             // Check if we're handling a completion request.
@@ -1327,7 +1330,7 @@ public class Translator extends Compilation
 
   PairWithPosition positionPair;
 
-    /*
+  /*
   public Object pushPositionOfCar(Object pair)
   {
     if (pair instanceof Pair)
@@ -1613,18 +1616,14 @@ public class Translator extends Compilation
 	if (syntax != null)
 	  {
 	    String save_filename = getFileName();
-	    int save_line = getLineNumber();
-	    int save_column = getColumnNumber();
 	    try
 	      {
-		setLine(st_pair);
 		syntax.scanForm(st_pair, defs, this);
 		return;
 	      }
 	    finally
 	      {
                 macroContext = saveContext;
-		setLine(save_filename, save_line, save_column);
 	      }
 	  }
       }
@@ -2142,7 +2141,7 @@ public class Translator extends Compilation
         }
     
         public void push(Object value) {
-            Pair pair = new PairWithPosition(sloc, value, LList.Empty);
+            PairWithPosition pair = new PairWithPosition(sloc, value, LList.Empty);
             last.setCdrBackdoor(pair);
             last = pair;
         }
@@ -2164,7 +2163,7 @@ public class Translator extends Compilation
         public void pushAfter(Object value, Pair position) {
             Pair pair = new PairWithPosition(sloc, value, position.getCdr());
             position.setCdrBackdoor(pair);
-            if(last == position)
+            if (last == position)
                 last = pair;
         }
     }

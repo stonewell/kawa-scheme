@@ -316,6 +316,7 @@ GNU_TEXT_JSOURCES = \
   gnu/text/ResourceStreamHandler.java \
   gnu/text/SourceLocator.java \
   gnu/text/SourceError.java \
+  gnu/text/SourceMapper.java \
   gnu/text/SourceMessages.java \
   gnu/text/StandardNamedChars.java \
   gnu/text/StringCursor.java \

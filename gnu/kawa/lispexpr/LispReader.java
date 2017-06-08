@@ -489,11 +489,14 @@ public class LispReader extends Lexer
 	    if (value == Values.empty)
 	      continue;
 	    value = handlePostfix(value, rtable, line, column);
-            if (topLevel && ! (value instanceof Pair))
+            if (topLevel)
               {
                 // Wrap in begin form so top-level forms have position info.
                 value = makePair(kawa.standard.begin.begin,
-                                 makePair(value, line, column), line, column);
+                                 makePair(value, line, column,
+                                          port.getLineNumber(),
+                                          port.getColumnNumber()),
+                                 line, column);
               }
 	    return value;
 	  }
@@ -1440,6 +1443,18 @@ public class LispReader extends Lexer
     return makePair(car, LList.Empty, line, column);
   }
 
+    protected Pair makePair(Object car, int startline, int startcolumn,
+                           int endline, int endcolumn) {
+        String pname = port.getName();
+        Object cdr = LList.Empty;
+        if (! returnMutablePairs && pname != null && startline >= 0) {
+            long position = SourceMapper.simpleEncode(startline+1, startcolumn+1,
+                                                      endline+1, endcolumn+1);
+            return PairWithPosition.make(car, cdr, pname, position);
+        } else
+            return Pair.make(car, cdr);
+    }
+
   protected Pair makePair (Object car, Object cdr, int line, int column)
   {
     String pname = port.getName();
@@ -1454,6 +1469,13 @@ public class LispReader extends Lexer
                               int line, int column) {
         return makePair(car, makePair(cadr, cddr, line, column), line, column);
     }
+
+  protected void setCar (Object pair, Object car, int endline, int endcolumn)
+  {
+    ((Pair) pair).setCarBackdoor(car);
+    if (pair instanceof PairWithPosition)
+        ((PairWithPosition) pair).setEndLine(endline, endcolumn);
+  }
 
   protected void setCar (Object pair, Object car)
   {

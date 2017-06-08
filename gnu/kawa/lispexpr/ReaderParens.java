@@ -150,10 +150,12 @@ public final class ReaderParens extends ReadTableEntry
 	      }
 	    else
 	      entry = readTable.lookup(ch);
+            if (entry.getKind() == ReadTable.WHITESPACE)
+                continue;
 	    Object first = null;
 	    if (! sawDot && last == null)
 	      {
-		first = lexer.makePair(null, startLine, startColumn-1);
+		first = lexer.makePair(null, line, column);
 		lexer.bindSharedObject(sharingIndex, first);
 	      }
 	    Object value = lexer.readValues(ch, entry, readTable, -1);
@@ -180,14 +182,17 @@ public final class ReaderParens extends ReadTableEntry
 	      }
 	    else
 	      {
+                int endline = port.getLineNumber();
+                int endcolumn = port.getColumnNumber();
 		if (last == null)
 		  {
-		    lexer.setCar(first, value);
+                    lexer.setCar(first, value, endline+1, endcolumn+1);
 		    value = first;
 		    sharingIndex = -1;
 		  }
 		else
-		  value = lexer.makePair(value, line, column);
+                    value = lexer.makePair(value, line, column,
+                                           endline, endcolumn);
 	      }
 	    if (last == null)
 	      list = value;

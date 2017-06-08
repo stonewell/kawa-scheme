@@ -7,6 +7,7 @@ import gnu.kawa.functions.*;
 import gnu.kawa.io.OutPort;
 import gnu.mapping.*;
 import gnu.text.SourceLocator;
+import gnu.text.SourceLocator;
 import gnu.math.*;
 import java.util.ArrayList;
 import java.util.List;
@@ -41,8 +42,7 @@ import java.lang.annotation.ElementType;
  * procedure prologue, so the parameters henceforth act like local variables.
  */
 
-public class Declaration 
-  implements SourceLocator
+public class Declaration extends SourceLocator.Simple
 {
   static int counter;
   /** Unique id number, to ease print-outs and debugging.
@@ -1058,65 +1058,6 @@ public class Declaration
             ftype =  new ParameterizedType(Compilation.typeList, ftype);
         return ftype;
     }
-
-  String filename;
-  int position;
-
-  public final void setLocation (SourceLocator location)
-  {
-    this.filename = location.getFileName();
-    setLine(location.getLineNumber(), location.getColumnNumber());
-  }
-
-  public final void setFile (String filename)
-  {
-    this.filename = filename;
-  }
-
-  public final void setLine (int lineno, int colno)
-  {
-    if (lineno < 0)
-      lineno = 0;
-    if (colno < 0)
-      colno = 0;
-    position = (lineno << 12) + colno;
-  }
-
-  public final void setLine (int lineno)
-  {
-    setLine (lineno, 0);
-  }
-
-  public final String getFileName ()
-  {
-    return filename;
-  }
-
-  public String getPublicId ()
-  {
-    return null;
-  }
-
-  public String getSystemId ()
-  {
-    return filename;
-  }
-
-  /** Get the line number of (the start of) this Expression.
-    * The "first" line is line 1; unknown is -1. */
-  public final int getLineNumber()
-  {
-    int line = position >> 12;
-    return line == 0 ? -1 : line;
-  }
-
-  public final int getColumnNumber()
-  {
-    int column = position & ((1 << 12) - 1);
-    return column == 0 ? -1 : column;
-  }
-
-  public boolean isStableSourceLocation() { return true; }
 
   public void printInfo(OutPort out)
   {

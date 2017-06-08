@@ -9,10 +9,10 @@ import gnu.expr.*;
 
 public class try_catch
 {
-  public static Expression rewrite (Object try_part, Object clauses)
+  public static Expression rewrite (Pair try_part_pair, Object clauses)
   {
     Translator tr = (Translator) Compilation.getCurrent();
-    Expression try_part_exp = tr.rewrite(try_part);
+    Expression try_part_exp = tr.rewrite_car(try_part_pair, false);
     CatchClause prev = null;
     CatchClause chain = null;
     FVector vec = (FVector) clauses;

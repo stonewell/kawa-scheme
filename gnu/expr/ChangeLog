@@ -1,3 +1,11 @@
+2017-06-08  Per Bothner  <per@bothner.com>
+
+	* Compilation.java: Support range with end position.
+	* ExpVisitor.java: Likewise.
+	* Expression.java: Likewise.
+	* Declaration.java: Likewise. Extend SourceLocator.Simple.
+	* KawaScriptEngine.java: Update to use accessor methods.
+
 2017-05-23  Per Bothner  <per@bothner.com>
 
 	Fix save/restore of callContextVar, used for CallContext in a method.

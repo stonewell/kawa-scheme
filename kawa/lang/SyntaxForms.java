@@ -155,6 +155,12 @@ public class SyntaxForms {
     return tr.rewrite(x);
   }
 
+  public static Expression rewriteCar (Object x)
+  {
+    Translator tr = (Translator) Compilation.getCurrent();
+    return tr.rewrite_car((Pair) x, false);
+  }
+
   public static Expression rewriteBody (Object x)
   {
     Translator tr = (Translator) Compilation.getCurrent();

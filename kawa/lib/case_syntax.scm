@@ -58,7 +58,7 @@
     (syntax-case x (else =>)
       ((_ case-key case-clause ... (else case-else ...))
        (<CaseExp>
-         (syntax->expression (syntax case-key))
+         (syntax-pair->expression #'(case-key))
          (<CaseClause>[]
                 @(syntax->case-clauses (syntax (case-clause ...))
                                        (syntax case-key)))
@@ -67,7 +67,7 @@
                                     (syntax case-key)))))
       ((_ case-key case-clause ...)
        (<CaseExp>
-         (syntax->expression (syntax case-key))
+         (syntax-pair->expression #'(case-key))
          (<CaseClause>[]
                 @(syntax->case-clauses (syntax (case-clause ...))
                                        (syntax case-key))))))))

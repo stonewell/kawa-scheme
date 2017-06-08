@@ -46,15 +46,15 @@
     (syntax-case x ()
       ((_ try-part finally-part)
        (make <gnu.expr.TryExp>
-         (syntax->expression (syntax try-part))
-         (syntax->expression (syntax finally-part)))))))
+         (syntax-pair->expression #'(try-part))
+         (syntax-pair->expression #'(finally-part)))))))
 
 (define-rewrite-syntax synchronized
   (lambda (x)
     (syntax-case x ()
       ((_ object . body)
        (make <gnu.expr.SynchronizedExp>
-         (syntax->expression (syntax object))
+         (syntax-pair->expression #'( object))
          (syntax-body->expression (syntax body)))))))
 
 

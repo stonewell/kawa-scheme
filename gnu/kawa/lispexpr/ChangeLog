@@ -1,3 +1,9 @@
+2017-06-08  Per Bothner  <per@bothner.com>
+
+	* LispReader.java (readObject): Always wrap top-level in begin.
+	(makePair, setCar): New methods, to set end-position, too.
+	* ReaderParens.java: Also record end-positions.
+
 2017-05-23  Per Bothner  <per@bothner.com>
 
 	* ReaderXmlElement.java (readElementConstructor): Better error recovery.

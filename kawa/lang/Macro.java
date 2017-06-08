@@ -203,12 +203,6 @@ public class Macro extends Syntax implements Printable, Externalizable
             }
             else
                 result = pr.apply1(form);
-            if (form instanceof PairWithPosition && result instanceof Pair
-                && ! (result instanceof PairWithPosition)) {
-                Pair p = (Pair) result;
-                result = new PairWithPosition((PairWithPosition) form,
-                                              p.getCar(), p.getCdr());
-            }
             return result;
         } catch (Throwable ex) {
             String msg = "evaluating syntax transformer '"
@@ -225,17 +219,12 @@ public class Macro extends Syntax implements Printable, Externalizable
             super.scanForm(st, defs, tr);
             return;
         }
-        String save_filename = tr.getFileName();
-        int save_line = tr.getLineNumber();
-        int save_column = tr.getColumnNumber();
         Syntax saveSyntax = tr.currentSyntax;
         try {
-            tr.setLine(st);
             tr.currentSyntax = this;
             Object x = expand(st, tr);
             tr.scanForm(x, defs);
         } finally {
-            tr.setLine(save_filename, save_line, save_column);
             tr.currentSyntax = saveSyntax;
         }
     }

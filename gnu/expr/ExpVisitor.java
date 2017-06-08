@@ -178,6 +178,10 @@ public class ExpVisitor<R,D>
     public final String getFileName() { return messages.getFileName(); }
     public final int getLineNumber() { return messages.getLineNumber(); }
     public final int getColumnNumber() { return messages.getColumnNumber(); }
+    public final int getStartLine()  { return messages.getStartLine(); }
+    public final int getStartColumn()  { return messages.getStartColumn(); }
+    public final int getEndLine()  { return messages.getEndLine(); }
+    public final int getEndColumn()  { return messages.getEndColumn(); }
     public String getPublicId() { return messages.getPublicId(); }
     public String getSystemId() { return messages.getSystemId(); }
     /** Normally same as getSystemId. */

@@ -22,4 +22,4 @@
   (define x2 (y2))
   (list x1 x2 y))
 ;; Diagnostic: uninit1.scm:19:21: variable 'y' may be uninitialized here
-;; Diagnostic: uninit1.scm:20:14: - because of possible call here of function y2
+;; Diagnostic: uninit1.scm:20:15: - because of possible call here of function y2
