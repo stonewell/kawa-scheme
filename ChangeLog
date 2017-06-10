@@ -1,3 +1,7 @@
+2017-06-10  Per Bothner  <per@bothner.com>
+
+	* configure.ac: Default to Java 8, as intended.
+
 2017-05-03  Per Bothner  <per@bothner.com>
 
 	* build.xml: Various fixes and updates.

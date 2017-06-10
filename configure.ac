@@ -79,8 +79,8 @@ test -z "${with_swing}" -a "$with_awt" == "no" \
   && with_swing=no
 
 with_java_source=`echo ${with_java_source} | tr A-Z a-z`
-# Java 7 is the (current) default
-test "${with_java_source}" = "" && with_java_source=7
+# Java 8 is the (current) default
+test "${with_java_source}" = "" && with_java_source=8
 case "/${with_java_source}/" in
   /1/|/1.1*/) # JDK 1.1 - not supported
     JAVA_SOURCE=1; JAVA_SOURCE_SELECTOR='%java1';;
