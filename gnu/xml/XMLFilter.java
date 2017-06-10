@@ -46,6 +46,7 @@ public class XMLFilter implements
   public static final int COPY_NAMESPACES_PRESERVE = 1;
   public static final int COPY_NAMESPACES_INHERIT = 2;
   public transient int copyNamespacesMode = COPY_NAMESPACES_PRESERVE;
+  public static final int COPY_NAMESPACES_MASK = 3;
 
   /** A helper stack.
    * This is logically multiple separate stacks, but we combine them into

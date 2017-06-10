@@ -33,7 +33,7 @@ public class MakeAttribute extends NodeConstructor
   }
 
     public static Object applyToConsumer(Procedure proc, CallContext ctx) throws Throwable {
-    boolean stringIsText = ((MakeAttribute) proc).stringIsText;
+    boolean stringIsText = ((MakeAttribute) proc).getStringIsText();
     Consumer saved = ctx.consumer;
     Consumer out = pushNodeContext(ctx);
     try
@@ -73,7 +73,7 @@ public class MakeAttribute extends NodeConstructor
     // Stack:  consumer, consumer, tagtype
     code.emitInvokeStatic(startAttributeMethod);
     for (int i = 1;  i < nargs;  i++)
-      compileChild(args[i], stringIsText, comp, target);
+        compileChild(args[i], getStringIsText(), comp, target);
     code.emitInvokeInterface(endAttributeMethod);
   }
 

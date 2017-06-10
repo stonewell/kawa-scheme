@@ -54,7 +54,7 @@ public class MakeWithBaseUri extends NodeConstructor
     code.emitLoad(consumer);
     args[0].compile(comp, Target.pushObject);
     code.emitInvokeInterface(beginEntityMethod);
-    compileChild(args[1], stringIsText, comp, target);
+    compileChild(args[1], getStringIsText(), comp, target);
     code.emitLoad(consumer);
     code.emitInvokeInterface(endEntityMethod);
   }

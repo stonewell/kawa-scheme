@@ -15,17 +15,27 @@ import java.lang.invoke.*;
 public abstract class NodeConstructor extends MethodProc
 implements Inlineable
 {
-  public abstract void compileToNode (ApplyExp exp, Compilation comp,
-				      ConsumerTarget target);
+    private static final int STRING_IS_TEXT = 8;
+    protected int options;
+
+    public abstract void compileToNode (ApplyExp exp, Compilation comp,
+                                        ConsumerTarget target);
 
     /** If true, top-level strings are treated as text nodes.
      * This means don't separate them with spaces when printing as XML.
      */
-    public void setStringIsText(boolean stringIsText) {
-        this.stringIsText = stringIsText;
+    public boolean getStringIsText() {
+        return (options & STRING_IS_TEXT) != 0;
     }
 
-    protected boolean stringIsText;
+    public void setStringIsText(boolean stringIsText) {
+        if (stringIsText)
+            options |= STRING_IS_TEXT;
+        else
+            options &= ~STRING_IS_TEXT;
+    }
+
+    //protected boolean stringIsText;
 
   public static XMLFilter pushNodeConsumer (Consumer out)
   {

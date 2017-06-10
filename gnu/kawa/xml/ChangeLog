@@ -1,3 +1,11 @@
+2017-06-10  Per Bothner  <per@bothner.com>
+
+	Fix bug reported by Damien Mattei compiling elements with attributes.
+	* NodeConstructor.java (options): New field.
+	(stringIsText): Remove field - use a bit in options instead.
+	* MakeElement.java: Make Externalizable.
+	Merge other flags into options.
+
 2017-05-15  Per Bothner  <per@bothner.com>
 
 	* NodeConstructor.java (isSideEffectFree): New method.

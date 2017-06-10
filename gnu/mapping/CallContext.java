@@ -60,7 +60,6 @@ public class CallContext // implements Runnable
         this.applyMethod = proc == null ? null : proc.applyToConsumerMethod;
     }
 
-
   /* CPS:
   CallFrame frame;
   */

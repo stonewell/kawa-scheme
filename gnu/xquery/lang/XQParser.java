@@ -2718,7 +2718,7 @@ public class XQParser extends Lexer
     args = new Expression[vec.size()];
     vec.copyInto(args);
     MakeElement mkElement = new MakeElement();
-    mkElement.copyNamespacesMode = copyNamespacesMode;
+    mkElement.setCopyNamespacesMode(copyNamespacesMode);
     // Ths is just the chain of NamespaceBindings for namespace declaration
     // attributes from this immediate constructor.  At resolve time we chain
     // this list onto the list from outer element constructors.
@@ -3052,7 +3052,7 @@ public class XQParser extends Lexer
             if (token == ELEMENT_TOKEN)
               {
                 MakeElement mk = new MakeElement();
-                mk.copyNamespacesMode = copyNamespacesMode;
+                mk.setCopyNamespacesMode(copyNamespacesMode);
                 func = new QuoteExp(mk);
               }
             else
