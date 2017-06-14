@@ -115,7 +115,6 @@ public class MakeElement extends NodeConstructor implements Externalizable {
   }
 
     public static Object applyToConsumerME(Procedure proc, CallContext ctx) throws Throwable {
-        System.err.println("ME.applyToConsumerME");
     Consumer saved = ctx.consumer;
     MakeElement mk = (MakeElement) proc;
     Symbol tag = mk.tag;
