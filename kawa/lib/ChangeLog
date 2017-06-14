@@ -1,3 +1,7 @@
+2017-06-13  Sudarshan S Chawathe <chaw@eip10.org>
+
+	* kawa/pprint.scm (pprint-logical-block): Initialize out-expr.
+
 2017-06-08  Per Bothner  <per@bothner.com>
 
 	* prim_imports.scm (syntax-pair->expression): An alternative

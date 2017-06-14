@@ -38,6 +38,7 @@
      (define per-line-prefix-expr #!null)
      (define suffix-expr #!null)
      (define port-expr #!null)
+     (define out-expr #!null)
      (let loop ((rest #'body))
        (syntax-case rest ()
          ((prefix: sexp . r)
