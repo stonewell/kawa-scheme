@@ -1,3 +1,9 @@
+2017-06-13  Per Bothner  <per@bothner.com>
+
+	* ReaderExtendedLiteral.java (readContent): Use LispReader.eofError.
+	This throws an exception, which is what the JLine code expects.
+	Thus multi-line literals are handled.
+
 2017-06-08  Per Bothner  <per@bothner.com>
 
 	* LispReader.java (readObject): Always wrap top-level in begin.
