@@ -1,3 +1,10 @@
+2017-06-17  Shiro Kawai <shiro.kawai@gmail.com>
+
+	* testing.scm (test-with-runner): Move definition to precede its use.
+	With r6rs it is not necessary, for the expansion of rhs of definitions
+	is deferred, but r7rs doesn't have explicit definition of expansion
+	process and some implementation needs macros to be defined before use.
+
 2017-05-08  Peter Lane <peter@peterlane.info>
 	    Per Bothner  <per@bothner.com>
 
