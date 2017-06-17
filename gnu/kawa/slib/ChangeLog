@@ -5,6 +5,8 @@
 	is deferred, but r7rs doesn't have explicit definition of expansion
 	process and some implementation needs macros to be defined before use.
 
+	* testing.scm: Add some cond-expand clauses for Gauche.
+
 2017-05-08  Peter Lane <peter@peterlane.info>
 	    Per Bothner  <per@bothner.com>
 
