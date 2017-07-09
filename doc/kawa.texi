@@ -8494,9 +8494,9 @@ but is useful when interfacing to low-level Java code.
 
 @menu
 * Application and Arguments Lists::
+* Extended formals::
 * Procedure properties::
 * Generic procedures::
-* Extended formals::
 * Partial application::
 @end menu
 
@@ -8747,122 +8747,6 @@ is equivalent to @code{(quote #(a b c))}, assuming @code{vector}
 has not been re-bound.
 @end deffn
 
-@node Procedure properties, Generic procedures, , Procedures
-@section Procedure properties
-
-You can associate arbitrary @dfn{properties} with any procedure.
-Each property is a (@var{key}, @var{value})-pair.  Usually the
-@var{key} is a symbol, but it can be any object.
-
-The system uses certain internal properties:
-@code{'name} refers to the name used when a procedure is printed;
-@code{'emacs-interactive} is used to implement Emacs @code{interactive}
-specification;
-@code{'setter} is used to associate a @code{setter} procedure.
-
-@deffn Procedure procedure-property proc key [default]
-Get the property value corresponding to the given @var{key}.
-If @var{proc} has no property with the given @var{key},
-return @var{default} (which defaults to @code{#f}) instead.
-@end deffn
-
-@deffn Procedure set-procedure-property! proc key value
-Associate the given @var{value} with the @var{key} property of @var{proc}.
-@end deffn
-
-To change the print name of the standard @code{+} procedure (probably
-not a good idea!), you could do:
-@example
-(set-procedure-property! + 'name 'PLUS)
-@end example
-Note this @emph{only} changes the name property used for printing:
-@example
-+ @result{} #<procedure PLUS>
-(+ 2 3) @result{} 5
-(PLUS 3 4) @result{} ERROR
-@end example
-
-As a matter of style, it is cleaner to use the @code{define-procedure}
-form, as it is a more declarative interface.
-
-@deffn Syntax define-procedure name [propname: propvalue] ... method ...
-Defines @var{name} as a compound procedure consisting of the
-specified @var{method}s, with the associated properties.
-Applying @var{name} select the "best" @var{method}, and applies that.
-See the following section on generic procedures.
-
-For example, the standard @code{vector-ref} procedure specifies
-one method, as well as the @code{setter} property:
-@example
-(define-procedure vector-ref
-  setter: vector-set!
-  (lambda (vector::vector k ::int)
-    (invoke vector 'get k)))
-@end example
-@end deffn
-
-You can also specify properties in the lambda body:
-
-@example
-(define (vector-ref vector::vector k ::int)
-    setter: vector-set!
-    (invoke vector 'get k))
-@end example
-
-@subsection Standard properties
-
-@table @code
-@item name
-The name of a procedure (as a symbol), which is used
-when the procedure is printed.
-@item setter
-Set the setter procedure associated with the procedure.
-@item validate-apply
-@itemx validate-xapply
-Used during the validation phase of the compiler.
-@item compile-apply
-Used during the bytecode-generation phase of the compiler:
-If we see a call to a known function with this property,
-we can emit custom bytecode for the call.
-@end table
-
-@node Generic procedures, Extended formals, Procedure properties, Procedures
-@section Generic (dynamically overloaded) procedures
-
-A @dfn{generic procedure} is a collection of @dfn{method procedures}.
-(A "method procedure" is not the same as a Java method, but
-the terms are related.)
-You can call a generic procedure, which selects the "closest
-match" among the component method procedures:  I.e. the most specific
-method procedure that is applicable given the actual arguments.
-
-@quotation
-@strong{Warning:} The current implementation of selecting the "best" method
-is not reliable if there is more than one method.
-It can select depending on argument count, and it can select between
-primitive Java methods.  However, selecting between different Scheme
-procedures based on parameter types should be considered experimental.
-The main problem is we can't determine the most specific
-method, so Kawa just tries the methods in order.
-@end quotation
-
-@deffn Procedure make-procedure [keyword: value]... method...
-Create a generic procedure given the specific methods.
-You can also specify property values for the result.
-
-The @var{keyword}s specify how the arguments are used.
-A @code{method:} keyword is optional and specifies that the following
-argument is a method.
-A @code{name:} keyword specifies the name of the resulting procedure,
-when used for printing.
-Unrecognized keywords are used to set the procedure properties of the result.
-@example
-(define plus10 (make-procedure foo: 33 name: 'Plus10
-                            method: (lambda (x y) (+ x y 10))
-                            method: (lambda () 10)))
-@end example
-@end deffn
-
 @node Extended formals
 @section Extended Formal Arguments List
 
@@ -8967,6 +8851,122 @@ to @code{my-set-car} do the following:
 (define my-car
   (lambda (arg) setter: my-set-car (primitive-car arg)))
 @end example
+
+@node Procedure properties
+@section Procedure properties
+
+You can associate arbitrary @dfn{properties} with any procedure.
+Each property is a (@var{key}, @var{value})-pair.  Usually the
+@var{key} is a symbol, but it can be any object.
+
+The system uses certain internal properties:
+@code{'name} refers to the name used when a procedure is printed;
+@code{'emacs-interactive} is used to implement Emacs @code{interactive}
+specification;
+@code{'setter} is used to associate a @code{setter} procedure.
+
+@deffn Procedure procedure-property proc key [default]
+Get the property value corresponding to the given @var{key}.
+If @var{proc} has no property with the given @var{key},
+return @var{default} (which defaults to @code{#f}) instead.
+@end deffn
+
+@deffn Procedure set-procedure-property! proc key value
+Associate the given @var{value} with the @var{key} property of @var{proc}.
+@end deffn
+
+To change the print name of the standard @code{+} procedure (probably
+not a good idea!), you could do:
+@example
+(set-procedure-property! + 'name 'PLUS)
+@end example
+Note this @emph{only} changes the name property used for printing:
+@example
++ @result{} #<procedure PLUS>
+(+ 2 3) @result{} 5
+(PLUS 3 4) @result{} ERROR
+@end example
+
+As a matter of style, it is cleaner to use the @code{define-procedure}
+form, as it is a more declarative interface.
+
+@deffn Syntax define-procedure name [propname: propvalue] ... method ...
+Defines @var{name} as a compound procedure consisting of the
+specified @var{method}s, with the associated properties.
+Applying @var{name} select the "best" @var{method}, and applies that.
+See the following section on generic procedures.
+
+For example, the standard @code{vector-ref} procedure specifies
+one method, as well as the @code{setter} property:
+@example
+(define-procedure vector-ref
+  setter: vector-set!
+  (lambda (vector::vector k ::int)
+    (invoke vector 'get k)))
+@end example
+@end deffn
+
+You can also specify properties in the lambda body:
+
+@example
+(define (vector-ref vector::vector k ::int)
+    setter: vector-set!
+    (invoke vector 'get k))
+@end example
+
+@subsection Standard properties
+
+@table @code
+@item name
+The name of a procedure (as a symbol), which is used
+when the procedure is printed.
+@item setter
+Set the setter procedure associated with the procedure.
+@item validate-apply
+@itemx validate-xapply
+Used during the validation phase of the compiler.
+@item compile-apply
+Used during the bytecode-generation phase of the compiler:
+If we see a call to a known function with this property,
+we can emit custom bytecode for the call.
+@end table
+
+@node Generic procedures
+@section Generic (dynamically overloaded) procedures
+
+A @dfn{generic procedure} is a collection of @dfn{method procedures}.
+(A "method procedure" is not the same as a Java method, but
+the terms are related.)
+You can call a generic procedure, which selects the "closest
+match" among the component method procedures:  I.e. the most specific
+method procedure that is applicable given the actual arguments.
+
+@quotation
+@strong{Warning:} The current implementation of selecting the "best" method
+is not reliable if there is more than one method.
+It can select depending on argument count, and it can select between
+primitive Java methods.  However, selecting between different Scheme
+procedures based on parameter types should be considered experimental.
+The main problem is we can't determine the most specific
+method, so Kawa just tries the methods in order.
+@end quotation
+
+@deffn Procedure make-procedure [keyword: value]... method...
+Create a generic procedure given the specific methods.
+You can also specify property values for the result.
+
+The @var{keyword}s specify how the arguments are used.
+A @code{method:} keyword is optional and specifies that the following
+argument is a method.
+A @code{name:} keyword specifies the name of the resulting procedure,
+when used for printing.
+Unrecognized keywords are used to set the procedure properties of the result.
+@example
+(define plus10 (make-procedure foo: 33 name: 'Plus10
+                            method: (lambda (x y) (+ x y 10))
+                            method: (lambda () 10)))
+@end example
+@end deffn
 
 @node Partial application
 @section Partial application

@@ -1,6 +1,7 @@
 2017-07-09  Per Bothner  <per@bothner.com>
 
 	* kawa.texi (Application and Arguments Lists): Fix some typos.
+	(Extended formals): Move earlier.
 
 2017-06-08  Per Bothner  <per@bothner.com>
 
