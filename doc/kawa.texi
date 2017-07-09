@@ -8503,10 +8503,10 @@ but is useful when interfacing to low-level Java code.
 @node Application and Arguments Lists
 @section Application and Arguments Lists
 
-When a procedure is called, the actual argument expression are evaluated,
+When a procedure is called, the actual argument expressions are evaluated,
 and the resulting values becomes the actual argument list.
 This is then matched against the formal parameter list
-(in the procedure definition), and assuming they match,
+in the procedure definition, and (assuming they match)
 the procedure body is called.
 
 @subsection Arguments lists
@@ -8528,7 +8528,7 @@ These are usually bound to a ``rest'' formal parameter, which
 receives any remaining arguments.
 
 If there are no keyword arguments, then it ambiguous where
-prefix arguments and and where postfix arguments start.
+prefix arguments end and where postfix arguments start.
 This is normally not a problem: the called procedure can
 split them up however it wishes.
 @end itemize
@@ -8537,7 +8537,7 @@ Note that all keyword arguments have to be grouped together:
 It is not allowed to have a keyword argument followed by a plain
 argument followed by a keyword argument.
 
-The argument list is constructed by evaluating the each @stxref{operand}
+The argument list is constructed by evaluating each @stxref{operand}
 of the @stxref{procedure-call} in order:
 @table @asis
 @item @var{expression}
@@ -8583,8 +8583,7 @@ Things get more complicated once keywords are involved.
 An explicit argument list with keywords is only allowed
 when using the @code{@@:} splicing form,
 not the @code{@@} form.  It can be either
-a hash table (anything the implement @code{java.util.Map}
-or the types @code{arglist} or @code{argvector}.
+a hash table, or the types @code{arglist} or @code{argvector}.
 
 @quotation
 @emph{Design note:} An argument list with keywords is straightforward
@@ -8596,7 +8595,7 @@ might have been assigned a keyword.  This limits performance and
 error checking.
 @end quotation
 
-A hash table (anything the implement @code{java.util.Map})
+A hash table (anything the implements @code{java.util.Map})
 whose keys are strings or keyword objects is
 interpreted as a sequence of keyword arguments,
 using the hash-table keys and values.
@@ -8700,7 +8699,7 @@ The @var{index} counts keyword argument values, but not the keywords themselves.
 @deffn Procedure arglist-key-ref args index
 The @var{index} counts arguments like @code{arglist-arg-ref} does.
 If this is a keyword argument, return the corresponding keyword
-(as a string); otherwise, return @code{#!null} (which counts are false).
+(as a string); otherwise, return @code{#!null} (which counts as false).
 @example
 (arglist-key-ref (argvector 10 11 k1: -1 k2: -2 19) 3) @result{} "k2"
 (arglist-key-ref (argvector 10 11 k1: -1 k2: -2 19) 4) @result{} #!null
@@ -8710,7 +8709,7 @@ If this is a keyword argument, return the corresponding keyword
 @deffn Procedure arglist-key-index args key
 Search for a keyword matching @var{key} (which must be an interned string).
 If there is no such keyword, return -1.
-Otherwise return the keyword's index as as argument to @code{arglist-key-ref}.
+Otherwise return the keyword's index as an argument to @code{arglist-key-ref}.
 @end deffn
 
 @deffn Procedure arglist-key-value args key default
