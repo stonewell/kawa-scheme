@@ -990,7 +990,8 @@ public class Translator extends Compilation
             if (decl == null && function
                 && nameToLookup==LispLanguage.lookup_sym)
                 decl = getNamedPartDecl;
-            int scanNesting = decl == null ? 0 : decl.getScanNesting();
+            int scanNesting = decl == null ? 0
+                : Declaration.followAliases(decl).getScanNesting();
             if (scanNesting > 0) {
                 if (scanNesting > curScanNesting())
                     error('e', "using scan variable "+decl.getName()+" while not in scan context");

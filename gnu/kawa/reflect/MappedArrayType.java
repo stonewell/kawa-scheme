@@ -6,7 +6,7 @@ import static  gnu.kawa.lispexpr.LangObjType.sequenceType;
 
 /** An array type where elements are copied from a sequence.
  * A MappedArrayType[T] is implemented using a T (native) array.
- * It is compatible with a sequence whose elemnts are compatible with T.
+ * It is compatible with a sequence whose elements are compatible with T.
  * Each element is copied from the sequence into the array.
  */
 
@@ -15,7 +15,7 @@ public class MappedArrayType extends ObjectType implements TypeValue {
     protected ObjectType implementationType;
 
     static ClassType utilType = ClassType.make("gnu.kawa.functions.MakeSplice");
-    static Method countMethod = utilType.getDeclaredMethod("count", 1);
+    static Method coundiftMethod = utilType.getDeclaredMethod("count", 1);
 
     public MappedArrayType(Type elementType) {
         this.elementType = elementType;
@@ -33,16 +33,25 @@ public class MappedArrayType extends ObjectType implements TypeValue {
 
     public void emitTestIf(Variable incoming, Declaration decl,
                            Compilation comp) {
-        CodeAttr code = comp.getCode();
+        emitTestCoerce(true, incoming, decl, comp, comp.getCode());
+    }
+
+    void emitTestCoerce(boolean testing,
+                        Variable incoming, Declaration decl,
+                        Compilation comp, CodeAttr code) {
         Scope scope = code.pushScope();
-        Label failureLabel = code.emitIfRaw();
+        Label failureLabel = testing ? code.emitIfRaw() : null;
         Variable sizeVar = scope.addVariable(code, Type.intType, null);
+        if (incoming == null) {
+            incoming = scope.addVariable(code, Type.objectType, null);
+            code.emitStore(incoming);
+        }
         code.emitLoad(incoming);
         code.emitInvoke(countMethod);
         code.emitStore(sizeVar);
         Variable incomingElementVar = scope.addVariable(code, Type.objectType, null);
         Variable elementVar = scope.addVariable(code, elementType, null);
-        Declaration elementDecl = new Declaration(elementVar);
+        Declaration elementDecl = testing ? new Declaration(elementVar) : null;
         Variable indexVar = scope.addVariable(code, Type.intType, null);
         code.emitPushInt(0);
         code.emitStore(indexVar);
@@ -66,12 +75,14 @@ public class MappedArrayType extends ObjectType implements TypeValue {
         code.emitLoad(iteratorVar);
         code.emitInvoke(iteratorClass.getDeclaredMethod("next", 0));
         code.emitStore(incomingElementVar);
-        if (elementType instanceof TypeValue) {
+        if (testing && elementType instanceof TypeValue) {
             ((TypeValue) elementType).emitTestIf(incomingElementVar, elementDecl, comp);
         } else {
-            code.emitLoad(incomingElementVar);
-            elementType.emitIsInstance(code);
-            code.emitIfIntNotZero();
+            if (testing) {
+                code.emitLoad(incomingElementVar);
+                elementType.emitIsInstance(code);
+                code.emitIfIntNotZero();
+            }
             code.emitLoad(incomingElementVar);
             elementType.emitCoerceFromObject(code);
             code.emitStore(elementVar);
@@ -82,20 +93,24 @@ public class MappedArrayType extends ObjectType implements TypeValue {
         code.emitArrayStore();
         code.emitInc(indexVar, (short) 1);
         code.emitGoto(topLabel);
-        code.emitElse();
-        code.emitGoto(failureLabel);
-        code.emitFi();
+        if (testing) {
+            code.emitElse();
+            code.emitGoto(failureLabel);
+            code.emitFi();
+        }
         code.emitFi();
         code.emitLoad(arrayVar);
-        decl.compileStore(comp);
+        if (testing) {
+            decl.compileStore(comp);
+        }
         code.popScope();
     }
 
     public String toString() {
-        return "mapped-array["+elementType+"]";
+        return "scan-array["+elementType+"]";
     }
     public String getName() {
-        return "mappedarray-"+elementType;
+        return "scan-array-"+elementType;
     }
 
     @Override
@@ -113,7 +128,15 @@ public class MappedArrayType extends ObjectType implements TypeValue {
         InstanceOf.emitIsInstance(this, incoming, comp, target);
     };
 
-    /* #ifndef JAVA8 */
-    // public String encodeType(Language language) { return null; }
-    /* #endif */
+    public String encodeType(Language language) {
+        String etype = language.encodeType(elementType);
+        if (etype == null)
+            etype = elementType.getName();
+        return "$scan-array$["+etype+"]";
+    }
+
+    public void emitCoerceFromObject (CodeAttr code) {
+        //code.emitCheckcast(this); // FIXME
+        emitTestCoerce(false, null, null, null, code);
+    }
 }

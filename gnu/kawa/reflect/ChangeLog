@@ -1,3 +1,10 @@
+2017-07-15  Per Bothner  <per@bothner.com>
+
+	Fix scan patterns with type specifiers.
+	* MappedArrayType.java (emitCoerceFromObject): New method.
+	(emiTestCoerce): New helper method.
+	(encodeType): New method.
+
 2017-05-16  Per Bothner  <per@bothner.com>
 
 	* MappedArrayType.java (emitTestIf): Handle non-TypeValue element types.

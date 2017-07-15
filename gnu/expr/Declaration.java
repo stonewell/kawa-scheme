@@ -6,6 +6,7 @@ import gnu.bytecode.*;
 import gnu.kawa.functions.*;
 import gnu.kawa.io.OutPort;
 import gnu.mapping.*;
+import gnu.kawa.reflect.MappedArrayType;
 import gnu.text.SourceLocator;
 import gnu.text.SourceLocator;
 import gnu.math.*;
@@ -1054,8 +1055,11 @@ public class Declaration extends SourceLocator.Simple
                 ftype = new ParameterizedType(Compilation.typeLocation, ftype);
             }
         }
-        for (int scan = getScanNesting(); --scan >= 0; )
-            ftype =  new ParameterizedType(Compilation.typeList, ftype);
+        int scan = getScanNesting();
+        if (scan > 0 && ! (type instanceof MappedArrayType)) {
+            while (--scan >= 0)
+                ftype =  new ParameterizedType(Compilation.typeList, ftype);
+        }
         return ftype;
     }
 

@@ -883,8 +883,19 @@ public abstract class Language
 
     public Type decodeType(Type javaType, String annotType,
                            ParameterizedType parameterizedType) {
-        if (annotType != null && annotType.length() > 0)
+        int annotTypeLen;
+        if (annotType != null
+            && (annotTypeLen = annotType.length()) > 0) {
+            String scanPrefix = "$scan-array$[";
+            int scanPrefixLen;
+            if (annotType.startsWith(scanPrefix)
+                && annotTypeLen > (scanPrefixLen = scanPrefix.length()) + 1) {
+                String param = annotType.substring(scanPrefixLen,
+                                                   annotTypeLen-1);
+                return new MappedArrayType(getTypeFor(param));
+            }
             return getTypeFor(annotType);
+        }
         return getLangTypeFor
             (resolveTypeVariables(javaType, parameterizedType));
     }
@@ -1130,6 +1141,9 @@ public abstract class Language
             dtype = decodeType(ftype, annotType, null);
         }
         Declaration fdecl = mod.addDeclaration(fdname, dtype);
+        if (dtype instanceof MappedArrayType) {
+            fdecl.setScanNesting(1);
+        }
         boolean isStatic = (fld.getModifiers() & Access.STATIC) != 0;
         if (isAlias) {
             fdecl.setIndirectBinding(true);
