@@ -1,3 +1,8 @@
+2017-07-15  Per Bothner  <per@bothner.com>
+
+	* configure.ac: Configure (and make) bin unconditionally.
+	This so cgi-servlet is built even if the frontend isn't.
+
 2017-06-10  Per Bothner  <per@bothner.com>
 
 	* configure.ac: Default to Java 8, as intended.

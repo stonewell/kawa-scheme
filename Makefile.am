@@ -4,7 +4,7 @@ include $(top_srcdir)/source-list
 
 CLASSPATH = .$(CLASSPATH_SEPARATOR)$(srcdir)$(CLASSPATH_SEPARATOR)@conf_classpath@$$CLASSPATH
 
-FIXED_SUBDIRS = doc testsuite gnu/bytecode \
+FIXED_SUBDIRS = bin doc testsuite gnu/bytecode \
   gnu \
   kawa/lib gnu/kawa/slib gnu/kawa/servlet \
   gnu/commonlisp/lisp gnu/commonlisp/testsuite \
@@ -32,9 +32,6 @@ SUBDIRS += $(ANDROID_SUBDIRS)
 endif
 if WITH_JAVAFX
 SUBDIRS += $(JAVAFX_SUBDIRS)
-endif
-if ENABLE_KAWA_FRONTEND
-SUBDIRS += bin
 endif
 
 DIST_SUBDIRS = $(FIXED_SUBDIRS) \

@@ -253,8 +253,7 @@ AC_SUBST_FILE(Make_rules)
 AC_CONFIG_LINKS(
   testsuite/scribble.html:testsuite/scribble.html.in)
 
-AM_COND_IF([ENABLE_KAWA_FRONTEND],
-        [AC_CONFIG_SUBDIRS([bin])])
+AC_CONFIG_SUBDIRS([bin])
 
 AC_CONFIG_FILES([Makefile gnu/bytecode/Makefile
   gnu/Makefile gnu/kawa/servlet/Makefile
