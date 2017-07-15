@@ -273,12 +273,12 @@ public class IfFeature extends Syntax {
         return result;
     }
 
-  public static final String PROVIDE_PREFIX = "%provide%";
+    public static final String PROVIDE_PREFIX = "%provide%";
 
-  public static boolean isProvide (Declaration decl)
-  {
-    return decl.getName().startsWith(PROVIDE_PREFIX);
-  }
+    public static boolean isProvide(Declaration decl) {
+        String name = decl.getName();
+        return name == null ? false : name.startsWith(PROVIDE_PREFIX);
+    }
 
     public static final SimpleSymbol andSymbol = Symbol.valueOf("and");
     public static final SimpleSymbol elseSymbol = Symbol.valueOf("else");
