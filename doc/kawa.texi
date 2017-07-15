@@ -8652,7 +8652,7 @@ usual @code{list} properties but internally wraps a @code{argvector}.
 
 In the following, @var{args} is an @code{arglist} or @code{argvector}
 (or in general any object that implement @code{gnu.mapping.ArgList}).
-Also, @var{args} can be a generalized list, in which case it
+Also, @var{args} can be any sequence, in which case it
 behaves like an @code{argvector} that has no keyword arguments.
 
 @deffn Procedure arglist-walk args proc
@@ -8750,18 +8750,54 @@ has not been re-bound.
 @node Extended formals
 @section Extended Formal Arguments List
 
+A @code{lambda} expression evaluates to a procedure.
+The environment in effect when the @code{lambda} expression was
+evaluated is remembered as part of the procedure. When
+the procedure is later called with some actual arguments,
+the environment in which the @code{lambda} expression was evaluated
+will be extended by binding the variables in the formal
+argument list to fresh locations, and the corresponding ac-
+tual argument values will be stored in those locations.
+(A @dfn{fresh location} is one that is distinct from every previously
+existing location.) Next, the expressions in the body of the
+lambda expression will be evaluated
+sequentially in the extended environment. The results of
+the last expression in the body will be returned as the results
+of the procedure call.
+
+@example
+(lambda (x) (+ x x))   @result{} @emph{a procedure}
+((lambda (x) (+ x x)) 4)  @result{} 8
+
+(define reverse-subtract
+  (lambda (x y) (- y x)))
+(reverse-subtract 7 10) @result{} 3
+
+(define add4
+  (let ((x 4))
+   (lambda (y) (+ x y))))
+(add4 6) @result{} 10
+@end example
+
 The formal arguments list of a lambda expression has some
 extensions over standard Scheme:
 Kawa borrows the extended formal argument list of DSSSL,
-and Kawa allows you to declare the type of the parameter.
+and allows you to declare the type of the parameter.
 More generally, you can use @ref{Variables and Patterns,patterns}.
 
 @display
 @stxdef{lambda-expression} @stxlit{(lambda} @stxref{formals} @arbno{@stxref{option-pair}} @stxref{opt-return-type} @stxref{body}@stxlit{)}
-@stxdef{return-type} @stxref{type}
 @stxdef{opt-return-type} [@stxlit{::} @stxref{type}]
 @end display
-where
+
+A @var{opt-return-type} specifies the return type of the procedure:
+The result of evaluating the @var{body} is coerced to the specified @var{type}.
+
+See @ref{Procedure properties,properties} for
+how to set and use an @var{option-pair}.
+
+@subsubheading Parameters
+
 @display
 @stxdef{formals} @stxlit{(}@stxref{formal-arguments}@stxlit{)} | @stxref{rest-arg}
 @end display
@@ -8843,14 +8879,51 @@ is @samp{<} and the last is @samp{>}), then that specifies the
 function's return type.  It is syntactic sugar for
 @code{(as <TYPE> (begin BODY))}.
 
-You can set the @ref{Procedure properties,properties}
-of the resulting procedure using an @var{option-pair}.  For example,
-to set the @code{setter} property of a procedure
-to @code{my-set-car} do the following:
-@example
-(define my-car
-  (lambda (arg) setter: my-set-car (primitive-car arg)))
-@end example
+@subsubheading Rest parameter
+
+A `''rest parameter'' matches any arguments not matched by other parameters.
+You can write it using any of the following ways:
+
+@display
+@stxdef{rest-parameter}
+  @stxlit{#!rest} @stxref{rest-arg} [@stxlit{::} @stxref{type}]
+  | @stxlit{@@}@stxref{rest-arg}
+  | @stxlit{@@:}@stxref{rest-arg}
+@end display
+
+In addition, if @var{formals} is just a @var{rest-arg} identifier,
+or a @var{formal-arguments} ends with @code{. @var{rest-arg}}
+(i.e. is a dotted list) that is equivalent to using @code{#!rest}.
+
+These forms are similar but differ in the type of the @var{rest-arg}
+and whether keywords are allowed (as part of the @var{rest-arg}):
+
+@itemize
+@item
+If @stxlit{#!rest} @var{rest-arg} is used with no @var{type} specifier
+(or a @var{type} specifier of @code{list})
+then @var{rest-arg} is a list.
+If there are any keywords, then @var{rest-arg} is more specifically
+an @code{arglist}.
+@item
+If @stxlit{#!rest} @var{rest-arg} is used with @var{type} specifier
+that is a Java array (for example @code{#!rest r::string[]}
+then @var{rest-arg} has that type.  Each argument must be compatible
+with the element type of the array.
+Keywords are not allows (even if @var{type} in @code{object[]}).
+
+The generated method will be compiled like a Java varargs
+methods if possible (i.e. no non-trivial patterns or keyword paremeters).
+@item
+Using @stxlit{@@}@var{rest-arg} is equivalent to
+@code{#!rest @var{rest-arg}::object[]}:
+Keywords are not allowed; the type of @var{rest-arg} is a Java array;
+the method is compiled like a Java varargs method.
+
+@item
+For @stxlit{@@:}@var{rest-arg} then @var{rest-arg} is a vector,
+specifically an @code{argvector}. Keywords are allowed.
+@end itemize
 
 @node Procedure properties
 @section Procedure properties
@@ -8858,6 +8931,17 @@ to @code{my-set-car} do the following:
 You can associate arbitrary @dfn{properties} with any procedure.
 Each property is a (@var{key}, @var{value})-pair.  Usually the
 @var{key} is a symbol, but it can be any object.
+
+The preferred way to set a prperty is directly as an @stxref{option-pair}
+in a @stxref{lambda-expression}.
+For example,
+to set the @code{setter} property of a procedure
+to @code{my-set-car} do the following:
+@example
+(define my-car
+  (lambda (arg) setter: my-set-car (primitive-car arg)))
+@end example
+For example:
 
 The system uses certain internal properties:
 @code{'name} refers to the name used when a procedure is printed;
