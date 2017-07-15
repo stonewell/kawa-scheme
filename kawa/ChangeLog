@@ -1,5 +1,9 @@
 2017-07-15  Per Bothner  <per@bothner.com>
 
+	* standard/ImportFromLibrary.java (libraryExists): Search module manager.
+	This fixes GitLab issues #13 'locally defined library not found by
+	cond-expand?'.
+
 	* lang/Translator.java (reqrite): Follow aliased for scan-nesting.
 
 	* standard/IfFeature.java (isProvide): Check for null name.

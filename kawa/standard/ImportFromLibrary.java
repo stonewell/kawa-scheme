@@ -614,6 +614,7 @@ public class ImportFromLibrary extends Syntax
      * or the special BUILTIN value; otherwise null.
      */
     public String libraryExists(Object list, Translator tr) {
+        ModuleManager mmanager = ModuleManager.getInstance();
         String lname = module_name.listToModuleName(list, tr);
         lname = checkSrfi(lname, tr);
         if (lname == BUILTIN)
@@ -621,6 +622,8 @@ public class ImportFromLibrary extends Syntax
         int classPrefixPathLength = classPrefixPath.length;
         for (int i = 0;  i < classPrefixPathLength;  i++) {
             String className = classPrefixPath[i] + lname;
+            if (mmanager.searchWithClassName(className) != null)
+                return className;
             try {
                 ObjectType.getContextClass(className);
                 return className;
