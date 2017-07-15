@@ -1,3 +1,7 @@
+2017-07-15  Per Bothner  <per@bothner.com>
+
+	* kawa/arglist.scm: Allow general sequence.
+
 2017-06-13  Sudarshan S Chawathe <chaw@eip10.org>
 
 	* kawa/pprint.scm (pprint-logical-block): Initialize out-expr.
