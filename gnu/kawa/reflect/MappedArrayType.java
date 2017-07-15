@@ -15,7 +15,7 @@ public class MappedArrayType extends ObjectType implements TypeValue {
     protected ObjectType implementationType;
 
     static ClassType utilType = ClassType.make("gnu.kawa.functions.MakeSplice");
-    static Method coundiftMethod = utilType.getDeclaredMethod("count", 1);
+    static Method countMethod = utilType.getDeclaredMethod("count", 1);
 
     public MappedArrayType(Type elementType) {
         this.elementType = elementType;
