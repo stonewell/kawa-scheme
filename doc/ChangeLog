@@ -1,3 +1,8 @@
+2017-07-15  Frank Ruben <gitlab@mg.gitlab.com>
+
+	* kawa.texi (Method operations): Fix typo in example.
+	This fixes GitLab issue #14.
+
 2017-07-15  Per Bothner  <per@bothner.com>
 
 	* kawa.texi: Update about lambda expressions.

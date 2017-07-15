@@ -19400,7 +19400,7 @@ You can also use a defined alias:
 You can even evaluate @var{class-expression} at run-time
 (in which case Kawa may have to use slower reflection):
 @example
-(let ((math java.lang.Math)) math:sqrt 9.0) @result{} 3.0
+(let ((math java.lang.Math)) (math:sqrt 9.0)) @result{} 3.0
 @end example
 
 Here @code{java.lang.Math} evaluates to a @code{java.lang.Class}
