@@ -258,12 +258,14 @@ public class ImportFromLibrary extends Syntax
             scanImportSet(cdrPair.getCar(), defs, tr, nmapper);
             return;
         }
+        scanImportSet1(pimport, defs, tr, mapper);
+    }
 
+    boolean scanImportSet1(Object libref, ScopeExp defs, Translator tr, require.DeclSetMapper mapper) {
         String explicitSource = null;
         Object versionSpec = null;
         StringBuilder cbuf = new StringBuilder(); // for class name
         StringBuilder sbuf = new StringBuilder(); // for source file name
-        Object libref = pimport;
         while (libref instanceof Pair) {
             Pair pair = (Pair) libref;
             Object car = pair.getCar();
@@ -288,9 +290,9 @@ public class ImportFromLibrary extends Syntax
             }
             libref = cdr;
         }
-        handleImport(sbuf.toString(), explicitSource,
-                     cbuf.toString(),
-                     defs, tr, mapper);
+        return handleImport(sbuf.toString(), explicitSource,
+                            cbuf.toString(),
+                            defs, tr, mapper);
     }
 
     /** Do the actual work of importing a module.
@@ -299,13 +301,13 @@ public class ImportFromLibrary extends Syntax
      * @param explicitSource If non-null, an exlicitly specified
      *   source file name.
      */
-    public static void handleImport(String implicitSource, String explicitSource, String requestedClass, ScopeExp defs, Translator tr, require.DeclSetMapper mapper) {
+    public static boolean handleImport(String implicitSource, String explicitSource, String requestedClass, ScopeExp defs, Translator tr, require.DeclSetMapper mapper) {
 
         ModuleManager mmanager = ModuleManager.getInstance();
         ModuleInfo minfo = null;
         String lname = checkSrfi(requestedClass, tr);
         if (lname == BUILTIN)
-            return; // nothing to do
+            return true; // nothing to do
         boolean foundSrfi = lname != requestedClass;
 
         int classPrefixPathLength = classPrefixPath.length;
@@ -472,11 +474,14 @@ public class ImportFromLibrary extends Syntax
             else
                 minfo.setModuleClass(existingClass);
         }
-        if (minfo == null)
-            tr.error('e', "unknown library ("+implicitSource.replace('/', ' ')+")");
-        else
-            require.importDefinitions(lname, minfo, mapper,
-                                      tr.formStack, defs, tr);
+        if (defs != null) {
+            if (minfo == null)
+                tr.error('e', "unknown library ("+implicitSource.replace('/', ' ')+")");
+            else
+                require.importDefinitions(lname, minfo, mapper,
+                                          tr.formStack, defs, tr);
+        }
+        return minfo != null;
     }
 
     public Expression rewriteForm(Pair form, Translator tr) {
@@ -613,25 +618,9 @@ public class ImportFromLibrary extends Syntax
      * @return if library exists: class name of (existing) library class,
      * or the special BUILTIN value; otherwise null.
      */
-    public String libraryExists(Object list, Translator tr) {
+    public boolean libraryExists(Object list, Translator tr) {
         ModuleManager mmanager = ModuleManager.getInstance();
-        String lname = module_name.listToModuleName(list, tr);
-        lname = checkSrfi(lname, tr);
-        if (lname == BUILTIN)
-            return lname;
-        int classPrefixPathLength = classPrefixPath.length;
-        for (int i = 0;  i < classPrefixPathLength;  i++) {
-            String className = classPrefixPath[i] + lname;
-            if (mmanager.searchWithClassName(className) != null)
-                return className;
-            try {
-                ObjectType.getContextClass(className);
-                return className;
-            } catch (Exception ex) {
-                continue;
-            }
-        }
-        return null;
+        return scanImportSet1(list, null, tr, null);
     }
 
     public static final ThreadLocal<List<CharSequence>> searchPath

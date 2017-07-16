@@ -73,8 +73,8 @@ public class IfFeature extends Syntax {
                 if (rest instanceof Pair) {
                     Pair pair2 = (Pair) rest;
                     if (pair2.getCdr() == LList.Empty)
-                        return (ImportFromLibrary.instance
-                                .libraryExists(pair2.getCar(), tr)) != null;
+                        return ImportFromLibrary.instance
+                            .libraryExists(pair2.getCar(), tr);
                 }
                 tr.errorWithPosition("'library' must be followed by <library name>", pair);
                 return false;

@@ -1,3 +1,9 @@
+2017-07-16  Per Bothner  <per@bothner.com>
+
+	* standard/ImportFromLibrary.java (libtaryExists): Improve.
+	Use same code to search for a module as import does.
+	This required some modest re-factoring and a new helper method.
+
 2017-07-15  Per Bothner  <per@bothner.com>
 
 	* standard/ImportFromLibrary.java (libraryExists): Search module manager.
