@@ -1,3 +1,8 @@
+2017-07-16  Per Bothner  <per@bothner.com>
+
+	* kawa.texi: Add @kdb commands for better styling.
+	Also fix error in example - using make-vector instead of vector.
+
 2017-07-15  Frank Ruben <gitlab@mg.gitlab.com>
 
 	* kawa.texi (Method operations): Fix typo in example.

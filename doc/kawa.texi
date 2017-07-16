@@ -2115,9 +2115,9 @@ Given what was said above about being able to add, subtract and multiply integer
 the following may be unexpected:
 
 @example
-#|kawa:1|# (/ 2 3)
+#|kawa:1|# @kbd{(/ 2 3)}
 2/3
-#|kawa:2|# (+ (/ 1 3) (/ 2 3))
+#|kawa:2|# @kbd{(+ (/ 1 3) (/ 2 3))}
 1
 @end example
 
@@ -2131,11 +2131,11 @@ Floating-point real numbers are known in Kawa as @emph{inexact} numbers, as
 they cannot be stored exactly.  Consider:
 
 @example
-#|kawa:3|# (exact? 2/3)
+#|kawa:3|# @kbd{(exact? 2/3)}
 #t
-#|kawa:4|# (exact? 0.33333333)
+#|kawa:4|# @kbd{(exact? 0.33333333)}
 #f
-#|kawa:5|# (exact->inexact 2/3)
+#|kawa:5|# @kbd{(exact->inexact 2/3)}
 0.6666666666666666
 @end example
 
@@ -2147,11 +2147,11 @@ Numbers are converted between exact and inexact versions when required
 within operations or procedures:
 
 @example
-#|kawa:6|# (+ 0.33333333 2/3)
+#|kawa:6|# @kbd{(+ 0.33333333 2/3)}
 0.9999999966666666
-#|kawa:7|# (inexact? (+ 0.33333333 2/3))
+#|kawa:7|# @kbd{(inexact? (+ 0.33333333 2/3))}
 #t
-#|kawa:8|# (sin 2/3)
+#|kawa:8|# @kbd{(sin 2/3)}
 0.618369803069737
 @end example
 
@@ -2162,11 +2162,11 @@ A @emph{complex} number is made from two parts: a @emph{real} part and an
 be manipulated just like other numbers:
 
 @example
-#|kawa:9|# (+ 2+3i 5+2i)
+#|kawa:9|# @kbd{(+ 2+3i 5+2i)}
 7+5i
-#|kawa:10|# (* 2+3i 4-3i)
+#|kawa:10|# @kbd{(* 2+3i 4-3i)}
 17+6i
-#|kawa:11|# (integer? (+ 2+3i -3i))
+#|kawa:11|# @kbd{(integer? (+ 2+3i -3i))}
 #t
 @end example
 
@@ -2186,11 +2186,11 @@ Using Kawa, we can define units for our weight measurements, and specify the
 units along with numbers:
 
 @example
-#|kawa:12|# (define-base-unit pound "Weight")
-#|kawa:13|# (define-unit ounce 0.0625pound)
-#|kawa:14|# 3pound
+#|kawa:12|# @kbd{(define-base-unit pound "Weight")}
+#|kawa:13|# @kbd{(define-unit ounce 0.0625pound)}
+#|kawa:14|# @kbd{3pound}
 3.0pound
-#|kawa:15|# (+ 1pound 5ounce)
+#|kawa:15|# @kbd{(+ 1pound 5ounce)}
 1.3125pound
 @end example
 
@@ -2249,9 +2249,9 @@ The usual way of doing this is to create a named function, called
 @code{double}, and then apply it to a list:
 
 @example
-#|kawa:1|# (define (double x)
-#|.....2|#    (* 2 x))
-#|kawa:3|# (map double (list 1 2 3 4 5))
+#|kawa:1|# @kbd{(define (double x)}
+#|.....2|# @kbd{   (* 2 x))}
+#|kawa:3|# @kbd{(map double (list 1 2 3 4 5))}
 (2 4 6 8 10)
 @end example
 
@@ -2259,10 +2259,10 @@ Instead, anonymous functions make it easy to create a function to work on a
 list, without having to define it in advance:
 
 @example
-#|kawa:4|# (map (lambda (x) (* 2 x)) (list 1 2 3 4 5))
+#|kawa:4|# @kbd{(map (lambda (x) (* 2 x)) (list 1 2 3 4 5))}
 (2 4 6 8 10)
-#|kawa:5|# (define y 3)
-#|kawa:6|# (map (lambda (x) (* x y)) (list 1 2 3 4 5))
+#|kawa:5|# @kbd{(define y 3)}
+#|kawa:6|# @kbd{(map (lambda (x) (* x y)) (list 1 2 3 4 5))}
 (3 6 9 12 15)
 @end example
 
@@ -2313,13 +2313,13 @@ pass just one argument or more than three: @code{x} and @code{y} are compulsory,
 optional.
 
 @example
-#|kawa:12|# (addup 1 2)
+#|kawa:12|# @kbd{(addup 1 2)}
 3
-#|kawa:13|# (addup 1 2 3)
+#|kawa:13|# @kbd{(addup 1 2 3)}
 6
-#|kawa:14|# (addup 1)
+#|kawa:14|# @kbd{(addup 1)}
 /dev/stdin:14:1: call to 'addup' has too few arguments (1; min=2, max=3)
-#|kawa:15|# (addup 1 2 3 4)
+#|kawa:15|# @kbd{(addup 1 2 3 4)}
 /dev/stdin:15:1: call to 'addup' has too many arguments (4; min=2, max=3)
 @end example
 
@@ -2347,11 +2347,11 @@ The @code{args} are simply a list of all remaining values.  The following now al
 function only requires a minimum of two numbers:
 
 @example
-#|kawa:4|# (addup 1 2)
+#|kawa:4|# @kbd{(addup 1 2)}
 3
-#|kawa:5|# (addup 1 2 3)
+#|kawa:5|# @kbd{(addup 1 2 3)}
 6
-#|kawa:6|# (addup 1 2 3 4 5 6 7 8)
+#|kawa:6|# @kbd{(addup 1 2 3 4 5 6 7 8)}
 36
 @end example
 
@@ -2366,9 +2366,9 @@ Finally, it can be useful to identify parameters by name and, for this, Kawa
 provides @emph{keyword} arguments.  Consider the following function:
 
 @example
-(define (vector-3d #!key x y z)
-  (make-vector x y z))
-#|kawa:40|# (vector-3d #:x 2 #:z 3 #:y 4)
+#|kawa:38|# @kbd{(define (vector-3d #!key x y z)}
+#|.....39|# @kbd{  (vector x y z))}
+#|kawa:40|# @kbd{(vector-3d #:x 2 #:z 3 #:y 4)}
 #(2 4 3)
 @end example
 
@@ -2392,9 +2392,9 @@ You can declare a variable using a @code{!} form.
 This takes a variable name, and an expression.  It declares a new
 variable with the given name, and gives it the value of the expression.
 @example
-#|kawa:1|# (! binary-kilo 1024)
-#|kawa:2|# (! binary-mega (* binary-kilo binary-kilo))
-#|kawa:3|# binary-mega
+#|kawa:1|# @kbd{(! binary-kilo 1024)}
+#|kawa:2|# @kbd{(! binary-mega (* binary-kilo binary-kilo))}
+#|kawa:3|# @kbd{binary-mega}
 1048576
 @end example
 
@@ -2958,14 +2958,14 @@ The following example shows how to construct a normal Scheme vector,
 and a Java array of ints:
 
 @example
-|kawa:1|# (vector )
+#|kawa:1|# @kbd{(vector)}
 #()
-#|kawa:2|# (instance? (vector ) vector)
+#|kawa:2|# @kbd{(instance? (vector) vector)}
 #t
-#|kawa:3|# (define x (int[] 1 2 3))
-#|kawa:4|# x
+#|kawa:3|# @kbd{(define x (int[] 1 2 3))}
+#|kawa:4|# @kbd{x}
 [1 2 3]
-#|kawa:5|# (instance? x int[])
+#|kawa:5|# @kbd{(instance? x int[])}
 #t
 @end example
 
@@ -2976,7 +2976,7 @@ So are Java array types, as shown above.
 e.g. a JFrame is constructed by using its class name as a function:
 
 @example
-#|kawa:6|# (javax.swing.JFrame )
+#|kawa:6|# @kbd{(javax.swing.JFrame)}
 javax.swing.JFrame[frame0,0,25,0x0,invalid,hidden,layout=java.awt.BorderLayout,
 title=,resizable,normal,defaultCloseOperation=HIDE_ON_CLOSE,
 rootPane=javax.swing.JRootPane[,0,0,0x0,invalid,
