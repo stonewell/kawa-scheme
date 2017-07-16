@@ -302,7 +302,7 @@ public class ImportFromLibrary extends Syntax
      *   source file name.
      */
     public static boolean handleImport(String implicitSource, String explicitSource, String requestedClass, ScopeExp defs, Translator tr, require.DeclSetMapper mapper) {
-
+        boolean checkExistsOnly = defs == null;
         ModuleManager mmanager = ModuleManager.getInstance();
         ModuleInfo minfo = null;
         String lname = checkSrfi(requestedClass, tr);
@@ -449,6 +449,8 @@ public class ImportFromLibrary extends Syntax
             // before asking the file-system.  FIXME
             long lastModifiedTime = path.getLastModified();
             if (lastModifiedTime != 0) {
+                if (checkExistsOnly)
+                    return true;
                 if (minfo != null) {
                     String pstring = path.toString();
                     Path infoPath = minfo.getSourceAbsPath();
@@ -468,19 +470,19 @@ public class ImportFromLibrary extends Syntax
             }
         }
 
+        if (checkExistsOnly)
+            return existingClass != null || minfo != null;
         if (existingClass != null) {
             if (minfo == null)
                 minfo = mmanager.findWithClass(existingClass);
             else
                 minfo.setModuleClass(existingClass);
         }
-        if (defs != null) {
-            if (minfo == null)
-                tr.error('e', "unknown library ("+implicitSource.replace('/', ' ')+")");
-            else
-                require.importDefinitions(lname, minfo, mapper,
+        if (minfo == null)
+            tr.error('e', "unknown library ("+implicitSource.replace('/', ' ')+")");
+        else
+            require.importDefinitions(lname, minfo, mapper,
                                           tr.formStack, defs, tr);
-        }
         return minfo != null;
     }
 
