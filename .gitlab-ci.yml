@@ -11,6 +11,7 @@ build_script:
         - dnf install make -y
         - dnf install texinfo -y
         - dnf install java-1.8.0-openjdk-devel -y
+        - dnf install gcc -y
         - ./autogen.sh
         - ./configure
         - make
