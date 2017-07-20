@@ -7,7 +7,7 @@ import static  gnu.kawa.lispexpr.LangObjType.sequenceType;
 /** An array type where elements are copied from a sequence.
  * A MappedArrayType[T] is implemented using a T (native) array.
  * It is compatible with a sequence whose elements are compatible with T.
- * Each element is copied from the sequence into the array.
+ * Each element is copied (with coercion) from the sequence into the array.
  */
 
 public class MappedArrayType extends ObjectType implements TypeValue {
@@ -136,7 +136,6 @@ public class MappedArrayType extends ObjectType implements TypeValue {
     }
 
     public void emitCoerceFromObject (CodeAttr code) {
-        //code.emitCheckcast(this); // FIXME
         emitTestCoerce(false, null, null, null, code);
     }
 }
