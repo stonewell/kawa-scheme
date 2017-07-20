@@ -132,8 +132,6 @@ public class BindDecls {
                 Pair nextPair = (Pair) next;
                 decl = addCondition(scope, nextPair.getCar());
                 next = nextPair.getCdr();
-                if (scope instanceof LambdaExp)
-                    ((LambdaExp) scope).min_args--;
             } else {
                 comp.error('e', "missing expression after "+ifKeyword);
             }
@@ -287,6 +285,7 @@ public class BindDecls {
             decl.noteValueFromLet(scope);
         }
     }
+
     Declaration addCondition(ScopeExp scope, Object condition) {
         Declaration decl = scope.addDeclaration((Object) null);
         Expression cond;

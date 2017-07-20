@@ -140,7 +140,6 @@ public class Lambda extends Syntax
               tr.syntaxError ("multiple " + restKeyword
                               + " keywords in parameter list");
             mode = null;
-            lexp.min_args++; // compensate for later decrement
 	    rest_args = 0;
         }
 	else if (pair_car == restKeyword)
@@ -159,12 +158,14 @@ public class Lambda extends Syntax
 	  }
 	else if (mode == keyKeyword)
 	  key_args++;
-	else if (mode == restKeyword)
-	  rest_args++;
-	else if (opt_args >= 0)
+	else if (mode == restKeyword) {
+          if (pair_car != Special.ifk)
+            rest_args++;
+	} else if (opt_args >= 0)
 	  opt_args++;
-	else
-	  lexp.min_args++;
+	else if (pair_car != Special.ifk) {
+            lexp.min_args++;
+        }
 	if (pair_car == optionalKeyword
 	    || pair_car == restKeyword || pair_car == keyKeyword)
 	  {
@@ -200,7 +201,6 @@ public class Lambda extends Syntax
             if (decl == null)
                 decl = new Declaration("<error>");
             if (decl.getFlag(Declaration.IS_REST_PARAMETER)) {
-                lexp.min_args--;
                 if (rest_args > 0)
                     tr.syntaxError("multiple rest arguments in parameter list");
                 rest_args = 1;
@@ -260,7 +260,7 @@ public class Lambda extends Syntax
             decl.setType(new LangExp(typeSpecPair), null);
 	    decl.setFlag(Declaration.TYPE_SPECIFIED);
 	  }
-        if (mode == restKeyword)
+        if (mode == restKeyword && pair_car != Special.ifk)
 	  {
             decl.setFlag(Declaration.IS_REST_PARAMETER);
             if (! decl.getFlag(Declaration.TYPE_SPECIFIED)) {
