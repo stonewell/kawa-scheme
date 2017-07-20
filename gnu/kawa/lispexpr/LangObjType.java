@@ -609,9 +609,9 @@ public class LangObjType extends SpecialObjectType implements TypeValue
         return ClassType.make("gnu.lists.Sequences").getDeclaredMethod("coerceToSequence", 1);
       default:
         Procedure cons = getConstructor();
-        if (cons == null)
-          return null;
-        return ((PrimProcedure) cons).getMethod();
+        return cons instanceof PrimProcedure
+            ?  ((PrimProcedure) cons).getMethod()
+            : null;
       }
   }
 
