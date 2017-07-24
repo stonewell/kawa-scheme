@@ -1,5 +1,8 @@
 2017-07-24  Per Bothner  <per@bothner.com>
 
+	* misc-test.scm: Add test for GitLib issue #15
+	"make-parameter doesn't like vector as converter".
+
 	* bad-keywords1.scm: Use arglist constructor, rather than list,
 	since they latter doesn't (shouldn't) allow keywords.
 

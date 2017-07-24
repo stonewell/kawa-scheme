@@ -1,4 +1,4 @@
-(test-init "Miscellaneous" 228)
+(test-init "Miscellaneous" 229)
 
 ;;; DSSSL spec example 11
 (test '(3 4 5 6) (lambda x x) 3 4 5 6)
@@ -655,6 +655,9 @@
 		 (set! param1v 17)
 		 (append r1 (list (param1) param1v))))))
 	(append r0 (list (param1) param1v))))
+
+(define param2 (make-parameter 7 vector))
+(test #(7) 'param-test7 (param2))
 
 (begin
   (define var1 1)

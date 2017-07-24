@@ -1,3 +1,9 @@
+2017-07-24  Per Bothner  <per@bothner.com>
+
+	* parameters.scm (make-parameter): Allow non-Procedure as converter.
+	Fixes GitLib issue #15 "make-parameter doesn't like vector
+	as converter".
+
 2017-07-15  Per Bothner  <per@bothner.com>
 
 	* kawa/arglist.scm: Allow general sequence.

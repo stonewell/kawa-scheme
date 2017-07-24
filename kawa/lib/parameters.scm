@@ -7,9 +7,14 @@
 (define (make-parameter init #!optional (converter #!null))
   (if (not (eq? converter #!null))
       (set! init (converter init)))
-  (let ((loc (gnu.mapping.ThreadLocation:new)))
+  (let* ((loc (gnu.mapping.ThreadLocation:new))
+         (conv ::gnu.mapping.Procedure
+               (if (or (eq? converter #!null)
+                       (gnu.mapping.Procedure? converter))
+                   converter
+                   (lambda (x) (converter x)))))
     (invoke loc 'setGlobal init)
-    (gnu.mapping.LocationProc:new loc converter)))
+    (gnu.mapping.LocationProc:new loc conv)))
 
 (define (as-location% param) :: <gnu.mapping.Location>
   (if (instance? param <gnu.mapping.LocationProc>)
