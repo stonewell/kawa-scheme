@@ -1,3 +1,8 @@
+2017-07-24  Per Bothner  <per@bothner.com>
+
+	* Compilation.java (generateCheckArg): Move call to
+	generateCheckArg so it is called even if no rest parameter.
+
 2017-07-15  Per Bothner  <per@bothner.com>
 
 	* Language.java (decodeType): Handle MappedArrayAtyoe.

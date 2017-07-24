@@ -17,6 +17,9 @@ public class ArgListImpl implements ArgList, ArgListBuilder {
     public long lvalue2;
     */
     Object[] values = new Object[8];
+    /** Number of arguments.
+     * Includes keyword arguments but does not include the keywords themselves.
+     */
     protected int count;
 
     public void printArgs() {

@@ -71,10 +71,6 @@ public class CallContext // implements Runnable
    * This may point to vstack - or some other Consumer. */
   public Consumer consumer = vstack;
 
-  /* * Number of actual arguments. * /
-  public int count;
-    * /
-  
   /** Index of next argument.
    * This is used by methods like getNextArg, used by callees. */
   public int next;
@@ -151,8 +147,8 @@ public class CallContext // implements Runnable
             code &= 0xffff0000;
             if (code == MethodProc.NO_MATCH_TOO_FEW_ARGS
                 || code == MethodProc.NO_MATCH_TOO_MANY_ARGS) {
-                WrongArguments wr = new WrongArguments(proc, getArgCount());
-                //System.err.println("before WrongArgs code:"+Integer.toHexString(code)+" proc:"+proc+(proc==null?"":(" max:"+proc.maxArgs()))+" nargs:"+getArgCount()+" wr.m:"+wr.getMessage()+" wr:"+wr+" next:"+next+" count:"+count+" firstK:"+firstKeyword+" numK:"+numKeywords+" nextK:"+nextKeyword);
+                WrongArguments wr = new WrongArguments(proc, getArgCount()-numKeywords);
+                //System.err.println("before WrongArgs code:"+Integer.toHexString(code)+" proc:"+proc+(proc==null?"":(" min:"+proc.minArgs()+" max:"+proc.maxArgs()))+" nargs:"+getArgCount()+" wr.m:"+wr.getMessage()+" wr:"+wr+" next:"+next+" count:"+count+" firstK:"+firstKeyword+" numK:"+numKeywords+" nextK:"+nextKeyword);
                 throw wr;
             }
             if (code == MethodProc.NO_MATCH_UNUSED_KEYWORD) {
@@ -171,6 +167,7 @@ public class CallContext // implements Runnable
                 }
                 else {
                     if (sortedKeywords != null && nextKeyword > 0
+                        && nextKeyword < sortedKeywords.length
                         && arg == sortedKeywords[nextKeyword]
                         && keywords[arg] == keywords[sortedKeywords[nextKeyword-1]])
                         //if (arg+1 < numKeywords && keywords[arg] == keywords[arg+1])
@@ -212,8 +209,8 @@ public class CallContext // implements Runnable
     */
 
     public void checkKeywordsDone() {
-        if (next == count)
-            return;
+        if (numKeywords != 0 && next < firstKeyword)
+            matchError(MethodProc.NO_MATCH_TOO_MANY_ARGS|next);
         if (nextKeyword < numKeywords) {
             short keywordIndex = sortedKeywords == null ? 0
                 : sortedKeywords[nextKeyword];
@@ -225,8 +222,6 @@ public class CallContext // implements Runnable
     }
 
     public int checkDone() { // Or: doneWithArgs
-        if (numKeywords > 0)
-            checkKeywordsDone();
         if (next != count) {
             matchError(MethodProc.NO_MATCH_TOO_MANY_ARGS|next);
         }
@@ -241,11 +236,8 @@ public class CallContext // implements Runnable
     /** Get the next incoming argument.
      */
     public Object getNextArg() {
-        if (next >= count) {
+        if (next >= count || (next == firstKeyword && numKeywords != 0)) {
             matchError(MethodProc.NO_MATCH_TOO_FEW_ARGS|next);
-            return null;
-        } else if (next == firstKeyword && numKeywords != 0) {
-            matchError(MethodProc.NO_MATCH_UNUSED_KEYWORD|0);
             return null;
         } else
             return getArgAsObject(next++);

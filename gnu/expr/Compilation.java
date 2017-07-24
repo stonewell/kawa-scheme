@@ -1265,6 +1265,13 @@ public class Compilation implements SourceLocator
             }
         };
 
+    /** An initial pass through the keyword parameters.
+     * This is in keyword lexical order.
+     * For each keyword formal parameter, we check if there is
+     * a corresponding actual keyword parameter.  If so we get its value.
+     * Default value expressions are only evaluated if "simple" (literals);
+     * otherwise they are evaluated in the later declaration-order pass.
+     */
     private Declaration[] generateCheckKeywords(LambdaExp lexp) {
         int nkeys = lexp.keywords == null ? 0 : lexp.keywords.length;
         if (nkeys == 0)
@@ -1325,14 +1332,12 @@ public class Compilation implements SourceLocator
         return keyDecls;
     }
 
+    /** Generate code to process one formal parameter.
+     * Calls recursively to handle the next parameter.
+     * If there are no more parameters, calls generateCheckCall to finish,
+     */
     private void generateCheckArg(Declaration param, LambdaExp lexp, int kin, CodeAttr code, Declaration[] keyDecls, ArrayList<Variable> argVariables, Variable suppliedParameterVar) {
 	Variable ctxVar = callContextVar;
-        if (lexp.keywords != null
-            && ! lexp.getFlag(LambdaExp.ALLOW_OTHER_KEYWORDS)
-            && param != null && param.getFlag(Declaration.IS_REST_PARAMETER)) {
-            code.emitLoad(ctxVar);
-            code.emitInvoke(typeCallContext.getDeclaredMethod("checkKeywordsDone", 0));
-        }
 	if (param == null) {
             code.emitLoad(ctxVar);
             code.emitInvoke(typeCallContext.getDeclaredMethod("checkDone", 0));
@@ -1460,6 +1465,11 @@ public class Compilation implements SourceLocator
                 Expression defaultArg = param.getInitValue();
                 defaultArg.compile(this, Type.objectType);
                 code.emitFi();
+            }
+            if (kindex+1 == keyDecls.length
+                && ! lexp.getFlag(LambdaExp.ALLOW_OTHER_KEYWORDS)) {
+                code.emitLoad(ctxVar);
+                code.emitInvoke(typeCallContext.getDeclaredMethod("checkKeywordsDone", 0));
             }
             knext++;
         } else {
