@@ -222,9 +222,10 @@ public class CallContext // implements Runnable
     }
 
     public int checkDone() { // Or: doneWithArgs
-        if (next != count) {
+        if (next == firstKeyword && numKeywords > 0)
+            matchError(MethodProc.NO_MATCH_UNUSED_KEYWORD|firstKeyword);
+        else if (next != count)
             matchError(MethodProc.NO_MATCH_TOO_MANY_ARGS|next);
-        }
         else if (matchState == MATCH_THROW_ON_EXCEPTION
                  || matchState == MATCH_CHECK)
             return 0;
@@ -401,9 +402,6 @@ public class CallContext // implements Runnable
         }
     }
     */
-
-    //int firstKeyword;
-    //int numKeywords;
 
     /* * A sorted list of keyword arguments.
      * (It might be a win to use a String instead of a short[],
