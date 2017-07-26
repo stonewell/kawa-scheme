@@ -8509,6 +8509,7 @@ This is then matched against the formal parameter list
 in the procedure definition, and (assuming they match)
 the procedure body is called.
 
+@anchor{argument list}
 @subsection Arguments lists
 
 An argument list has three parts:
@@ -8683,8 +8684,11 @@ the first keyword argument.
 @end deffn
 
 @deffn Procedure arglist-arg-count args
-Return the number of non-keyword arguments.
-(The count includes neither the keywords nor the corresponding values.)
+Return the number of arguments.
+The count includes the number of keyword arguments, but not the actual keywords.
+@example
+(arglist-arg-count (arglist 10 11 k1: -1 19)) @result{} 4
+@end example
 @end deffn
 
 @deffn Procedure arglist-arg-ref args index
@@ -8747,8 +8751,9 @@ is equivalent to @code{(quote #(a b c))}, assuming @code{vector}
 has not been re-bound.
 @end deffn
 
+@c The node name 'Extended formals' is klunky, but kept for compatibility
 @node Extended formals
-@section Extended Formal Arguments List
+@section Lambda Expressions and Formal Parameters
 
 A @code{lambda} expression evaluates to a procedure.
 The environment in effect when the @code{lambda} expression was
@@ -8756,8 +8761,8 @@ evaluated is remembered as part of the procedure. When
 the procedure is later called with some actual arguments,
 the environment in which the @code{lambda} expression was evaluated
 will be extended by binding the variables in the formal
-argument list to fresh locations, and the corresponding ac-
-tual argument values will be stored in those locations.
+argument list to fresh locations, and the corresponding actual
+argument values will be stored in those locations.
 (A @dfn{fresh location} is one that is distinct from every previously
 existing location.) Next, the expressions in the body of the
 lambda expression will be evaluated
@@ -8788,53 +8793,76 @@ More generally, you can use @ref{Variables and Patterns,patterns}.
 @display
 @stxdef{lambda-expression} @stxlit{(lambda} @stxref{formals} @arbno{@stxref{option-pair}} @stxref{opt-return-type} @stxref{body}@stxlit{)}
 @stxdef{opt-return-type} [@stxlit{::} @stxref{type}]
+@stxdef{formals} @stxlit{(}@stxref{formal-arguments}@stxlit{)} | @stxref{rest-arg}
 @end display
 
-A @var{opt-return-type} specifies the return type of the procedure:
+An @var{opt-return-type} specifies the return type of the procedure:
 The result of evaluating the @var{body} is coerced to the specified @var{type}.
+
+@emph{Deprecated}: If the first form of the function body is an unbound
+identifier of the form @code{<TYPE>} (that is the first character
+is @samp{<} and the last is @samp{>}), then that is another way to specify the
+function's return type.
 
 See @ref{Procedure properties,properties} for
 how to set and use an @var{option-pair}.
 
-@subsubheading Parameters
-
-@display
-@stxdef{formals} @stxlit{(}@stxref{formal-arguments}@stxlit{)} | @stxref{rest-arg}
-@end display
-You can of course also use the extended format in a @ref{Definitions,@code{define}}:
+The @ref{Definitions,@code{define}} form has a short-hand that combines
+a lambda definition with binding the lambda to a variable:
 @example
-@b{(define (}@var{name} @var{formal-arguments}@b{)} [@var{rtype}] @var{body}@b{)}
+@b{(define (}@var{name} @stxref{formal-arguments}@b{)} @stxref{opt-return-type} @stxref{body}@b{)}
 @end example
+
 @display
-@stxdef{formal-arguments}
-    @arbno{@stxref{required-or-guard}} [@stxlit{#!optional} @stxref{optional-arg} ...] (@stxref{rest-key-args} | @stxlit{.} @stxref{rest-arg})
+@stxdef{formal-arguments} @arbno{@stxref{required-or-guard}} [@stxlit{#!optional} @stxref{optional-arg} ...] @stxref{rest-key-args}
+@stxdef{rest-key-args} [@stxlit{#!rest} @stxref{rest-arg}] [@stxlit{#!key} @stxref{key-arg} ...] [@stxref{guard}]
+  | [@stxlit{#!key} @stxref{key-arg} ...] [@stxref{rest-parameter}] [@stxref{guard}]
+  | @stxlit{.} @stxref{rest-arg}
 @end display
+
+When the procedure is applied to an
+@ref{argument list}, the latter is matched against formal parameters.
+This may involve some complex rules and pattern matching.
+
+@subsubheading Required parameters
+
 @display
-@stxdef{required-or-guard} @stxref{required-arg} |@stxref{guard}
-@stxdef{rest-key-args} [@stxlit{#!rest} @stxref{rest-arg}] [@stxlit{#!key} @stxref{key-arg} ...]
-  | [@stxlit{#!key} @stxref{key-arg} ...] [@stxlit{#!rest} @stxref{rest-arg}]
-@stxdef{required-arg} @stxref{pattern} [@stxlit{::} @stxref{type}]
+@stxdef{required-or-guard} @stxref{required-arg} | @stxref{guard}
+@stxdef{required-arg} @stxref{pattern}
   | @stxlit{(} @stxref{pattern} @stxlit{::} @stxref{type}@stxlit{)}
-@stxdef{optional-arg} @var{variable} [@stxlit{::} @stxref{type}]
-  | @stxlit{(} @stxref{pattern} [@stxlit{::} @stxref{type}] [@var{initializer} [@stxref{supplied-var}]]@stxlit{)}
-@stxdef{supplied-var} @var{variable}
-@stxdef{key-arg} @var{variable} [@stxlit{::} @stxref{type}]
-    | @stxlit{(} @var{variable} [@stxlit{::} @stxref{type}] [@var{initializer} [@stxref{supplied-var}]] @stxlit{)}
-@stxdef{rest-arg} @var{variable}
 @end display
 
-When the procedure is applied to a list of actual arguments, the formal and
-actual arguments are processed from left to right as follows:
+The @var{required-arg}s are matched against the
+actual (pre-keyword) arguments in order,
+starting with the first actual argument.
+It is an error if there are fewer pre-keyword
+arguments then there are @var{required-arg}s.
+While a @var{pattern} is most commonly an identifier,
+more complicated patterns are possible, thus more (or fewer)
+variables may be bound than there are arguments.
 
-@itemize
-@item
-The @var{required-arg}s are matched against actual (pre-keyword) arguments
-in order, starting with the first actual argument.
-A @var{guard} is evaluated when it appears:
-If it evaluates to false, then matching fails.
-It shall be an error if there are fewer pre-keyword
-arguments then there are @var{req-arg}s.
-@item
+Note a @stxref{pattern} may include an @stxref{opt-type-specifier}.
+For example:
+@example
+(define (isquare x::integer)
+  (* x x))
+@end example
+In this case the actual argument is coerced to an @code{integer}
+and then the result matched against the pattern @code{x}.
+This is how parameter types are specified.
+
+The @var{pattern} may be enclosed in parentheses for clarify
+(just like for optional parameters), but in that case the
+type specifier is required to avoid ambiguity.
+
+@subsubheading Optional parameters
+
+@display
+@stxdef{optional-arg} @var{variable} @stxref{opt-type-specifier}
+  | @stxlit{(} @stxref{pattern} @stxref{opt-type-specifier} [@var{initializer} [@stxref{supplied-var}]]@stxlit{)}
+@stxdef{supplied-var} @var{variable}
+@end display
+
 Next the @var{optional-arg}s are bound to remaining pre-keyword arguments.
 If there are fewer remaining pre-keyword arguments than there are
 @var{optional-arg}s, then the remaining @var{variable}s are bound
@@ -8847,41 +8875,75 @@ environment in which all the previous formal parameters have been bound.
 If a @var{supplied-var} is specified, it has type boolean,
 and is set to true if there was an actual corresponding argument,
 and false if the initializer was evaluated.
-@item
-If there is a @var{rest-arg}, it is bound to a list of all the
-remaining actual arguments.  These remaining actual arguments are also
-eligible to be bound to keyword arguments.   If there is no
-@var{rest-arg} and there are no @var{key-arg}s, then it shall
-be an error if there are any remaining actual arguments.
-@item
-If @code{#!key} was specified, then there shall be an even number of
-remaining actual arguments.  These are interpreted as a series of pairs,
-where the first member of each pair is a keyword specifying the argument name,
-and the second is the corresponding value.  It shall be an error if the first
-member of a pair is not a keyword.  It shall be an error if the argument name
-is not the same as a variable in a @var{key-arg}s, unless there
-is a @var{rest-arg}.  If the same argument name occurs more than once
-in the list of actual arguments, then the first value is used.
-If there is no actual argument for a particular @var{key-arg},
-then the variable is bound
-to the corresponding @var{initializer}, if one was specified, and
-otherwise to @code{#f}.  The @var{initializer} is evaluated in an
+
+@subsubheading Keyword parameters
+
+@display
+@stxdef{key-arg} @var{variable} @stxref{opt-type-specifier}
+    | @stxlit{(} @var{variable} @stxref{opt-type-specifier} [@var{initializer} [@stxref{supplied-var}]] @stxlit{)}
+@end display
+
+Keyword parameters follow @code{#!key}.
+For each @var{variable}
+if there is an actual keyword parameter whose keyword matches @var{variable},
+then @var{variable} is bound to the corresponding value.
+If there is no matching artual argument, then the @var{initializer} is
+evaluated and bound to the argument.
+If @var{initializer} is not specified, it defaults to @code{#f}.
+The @var{initializer} is evaluated in an
 environment in which all the previous formal parameters have been bound.
+
+@example
+(define (fun x #!key (foo 1) (bar 2) (baz 3))
+  (list x foo bar baz))
+(fun 9 baz: 10 foo: 11) @result{} (9 11 2 10)
+@end example
+
+The following cause a match failure, @emph{unless} there is a rest parameter:
+@itemize
+@item
+There may not be extra non-keyword arguments (prefix or postfix)
+beyond those matched by required and optional parameters.
+@item
+There may not be any duplicated keyword arguments.
+@item
+All keyowrds in the actual argument list must
+match one of the keyword formal parameters.
 @end itemize
+
+It is not recommended to use both keyword parameters
+and a rest parameter that can match keyword arguments.
+Currently, the rest parameter will include any arguments
+that match the explicit keyword parameters, as well any that don't,
+though this may change.
+
+On the other hand, it is fine to have both keyword parameters
+and a rest parameter does not accept keywords.  In that case
+the rest parameter will match any ``postfix'' arguments:
+
+@example
+#|kawa:8|# (define (fun x #!key k1 k2 #!rest r)
+  (format "x:~w k1:~w k2:~w r:~w" x k1 k2 r))
+(fun 3 k2: 12 100 101) @result{} x:3 k1:#f k2:12 r:(100 101)
+@end example
+
+The @var{supplied-var} argument is as for optional arguments.
+
+@PerformanceNote{} Keyword parameters are implemented very
+efficiently and compactly when explicit in the code.
+The parameters are sorted by the compiler, and the
+actual keyword arguemnts at the call state are also sorted at compile-time.
+So keyword matching just requires a fast linear scan comparing
+the two sorted lists.  This implementation is also very compact,
+compared to say a hash table.
 
 If a @var{type} is specified, the corresponding actual argument (or
 the @var{initializer} default value) is coerced to the specified @var{type}.
 In the function body, the parameter has the specified type.
 
-If @var{rtype} (the first form of the function body) is an unbound
-identifier of the form @code{<TYPE>} (that is the first character
-is @samp{<} and the last is @samp{>}), then that specifies the
-function's return type.  It is syntactic sugar for
-@code{(as <TYPE> (begin BODY))}.
+@subsubheading Rest parameters
 
-@subsubheading Rest parameter
-
-A `''rest parameter'' matches any arguments not matched by other parameters.
+A ``rest parameter'' matches any arguments not matched by other parameters.
 You can write it using any of the following ways:
 
 @display
@@ -8889,6 +8951,7 @@ You can write it using any of the following ways:
   @stxlit{#!rest} @stxref{rest-arg} [@stxlit{::} @stxref{type}]
   | @stxlit{@@}@stxref{rest-arg}
   | @stxlit{@@:}@stxref{rest-arg}
+@stxdef{rest-arg} @var{variable}
 @end display
 
 In addition, if @var{formals} is just a @var{rest-arg} identifier,
@@ -8903,6 +8966,9 @@ and whether keywords are allowed (as part of the @var{rest-arg}):
 If @stxlit{#!rest} @var{rest-arg} is used with no @var{type} specifier
 (or a @var{type} specifier of @code{list})
 then @var{rest-arg} is a list.
+Keywords are not allowed if @code{#!key} has been seen.
+(For backward compatibility, it is allowed to have extra keywords
+if @code{#!rest} is followed by @code{!key}.)
 If there are any keywords, then @var{rest-arg} is more specifically
 an @code{arglist}.
 @item
@@ -8910,7 +8976,7 @@ If @stxlit{#!rest} @var{rest-arg} is used with @var{type} specifier
 that is a Java array (for example @code{#!rest r::string[]}
 then @var{rest-arg} has that type.  Each argument must be compatible
 with the element type of the array.
-Keywords are not allows (even if @var{type} in @code{object[]}).
+Keywords are not allowed (even if @var{type} in @code{object[]}).
 
 The generated method will be compiled like a Java varargs
 methods if possible (i.e. no non-trivial patterns or keyword paremeters).
@@ -8925,6 +8991,14 @@ For @stxlit{@@:}@var{rest-arg} then @var{rest-arg} is a vector,
 specifically an @code{argvector}. Keywords are allowed.
 @end itemize
 
+@subsubheading Guards (conditional expressions)
+
+A @stxref{guard} is evaluated when it appears in the formal
+parameter list.
+If it evaluates to false, then matching fails.
+Guards can appears before or after required arguments,
+or at the very end, after all other formal parameters.
+
 @node Procedure properties
 @section Procedure properties
 
@@ -8932,7 +9006,7 @@ You can associate arbitrary @dfn{properties} with any procedure.
 Each property is a (@var{key}, @var{value})-pair.  Usually the
 @var{key} is a symbol, but it can be any object.
 
-The preferred way to set a prperty is directly as an @stxref{option-pair}
+The preferred way to set a property is using an @stxref{option-pair}
 in a @stxref{lambda-expression}.
 For example,
 to set the @code{setter} property of a procedure
@@ -8941,7 +9015,6 @@ to @code{my-set-car} do the following:
 (define my-car
   (lambda (arg) setter: my-set-car (primitive-car arg)))
 @end example
-For example:
 
 The system uses certain internal properties:
 @code{'name} refers to the name used when a procedure is printed;
