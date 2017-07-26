@@ -264,7 +264,7 @@ public class Lambda extends Syntax
 	  {
             decl.setFlag(Declaration.IS_REST_PARAMETER);
             if (! decl.getFlag(Declaration.TYPE_SPECIFIED)) {
-                if (key_args > 0)
+                if (key_args >= 0)
                     decl.setType(LangObjType.listType);
                 else {
                     decl.setType(LangObjType.argListType);
