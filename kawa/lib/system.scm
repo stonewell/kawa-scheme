@@ -1,6 +1,7 @@
-(require <kawa.lib.prim_syntax>)
+(require <kawa.lib.prim_imports>)
 (require <kawa.lib.std_syntax>)
 (require <kawa.lib.syntax>)
+(require <kawa.lib.lists>)
 (require <kawa.lib.vectors>)
 (require <kawa.lib.exceptions>)
 
@@ -36,18 +37,18 @@
 
 (define (convert-vector-to-string-array vec)
   (let* ((count (vector-length vec))
-	 (arr ((primitive-array-new <java.lang.String>) count)))
+	 (arr (java.lang.String[] length: count)))
     (do ((i 0 (+ i 1)))
 	((= i count) arr)
-      ((primitive-array-set <String>) arr i (vector-ref vec i)))))
+      (set! (arr i) (vector-ref vec i)))))
 
 (define (convert-list-to-string-array lst)
   (let* ((count :: <int> (length lst))
-	 (arr ((primitive-array-new <String>) count)))
+	 (arr (String[] length: count)))
     (let loop ((p lst) (i :: <int> 0))
       (if (null? p) arr
 	  (let ((pp :: <pair> p))
-	    ((primitive-array-set <String>) arr i pp:car)
+	    (set! (arr i) pp:car)
 	    (loop pp:cdr (+ i 1)))))))
 
 (define (tokenize-string-to-string-array (string :: <String>))
@@ -64,20 +65,15 @@
 	       list)
 	    #!void))
 	 (count :: <int> (length rlist))
-	 (arr ((primitive-array-new <String>) count)))
+	 (arr (String[] length: count)))
     (let loop ((p rlist) (i :: <int> (- count 1)))
       (if (null? p) arr
 	  (let ((pp :: <pair> p))
-	    ((primitive-array-set <String>) arr i  pp:car)
+	    (set! (arr i)  pp:car)
 	    (loop pp:cdr (- i 1)))))))
 
 (define (tokenize-string-using-shell string)
-  (let ((arr :: <java.lang.String[]>
-             ((primitive-array-new <java.lang.String>) 3)))
-    ((primitive-array-set <String>) arr 0 "/bin/sh")
-    ((primitive-array-set <String>) arr 1 "-c")
-    ((primitive-array-set <String>) arr 2 string)
-    arr))
+  (java.lang.String[] "/bin/sh" "-c" string))
 
 (define command-parse :: <function>
   (if (equal? (java.lang.System:getProperty "file.separator") "/")

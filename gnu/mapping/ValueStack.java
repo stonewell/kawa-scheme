@@ -24,15 +24,8 @@ class ValueStack extends TreeList {
             lastObject = this;
         }
         int oindex = find(consumerOnPush);
-        ensureSpace(6);
-        int start = gapStart;
-        data[start++] = TreeList.INT_FOLLOWS;
-        setIntN(start, oindex);
-        start += 2;
-        gapStart = start;
-        data[start++] = TreeList.INT_FOLLOWS;
-        setIntN(start, gapStartOnPush);
-        gapStart = start+2;
+        writeIntForce32(oindex);
+        writeIntForce32(gapStartOnPush);
     }
 
     void pop(int saved) {
@@ -42,6 +35,53 @@ class ValueStack extends TreeList {
         objects[oindex] = null;
         oindexOnPush = oindex;
         gapStart = saved-6;
+    }
+
+    public void pushArgState(CallContext ctx) {
+        int saveGap = gapStart;
+        writeIntForce32(ctx.consumerOnPushArgState);
+        writeIntForce32(ctx.next);
+        writeIntForce32(ctx.count);
+        writeIntForce32(ctx.firstKeyword);
+        writeIntForce32(ctx.numKeywords);
+        writeIntForce32(ctx.nextKeyword);
+        writeIntForce32(ctx.matchState);
+        ctx.consumerOnPushArgState = saveGap;
+        int ogrow = ctx.count+2;
+        reserveObjects(ogrow);
+        System.arraycopy(ctx.values, 0, objects, oindex,
+                         ctx.count);
+        // Should we save applyMethod and/or proc fields?
+        objects[oindex+ctx.count] = ctx.keywords;
+        objects[oindex+ctx.count+1] = ctx.sortedKeywords;
+        oindex += ogrow;
+        ctx.next = 0;
+        ctx.count = 0;
+        ctx.firstKeyword = 0;
+        ctx.numKeywords = 0;
+        ctx.nextKeyword = 0;
+        ctx.matchState = 0; // ???
+        ctx.keywords = null;
+        ctx.sortedKeywords = null;
+    }
+    public void popArgState(CallContext ctx) {
+        int start = ctx.consumerOnPushArgState;
+        ctx.consumerOnPushArgState = getIntN(start+1);
+        ctx.next = getIntN(start+4);
+        ctx.count = getIntN(start+7);
+        ctx.firstKeyword = getIntN(start+10);
+        ctx.numKeywords = getIntN(start+13);
+        ctx.nextKeyword = getIntN(start+16);
+        ctx.matchState = getIntN(start+19);
+        gapStart = start;
+        int ogrow = ctx.count+2;
+        oindex -= ogrow;
+        System.arraycopy(objects, oindex,
+                         ctx.values, 0, ctx.count);
+        ctx.keywords = (String[]) objects[oindex+ctx.count];
+        ctx.sortedKeywords = (short[]) objects[oindex+ctx.count+1];
+        for (int i = 0;  i < ogrow; i++)
+            objects[oindex+1] = null;
     }
 
     Object getValue() {

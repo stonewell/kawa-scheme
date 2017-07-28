@@ -121,8 +121,9 @@ public class CommonLisp extends Lisp2
 
     try
       {
+        loadClass("kawa.lib.kawa.base");
         // Force it to be loaded now, so we can over-ride let* length etc.
-        loadClass("kawa.lib.prim_syntax");
+        loadClass("kawa.lib.prim_imports");
         loadClass("kawa.lib.std_syntax");
         loadClass("kawa.lib.lists");
         loadClass("kawa.lib.strings");
@@ -219,7 +220,6 @@ public class CommonLisp extends Lisp2
     defProcStFld("eql", "gnu.commonlisp.lisp.primitives");
     defProcStFld("member", "gnu.commonlisp.lisp.primitives");
     defProcStFld("complement", "gnu.commonlisp.lisp.primitives");
-    defProcStFld("apply", "gnu.commonlisp.lisp.primitives");
     defProcStFld("funcall", "gnu.commonlisp.lisp.primitives");
     defProcStFld("minusp", "gnu.commonlisp.lisp.primitives");
     defProcStFld("plusp", "gnu.commonlisp.lisp.primitives");
@@ -250,7 +250,7 @@ public class CommonLisp extends Lisp2
     return readable ? writeFormat : displayFormat;
   }
 
-  LangPrimType booleanType;
+    LangPrimType booleanType = new LangPrimType(Type.booleanType, this);
 
     @Override
     public Type getTypeFor(String name) {
@@ -268,9 +268,7 @@ public class CommonLisp extends Lisp2
 
     public Type getNamedType (String name) {
         if (name.equals("boolean")) {
-            if (booleanType == null)
-                booleanType = new LangPrimType(Type.booleanType, this);
-            return booleanType;
+            return this.booleanType;
         }
         return super.getNamedType(name);
     }

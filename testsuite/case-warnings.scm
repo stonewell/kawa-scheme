@@ -2,7 +2,7 @@
   ((1 2 3 4 5) '1to5)
   ((6 7 8 9 10) '6to10)
   (else (display 'else) (newline)))
-;; Diagnostic: case-warnings.scm:2:4: warning - datum type incompatible with the key
+;; Diagnostic: case-warnings.scm:2:5: warning - datum type incompatible with the key
 ;; Diagnostic: case-warnings.scm:2:7: warning - datum type incompatible with the key
 ;; Diagnostic: case-warnings.scm:2:9: warning - there are 8 more datums that are incompatible with the key
 ;; Output: else
@@ -28,9 +28,9 @@
 (newline)
 ;; Diagnostic: case-warnings.scm:19:7: warning - List and vectors will never be matched in a case clause
 ;; Diagnostic: case-warnings.scm:19:7: warning - datum type incompatible with the key
-;; Diagnostic: case-warnings.scm:21:6: warning - datum type incompatible with the key
-;; Diagnostic: case-warnings.scm:23:6: warning - a string in a case clause will never match (except another literal)
-;; Diagnostic: case-warnings.scm:22:6: warning - there are 2 more datums that are incompatible with the key
+;; Diagnostic: case-warnings.scm:21:7: warning - datum type incompatible with the key
+;; Diagnostic: case-warnings.scm:23:7: warning - a string in a case clause will never match (except another literal)
+;; Diagnostic: case-warnings.scm:22:7: warning - there are 2 more datums that are incompatible with the key
 ;; Output: list case: num
 
 (define (d key)

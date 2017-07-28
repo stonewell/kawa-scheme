@@ -28,13 +28,17 @@ public class CompileProcess {
             if (args[inArg] instanceof ApplyExp) {
                 ApplyExp inApp = (ApplyExp) args[inArg];
                 Object inFun = inApp.getFunction().valueIfConstant();
-                if (inFun instanceof RunProcess) {
+                if (inFun instanceof RunProcess
+                    && inApp.firstKeywordArgIndex <= 1) {
                     Expression[] inArgs = inApp.getArgs();
                     Expression[] xargs = new Expression[inArgs.length+2];
                     xargs[0] = QuoteExp.getInstance(Keyword.make("out-to"));
                     xargs[1] = QuoteExp.getInstance(RunProcess.pipeSymbol);
                     System.arraycopy(inArgs, 0, xargs, 2, inArgs.length);
                     inApp.setArgs(xargs);
+                    inApp.adjustSplice(inApp, 2);
+                    inApp.firstKeywordArgIndex = 1;
+                    inApp.numKeywordArgs += 1;
                 }
             }
         }

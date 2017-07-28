@@ -6,14 +6,15 @@
 (require kawa.lib.misc)
 (require kawa.lib.numbers)
 (require kawa.lib.ports)
-(require kawa.lib.prim_syntax)
+(import (except kawa.lib.prim_imports string))
 (require kawa.lib.rnrs.unicode)
 (require kawa.lib.strings)
+(require kawa.lib.kawa.mstrings)
 (require kawa.lib.std_syntax)
 (require kawa.lib.vectors)
 (require kawa.lib.scheme.eval)
-(require kawa.lib.prim_imports)
-(import (only (kawa standard load) load))
+(define-alias load kawa.standard.load:load)
+;(import (only (kawa standard load) load))
 
 (module-export
  * + - / < <= = > >=
@@ -51,7 +52,7 @@
  string-ci<=? string-ci<? string-ci=? string-ci>=? string-ci>?
  string-copy string-fill! string-length string-ref string-set!
  string<=? string<? string=? string>=? string>? string?
- substring symbol->string symbol?
+ substring symbol->string symbol? syntax-rules
  tan truncate values
  vector vector->list vector-fill! vector-length vector-ref vector-set! vector?
  with-input-from-file with-output-to-file write write-char zero?)

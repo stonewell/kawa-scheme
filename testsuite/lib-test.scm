@@ -1,6 +1,6 @@
 ;; -*- coding: utf-8 -*-
 
-(test-begin "libs" 260)
+(test-begin "libs" 278)
 
 (test-begin "vectors")
 (test-equal '(dah dah didah)
@@ -65,6 +65,12 @@
 (test-equal #u8(#xCE #xBB) (string->utf8 "λ"))
 (test-equal bytes1 (string->utf8 lambda-string))
 (test-equal lambda-string (utf8->string bytes1))
+(! hellox-str "Hæll◉ 😂!")
+(! hellox-utf8 #u8(#x48 #xc3 #xa6 #x6c #x6c #xe2 #x97 #x89
+                   #x20 #xf0 #x9f #x98 #x82 #x21))
+(test-equal hellox-utf8 (string->utf8 hellox-str))
+(test-equal hellox-str (utf8->string hellox-utf8))
+
 (test-end)
 
 (import (srfi :2 and-let*))
@@ -113,7 +119,7 @@
 (test-equal '("loc1" "uri1" "pre")
             (symbol-parts (symbol "loc1" "uri1" "pre")))
 (test-equal '("loc2" "uri2" "pre")
-            (symbol-parts (symbol 'loc2 'uri2 'pre)))
+            (symbol-parts (symbol "loc2" "uri2" "pre")))
 (test-equal '("loc3" "uri3" "pre")
             (symbol-parts (apply symbol (list "loc3" "uri3" "pre"))))
 (test-equal '("loc4" "uri4" "")
@@ -487,6 +493,30 @@
 (test-equal 1 (cons* 1))
 
 (test-end "rnrs-lists")
+
+(test-begin "arglists")
+(import (kawa arglist))
+(let ()
+  (! a1 [10 11 12])
+  (test-equal 3 (arglist-arg-count a1))
+  (! a2 (arglist 2 k1: "K1" k2: "K2" @a1))
+  (test-equal 6 (arglist-arg-count a2))
+  (test-equal "k2" (arglist-key-ref a2 2))
+  (test-equal "K2" (arglist-arg-ref a2 2))
+  (test-equal 11 (arglist-arg-ref a2 4))
+  (test-equal 2 (arglist-key-index a2 "k2"))
+  (test-equal "K2" (arglist-key-value a2 "k2" "none"))
+  (test-equal -1 (arglist-key-index a2 "k3"))
+  (test-equal "none" (arglist-key-value a2 "k3" "none"))
+  (let ((out (open-output-string)))
+    (arglist-walk a2
+                  (lambda (key arg)
+                    (if key (format out "{~a: ~w}" key arg)
+                        (format out "{~w}" arg))))
+    (test-equal "{2}{k1: \"K1\"}{k2: \"K2\"}{10}{11}{12}"
+                (get-output-string out)))
+  )
+(test-end "arglists")
 
 (test-begin "strings")
 (import (kawa string-cursors))
@@ -866,5 +896,17 @@
                       (list-sort char<? (char-set->list
                                          intersection))))))
 (test-end)
+
+(import (srfi :13 strings))
+(test-equal 15 (string-contains "eek -- what a geek." "ee" 12 18))
+
+;;; Test SRFI-13 string-append/shared
+(let ((str "abc"))
+  (test-equal "" (string-append/shared))
+  (test-equal "" (string-append/shared ""))
+  (test-equal "abc" (string-append/shared str))
+  (set! str (string-append/shared str "123" "xy"))
+  (test-equal "abc123xy" (string-append/shared str))
+  (test-equal "abc123xy" str))
 
 (test-end)

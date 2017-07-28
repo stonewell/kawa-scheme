@@ -8,7 +8,7 @@ KAWA = ../bin/kawa.sh
 CPJAVA = CLASSPATH="..$(CLASSPATH_SEPARATOR)@conf_classpath@.$(CLASSPATH_SEPARATOR)$$CLASSPATH" $(JAVA)
 CPKAWA = CLASSPATH="@conf_classpath@.$(CLASSPATH_SEPARATOR)$$CLASSPATH" $(KAWA)
 KAWATEST = CLASSPATH=".$(CLASSPATH_SEPARATOR)$$CLASSPATH" $(KAWA) $(OPTIONS) -e '(load "testing.zip")'
-DIFF = diff --strip-trailing-cr
+DIFF = diff
 
 if ENABLE_SERVLET
 if ENABLE_XQUERY
@@ -46,15 +46,15 @@ check-no-inline:
 check1:  check-num check-arr check-java-array check-lazy check-lib \
   check-srfi-16 check-srfi-38 check-srfi-64 check-srfi-69 \
   check-srfi-101 check-srfi-108 check-srfi-109 check-resolve-uri \
-  check-format check-ppfile check-system check-text check-regex check-xml \
-  scribble.class check-run-test-scripts check-moduleM \
+  check-format check-ppfile check-system check-strings check-text check-regex \
+  check-xml scribble.class check-run-test-scripts check-moduleM \
   check-annotations1 check-annotations2\
   check-binarytrees check-chameneosredux check-fannkuch check-fannkuchredux check-fasta \
   check-knucleotide check-mandelbrot check-meteor check-nbody \
   check-nsieve check-pidigits check-regexdna check-revcomp \
   check-spectralnorm check-threadring
 check2:  check-scm check-r7rs check-misc check-mac check-obj check-polytype \
-  check-case
+  check-case check-vars
 
 check-run-test-scripts: $(BUILD_BEFORE_SCRIPTS_TO_RUN)
 	CLASSPATH=$(top_builddir):. $(JAVA) gnu.kawa.util.RunTestScript \
@@ -74,7 +74,7 @@ check-case: testing.zip
 	$(KAWATEST) -f "$(srcdir)/case-test.scm" -e '(test-report)'
 
 check-r7rs:
-	$(KAWA) $(OPTIONS) --no-warn-void-used -f $(srcdir)/r7rs-tests.scm
+	$(KAWA) $(OPTIONS) --no-warn-void-used --r7rs -f $(srcdir)/r7rs-tests.scm
 
 check-num: InliningTest.class
 	$(KAWA) $(OPTIONS) "$(srcdir)/num-test.scm"
@@ -120,11 +120,17 @@ check-resolve-uri:
 check-system:
 	$(KAWA) $(OPTIONS) -e '(set! port-char-encoding "UTF-8")' -f "$(srcdir)/system-test.scm"
 
+check-strings:
+	$(KAWA) $(OPTIONS) -f "$(srcdir)/strings-test.scm"
+
 check-text:
 	$(KAWA) $(OPTIONS) -e '(set! port-char-encoding "UTF-8")' -f "$(srcdir)/text-test.scm"
 
 check-regex:
 	$(KAWA) $(OPTIONS) "$(srcdir)/regex-test.scm"
+
+check-vars:
+	$(KAWA) $(OPTIONS) "$(srcdir)/vars-test.scm"
 
 check-xml:
 	$(KAWA) $(OPTIONS) "$(srcdir)/xml-test.scm"
@@ -552,7 +558,7 @@ InliningTest.class: $(srcdir)/inlining-test.scm
 LIST_CODE_SIZE = $(CPJAVA) gnu.bytecode.ListCodeSize
 
 inlining.log: InliningTest.class cycle1.class cycle2.class \
-  binarytrees.class fannkuch.class fannkuchredux.class fasta.class mandelbrot.class nbody.class pidigits.class regexdna.class revcomp1.class revcomp2.class spectralnorm.class map1.class values2.class Makefile
+  binarytrees.class fannkuch.class fannkuchredux.class fasta.class mandelbrot.class nbody.class pidigits.class regexdna.class revcomp1.class revcomp2.class spectralnorm.class map1.class values2.class reflect-fname.class Makefile
 	$(LIST_CODE_SIZE) InliningTest.class \
 	setCar getCar getHome setHome isPair isEmpty castToPair newPair tohex \
 	make lengthIarr getIarr setIarr varargs \
@@ -587,6 +593,7 @@ inlining.log: InliningTest.class cycle1.class cycle2.class \
 	  listMapFormat stringMapFormat charArrayMapFormat vector1VmapFormat \
 	  vector2VmapFormat >>inlining.log
 	$(LIST_CODE_SIZE) values2.class test1 test2 test3 >>inlining.log
+	$(LIST_CODE_SIZE) reflect-fname.class kittensClass >>inlining.log
 
 check-inlining: inlining.log $(srcdir)/inlining.expected
 	@if $(DIFF) $(srcdir)/inlining.expected inlining.log; \
@@ -631,7 +638,7 @@ check-bridge:
 	$(KAWA) $(OPTIONS) "$(srcdir)/bridge.scm"
 
 check-life-grid:
-	$(KAWA) $(srcdir)/life-grid.scm >& life-grid.log
+	$(KAWA) $(srcdir)/life-grid.scm > life-grid.log 2>&1
 	@if $(DIFF) $(srcdir)/life-grid.expected life-grid.log; \
 	  then echo '# check-life-grid passes'; \
 	  else echo FAIL check-life-grid passes; fi
@@ -720,7 +727,7 @@ check-numbers-clisp:
 CLEANFILES = tmp* *.log testing.zip revcomp-input.txt knucleotide-input.txt regexdna-input.txt *.class HelloCgiK HelloCgiS
 SCRIPTS_TO_RUN = case-warnings.scm uninit1.scm \
   errors1.scm errors2.scm errors3.scm errors4.scm errors5.scm errors-arr.scm\
-  convert1.scm inner-1.scm lambda-in-class-1.scm \
+  convert1.scm func1.scm inner-1.scm lambda-in-class-1.scm \
   reflect1.scm reflect2.scm reflect-fname.scm\
   promise1.scm bad-keywords1.scm splice1.scm standards1.scm \
   anonymous-lambda-1.scm unreach1.scm unreach2.scm unreach3.scm \
@@ -733,7 +740,7 @@ SCRIPTS_TO_RUN = case-warnings.scm uninit1.scm \
   command1.scm command2.scm command3.scm exit1.scm exit2.scm lib-cycle.scm \
   lib-square.scm lib-squaref.scm lib-impsrc1.scm lib-impsrc2.scm lib-dup.scm \
   lib-colon1.scm lib-colon2.scm lib-export.scm lib-receive.scm lib-bracket.scm \
-  lib-tailcalls.scm \
+  lib-tailcalls.scm nesting-1.scm \
   macros1.scm macros2.scm macros3.scm exception1.scm exception2.scm  \
   sva34005.scm sva35362.scm sva36039.scm sva36413.scm sva36556.scm \
   sva36853.scm sva36863.scm sva36917.scm sva37684.scm sva38026.scm \

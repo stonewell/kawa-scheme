@@ -8,6 +8,10 @@
 	hashtable-equivalence-function hashtable-hash-function
 	hashtable-mutable?
 	equal-hash string-hash string-ci-hash symbol-hash)
+(require <kawa.lib.prim_imports>)
+(require <kawa.lib.std_syntax>)
+(require <kawa.lib.misc>)
+(require kawa.lib.lists)
 (require <kawa.lib.kawa.hashtable>)
 ;(import (kawa hashable))
 

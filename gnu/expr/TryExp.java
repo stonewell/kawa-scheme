@@ -43,6 +43,7 @@ public class TryExp extends Expression
 
   protected boolean mustCompile () { return false; }
 
+  @Override
   public void apply (CallContext ctx) throws Throwable
   {
     try
@@ -59,8 +60,8 @@ public class TryExp extends Expression
             ClassType typeVal = (ClassType) decl.getTypeExp().eval(ctx);
             if (typeVal.isInstance(ex))
               {
-                ctx.value1 = ex;
-                clause.apply(ctx);
+                ctx.setupApply(clause, ex);
+                ctx.runUntilDone();
                 return;
               }
           }
@@ -90,7 +91,9 @@ public class TryExp extends Expression
     CatchClause catch_clause = catch_clauses;
     for (; catch_clause != null;  catch_clause = catch_clause.getNext())
       {
+        Variable callContextSave = comp.callContextVar;
 	catch_clause.compile(comp, ttarg);
+        comp.callContextVar = callContextSave;
       }
 
     if (finally_clause != null)

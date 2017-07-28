@@ -78,6 +78,10 @@ public class GetModuleClass extends ProcedureN
   private static Symbol CLASS_RESOURCE_NAME =
     Namespace.getDefaultSymbol("$class_resource_URL$");
 
+    public static Expression getModuleClassExp() {
+        return new ApplyExp(getModuleClass);
+    }
+
   /** Return an expression that evaluates to a module-relative URL.
    * This has the Kawa-specific URL scheme "class-resource:" and an
    * associated ClassLoader (using a WeakHashMap).  It's used to reference

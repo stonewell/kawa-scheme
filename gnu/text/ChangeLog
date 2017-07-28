@@ -1,3 +1,17 @@
+2017-06-08  Per Bothner  <per@bothner.com>
+
+	* SourceLocator.java: Enable source ranges, with ending position.
+	(getStartLine, getStartColumn): Start position.
+	(getEndLine, getEndColumn): End position.
+	(class Simple): A simple implementation of SourceLocator.
+	* SourceError.java: Change to inherit from SourceLocator.Simple.
+	* SourceMessages.java: Likewise.
+	* SourceMapper.java: New class, with helper methods for SourceLocators.
+
+2017-04-29  Per Bothner  <per@bothner.com>
+
+	* StringCursor.java (toString): New method.
+
 2017-02-27  Per Bothner  <per@bothner.com>
 
 	* Char.java (append): Trivial optimization.

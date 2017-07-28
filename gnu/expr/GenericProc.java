@@ -4,24 +4,29 @@
 package gnu.expr;
 import gnu.mapping.*;
 import gnu.bytecode.Type;
+/* #ifdef use:java.lang.invoke */
+import java.lang.invoke.MethodHandle;
+/* #else */
+// import gnu.mapping.CallContext.MethodHandle; 
+/* #endif */
 
 /** A collection of MethodProcs;  one is chosen at apply time. */
 
 public class GenericProc extends MethodProc
 {
-  protected MethodProc[] methods;
-  int count;
-  int minArgs;
-  int maxArgs;
+    protected MethodProc[] methods;
+    int count;
+    int minArgs;
+    int maxArgs;
 
-  public GenericProc (String name)
-  {
-    setName(name);
-  }
+    public GenericProc(String name) {
+        super(true, applyToConsumerGP);
+        setName(name);
+    }
 
-  public GenericProc ()
-  {
-  }
+    public GenericProc() {
+        super(true, applyToConsumerGP);
+    }
 
   public int getMethodCount ()
   {
@@ -87,44 +92,8 @@ public class GenericProc extends MethodProc
       }
   }
 
-  /* Possibly optimization.  Likewise for apply0, apply2, apply3, apply4.
-  public Object apply1 (Object arg1) throws Throwable
-  {
-    if (numArgs() != 0x1001)
-      {
-	Object[] args = { arg1 };
-	return applyN(args);
-      }
-    CallContext ctx = CallContext.getInstance();
-    for (int i = 0;  i < count;  i++)
-      {
-        MethodProc method = methods[i];
-        if (method.match1(arg1, ctx) == 0)
-	  return method.applyV(ctx);
-      }
-    throw new WrongType(this, WrongType.ARG_UNKNOWN, null);
-  }
-  */
-
-  public Object applyN(Object[] args) throws Throwable
-  {
-    if (count == 1)
-      return methods[0].applyN(args);
-    checkArgCount(this, args.length);
-    CallContext ctx = CallContext.getInstance();
-    for (int i = 0;  i < count;  i++)
-      {
-        MethodProc method = methods[i];
-	int m = method.matchN(args, ctx);
-        if (m == 0)
-	  return ctx.runUntilValue();
-      }
-    throw new WrongType(this, WrongType.ARG_UNKNOWN, null);
-  }
-
     @Override
-    public int isApplicable(Type[] args, Type restType)
-  {
+    public int isApplicable(Type[] args, Type restType) {
     int best = -1;
     for (int i = count;  --i >= 0; )
       {
@@ -138,98 +107,35 @@ public class GenericProc extends MethodProc
     return best;
   }
 
-  public int match0 (CallContext ctx)
-  {
-    if (count == 1)
-      return methods[0].match0(ctx);
-    for (int i = 0;  i < count;  i++)
-      {
-        MethodProc method = methods[i];
-	int code = method.match0(ctx);
-	if (code == 0)
-	  return 0;
-      }
-    ctx.proc = null;
-    return NO_MATCH;
-  }
+    // FIXME also implement applyToObjectGP
+    public static Object applyToConsumerGP(Procedure proc, CallContext ctx)
+        throws Throwable {
+        GenericProc gproc = (GenericProc) proc;
+        MethodProc[] methods = gproc.methods;
+        int count = gproc.count;
+        if (count == 0)
+            return methods[0].getApplyToConsumerMethod().invokeExact((Procedure) methods[0], ctx);
+        int startState = ctx.getMode();
+        //System.err.println("applyToConsumerGP "+proc+" state:"+startState+"  c.proc:"+ctx.proc+" consumer:"+ctx.consumer);
+        int methodState = startState;
+        if (startState == CallContext.MATCH_THROW_ON_EXCEPTION)
+            methodState = CallContext.MATCH_CHECK;
+        for (int i = 0;  i < count;  i++) {
+            Procedure method = methods[i];
+            ctx.rewind(methodState);
+            Object r = method.getApplyToConsumerMethod().invokeExact(method, ctx);
+            if (r != ctx) {
+                //System.err.println("->applyToConsumerGP r:"+r+" state:"+Integer.toHexString(ctx.getMode())+" c.p:"+ctx.proc+" method:"+method+" app:"+java.lang.invoke.MethodHandles.lookup().revealDirect(method.getApplyToConsumerMethod())+" consumer:"+ctx.consumer+"::"+ctx.consumer.getClass().getName());
+                //ctx.consumer.dump();
+                return r;
+            }
+        }
+        ctx.rewind(startState);
+        ctx.matchError(NO_MATCH);
+        return ctx;
+    }
 
-  public int match1 (Object arg1, CallContext ctx)
-  {
-    if (count == 1)
-      return methods[0].match1(arg1, ctx);
-    for (int i = 0;  i < count;  i++)
-      {
-        MethodProc method = methods[i];
-	int code = method.match1(arg1, ctx);
-	if (code == 0)
-	  return 0;
-      }
-    ctx.proc = null;
-    return NO_MATCH;
-  }
-
-  public int match2 (Object arg1, Object arg2, CallContext ctx)
-  {
-    if (count == 1)
-      return methods[0].match2(arg1, arg2, ctx);
-    for (int i = 0;  i < count;  i++)
-      {
-        MethodProc method = methods[i];
-	int code = method.match2(arg1, arg2, ctx);
-	if (code == 0)
-	  return 0;
-      }
-    ctx.proc = null;
-    return NO_MATCH;
-  }
-
-  public int match3 (Object arg1, Object arg2, Object arg3, CallContext ctx)
-  {
-    if (count == 1)
-      return methods[0].match3(arg1, arg2, arg3, ctx);
-    for (int i = 0;  i < count;  i++)
-      {
-        MethodProc method = methods[i];
-	int code = method.match3(arg1, arg2, arg3, ctx);
-	if (code == 0)
-	  return 0;
-      }
-    ctx.proc = null;
-    return NO_MATCH;
-  }
-
-  public int match4 (Object arg1, Object arg2, Object arg3, Object arg4,
-		     CallContext ctx)
-  {
-    if (count == 1)
-      return methods[0].match4(arg1, arg2, arg3, arg4, ctx);
-    for (int i = 0;  i < count;  i++)
-      {
-        MethodProc method = methods[i];
-	int code = method.match4(arg1, arg2, arg3, arg4, ctx);
-	if (code == 0)
-	  return 0;
-      }
-    ctx.proc = null;
-    return NO_MATCH;
-  }
-
-  public int matchN (Object[] args, CallContext ctx)
-  {
-    if (count == 1)
-      return methods[0].matchN(args, ctx);
-    for (int i = 0;  i < count;  i++)
-      {
-        MethodProc method = methods[i];
-	int code = method.matchN(args, ctx);
-	if (code == 0)
-	  return 0;
-      }
-    ctx.proc = null;
-    return NO_MATCH;
-  }
-
-  public void setProperty (Keyword key, Object value)
+ public void setProperty (Keyword key, Object value)
   {
     String name = key.getName();
     if (name == "name")
@@ -277,4 +183,6 @@ public class GenericProc extends MethodProc
 
     return result;
   }
+    public static final MethodHandle applyToConsumerGP
+        = lookupApplyHandle(GenericProc.class, "applyToConsumerGP");
 }

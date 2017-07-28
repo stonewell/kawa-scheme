@@ -68,7 +68,7 @@ public class GenArrayType extends ParameterizedType implements TypeValue {
     @Override
     public Procedure getConstructor() {
         if (rank < 0 && getComponentType() == Type.objectType)
-            return new PrimProcedure("kawa.lib.arrays", "array", 2);
+            return new PrimProcedure("kawa.lib.arrays", "$array_constructor$", 2);
         return null;
     }
 

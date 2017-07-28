@@ -1,3 +1,18 @@
+2017-05-13  Per Bothner  <per@bothner.com>
+
+	* MakeScene.scm (add): Don't set root.
+	Fixes bug reported by Chris Vine <chris@cvine.freeserve.co.uk>.
+	Bug was introduced Sun Apr 30 19:39:19 2017.
+
+2017-04-30  Per Bothner  <per@bothner.com>
+
+	* defs.scm: Change how 'start' method wraps module body.
+	This broke at some point in the invoke branch.
+
+2016-11-28  Per Bothner  <per@bothner.com>
+
+	* defs.scm: Add missing splice operators.
+
 2016-06-26  Per Bothner  <per@bothner.com>
 
 	* MakeScene.scm (MakeScene): Don't create Group until actually needed.

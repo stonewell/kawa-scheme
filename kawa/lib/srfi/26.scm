@@ -48,6 +48,7 @@
 ;     combination : procedure being specialized, followed by its arguments
 ;     se          : slots-or-exprs, the qualifiers of the macro
 
+(module-name (srfi 26))
 (module-export cut cute)  ;; Added by Per Bothner, for Kawa.
 
 (import (scheme base))

@@ -64,6 +64,7 @@ public class require extends Syntax
     }
 
     private static final String SLIB_PREFIX = "gnu.kawa.slib.";
+    private static final String LIB_SRFI_PREFIX = "kawa.lib.srfi.";
 
     static {
         map("generic-write", SLIB_PREFIX + "genwrite");
@@ -79,12 +80,12 @@ public class require extends Syntax
         map("list-lib", SLIB_PREFIX + "srfi1");
         map("srfi-2", SLIB_PREFIX + "srfi2");
         map("and-let*", SLIB_PREFIX + "srfi2");
-        map("srfi-8", SLIB_PREFIX + "receive");
-        map("receive", SLIB_PREFIX + "receive");
+        map("srfi-8", LIB_SRFI_PREFIX + "8");
+        map("receive", LIB_SRFI_PREFIX + "8");
         map("srfi-13", SLIB_PREFIX + "srfi13");
         map("srfi-14", SLIB_PREFIX + "srfi14");
         map("string-lib", SLIB_PREFIX + "srfi13");
-        map("srfi-26", SLIB_PREFIX + "cut");
+        map("srfi-26", LIB_SRFI_PREFIX + "26");
         map("srfi-34", SLIB_PREFIX + "srfi34");
         map("srfi-35", SLIB_PREFIX + "conditions");
         map("condition", SLIB_PREFIX + "conditions");
@@ -102,8 +103,8 @@ public class require extends Syntax
         map("srfi-69", SLIB_PREFIX + "srfi69");
         map("hash-table", SLIB_PREFIX + "srfi69");
         map("basic-hash-tables", SLIB_PREFIX + "srfi69");
-        map("srfi-95", "kawa.lib.srfi95");
-        map("sorting-and-merging", "kawa.lib.srfi95");
+        map("srfi-95", LIB_SRFI_PREFIX + "95");
+        map("sorting-and-merging", LIB_SRFI_PREFIX + "95");
         map("srfi-101", SLIB_PREFIX + "ralists");
         map("random-access-lists", SLIB_PREFIX + "ralists");
         map("ra-lists", SLIB_PREFIX + "ralists");
@@ -287,7 +288,7 @@ public class require extends Syntax
             if (! info.loadEager(Compilation.COMPILED)
                 && info.getState() < Compilation.RESOLVED) {
                 // Oops.  We found a cycle.
-                tr.pushPendingImport(info, defs, forms);
+                tr.pushPendingImport(info, defs, forms, mapper);
                 return true;
             }
         }
@@ -317,20 +318,20 @@ public class require extends Syntax
             if (fdecl.isPrivate())
                 continue;
 
-            if (fdecl.field != null) {
-                String fname = fdecl.field.getName();
+            if (fdecl.getField() != null) {
+                String fname = fdecl.getField().getName();
                 if (fname.equals("$instance"))
                 {
-                    instanceField = fdecl.field;
+                    instanceField = fdecl.getField();
                     continue;
                 }
             }
 
-            if (fdecl.field != null
-                && fdecl.field.getName().endsWith("$instance")) {
+            if (fdecl.getField() != null
+                && fdecl.getField().getName().endsWith("$instance")) {
                 if (moduleReferences == null)
                     moduleReferences = new HashMap<String,Declaration>();
-                moduleReferences.put(fdecl.field.getName(), fdecl);
+                moduleReferences.put(fdecl.getField().getName(), fdecl);
             } else
                 dmap.put((Symbol) fdecl.getSymbol(),
                          new ReferenceExp(fdecl));
@@ -408,7 +409,7 @@ public class require extends Syntax
                 // xdecl can be null on an error.
                 if (xdecl != null && xdecl.needsContext()) {
                     String iname
-                        = (xdecl.field.getDeclaringClass().getName().replace('.', '$')
+                        = (xdecl.getField().getDeclaringClass().getName().replace('.', '$')
                            + "$instance");
                     Declaration cdecl = moduleReferences == null ? null
                         : moduleReferences.get(iname);

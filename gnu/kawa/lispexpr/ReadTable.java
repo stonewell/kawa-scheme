@@ -102,7 +102,8 @@ public class ReadTable extends RangeTable
     set('`',  new ReaderQuote(makeSymbol(LispLanguage.quasiquote_str)));
     ReaderQuote unquoteEntry =
         new ReaderQuote(makeSymbol(LispLanguage.unquote_str),
-                        '@', makeSymbol(LispLanguage.unquotesplicing_str));
+                        '@', makeSymbol(LispLanguage.unquotesplicing_str),
+                        ReadTable.TERMINATING_MACRO);
     set(',',  unquoteEntry);
 
     setBracketMode();  // Sets the entries for '[', ']', and '<'.

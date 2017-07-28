@@ -4,7 +4,7 @@
     <configuration>
         <general-data xmlns="http://www.netbeans.org/ns/freeform-project/1">
             <!-- Do not use Project Properties customizer when editing this file manually. -->
-            <name>Kawa</name>
+            <name>Kawa-invoke</name>
             <properties/>
             <folders>
                 <source-folder>
@@ -97,40 +97,28 @@
         <preferences xmlns="http://www.netbeans.org/ns/auxiliary-configuration-preferences/1">
             <module name="org-netbeans-modules-editor-indent">
                 <node name="CodeStyle">
-                    <property name="usedProfile" value="project"/>
-                    <node name="project">
-                        <property name="spaces-per-tab" value="4"/>
-                        <property name="tab-size" value="8"/>
-                        <property name="indent-shift-width" value="4"/>
-                        <property name="text-limit-width" value="80"/>
-                        <property name="expand-tabs" value="true"/>
-                    </node>
+                    <node name="project"/>
                 </node>
                 <node name="text">
                     <node name="x-java">
                         <node name="CodeStyle">
-                            <node name="project">
-                                <property name="blankLinesAfterClassHeader" value="0"/>
-                                <property name="redundantIfBraces" value="LEAVE_ALONE"/>
-                                <property name="indent-shift-width" value="2"/>
-                                <property name="text-limit-width" value="80"/>
-                                <property name="alignMultilineArrayInit" value="true"/>
-                                <property name="spaceBeforeMethodDeclParen" value="true"/>
-                                <property name="spaces-per-tab" value="2"/>
-                                <property name="alignMultilineMethodParams" value="true"/>
-                                <property name="alignMultilineImplements" value="true"/>
-                                <property name="placeElseOnNewLine" value="true"/>
-                                <property name="tab-size" value="8"/>
-                                <property name="classDeclBracePlacement" value="NEW_LINE"/>
-                                <property name="continuationIndentSize" value="4"/>
-                                <property name="otherBracePlacement" value="NEW_LINE"/>
-                                <property name="expand-tabs" value="true"/>
-                                <property name="methodDeclBracePlacement" value="NEW_LINE"/>
-                            </node>
+                            <node name="project"/>
+                        </node>
+                        <node name="project"/>
+                    </node>
+                    <node name="project"/>
+                    <node name="CodeStyle"/>
+                    <node name="x-ant+xml">
+                        <node name="CodeStyle">
+                            <node name="project"/>
                         </node>
                     </node>
                 </node>
+                <node name="project"/>
+                <node name="x-java"/>
             </module>
+            <module name="org-netbeans-modules-html-editor-lib"/>
+            <module name="org-netbeans-modules-projectimport-eclipse-core"/>
         </preferences>
     </configuration>
 </project>

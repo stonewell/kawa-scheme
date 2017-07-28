@@ -4,12 +4,18 @@ import gnu.bytecode.Type;
 import gnu.mapping.*;
 import gnu.kawa.format.Printable;
 import gnu.text.SourceLocator;
+import gnu.text.SourceMapper;
 import gnu.lists.Consumer;
 import java.io.PrintWriter;
 import gnu.kawa.io.CharArrayOutPort;
 import gnu.kawa.io.OutPort;
 import gnu.kawa.util.IdentityHashTable;
 import gnu.kawa.reflect.OccurrenceType;
+/* #ifdef use:java.lang.invoke */
+import java.lang.invoke.MethodHandle;
+/* #else */
+// import gnu.mapping.CallContext.MethodHandle; 
+/* #endif */
 
 /**
  * Abstract class for syntactic forms that evaluate to a value.
@@ -17,15 +23,32 @@ import gnu.kawa.reflect.OccurrenceType;
  * @author	Per Bothner
  */
 
-public abstract class Expression extends Procedure0
+public abstract class Expression extends Procedure
   implements Printable, SourceLocator
 {
+    String filename; // Future: union(String,SourceMapper)
+    long position; // See SourceMapper#simpleEncode
+
+    public Expression() {
+        super(true, applyMethodExpression);
+    }
+    public static final MethodHandle applyMethodExpression =
+        lookupApplyHandle(Expression.class, "applyMethodExpression");
+
+    public static Object applyMethodExpression(Procedure proc, CallContext ctx) throws Throwable {
+        if (ctx.checkDone() != 0)
+            return ctx;
+        ((Expression) proc).apply(ctx);
+        return null;
+    }
+
   public final Object eval (CallContext ctx) throws Throwable
   {
+      ctx.setupApply(this);
     int start = ctx.startFromContext();
     try
       {
-	match0(ctx);
+          //match0(ctx);
 	return ctx.getFromContext(start);
       }
     catch (Throwable ex)
@@ -51,19 +74,7 @@ public abstract class Expression extends Procedure0
 
   protected abstract boolean mustCompile ();
 
-  public final int match0 (CallContext ctx)
-  {
-    ctx.proc = this;
-    ctx.pc = 0;
-    return 0;
-  }
-
-  public final Object apply0 () throws Throwable
-  {
-    CallContext ctx = CallContext.getInstance();
-    check0(ctx);
-    return ctx.runUntilValue();
-  }
+  public int numArgs() { return 0; }
 
   /** Evaluate the expression.
    * This is named apply rather than eval so it is compatible with the
@@ -114,6 +125,20 @@ public abstract class Expression extends Procedure0
 	    out.print(':');
 	    out.print(column);
 	  }
+        int endline = getEndLine();
+        int endcolumn = getEndColumn();
+        if (endline == line && column > 0
+            && endcolumn > 0 && endcolumn != column) {
+            out.print('-');
+	    out.print(endcolumn);
+        } else if (endline > 0 && (endline != line || endcolumn != column)) {
+            out.print('-');
+	    out.print(endline);
+            if (column > 0 || endcolumn > 0) {
+                out.print(':');
+                out.print(endcolumn);
+            }
+        }
 	out.writeSpaceFill();
       }
   }
@@ -136,16 +161,14 @@ public abstract class Expression extends Procedure0
         int line = position.getLineNumber ();
         if (line > 0) {
             code.putLineNumber(position.getFileName(), line);
-            String saveFilename = comp.getFileName();
-            int saveLine = comp.getLineNumber();
-            int saveColumn = comp.getColumnNumber();
-            comp.setLine(position);
+            gnu.text.SourceMessages messages = comp.getMessages();
+            SourceLocator saveLoc = messages.swapSourceLocator(this);
             compile(comp, target);
             // This might logically belong in a `finally' clause. It is
             // intentionally not so, so that if there is an internal error
             // causing an exception, we get the line number where the
             // exception was thrown.
-            comp.setLine(saveFilename, saveLine, saveColumn);
+            messages.swapSourceLocator(saveLoc);
         } else
             compile(comp, target);
   }
@@ -234,9 +257,6 @@ public abstract class Expression extends Procedure0
     return exp;
   }
 
-  String filename;
-  int position;
-
   public static final Expression[] noExpressions = new Expression[0];
 
   /** Helper method to create a `while' statement. */
@@ -253,7 +273,7 @@ public abstract class Expression extends Procedure0
   public final void setLocation (SourceLocator location)
   {
     this.filename = location.getFileName();
-    setLine(location.getLineNumber(), location.getColumnNumber());
+    this.position = SourceMapper.simpleEncode(location);
   }
 
   public final Expression setLine(Expression old)
@@ -275,11 +295,7 @@ public abstract class Expression extends Procedure0
 
   public final void setLine (int lineno, int colno)
   {
-    if (lineno < 0)
-      lineno = 0;
-    if (colno < 0)
-      colno = 0;
-    position = (lineno << 12) + colno;
+    position = SourceMapper.simpleEncode(lineno, colno);
   }
 
   public final void setLine (int lineno)
@@ -295,12 +311,8 @@ public abstract class Expression extends Procedure0
   /** Set line number from current position in <code>Compilation</code>. */
   public void setLine (Compilation comp)
   {
-    int line = comp.getLineNumber();
-    if (line > 0)
-      {
-	setFile(comp.getFileName());
-	setLine(line, comp.getColumnNumber());
-      }
+    if (comp.getLineNumber() > 0)
+        setLocation(comp);
   }
 
   public String getPublicId ()
@@ -313,19 +325,29 @@ public abstract class Expression extends Procedure0
     return filename;
   }
 
-  /** Get the line number of (the start of) this Expression.
-    * The "first" line is line 1; unknown is -1. */
-  public final int getLineNumber()
-  {
-    int line = position >> 12;
-    return line == 0 ? -1 : line;
-  }
+    public final int getLineNumber() {
+        return SourceMapper.simpleStartLine(position);
+    }
 
-  public final int getColumnNumber()
-  {
-    int column = position & ((1 << 12) - 1);
-    return column == 0 ? -1 : column;
-  }
+    public final int getColumnNumber() {
+        return SourceMapper.simpleStartColumn(position);
+    }
+
+    public final int getStartLine() {
+        return SourceMapper.simpleStartLine(position);
+    }
+
+    public final int getStartColumn() {
+        return SourceMapper.simpleStartColumn(position);
+    }
+
+    public final int getEndLine() {
+        return SourceMapper.simpleEndLine(position);
+    }
+
+    public final int getEndColumn() {
+        return SourceMapper.simpleEndColumn(position);
+    }
 
   public boolean isStableSourceLocation() { return true; }
 

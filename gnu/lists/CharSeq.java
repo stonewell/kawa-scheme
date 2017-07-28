@@ -5,31 +5,30 @@ package gnu.lists;
 
 import gnu.text.Char;
 
-/** A sequence where each element is a character.
+/** A sequence where each element is a character (Unicode code point).
  */
 
 public interface CharSeq
-  extends CharSequence, Sequence<Char>
+    extends CharSequence, Sequence<Char>, Consumable
 {
-  /** Get length of string, in characters.
-   * Synonym for size(), for compatibility with String and StringBuffer. */
+  /** Get length of string, in code units (not characters).
+   * In contract, size() returns the number of 16-bit code points. */
   public int length();
 
+  /** The index is in terms of code units. */
   public char charAt(int index);
 
   /** Copy characters into a destination buffer.
-   * Same interface as java.lang.String's getChars. */
+   * Same interface as java.lang.String's getChars.
+   * @param srcBegin source start position, in 16-bit code units.
+   * @param srcEnd source end position, in 16-bit code units.
+   * @param dst destination
+   * @param dstBegin index (in code units) in dst array
+   */
   public void getChars (int srcBegin, int srcEnd, char[] dst, int dstBegin);
 
   public void setCharAt(int index, char ch);
   public void setCharacterAt(int index, int ch);
-
-  /** Set all the elements to a given character. */
-  public void fill(char value);
-
-  public void fill(int fromIndex, int toIndex, char value);
-
-  public CharSeq subSequence(int start, int end);
 
   /** Append a specified subsequence to an <code>Appendable</code>.
    * An allowable implementation is:
@@ -42,8 +41,6 @@ public interface CharSeq
 
   public void writeTo(Appendable dest)
     throws java.io.IOException;
-
-  public void consume(int start, int count, Consumer out);
 
   public String toString();
 }

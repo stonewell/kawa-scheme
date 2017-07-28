@@ -1,3 +1,71 @@
+2017-07-26  Per Bothner  <per@bothner.com>
+
+	* lang/Lambda.java (rewriteFormals): Change #!rest and empty #!key.
+	If we see '#!key #!rest' disallow keywords in rest parameter
+	even if there are no actual keyword parameters.
+
+2017-07-20  Per Bothner  <per@bothner.com>
+
+	* lang/Lambda.java: Fix some problems in handling #!if guards,
+	* lang/BindDecls.java (parsePatternCar): Don't decrement min_args here,
+
+2017-07-16  Per Bothner  <per@bothner.com>
+
+	* standard/ImportFromLibrary.java (libtaryExists): Improve.
+	Use same code to search for a module as import does.
+	This required some modest re-factoring and a new helper method.
+
+2017-07-15  Per Bothner  <per@bothner.com>
+
+	* standard/ImportFromLibrary.java (libraryExists): Search module manager.
+	This fixes GitLab issues #13 'locally defined library not found by
+	cond-expand?'.
+
+	* lang/Translator.java (reqrite): Follow aliased for scan-nesting.
+
+	* standard/IfFeature.java (isProvide): Check for null name.
+
+2017-06-08  Per Bothner  <per@bothner.com>
+
+	* lang/Macro.java: Update for new position-range model.
+	* lang/Translator.java: Likewise.
+	* standard/fluid_let.java: Likewise.
+	* lang/SyntaxForms.java (rewriteCar): New method.
+	* standard/try_catch.java (write): Argument is now a Pair.
+
+2017-05-14  Per Bothner  <per@bothner.com>
+
+	* lang/Translator.java: Fix handling of nested ellipsis.
+	Also optimize to not use redundant parameters.
+	* standard/Scan.java (rewrite): Update accordingly.
+
+2017-05-12  Per Bothner  <per@bothner.com>
+
+	* lang/BindDecl.java: Fix scan pattern (ellipsis) with type specifier.
+
+2017-04-19  Per Bothner  <per@bothner.com>
+
+	* kawa/Record.java (makeRecordType): Update mangling to symbolic.
+	Also set classfile-version.
+
+2017-04-15  Per Bothner  <per@bothner.com>
+
+	* lang/Lambda.java: Fix hygiene handling.
+	(class LambdaBindDecls): New class, extends BindDecls.
+
+	* lang/TemplateScope.java: Commented-out possible-future hygiene idea.
+	Use alias symbols instead of alias declarations.
+
+2017-03-21  Per Bothner  <per@bothner.com>
+
+	* standard/expt.java: Moved to gnu.kawa.functions.Expt.
+
+2017-03-20  Per Bothner  <per@bothner.com>
+
+	* lang/Translator.java (resolveModule): Pop DeclSetMapper
+	when handing pendingImports.
+	* standard/require.java: Pass DeclSetMapper to pushPendingImport.
+
 2017-03-10  Per Bothner  <per@bothner.com>
 
 	* lang/SyntaxTemplate.java (get_var): Avoid exception on bad ellipsis.
@@ -9,6 +77,9 @@
 	* standard/ImportFromLibrary.java: Fix computation of "current root".
 	Use current library source path reather than current position,
 	which might be in an included file.
+2017-01-26  Per Bothner  <per@bothner.com>
+
+	* repl.java (browseManual): Default to index.html.
 
 2017-02-24  Per Bothner  <per@bothner.com>
 
@@ -20,12 +91,26 @@
 
 	* DomTermBackend.java (setWindowSize): Fix inconsistent parameter order.
 
+2017-01-21  Per Bothner  <per@bothner.com>
+
+	* lang/BindDecls.java (addCondition): Use special typeExp value
+	for guards.  Used by Declaration#isGuard.
+
+2017-01-20  Per Bothner  <per@bothner.com>
+
+	* BindDecls.java: Handle literal patterns and #!if guards.
+	* Lambda.java (parseFormals): Accept literals and #!if guards.
+
 2017-01-10  Per Bothner  <per@bothner.com>
 
 	* repl.java: Move some logic for "-w" to ...
 	* DomTermBackend.java: ... where we can use DomServer helper methods.
 
 2017-01-06  Per Bothner  <per@bothner.com>
+
+	* standard/Scheme.java: Re-do just loadClass("kawa.lib.kawa.base").
+	(nullEnvironment, r4Environment, r6Environment): Remove.
+	(loadClass): New helper method.
 
 	* standard/ImportFromLibrary.java (map): Allow compound
 	symbols in only/except lists.
@@ -40,9 +125,23 @@
 
 	* lang/Translator.java (resolveModule): Fix restore of line position.
 
+2016-12-09  Per Bothner  <per@bothner.com>
+
+	* standard/Scheme.java: Update for classes from from gnu/kawa/slib.
+	* standard/ImportFromLibrary.java: Update accordingly.
+	* standard/require.java: Likewise.
+
 2016-12-06  Per Bothner  <per@bothner.com>
 
 	* standard/requires.java (importDefinitions): Remove bogus semicolon.
+
+2016-12-04  Per Bothner  <per@bothner.com>
+
+	* lang/Translator.java (rewrite): Convert literal string to IString.
+
+2016-11-27  Per Bothner  <per@bothner.com>
+
+	* standard/let.java (rewrite): Add a null test - just in case.
 
 2016-11-07  Per Bothner  <per@bothner.com>
 

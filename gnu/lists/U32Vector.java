@@ -61,6 +61,26 @@ public  class U32Vector extends IntVector<UInt>
         return new U32Vector(newLength < 0 ? data : new int[newLength]);
     }
 
+    public static U32Vector castOrNull(Object obj) {
+        if (obj instanceof int[])
+            return new U32Vector((int[]) obj);
+        if (obj instanceof U32Vector)
+            return (U32Vector) obj;
+        return null;
+    }
+
+    public static U32Vector cast(Object value) {
+        U32Vector vec = castOrNull(value);
+        if (vec == null) {
+            String msg;
+            if (value == null)
+                msg = "cannot convert null to U32Vector";
+            else
+                msg = "cannot convert a "+value.getClass().getName()+" to U32Vector";
+            throw new ClassCastException(msg);
+        }
+        return vec;
+    }
     public int getElementKind() { return INT_U32_VALUE; }
 
     public String getTag() { return "u32"; }

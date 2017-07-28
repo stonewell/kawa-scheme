@@ -59,7 +59,11 @@ public class ListCodeSize
                     sbuf.append(method.getName());
                     method.listParameters(sbuf);
                     sbuf.append(method.getReturnType().getName());
-                    if (sbuf.toString().startsWith(args[i]))
+                    String xname = sbuf.toString();
+                    String pat = args[i];
+                    if (xname.startsWith(pat)
+                        && (xname.indexOf("$check(") < 0
+                            || pat.endsWith("$check")))
                       print(method);
                   }
               }

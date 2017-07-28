@@ -669,12 +669,11 @@ public class DisplayFormat extends GenericFormat
 	  Strings.printQuoted(str, out, 1);
         else if (value instanceof String)
           {
-            out.write((String) value);
+            out.write(value.toString());
           }
-	else if (value instanceof CharSeq)
-          {
-            CharSeq seq = (CharSeq) value;
-            seq.consume(0, seq.size(), out);
+	else if (value instanceof FString || value instanceof IString)
+          { // For some other Consumable types (such as Blob) consume does the wrong thing
+            ((Consumable) value).consume(out);
           }
         else
           {

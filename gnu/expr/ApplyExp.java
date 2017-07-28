@@ -5,7 +5,9 @@ package gnu.expr;
 
 import gnu.bytecode.*;
 import gnu.mapping.*;
+import gnu.kawa.functions.MakeList;
 import gnu.kawa.functions.MakeSplice;
+import gnu.kawa.lispexpr.LangObjType;
 import gnu.kawa.reflect.CompileArrays;
 import gnu.kawa.io.OutPort;
 import gnu.text.SourceMessages;
@@ -89,6 +91,7 @@ public class ApplyExp extends Expression
             this.firstSpliceArg = src.firstSpliceArg + delta;
         if (src.firstKeywordArgIndex > 0)
             this.firstKeywordArgIndex = src.firstKeywordArgIndex + delta;
+        this.numKeywordArgs = src.numKeywordArgs;
     }
 
     public int spliceCount() {
@@ -117,6 +120,20 @@ public class ApplyExp extends Expression
         return isSimple() && ac >= min && ac <= max;
     }
 
+    public boolean hasSpliceAllowingKeywords() {
+        if (firstSpliceArg < 0)
+            return false;
+        int n = args.length;
+        for (int i = 0; i < n; i++) {
+            Expression arg = args[i];
+            if (arg instanceof ApplyExp
+                && (((ApplyExp) arg).getFunction()
+                    == MakeSplice.quoteKeywordsAllowedInstance))
+                return true;
+        }
+        return false;
+    }
+
     public boolean isAppendValues() {
         return func instanceof QuoteExp
             && (((QuoteExp) func).getValue()
@@ -134,57 +151,15 @@ public class ApplyExp extends Expression
 
   protected boolean mustCompile () { return false; }
 
+  @Override
   public void apply (CallContext ctx) throws Throwable
   {
-    Object proc = func.eval(ctx);
+    Procedure proc = (Procedure) func.eval(ctx);
     int n = args.length;
     Object[] vals = new Object[n];
     for (int i = 0; i < n; i++)
       vals[i] = args[i].eval(ctx);
-    ((Procedure) proc).checkN(vals, ctx);
-  }
-
-  private static void compileToArray(Expression[] args, int start, Compilation comp)
-  {
-    CodeAttr code = comp.getCode();
-    int argslength = args.length;
-    int nargs = argslength - start;
-    if (nargs == 0)
-      {
-	code.emitGetStatic(Compilation.noArgsField);
-	return;
-      }
-    code.emitPushInt(nargs);
-    code.emitNewArray(Type.pointer_type);
-    for (int i = start; i < argslength; ++i)
-      {
-	Expression arg = args[i];
-	if (comp.usingCPStyle()
-	    && ! (arg instanceof QuoteExp) && ! (arg instanceof ReferenceExp))
-	  {
-	    // If the argument involves a CPStyle function call, we will
-	    // have to save and restore anything on the JVM stack into
-	    // fields in the CallFrame.  This is expensive, so defer
-	    // pushing the duplicated argument array and the index
-	    // until *after* we've calculated the argument.  The downside
-	    // is that we have to do some extra stack operations.
-	    // However, these are cheap (and get compiled away when
-	    // compiling to native code).
-	    arg.compileWithPosition(comp, Target.pushObject);
-	    code.emitSwap();
-	    code.emitDup(1, 1);
-	    code.emitSwap();
-	    code.emitPushInt(i);
-	    code.emitSwap();
-	  }
-	else
-	  {
-	    code.emitDup(Compilation.objArrayType);
-	    code.emitPushInt(i);
-	    arg.compileWithPosition(comp, Target.pushObject);
-	  }
-	code.emitArrayStore(Type.pointer_type);
-      }
+    ctx.setupApplyAll(proc, vals);
   }
 
   public void compile (Compilation comp, Target target)
@@ -253,6 +228,7 @@ public class ApplyExp extends Expression
                 throw ex;
             } catch (Throwable ex) {
                 SourceMessages msg = comp.getMessages();
+                ex.printStackTrace();
                 msg.error('f',
                           "caught exception in inline-compiler for "
                           +quotedValue+" - "+ex, ex);
@@ -272,17 +248,20 @@ public class ApplyExp extends Expression
 
     int spliceCount = exp.spliceCount();
     int nonSpliceCount = args_length - spliceCount;
+    int nonSpliceNonKeyCount = nonSpliceCount - 2 * exp.numKeywordArgs;
         
     if (func_lambda != null)
       {
-	if ((func_lambda.max_args >= 0 && nonSpliceCount > func_lambda.max_args)
-	    || (nonSpliceCount < func_lambda.min_args) && spliceCount == 0)
+	if ((func_lambda.max_args >= 0
+             && nonSpliceNonKeyCount > func_lambda.max_args)
+	    || (nonSpliceNonKeyCount < func_lambda.min_args)
+            && spliceCount == 0)
 	  // This is supposed to get caught by InlineCalls.
 	  throw new Error ("internal error - wrong number of parameters for "
 			   + func_lambda);
 	int conv = func_lambda.getCallConvention();
         if (func_lambda.primMethods==null && ! func_lambda.isClassGenerated()
-            && ! func_lambda.getInlineOnly())
+            && ! func_lambda.inlinedInCallerOrCheckMethodOnly())
             func_lambda.allocMethod(func_lambda.outerLambda(), comp);
         // Mostly duplicates logic with LambdaExp.validateApply.
         // See comment there.
@@ -292,6 +271,7 @@ public class ApplyExp extends Expression
 		|| (conv == Compilation.CALL_WITH_TAILCALLS
 		    && ! exp.isTailCall()))
 	    && (method = func_lambda.getMethod(nonSpliceCount, spliceCount)) != null
+            && ! func_lambda.getFlag(LambdaExp.HAS_NONTRIVIAL_PATTERN)
             && (exp.firstSpliceArg < 0
                 || (PrimProcedure.takesVarArgs(method)
                     && func_lambda.min_args <= exp.firstSpliceArg)))
@@ -399,67 +379,34 @@ public class ApplyExp extends Expression
 	return;
       }
 
-    if (comp.curLambda.isHandlingTailCalls()
-	&& (exp.isTailCall() || target instanceof ConsumerTarget)
-	&& ! comp.curLambda.getInlineOnly())
+    if ((comp.curLambda.isHandlingTailCalls()
+         && ! comp.curLambda.inlinedInCallerOrCheckMethodOnly()
+         && (exp.isTailCall() || target instanceof ConsumerTarget))
+        || exp.firstSpliceArg >= 0 || exp.numKeywordArgs > 0
+        || (! tail_recurse && args_length > 4))
       {
+        comp.loadCallContext();
 	exp_func.compile(comp, new StackTarget(Compilation.typeProcedure));
-	// evaluate args to frame-locals vars;  // may recurse!
-	if (args_length <= 4 && exp.isSimple())
-	  {
-	    for (int i = 0; i < args_length; ++i)
-	      exp.args[i].compileWithPosition(comp, Target.pushObject);
-	    comp.loadCallContext();
-	    code.emitInvoke(Compilation.typeProcedure
-			    .getDeclaredMethod("check"+args_length,
-					       args_length+1));
-	  }
-	else
-	  {
-            if (exp.firstSpliceArg >= 0)
-                CompileArrays.createArray(Type.objectType, comp,
-                                          exp.args, 0, args_length);
-            else
-                compileToArray (exp.args, 0, comp);
-	    comp.loadCallContext();
-	    code.emitInvoke(Compilation.typeProcedure
-			    .getDeclaredMethod("checkN", 2));
-	  }
+
+        compileArgsToContext(exp, null, comp);
+
         finishTrampoline(exp.isTailCall(), target, comp);
-	return;
+ 	return;
       }
-
-        if (exp.firstSpliceArg >= 0) {
-            Expression[] args = exp.getArgs();
-            exp_func.compile(comp, Target.pushObject);
-            CompileArrays.createArray(Type.objectType, comp,
-                                      args, 0, args.length);
-            code.emitInvoke(Compilation.typeProcedure
-                            .getDeclaredMethod("applyN", 1));
-            target.compileFromStack(comp, Type.pointer_type);
-            return;
-        }
-
     if (!tail_recurse)
       exp_func.compile (comp, new StackTarget(Compilation.typeProcedure));
 
-    boolean toArray
-      = (tail_recurse ? func_lambda.max_args < 0
-         : args_length > 4);
+    boolean toArray = tail_recurse && func_lambda.max_args < 0;
     int[] incValues = null; // Increments if we can use iinc.
     if (tail_recurse)
       {
         int fixed = func_lambda.min_args;
         incValues = new int[fixed];
-        pushArgs(func_lambda, exp.args, fixed, incValues, comp);
+        Declaration rest = pushArgs(func_lambda, exp.args, fixed, incValues, comp);
         if (toArray)
-          compileToArray(exp.args, fixed, comp);
+            PrimProcedure.compileRestArg(rest.getType(), exp,
+                                         0, exp.args.length-1, comp);
         method = null;
-      }
-    else if (toArray)
-      {
-        compileToArray(exp.args, 0, comp);
-	method = Compilation.applyNmethod;
       }
     else
       {
@@ -502,11 +449,121 @@ public class ApplyExp extends Expression
     target.compileFromStack(comp, Type.pointer_type);
   }
 
+    public static void compileArgsToContext(ApplyExp exp, Method setupMethod,
+                                            Compilation comp) {
+        CodeAttr code = comp.getCode();
+        int args_length = exp.args.length;
+
+        // evaluate args to frame-locals vars;  // may recurse!
+
+        Scope scope = code.pushScope();
+        Variable[] vars = new Variable[args_length];
+        int initial = setupMethod != null ? 0 : args_length <= 4 ? args_length : 4;
+        if (exp.numKeywordArgs > 0 && initial >= exp.firstKeywordArgIndex)
+            initial = exp.firstKeywordArgIndex-1;
+        if (exp.firstSpliceArg >= 0 && initial > exp.firstSpliceArg)
+            initial = exp.firstSpliceArg;
+        if (setupMethod == null)
+            setupMethod = Compilation.typeCallContext
+                .getDeclaredMethod("setupApply", initial+1);
+        if (initial != args_length) {
+            for (int i = 0; i < args_length; ++i) {
+                Expression arg = exp.args[i];
+                Expression sarg = MakeSplice.argIfSplice(arg);
+                if (sarg != null)
+                    arg = sarg;
+                if (arg instanceof QuoteExp)
+                    continue;
+                arg.compileWithPosition(comp, Target.pushObject);
+                Variable var = scope.addVariable(code, Type.objectType, null);
+                code.emitStore(var);
+                vars[i] = var;
+            }
+        }
+        for (int i = 0; i < initial; ++i) {
+            Expression arg = exp.args[i];
+            if (vars[i] != null)
+                code.emitLoad(vars[i]);
+            else
+                arg.compileWithPosition(comp, Target.pushObject);
+        }
+        code.emitInvoke(setupMethod);
+        int firstKeyword = exp.firstKeywordArgIndex - 1;
+        int numKeywords = exp.numKeywordArgs;
+        boolean useSetKeys = numKeywords > 0
+            && ! exp.hasSpliceAllowingKeywords();
+        ClassType typeArgListImpl = Compilation.typeCallContext.getSuperclass();
+        for (int i = initial;  i < args_length;  i++) {
+            Expression arg = exp.args[i];
+            char mode = '\0'; // ''\0', 'K', '@' or ':'
+            String key = null;
+            if (i >= firstKeyword
+                && i < firstKeyword + 2 * numKeywords) {
+                // a keyword or keyword arg
+                if (((i - firstKeyword) & 1) == 0)
+                    continue ; // keyword - handled next iteration
+                Object keyarg = exp.args[i-1].valueIfConstant();
+                key = ((Keyword) keyarg).getName();
+                mode = 'K';
+            } else {
+                Expression sarg = MakeSplice.argIfSplice(arg);
+                if (sarg != null) {
+                    if (((ApplyExp) arg).getFunction()
+                        == MakeSplice.quoteKeywordsAllowedInstance)
+                        mode = ':';
+                    else
+                        mode = '@';
+                    arg = sarg;
+                }
+            }
+            comp.loadCallContext();
+            if (key != null && ! useSetKeys)
+                code.emitPushString(key);
+            if (vars[i] != null)
+                code.emitLoad(vars[i]);
+            else
+                arg.compileWithPosition(comp, Target.pushObject);
+            if (mode == '@' || mode == ':') {
+                String mname = mode == '@' ? "addSequence" : "addArgList";
+                code.emitInvoke(typeArgListImpl.getDeclaredMethod(mname, 1));
+            } else if (mode == 'K' && ! useSetKeys) {
+                code.emitInvoke(Compilation.typeCallContext
+                                .getDeclaredMethod("addKey", 2));
+            } else {
+                code.emitInvoke(Compilation.typeCallContext
+                                .getDeclaredMethod("addArg", 1));
+            }
+            if (mode == 'K' && useSetKeys
+                // is this the last keyword argument?
+                && i == firstKeyword + 2 * numKeywords - 1) {
+                String[] keywords = new String[numKeywords];
+                for (int j = numKeywords; --j >= 0; )
+                    keywords[j] = ((Keyword) exp.args[firstKeyword + 2 * j]
+                                   .valueIfConstant()).getName();
+                short[] sorted
+                    = CallContext.getSortedKeywords(keywords, keywords.length);
+                comp.loadCallContext();
+                code.emitPushInt(numKeywords);
+                comp.compileConstant(keywords, Target.pushObject);
+                comp.compileConstant(sorted, Target.pushObject);
+                code.emitInvoke(typeArgListImpl
+                                .getDeclaredMethod("setKeys", 3));
+            }
+        }
+        code.popScope();
+    }
+
     static void finishTrampoline(boolean isTailCall, Target target, Compilation comp) {
         CodeAttr code = comp.getCode();
         ClassType typeContext = Compilation.typeCallContext;
-        if (isTailCall) {
+        if (isTailCall && comp.curLambda.isHandlingTailCalls()
+            && ! comp.curLambda.inlinedInCheckMethod()) {
             code.emitReturn();
+        } else if (! (target instanceof ConsumerTarget
+                      || target instanceof IgnoreTarget)) {
+            comp.loadCallContext();
+            code.emitInvoke(typeContext.getDeclaredMethod("runUntilValue", 0));
+            target.compileFromStack(comp, Type.pointer_type);
         } else if (target instanceof IgnoreTarget
                    || ((ConsumerTarget) target).isContextTarget()) {
             comp.loadCallContext();
@@ -550,7 +607,9 @@ public class ApplyExp extends Expression
         for (int i = 0;  i < nargs && visitor.getExitValue() == null;  i++) {
             while (param != null
                    && (param.isThisParameter()
-                       || param.getFlag(Declaration.PATTERN_NESTED)))
+                       || param.getFlag(Declaration.PATTERN_NESTED)
+                       || (param.getFlag(Declaration.IS_SUPPLIED_PARAMETER)
+                           && ! param.getFlag(Declaration.IS_PARAMETER))))
                 param = param.nextDecl();
             Type ptype = dtype;
             if (param != null && i < lexp.min_args+lexp.opt_args
@@ -588,16 +647,23 @@ public class ApplyExp extends Expression
     out.writeSpaceFill();
     printLineColumn(out);
     func.print(out);
+    int firstKeyword = firstKeywordArgIndex-1;
     for (int i = 0; args != null && i < args.length; ++i)
       {
 	out.writeSpaceLinear();
-	args[i].print(out);
+        Expression arg = args[i];
+        if (i >= firstKeyword && ((i - firstKeyword) & 1) == 0
+            && i < firstKeyword + 2 * numKeywordArgs
+            && arg.valueIfConstant() instanceof Keyword) {
+            out.print(arg.valueIfConstant().toString());
+        } else
+            arg.print(out);
       }
     out.endLogicalBlock(")");
   }
 
   /** Only used for inline- and tail-calls. */
-  private static void pushArgs (LambdaExp lexp,
+  private static Declaration pushArgs (LambdaExp lexp,
                                 Expression[] args, int args_length,
                                 int[] incValues, Compilation comp)
   {
@@ -615,6 +681,7 @@ public class ApplyExp extends Expression
                                   StackTarget.getInstance(param.getType()));
         param = param.nextDecl();
       }
+    return param;
   }
 
   static void popParams (CodeAttr code, LambdaExp lexp,
@@ -723,6 +790,12 @@ public class ApplyExp extends Expression
         }
         /* #ifdef use:java.lang.invoke */
         if (propval instanceof MethodHandle) {
+            /*
+            System.err.println("inlineCompile "+exp);
+            for (int i = 0; i < exp.getArgCount(); i++)
+                System.err.println("- #"+i+": "+exp.getArg(i));
+            System.err.println("propval: "+java.lang.invoke.MethodHandles.lookup().revealDirect((MethodHandle)propval));
+            */
             return (boolean) ((MethodHandle) propval).invokeExact(exp, comp, target, proc);
         }
         /* #else */

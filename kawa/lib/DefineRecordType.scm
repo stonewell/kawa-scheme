@@ -18,14 +18,15 @@
 
 (module-export define-record-type)
 
-(require <kawa.lib.prim_syntax>)
+(require <kawa.lib.prim_imports>)
 (require <kawa.lib.std_syntax>)
 (import (only kawa.standard.begin begin))
 (import (only kawa.standard.define_class
               (define_class define-class)))
 (import (only kawa.standard.Scheme (instanceOf instance?)))
 (import (rename (only (gnu kawa reflect SlotGet) slotRef) (slotRef slot-ref)))
-(import (rename (only (gnu kawa reflect SlotSet) set-field!) (set-field! slot-set!)))
+(import (only (gnu kawa reflect SlotSet) (set$Mnfield$Ex set-field!)
+              (set$Mnfield$Ex slot-set!)))
 (import (only gnu.kawa.reflect.Invoke make))
 (import (rename (only (kawa lang Quote) plainQuote) (plainQuote quote)))
 

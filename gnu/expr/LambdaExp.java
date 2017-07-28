@@ -7,8 +7,14 @@ import gnu.mapping.*;
 import gnu.lists.LList;
 import gnu.kawa.functions.Convert;
 import gnu.kawa.io.OutPort;
+import gnu.kawa.lispexpr.LangObjType;
 import java.util.*;
 import java.lang.annotation.ElementType;
+/* #ifdef use:java.lang.invoke */
+import java.lang.invoke.*;
+/* #else */
+// import gnu.mapping.CallContext.MethodHandle; 
+/* #endif */
 
 /**
  * Class used to implement Scheme lambda expressions.
@@ -22,7 +28,8 @@ public class LambdaExp extends ScopeExp {
      * Does not count implicit isThisParameter(). */
     public int min_args;
 
-    /** Maximum number of actual arguments;  -1 if variable. */
+    /** Maximum number of actual arguments;  -1 if variable.
+     * Does not count keyword arguments. */
     public int max_args;
 
     /** Number of optional arguments, not counting keyword arguments. */
@@ -30,11 +37,6 @@ public class LambdaExp extends ScopeExp {
 
     /** Set of visible top-level LambdaExps that need apply methods. */
     ArrayList<LambdaExp> applyMethods;
-
-    //  public int plainArgs;
-    Variable argsArray;
-    // First argument that goes into argsArray.
-    private Declaration firstArgsArrayArg;
 
     public Keyword[] keywords;
 
@@ -169,13 +171,31 @@ public class LambdaExp extends ScopeExp {
      * Needed if PrimProcedure.getMethodFor shold be able to find it.
      */
     public static final int PUBLIC_METHOD = 0x4000;
+    public static final int ALLOW_OTHER_KEYWORDS = 0x8000;
 
-    protected static final int NEXT_AVAIL_FLAG = 0x8000;
+    protected static final int HAS_NONTRIVIAL_PATTERN = 0x10000;
+    /** True if IS_SUPPLIED_PARAMETER is set on a parameter.
+     * In that case we generate an extra foo$P method for the actual body.
+     * (It might make sense to also do this whenever a default expression
+     * is non-literal, but we current don't do that.)
+     */
+    protected static final int HAS_NONTRIVIAL_DEFAULT = 0x20000;
+    protected static final int NEXT_AVAIL_FLAG = 0x40000;
 
     /** True iff this lambda is only "called" inline. */
     public final boolean getInlineOnly() { return (flags & INLINE_ONLY) != 0; }
     public final void setInlineOnly(boolean inlineOnly)
     { setFlag(inlineOnly, INLINE_ONLY); }
+
+    public final boolean inlinedInCheckMethod() {
+        return (flags & HAS_NONTRIVIAL_PATTERN) != 0;
+    }
+
+    /** True if no primitive method is created for this procedure.
+        Specifically if {@code getInlineOnly() || inlinedInCheckMethod()} .*/
+    public boolean inlinedInCallerOrCheckMethodOnly() {
+        return (flags & (INLINE_ONLY|HAS_NONTRIVIAL_PATTERN)) != 0;
+    }
 
     /** Note this function is inlined in a give context.
      * This is meant to be used during validate-apply processing,
@@ -276,7 +296,9 @@ public class LambdaExp extends ScopeExp {
      * @return One of the CALL_WITH_xxx values in Compilation. */
     public int getCallConvention() { return callConvention; }
     public void setCallConvention(Compilation comp) {
-        if (isClassMethod())
+        if (isClassMethod()
+            || (this instanceof ModuleExp
+                && ((ModuleExp) this).staticInitRun()))
             callConvention = Compilation.CALL_WITH_RETURN;
         else {
             int defaultConvention = comp.currentCallConvention();
@@ -369,8 +391,8 @@ public class LambdaExp extends ScopeExp {
         return min_args == max_args && max_args <= 4 && max_args > 0 ? max_args : 1;
     }
 
-    /** If non-zero, the selector field of the ModuleMethod for this. */
-    int selectorValue;
+    /* * If non-zero, the selector field of the ModuleMethod for this. * /
+    //int selectorValue;
 
     int getSelectorValue(Compilation comp) {
         int s = selectorValue;
@@ -381,11 +403,25 @@ public class LambdaExp extends ScopeExp {
         }
         return s;
     }
+    */
+
+    Method checkMethod;
+    /*
+    public Method getCheckMethod() {
+        Method m = checkMethod;
+        if (m == null) {
+            m = 
+            checkMethod = m;
+        }
+        return m;
+    }
+    */
 
     /** Methods used to implement this functions.
      * primMethods[0] is used if the argument count is min_args;
      * primMethods[1] is used if the argument count is min_args+1;
      * primMethods[primMethods.length-1] is used otherwise.
+     * If HAS_NONTRIVIAL_DEFAULT there is one extra.
      */
     Method[] primMethods;
     /** If in a ClassExp which isMakingClassPair, the static body methods.
@@ -396,12 +432,16 @@ public class LambdaExp extends ScopeExp {
     public final Method getMethod(int nonSpliceCount, int spliceCount) {
         if (primMethods == null || (max_args >= 0 && nonSpliceCount > max_args))
             return null;
+        if (keywords != null || (opt_args > 0 && primMethods.length == 1))
+            return null;
         int index = nonSpliceCount - min_args;
         if (index < 0)
             return null; // Too few arguments.
         int length = primMethods.length;
         if (spliceCount > 0)
             return length == 1 ? primMethods[0] : null;
+        if (getFlag(HAS_NONTRIVIAL_DEFAULT))
+            length--;
         return primMethods[index < length ? index : length - 1];
     }
 
@@ -409,7 +449,8 @@ public class LambdaExp extends ScopeExp {
      * (The other methods are just stubs that call that method.) */
     public final Method getMainMethod() {
         Method[] methods = primBodyMethods;
-        return methods == null ? null : methods[methods.length-1];
+        return methods == null ? null
+            : methods[methods.length-(getFlag(HAS_NONTRIVIAL_DEFAULT)?2:1)];
     }
 
     /** Return the parameter type of the "keyword/rest" parameters. */
@@ -496,10 +537,14 @@ public class LambdaExp extends ScopeExp {
             else if (! isClassGenerated() && ! getInlineOnly()) {
                 Method primMethod = getMainMethod();
                 boolean isInit = "*init*".equals(getName());
-                if (! primMethod.getStaticFlag()
+                if (primMethod != null && ! primMethod.getStaticFlag()
                     && ! isInit)
                     closureEnv = declareThis(primMethod.getDeclaringClass());
-                else {
+                else if (inlinedInCheckMethod()) {
+                    Type envType = getOwningLambda().getHeapFrameType();
+                    closureEnv = new Variable(CLOSURE_ENV_NAME, envType);
+                    getVarScope().addVariable(closureEnv);
+                } else {
                     Type envType = primMethod.getParameterTypes()[0];
                     closureEnv = new Variable(CLOSURE_ENV_NAME, envType);
                     Variable prev;
@@ -511,6 +556,8 @@ public class LambdaExp extends ScopeExp {
                     closureEnv.setParameter(true);
                 }
             } else {
+                if (inlineHome != null)
+                    inlineHome.declareClosureEnv();
                 closureEnv =
                     parent.heapFrame != null && parent == outerLambda()
                     ? parent.heapFrame
@@ -594,7 +641,7 @@ public class LambdaExp extends ScopeExp {
         code.getCurrentScope().fixParamNames(varMap);
         popScope(code);        // Undoes enterScope in allocParameters
 
-        if (! getInlineOnly()) {
+        if (! inlinedInCallerOrCheckMethodOnly()) {
             if (comp.method.reachableHere()
                 && (getCallConvention() < Compilation.CALL_WITH_TAILCALLS
                     || isModuleBody() || isClassMethod() || isHandlingTailCalls())) {
@@ -616,26 +663,24 @@ public class LambdaExp extends ScopeExp {
         }
 
         if (heapFrame != null)
-            comp.generateConstructor(this);
+            comp.generateConstructor(this); 
+        generateApplyMethods(comp);
     }
 
-    public void generateApplyMethods(Compilation comp)
-    {
-        comp.generateMatchMethods(this);
-        comp.generateApplyMethodsWithContext(this);
-        comp.generateApplyMethodsWithoutContext(this);
+    public void generateApplyMethods(Compilation comp) {
+        //comp.generateCheckMethods(this);
     }
 
     Field allocFieldFor(Compilation comp) {
-        if (nameDecl != null && nameDecl.field != null
+        if (nameDecl != null && nameDecl.getField() != null
             && nameDecl.getValueRaw() == this)
-            return nameDecl.field;
+            return nameDecl.getField();
         boolean needsClosure = getNeedsClosureEnv();
         ClassType frameType = needsClosure ? getOwningLambda().getHeapFrameType()
             : comp.mainClass;
         String name = getName();
         String fname
-            = name == null ? "lambda" : Mangling.mangleNameIfNeeded(name);
+            = name == null ? "lambda" : Mangling.mangleField(name);
         int fflags = Access.FINAL;
         if (nameDecl != null && nameDecl.context instanceof ModuleExp) {
             boolean external_access = nameDecl.needsExternalAccess();
@@ -643,7 +688,7 @@ public class LambdaExp extends ScopeExp {
                 fname = Declaration.PRIVATE_PREFIX + fname;
             if (nameDecl.getFlag(Declaration.STATIC_SPECIFIED)) {
                 fflags |= Access.STATIC;
-                // If there is no moduleInstanceVar, then the field gets
+                // A static field in a non-static module is
                 // initialized in <init>, not <clinit>,
                 // which is bad for a "static final" field.
                 if (! ((ModuleExp) nameDecl.context).isStatic())
@@ -665,10 +710,10 @@ public class LambdaExp extends ScopeExp {
             if (! needsClosure)
                 fflags |= Access.STATIC;
         }
-        Type rtype = Compilation.typeModuleMethod;
-        Field field = frameType.addField (fname, rtype, fflags);
+        Field field =
+            frameType.addField(fname, Compilation.typeCompiledProc, fflags);
         if (nameDecl != null)
-            nameDecl.field = field;
+            nameDecl.setField(field);
         return field;
     }
 
@@ -686,22 +731,25 @@ public class LambdaExp extends ScopeExp {
                     break;
             }
             ClassType frameType = owner.getHeapFrameType();
-            if (! (frameType.getSuperclass().isSubtype(Compilation.typeModuleBody)))
+            if (! (frameType.getSuperclass().isSubtype(Compilation.typeCompiledProc)))
                 owner = comp.getModule();
         }
         if (owner.applyMethods == null)
             owner.applyMethods = new ArrayList<LambdaExp>();
         owner.applyMethods.add(this);
+        checkMethod = comp.generateCheckMethod(this, owner);
     }
 
     public Field compileSetField(Compilation comp) {
-        if (primMethods == null)
+        if (primMethods == null
+            && ! inlinedInCheckMethod())
             allocMethod(outerLambda(), comp);
         Field field = allocFieldFor(comp);
         if (comp.usingCPStyle())
             compile(comp, Type.objectType);
         else {
-            compileAsMethod(comp);
+            if (! inlinedInCheckMethod())
+                compileAsMethod(comp);
             addApplyMethod(comp, field);
         }
         if (nameDecl != null)
@@ -750,8 +798,6 @@ public class LambdaExp extends ScopeExp {
             enterFunction(comp);
 
             compileBody(comp);
-            compileEnd(comp);
-            generateApplyMethods(comp);
             comp.curLambda = saveLambda;
             func_end.define(code);
             code.restoreStackTypeState(stackTypes);
@@ -787,13 +833,11 @@ public class LambdaExp extends ScopeExp {
           */
         {
             LambdaExp outer = outerLambda();
-            rtype = Compilation.typeModuleMethod;
+            rtype = Compilation.typeCompiledProc;
             if ((flags & NO_FIELD) != 0
                 || comp.dumpingInitializers
                 || (comp.immediate && outer instanceof ModuleExp
                     && comp.mainClass == comp.moduleClass)) {
-                if (primMethods == null)
-                    allocMethod(outerLambda(), comp);
                 compileAsMethod(comp);
                 addApplyMethod(comp, null);
                 Variable savedInstance = comp.moduleInstanceVar;
@@ -840,6 +884,27 @@ public class LambdaExp extends ScopeExp {
         }
     }
 
+    String primMethodName;
+    String getMethodName(Compilation comp) {
+        if (primMethodName == null) {
+            StringBuilder nameBuf = new StringBuilder(60);
+            LambdaExp outer = outerLambda();
+            String name = getName();
+           if (! (outer.isModuleBody() || outer instanceof ClassExp)
+                || name == null) {
+                nameBuf.append("lambda");
+                nameBuf.append(+(++comp.method_counter));
+            }
+            if (outer instanceof ClassExp
+                && this == ((ClassExp) outer).clinitMethod)
+                nameBuf.append("<clinit>");
+            else if (getSymbol() != null)
+                nameBuf.append(Mangling.mangleName(name));
+            primMethodName = nameBuf.toString();
+        }
+        return primMethodName;
+    }
+
     void addMethodFor(Compilation comp, ObjectType closureEnvType) {
         ScopeExp sc = this;
         while (sc != null && ! (sc instanceof ClassExp))
@@ -861,10 +926,17 @@ public class LambdaExp extends ScopeExp {
         LambdaExp outer = outerLambda();
 
         int key_args = keywords == null ? 0 : keywords.length;
+        boolean simpleMatch = true;
         int numStubs =
             ((flags & DEFAULT_CAPTURES_ARG) != 0) ? 0 : opt_args;
+        // check for complications
+        if (key_args > 0
+            || getFlag(HAS_NONTRIVIAL_PATTERN)) { simpleMatch = false; numStubs = 0; } // For simplicity - FIXME?
         boolean varArgs = max_args < 0 || min_args + numStubs < max_args;
 
+        boolean handleSuppliedArg = numStubs > 0 && getFlag(HAS_NONTRIVIAL_DEFAULT);
+        if (handleSuppliedArg)
+            numStubs++;
         Method[] methods = new Method[numStubs + 1];
         // We assume that for "pair" class methods that ClassExp.declareParts first
         // calls this method to create the interface method, and then calls us
@@ -902,7 +974,6 @@ public class LambdaExp extends ScopeExp {
         } else
             isStatic = true;
 
-        StringBuffer nameBuf = new StringBuffer(60);
         int mflags = isStatic ? Access.STATIC : 0;
         if (nameDecl != null) {
             if (nameDecl.needsExternalAccess())
@@ -916,15 +987,7 @@ public class LambdaExp extends ScopeExp {
         }
         if (getFlag(PUBLIC_METHOD))
             mflags |= Access.PUBLIC;
-        if (! (outer.isModuleBody() || outer instanceof ClassExp)
-            || name == null) {
-            nameBuf.append("lambda");
-            nameBuf.append(+(++comp.method_counter));
-        }
-        if (isInitMethod == 'C')
-            nameBuf.append("<clinit>");
-        else if (getSymbol() != null)
-            nameBuf.append(Mangling.mangleName(name));
+        StringBuilder nameBuf = new StringBuilder(getMethodName(comp));
         if (getFlag(SEQUENCE_RESULT))
             nameBuf.append("$C");
         boolean withContext
@@ -995,6 +1058,7 @@ public class LambdaExp extends ScopeExp {
                     }
                 }
                 if (type != null) {
+                    type = comp.getLanguage().getLangTypeFor(type);
                     if (param != null)
                         param.setType(type);
                     else
@@ -1022,62 +1086,48 @@ public class LambdaExp extends ScopeExp {
         int nameBaseLength = nameBuf.length();
         for (int i = 0;  i <= numStubs;  i++) {
             nameBuf.setLength(nameBaseLength);
-            int plainArgs = min_args + i;
-            int numArgs = plainArgs;
-            if (i == numStubs && varArgs)
-                numArgs++;
-            Type[] atypes = new Type[extraArg + numArgs + ctxArg];
+            ArrayList<Type> argTypes = new ArrayList<Type>();
             if (extraArg > 0)
-                atypes[0] = closureEnvType;
+                argTypes.add(closureEnvType);
             Stack<String> encTypes = new Stack<String>();
             int encTypesSize = rtypeEnc == null /* || not interesting */ ? 0 : 1;
             encTypes.add(encTypesSize == 0 ? "" : rtypeEnc);
             Declaration var = firstDecl();
             if (var != null && var.isThisParameter())
                 var = var.nextDecl();
-            for (int itype = 0; itype < plainArgs; var = var.nextDecl()) {
-                atypes[extraArg + itype++] =
-                    var.getType().promoteIfUnsigned().getImplementationType();
-                String encType = comp.getLanguage().encodeType(var.getType());
-                if (encType == null /* || not interesting */)
-                    encType = "";
-                else
-                    encTypesSize = encTypes.size()+1;
-                encTypes.add(encType);
-            }
-            if (ctxArg != 0)
-                atypes[atypes.length-1] = Compilation.typeCallContext;
-            if (plainArgs < numArgs) {
+            int argi = 0;
+            for (; var != null; var = var.nextDecl()) {
+                if (var.getFlag(Declaration.IS_SUPPLIED_PARAMETER)
+                    && ! var.getFlag(Declaration.IS_PARAMETER )
+                    && i < numStubs)
+                    continue;
+                if (var.getFlag(Declaration.IS_REST_PARAMETER)) {
                 Type lastType = var.getType();
                 String lastTypeName = lastType.getName();
-                if (ctype.getClassfileVersion() >= ClassType.JDK_1_5_VERSION
-                    && lastType instanceof ArrayType)
+                if (! simpleMatch)
+                    ;
+                else if (handleSuppliedArg && i == numStubs)
+                    nameBuf.append("$P");
+                else if (lastType instanceof ArrayType)
                     mflags |= Access.VARARGS;
                 else 
                     nameBuf.append("$V");
+                } else if (numStubs > 0 && argi >= min_args + i)
+                    break;
+            
+                if (var.parameterForMethod())
+                    argTypes.add(var.getType().promoteIfUnsigned().getImplementationType());
                 String encType = comp.getLanguage().encodeType(var.getType());
                 if (encType == null /* || not interesting */)
                     encType = "";
                 else
                     encTypesSize = encTypes.size()+1;
                 encTypes.add(encType);
-
-                if (key_args > 0 || numStubs < opt_args
-                    // We'd like to support the the #!rest parameter an arbitrary
-                    // array type or implementation of java.util.List.  However,
-                    // we currently only support gnu.lists.LList plus array types.
-                    // For array types we prefer to use the Java5 VARARGS feature;
-                    // for gnu.lists.LList we use the old $V mechanism.
-                    || ! ("gnu.lists.LList".equals(lastTypeName)
-                          || lastType instanceof ArrayType)) {
-                    lastType = Compilation.objArrayType;
-                    argsArray = new Variable("argsArray",
-                                             Compilation.objArrayType);
-                    argsArray.setParameter(true);
-                }
-                firstArgsArrayArg = var;
-                atypes[atypes.length-(withContext ? 2 : 1)] = lastType;
+                if (var.getFlag(Declaration.IS_PARAMETER))
+                    argi++;
             }
+            if (ctxArg != 0)
+                argTypes.add(Compilation.typeCallContext);
             if (withContext)
                 nameBuf.append("$X");
 
@@ -1086,7 +1136,10 @@ public class LambdaExp extends ScopeExp {
                    || (outer instanceof ModuleExp
                        && (((ModuleExp) outer)
                            .getFlag(ModuleExp.SUPERTYPE_SPECIFIED))));
+            if (! simpleMatch)
+                nameBuf.append("$P");
             name = nameBuf.toString();
+            Type[] atypes = argTypes.toArray(new Type[argTypes.size()]);
 
             // Rename the method if an existing method has the same
             // name and type in this class.
@@ -1115,7 +1168,6 @@ public class LambdaExp extends ScopeExp {
             }
 
             Method method = ctype.addMethod(name, atypes, rtype, mflags);
-
             // Maybe emit kawa.SourceMethodType annotation.
             if (encTypesSize > 0
                 && ! (nameDecl != null
@@ -1192,14 +1244,9 @@ public class LambdaExp extends ScopeExp {
 
         Declaration decl = firstDecl();
         for (;;) {
-            if (decl == firstArgsArrayArg && argsArray != null) {
-                getVarScope().addVariable(argsArray);
-            }
             if (! getInlineOnly()
                 && getCallConvention() >= Compilation.CALL_WITH_CONSUMER
-                && (firstArgsArrayArg == null ? decl == null
-                    : argsArray != null ? decl == firstArgsArrayArg
-                    : decl == firstArgsArrayArg.nextDecl())) {
+                && decl == null) {
                 Variable var =
                     getVarScope().addVariable(null,
                                               Compilation.typeCallContext,
@@ -1225,7 +1272,7 @@ public class LambdaExp extends ScopeExp {
                 // to its home location heapFrame.  Here we just create and
                 // assign a Variable for the incoming (register) value.
                 String vname = Mangling.mangleName(decl.getName()).intern();
-                Type vtype = decl.getType().getImplementationType();
+                Type vtype = decl.getType().promoteIfUnsigned().getImplementationType();
                 var = decl.var = getVarScope().addVariable(null, vtype, vname);
                 //getVarScope().addVariableAfter(var, decl);
                 var.setParameter (true);
@@ -1308,7 +1355,7 @@ public class LambdaExp extends ScopeExp {
                 frameType = getCompiledClassType(comp);
             else  {
                 frameType = new ClassType(comp.generateClassName("frame"));
-                frameType.setSuper(comp.getModuleType());
+                frameType.setSuper(comp.getModuleType()); // FIXME - not needed?
                 comp.addClass(frameType);
             }
             heapFrame.setType(frameType);
@@ -1324,9 +1371,6 @@ public class LambdaExp extends ScopeExp {
             code.putLineNumber(getFileName(), line);
     }
 
-    static Method searchForKeywordMethod3;
-    static Method searchForKeywordMethod4;
-
     /** Rembembers stuff to do in <init> of this class. */
     Initializer initChain;
 
@@ -1334,17 +1378,22 @@ public class LambdaExp extends ScopeExp {
         CodeAttr code = comp.getCode();
 
         // Tail-calls loop back to here!
-        getVarScope().noteStartFunction(code);
+        if (! getFlag(LambdaExp.HAS_NONTRIVIAL_PATTERN))
+            getVarScope().noteStartFunction(code);
 
         if (closureEnv != null && ! closureEnv.isParameter()
             && ! comp.usingCPStyle()) {
-            if (! getInlineOnly()) {
+            if (! inlinedInCallerOrCheckMethodOnly()) {
                 code.emitPushThis();
                 Field field = closureEnvField;
                 if (field == null)
                     field = outerLambda().closureEnvField;
                 code.emitGetField(field);
                 code.emitStore(closureEnv);
+            } else if (inlinedInCheckMethod()) {
+                 comp.loadModuleRef(getOwningLambda().getHeapFrameType());
+                 
+                 code.emitStore(closureEnv);
             } else if (! inlinedIn(outerLambda())) {
                 outerLambdaOrCaller().loadHeapFrame(comp);
                 code.emitStore(closureEnv);
@@ -1356,7 +1405,7 @@ public class LambdaExp extends ScopeExp {
                 : (ClassType) heapFrame.getType();
             for (Declaration decl = capturedVars; decl != null;
                  decl = decl.nextCapturedVar) {
-                if (decl.field != null)
+                if (decl.getField() != null)
                     continue;
                 decl.makeField(frameType, comp, null);
             }
@@ -1384,156 +1433,33 @@ public class LambdaExp extends ScopeExp {
             }
         }
 
-        Variable argsArray = this.argsArray;
-        if (min_args == max_args
-            && primMethods == null
-            && getCallConvention () < Compilation.CALL_WITH_CONSUMER)
-            argsArray = null;
+        if (! inlinedInCheckMethod() && ! (this instanceof ModuleExp)) {
+            // For each non-artificial parameter, copy it from its incoming
+            // location (a local variable register, or the argsArray) into
+            // its home location, if they are different.
 
-        // For each non-artificial parameter, copy it from its incoming
-        // location (a local variable register, or the argsArray) into
-        // its home location, if they are different.
-        Declaration param = firstDecl();
-        // i is index of current parameter, not counting this.
-        int i = param != null && param.isThisParameter() ? -1 : 0;
-        int key_i = 0;
-        int key_args = keywords == null ? 0 : keywords.length;
-        if (this instanceof ModuleExp)
-            return;
-        // If plainArgs>=0, it is the number of arguments *not* in argsArray.
-        int plainArgs = -1;
-        int defaultStart = 0;
-        Method mainMethod = getMainMethod();
-        Variable callContextSave = comp.callContextVar;
-
-        for (;  param != null; param = param.nextDecl(), i++) {
-            comp.callContextVar
-                = (getCallConvention() < Compilation.CALL_WITH_CONSUMER ? null
-                   : getVarScope().lookup("$ctx"));
-            if (param == firstArgsArrayArg && argsArray != null)  {
-                if (primMethods != null) {
-                    plainArgs = i;
-                    defaultStart = plainArgs - min_args;
-                } else {
-                    plainArgs = 0;
-                    defaultStart = 0;
-                }
+            for (Declaration param = firstDecl();  param != null;
+                 param = param.nextDecl()) {
+                saveParameter(param, comp);
             }
-            boolean ignorable = param.ignorable();
-            if (plainArgs >= 0 || ! param.isSimple()
+        }
+    }
+
+    void saveParameter(Declaration param, Compilation comp) {
+            if (! param.isSimple() && ! param.ignorable()
                 || param.isIndirectBinding()) {
+                CodeAttr code = comp.getCode();
                 Type paramType = param.getType();
-                Type stackType = plainArgs >= 0 ? Type.objectType : paramType;
+                Type stackType = paramType;
                 // If the parameter is captured by an inferior lambda,
                 // then the incoming parameter needs to be copied into its
                 // slot in the heapFrame.  Thus we emit an aaload instruction.
                 // Unfortunately, it expects the new value *last*,
                 // so first push the heapFrame array and the array index.
-                if (!param.isSimple () && ! ignorable)
+                if (!param.isSimple())
                     param.loadOwningObject(null, comp);
                 // This part of the code pushes the incoming argument.
-                if (plainArgs < 0) {
-                    // Simple case:  Use Incoming register.
-                    if (! ignorable)
-                        code.emitLoad(param.getVariable());
-                } else if (i < min_args) {
-                    // This is a required parameter, in argsArray[i].
-                    if (! ignorable) {
-                        code.emitLoad(argsArray);
-                        code.emitPushInt(i);
-                        code.emitArrayLoad(Type.objectType);
-                    }
-                }  else if (i < min_args + opt_args) {
-                    // An optional parameter
-                    Expression defaultArg = param.getInitValue();
-                    if (! ignorable || ! (defaultArg instanceof QuoteExp)) {
-                        code.emitPushInt(i - plainArgs);
-                        code.emitLoad(argsArray);
-                        code.emitArrayLength();
-                        code.emitIfIntLt();
-                        if (! ignorable) {
-                            code.emitLoad(argsArray);
-                            code.emitPushInt(i - plainArgs);
-                            code.emitArrayLoad();
-                        }
-                        code.emitElse();
-                        if (ignorable)
-                            defaultArg.compile(comp, Target.Ignore);
-                        else
-                            defaultArg.compile(comp, paramType);
-                        code.emitFi();
-                    }
-                } else if (max_args < 0 && i == min_args + opt_args) {
-                    // This is the "rest" parameter (i.e. following a "."):
-                    // Convert argsArray[i .. ] to a list.
-                    if (! ignorable) {
-                        code.emitLoad(argsArray);
-                        code.emitPushInt(i - plainArgs);
-                        code.emitInvokeStatic(Compilation.makeListMethod);
-                    }
-                    stackType = Compilation.scmListType;
-                } else {
-                    // Keyword argument.
-                    Keyword keyword = keywords[key_i++];
-                    Expression defaultArg = param.getInitValue();
-                    if (! ignorable || ! (defaultArg instanceof QuoteExp)) {
-                        code.emitLoad(argsArray);
-                        code.emitPushInt(min_args + opt_args - plainArgs);
-                        comp.compileConstant(keyword);
-                        Type boxedParamType = paramType instanceof PrimType
-                            ? ((PrimType) paramType).boxedType()
-                            : paramType;
-
-                        // We can generate better code if the defaultArg expression
-                        // has no side effects.  For simplicity and safety, we just
-                        // special case literals, which handles most cases.
-                        if (defaultArg instanceof QuoteExp) {
-                            if (searchForKeywordMethod4 == null) {
-                                Type[] argts = new Type[4];
-                                argts[0] = Compilation.objArrayType;
-                                argts[1] = Type.intType;
-                                argts[2] = Type.objectType;
-                                argts[3] = Type.objectType;
-                                searchForKeywordMethod4
-                                    = Compilation.scmKeywordType.addMethod
-                                    ("searchForKeyword",  argts,
-                                     Type.objectType, Access.PUBLIC|Access.STATIC);
-                            }
-                            defaultArg.compile(comp, boxedParamType);
-                            code.emitInvokeStatic(searchForKeywordMethod4);
-                        } else {
-                            if (searchForKeywordMethod3 == null) {
-                                Type[] argts = new Type[3];
-                                argts[0] = Compilation.objArrayType;
-                                argts[1] = Type.intType;
-                                argts[2] = Type.objectType;
-                                searchForKeywordMethod3
-                                    = Compilation.scmKeywordType.addMethod
-                                    ("searchForKeyword",  argts,
-                                     Type.objectType, Access.PUBLIC|Access.STATIC);
-                            }
-                            code.emitInvokeStatic(searchForKeywordMethod3);
-                            if (! ignorable)
-                                code.emitDup(1);
-                            comp.compileConstant(Special.dfault);
-                            code.emitIfEq();
-                            if (ignorable)
-                                defaultArg.compile(comp, Target.Ignore);
-                            else {
-                                code.emitPop(1);
-                                defaultArg.compile(comp, boxedParamType);
-                                paramType.emitCoerceToObject(code);
-                            }
-                            code.emitFi();
-                        }
-                    }
-                }
-                if (ignorable)
-                    continue;
-                // Now finish copying the incoming argument into its
-                // home location.
-                if (paramType != stackType)
-                    CheckedTarget.emitCheckedCoerce(comp, this, i+1, stackType, paramType, null);
+                code.emitLoad(param.getVariable());
                 if (param.isIndirectBinding())
                     param.pushIndirectBinding(comp);
                 if (param.isSimple()) {
@@ -1543,10 +1469,8 @@ public class LambdaExp extends ScopeExp {
                     code.emitStore(var);
                 }
                 else
-                    code.emitPutField(param.field);
+                    code.emitPutField(param.getField());
             }
-        }
-        comp.callContextVar = callContextSave;
     }
 
     void compileAsInlined(Compilation comp, Target target) {
@@ -1563,12 +1487,12 @@ public class LambdaExp extends ScopeExp {
 	enterFunction(comp);
 	body.compileWithPosition(comp, target);
 	compileEnd(comp);
-	generateApplyMethods(comp);
 	comp.curLambda = saveLambda;
     }
 
     void compileAsMethod(Compilation comp) {
-        if ((flags & METHODS_COMPILED) != 0 || isAbstract() || isNative())
+        if ((flags & METHODS_COMPILED) != 0 || isAbstract() || isNative()
+            || inlinedInCheckMethod())
             return;
         flags |= METHODS_COMPILED;
         if (primMethods == null)
@@ -1584,10 +1508,10 @@ public class LambdaExp extends ScopeExp {
 
         long[] saveDeclFlags = null;
         if (numStubs > 0) {
-            saveDeclFlags = new long[min_args + numStubs];
+            saveDeclFlags = new long[countDecls()];
             int k = 0;
             for (Declaration decl = firstDecl();
-                 k < min_args + numStubs; decl = decl.nextDecl())
+                 decl != null; decl = decl.nextDecl())
                 saveDeclFlags[k++] = decl.flags;
         }
 
@@ -1610,32 +1534,55 @@ public class LambdaExp extends ScopeExp {
                     var = code.getArg(1);
                 }
                 decl = firstDecl();
-                for (int j = 0;  j < min_args + i;
+                int copied = min_args + i;
+                if (getFlag(HAS_NONTRIVIAL_DEFAULT)
+                    && i == numStubs-1
+                    && restArgType != null)
+                    copied++;
+                for (int j = 0;  j < copied;
                      j++, decl = decl.nextDecl()) {
                     decl.flags |= Declaration.IS_SIMPLE;
                     decl.var = var;
                     code.emitLoad(var);
                     var = var.nextVar();
+                    if (decl.getFlag(Declaration.IS_SUPPLIED_PARAMETER)) {
+                        code.emitPushInt(1);
+                        decl = decl.nextDecl();
+                    }
                 }
                 comp.callContextVar = ctxArg ? var : null;
-                int toCall = i + 1;
-                for (int j = i; j < toCall;  j++, decl = decl.nextDecl()) {
-                    Target paramTarget = StackTarget.getInstance(decl.getType());
+                boolean suppliedFlags = getFlag(HAS_NONTRIVIAL_DEFAULT);
+                int toCall = suppliedFlags ? numStubs : i + 1;
+                for (int j = i; decl != null && j < toCall && ! decl.getFlag(Declaration.IS_REST_PARAMETER); ) {
                     Expression defaultArg = decl.getInitValue();
-                    defaultArg.compile(comp, paramTarget);
+                    if (decl.getFlag(Declaration.IS_SUPPLIED_PARAMETER)
+                        && ! (defaultArg instanceof QuoteExp)) {
+                        code.emitPushDefaultValue(decl.getType());
+                    } else {
+                        Target paramTarget =
+                            StackTarget.getInstance(decl.getType());
+                        defaultArg.compile(comp, paramTarget);
+                    }
+                    if (decl.getFlag(Declaration.IS_SUPPLIED_PARAMETER)) {
+                        code.emitPushInt(0);
+                        decl = decl.nextDecl();
+                    }
+                    decl = decl.nextDecl();
+                    j++;
                     // Minor optimization: Normally stub[i] calls stub[i+1],
                     // which calls stub[i+2] etc until we get to stub[numStubs].
                     // That way any given default argument expression is only
                     // compiled into a single stub.  However, if the default is a
                     // constant it makes sense to call stub[j] (where j>i+1) directly.
-                    if (toCall < numStubs && defaultArg instanceof QuoteExp)
+                    if (toCall < numStubs
+                        && decl.getInitValue() instanceof QuoteExp)
                         toCall++;
                 }
-                boolean varArgs = toCall == numStubs && restArgType != null;
+                boolean varArgs = toCall == numStubs && i < opt_args && restArgType != null;
                 if (varArgs) {
                     Expression arg;
                     String lastTypeName = restArgType.getName();
-                    if ("gnu.lists.LList".equals(lastTypeName))
+                    if (restArgType == LangObjType.listType || "gnu.lists.LList".equals(lastTypeName))
                         arg = QuoteExp.emptyExp;
                     else if ("java.lang.Object[]".equals(lastTypeName))
                         arg = new QuoteExp(Values.noArgs);
@@ -1656,7 +1603,7 @@ public class LambdaExp extends ScopeExp {
                 if (saveDeclFlags != null) {
                     int k = 0;
                     for (Declaration decl = firstDecl();
-                         k < min_args + numStubs; decl = decl.nextDecl()) {
+                         decl != null; decl = decl.nextDecl()) {
                         decl.flags = saveDeclFlags[k++];
                         decl.var = null;
                     }
@@ -1664,11 +1611,32 @@ public class LambdaExp extends ScopeExp {
                 comp.method.initCode();
                 allocChildClasses(comp);
                 allocParameters(comp);
+                if (getFlag(HAS_NONTRIVIAL_DEFAULT)) {
+                    for (Declaration decl = firstDecl();
+                         decl != null; decl = decl.nextDecl()) {
+                        Expression defaultArg = decl.getInitValue();
+                        if (decl.getFlag(Declaration.IS_SUPPLIED_PARAMETER)) {
+                            Declaration supp = decl.nextDecl();
+                            if (! (defaultArg instanceof QuoteExp)) {
+                                CodeAttr code = comp.method.getCode();
+                                supp.load(null, 0, comp,
+                                          Target.pushValue(Type.booleanType));
+                                Label doneDefault = new Label(code);
+                                code.emitGotoIfIntNeZero(doneDefault);
+                                code.emitIfThen();
+                                Target paramTarget =
+                                    StackTarget.getInstance(decl.getType());
+                                defaultArg.compile(comp, paramTarget);
+                                decl.compileStore(comp);
+                                doneDefault.define(code);
+                            }
+                            decl = supp;
+                        }
+                    }
+                }
                 enterFunction(comp);
 
                 compileBody(comp);
-                compileEnd(comp);
-                generateApplyMethods(comp);
             }
         }
 
@@ -1693,6 +1661,7 @@ public class LambdaExp extends ScopeExp {
         body.compileWithPosition(comp, target,
                                  body.getLineNumber() > 0 ? body : this);
         comp.current_scope = savedScope;
+        compileEnd(comp);
         comp.callContextVar = callContextSave;
     }
 
@@ -1760,6 +1729,7 @@ public class LambdaExp extends ScopeExp {
         return false;
     }
 
+    @Override
     public void apply(CallContext ctx) throws Throwable {
         // It would be better to call setIndexes at compile-time, but that
         // doesn't work if we're called as a syntax expander at rewrite time.
@@ -1782,7 +1752,7 @@ public class LambdaExp extends ScopeExp {
     public Expression validateApply(ApplyExp exp, InlineCalls visitor,
                                     Type required, Declaration decl) {
         Expression[] args = exp.getArgs();
-        if (exp.firstSpliceArg >= 0) {
+        if (! exp.isSimple()) {
             // We might be unable to inline this function. If we need to
             // call it using apply, it needs to be readable.
             // FIXME better to use pattern-matching:
@@ -1794,7 +1764,7 @@ public class LambdaExp extends ScopeExp {
                 nameDecl.setCanRead(true);
         }
         if ((flags & ATTEMPT_INLINE) != 0) {
-            Expression inlined = InlineCalls.inlineCall(this, args, true);
+            Expression inlined = InlineCalls.inlineCall(this, exp, true);
             if (inlined != null)
                 return visitor.visit(inlined, required);
         }
@@ -1802,12 +1772,14 @@ public class LambdaExp extends ScopeExp {
         int args_length = exp.args.length;
         int spliceCount = exp.spliceCount();
         int nonSpliceCount = args_length - spliceCount;
+        int nonSpliceNonKeyCount = nonSpliceCount - 2 * exp.numKeywordArgs;
         String msg = WrongArguments.checkArgCount(getName(),
                                                   spliceCount > 0 ? 0 : min_args,
                                                   max_args,
-                                                  nonSpliceCount);
-        if (msg != null)
+                                                  nonSpliceNonKeyCount);
+        if (msg != null) {
             return visitor.noteError(msg);
+        }
         return exp;
     }
 
@@ -1825,39 +1797,47 @@ public class LambdaExp extends ScopeExp {
         printLineColumn(out);
         out.startLogicalBlock("(", false, ")");
         Special prevMode = null;
-        int i = 0;
+        int i = -1;
         int key_args = keywords == null ? 0 : keywords.length;
         Declaration decl = firstDecl();
         if (decl != null && decl.isThisParameter())
-            i = -1;
+            i = -2;
         for (; decl != null;  decl = decl.nextDecl()) {
-            Special mode;
+            if (decl != firstDecl())
+                out.writeSpaceFill();
+            Special mode = prevMode;
+            if (decl.getFlag(Declaration.IS_PARAMETER)) {
+                i++;
             if (i < min_args
                 || (i == min_args && decl.getFlag(Declaration.PATTERN_NESTED)))
                 mode = null;
             else if (i < min_args + opt_args)
                 mode = Special.optional;
-            else if (max_args < 0 && i == min_args + opt_args)
+            else if (decl.getFlag(Declaration.IS_REST_PARAMETER))
                 mode = Special.rest;
             else
                 mode = Special.key;
-            if (decl != firstDecl())
-                out.writeSpaceFill();
+            }
             if (mode != prevMode) {
                 out.print(mode);
                 out.writeSpaceFill();
             }
             Expression defaultArg = decl.getInitValue();
             if (defaultArg != null)
-                out.print('(');
+                out.startLogicalBlock("(", false, ")");
+            if (decl.getFlag(Declaration.IS_SUPPLIED_PARAMETER)
+                && ! decl.getFlag(Declaration.IS_PARAMETER))
+                out.print("supplied:");
             decl.printInfo(out);
-            if (defaultArg != null && defaultArg != QuoteExp.falseExp) {
-                out.print(' ');
-                defaultArg.print(out);
-                out.print(')');
+            if (defaultArg != null) {
+                if (defaultArg != QuoteExp.falseExp) {
+                    out.writeSpaceFill();
+                    out.print("default:");
+                    out.writeSpaceFill();
+                    defaultArg.print(out);
+                }
+                out.endLogicalBlock(")");
             }
-            if (decl.getFlag(Declaration.IS_PARAMETER))
-                i++;
             prevMode = mode;
         }
         out.endLogicalBlock(")");
@@ -2020,13 +2000,14 @@ public class LambdaExp extends ScopeExp {
         return calledInit;
     }
 
-    static class Closure extends MethodProc {
+    public static class Closure extends MethodProc {
         Object[][] evalFrames;
         LambdaExp lambda;
 
         public int numArgs() { return lambda.min_args | (lambda.max_args << 12); }
 
         public Closure(LambdaExp lexp, CallContext ctx) {
+            super(true, applyToConsumer);
             this.lambda = lexp;
 
             Object[][] oldFrames = ctx.evalFrames;
@@ -2041,37 +2022,24 @@ public class LambdaExp extends ScopeExp {
             setSymbol(lambda.getSymbol());
         }
 
-        public int match0(CallContext ctx) {
-            return matchN(new Object[] { }, ctx);
-        }
-
-        public int match1(Object arg1, CallContext ctx) {
-            return matchN(new Object[] { arg1 }, ctx);
-        }
-
-        public int match2(Object arg1, Object arg2, CallContext ctx) {
-            return matchN(new Object[] { arg1, arg2 }, ctx);
-        }
-
-        public int match3(Object arg1, Object arg2, Object arg3, CallContext ctx) {
-            return matchN(new Object[] { arg1, arg2, arg3 }, ctx);
-        }
-
-        public int match4(Object arg1, Object arg2, Object arg3, Object arg4,
-                          CallContext ctx) {
-            return matchN(new Object[] { arg1, arg2, arg3, arg4 }, ctx);
-        }
-
-        public int matchN(Object[] args, CallContext ctx) {
-            int num = numArgs();
-            int nargs = args.length;
+        public static Object applyToConsumer(Procedure proc, CallContext ctx)
+                throws Throwable {
+            Closure closure = (Closure) proc;
+            LambdaExp lambda = closure.lambda;
+            Object[] args = ctx.getArgs();
+            Object[][] evalFrames = closure.evalFrames;
+            int num = proc.numArgs();
+            int nargs = ctx.getArgCount();
             int min = num & 0xFFF;
-            if (nargs < min)
-                return MethodProc.NO_MATCH_TOO_FEW_ARGS|min;
+            if (nargs < min) {
+                ctx.matchError(MethodProc.NO_MATCH_TOO_FEW_ARGS|min);
+                return ctx;
+            }
             int max = num >> 12;
-            if (nargs > max && max >= 0)
-                return MethodProc.NO_MATCH_TOO_MANY_ARGS|max;
-
+            if (nargs > max && max >= 0) {
+                ctx.matchError(MethodProc.NO_MATCH_TOO_MANY_ARGS|max);
+                return ctx;
+            }
             Object[] evalFrame = new Object[lambda.frameSize];
             int key_args = lambda.keywords == null ? 0 : lambda.keywords.length;
             int opt_args = lambda.opt_args;
@@ -2105,7 +2073,8 @@ public class LambdaExp extends ScopeExp {
                                 try {
                                     el = elementType.coerceFromObject(args[i+j]);
                                 } catch (ClassCastException ex) {
-                                    return NO_MATCH_BAD_TYPE|(i+j);
+                                    ctx.matchError(NO_MATCH_BAD_TYPE|(i+j));
+                                    return ctx;
                                 }
                                 java.lang.reflect.Array.set(value, j, el);
                             }
@@ -2126,7 +2095,8 @@ public class LambdaExp extends ScopeExp {
                     try {
                         value = decl.type.coerceFromObject(value);
                     } catch (ClassCastException ex) {
-                        return NO_MATCH_BAD_TYPE|i;
+                        ctx.matchError(NO_MATCH_BAD_TYPE|i);
+                        return ctx;
                     }
                 }
                 if (decl.isIndirectBinding()) {
@@ -2136,16 +2106,12 @@ public class LambdaExp extends ScopeExp {
                 }
                 evalFrame[decl.evalIndex] = value;
             }
-            ctx.values = evalFrame;
-            ctx.where = 0;
-            ctx.next = 0;
-            ctx.proc = this;
-            return 0; // FIXME
-        }
 
-        public void apply(CallContext ctx) throws Throwable {
+            ctx.next = ctx.numArguments();
+            if (ctx.checkDone() != 0)
+                return ctx;
+
             int level = ScopeExp.nesting(lambda);
-            Object[] evalFrame = ctx.values;
             Object[][] saveFrames = ctx.evalFrames;
 
             int numFrames = evalFrames == null ? 0 : evalFrames.length;
@@ -2179,6 +2145,7 @@ public class LambdaExp extends ScopeExp {
             } finally {
                 ctx.evalFrames = saveFrames;
             }
+            return ctx;
         }
 
         public Object getProperty(Object key, Object defaultValue) {
@@ -2188,4 +2155,8 @@ public class LambdaExp extends ScopeExp {
             return value;
         }
     }
+
+    public static final MethodHandle applyToConsumer
+        = lookupApplyHandle(Closure.class , "applyToConsumer");
+
 }

@@ -278,15 +278,16 @@ public class LList extends ExtSequence<Object>
 
   public static LList makeList (Object[] vals, int offset)
   {
-    /* DEBUGGING:
+      /* DEBUGGING:
+      System.err.print("makeList [");
     for (int i = 0;  i < vals.length; i++)
       {
 	if (i > 0)
 	  System.err.print(", ");
-	System.err.println(vals[i]);
+	System.err.print(vals[i]);
       }
-    System.err.println("], "+offset+")");
-    */
+    System.err.println("], offset:"+offset);
+      */
     LList result = LList.Empty;
     for (int i = vals.length - offset;  --i >= 0; )
       result = new Pair (vals[offset+i], result);

@@ -16,14 +16,28 @@ import java.util.List;
  */
 
 public class MakeSplice extends Procedure1 {
-    public static final MakeSplice instance = new MakeSplice();
+    private boolean keywordsAllowed;
+    public static final MakeSplice instance =
+        new MakeSplice("$splice$", false);
+    public static final MakeSplice keywordsAllowedInstance =
+        new MakeSplice("$splice-with-keywords$", true);
 
     public static final QuoteExp quoteInstance = new QuoteExp(instance);
+    public static final QuoteExp quoteKeywordsAllowedInstance =
+        new QuoteExp(keywordsAllowedInstance);
+
+    MakeSplice(String name, boolean keywordsAllowed) {
+        super(name);
+        this.keywordsAllowed = keywordsAllowed;
+    } 
+
+    public boolean getKeywordsAllowed() { return keywordsAllowed; }
 
     public static Expression argIfSplice(Expression exp) {
         if (exp instanceof ApplyExp) {
             ApplyExp aexp = (ApplyExp) exp;
-            if (aexp.getFunction() == quoteInstance)
+            Expression afun = aexp.getFunction();
+            if (afun == quoteInstance || afun == quoteKeywordsAllowedInstance)
                 return aexp.getArg(0);
         }
         return null;
@@ -34,10 +48,7 @@ public class MakeSplice extends Procedure1 {
     }
 
     public static int count(Object values) {
-        if (values instanceof CharSequence)
-            return Strings.sizeInCodePoints((CharSequence) values);
-        else
-            return Sequences.getSize(values);
+        return Sequences.getSize(values);
     }
 
     public static void copyTo(Object[] target, int start, int size,

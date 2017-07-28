@@ -72,7 +72,13 @@ public class Promise<T> implements Printable, Lazy<T> {
                 if (r == Location.UNBOUND && throwable == null) {
                     // thunk is non-null, because !isBlank().
                     try {
-                        r = thunk.apply0 ();
+                        CallContext ctx = CallContext.getInstance();
+                        ctx.pushArgState();
+                        try {
+                            r = thunk.apply0();
+                        } finally {
+                            ctx.popArgState();
+                        }
                         if (result == Location.UNBOUND)
                             result = r;
                         else

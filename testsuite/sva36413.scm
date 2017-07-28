@@ -8,5 +8,5 @@
     y))
 
 (format #t "Ok.~%")
-;; Diagnostic: sva36413.scm:5:9: warning - no use of bar
+;; Diagnostic: sva36413.scm:5:10: warning - no use of bar
 ;; Output: Ok.

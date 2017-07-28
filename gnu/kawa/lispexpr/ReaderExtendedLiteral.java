@@ -122,8 +122,7 @@ public class ReaderExtendedLiteral extends ReaderConstituent {
                 nonSpace = reader.tokenBufferLength;
             }
             if (next < 0) {
-                reader.error("unexpected end-of-file");
-                item = Special.eof;
+                reader.eofError("unexpected end-of-file");
             }
             else if (next == delimiter
                      && (! isNestableEndDelim(next)

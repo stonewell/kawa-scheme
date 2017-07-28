@@ -1,6 +1,7 @@
 package gnu.kawa.lispexpr;
 
 import gnu.bytecode.*;
+import gnu.lists.Sequences;
 import java.util.List;
 
 /** This matches a sequences of a specific length.
@@ -17,14 +18,14 @@ public class SeqSizeType extends LangObjType {
         this.requiredExact = requiredExact;
     }
 
-    public SeqSizeType(int requiredSize, boolean requiredExact, String implClass) {
+    public SeqSizeType(int requiredSize, boolean requiredExact) {
         this((requiredExact ? "list#=" : "list#>=") + requiredSize,
-             requiredSize, requiredExact, implClass);
+             requiredSize, requiredExact, "java.util.List");
     }
 
     @Override
     public Object coerceFromObject (Object obj) {
-        List list = (List) obj;
+        List list = (List) Sequences.coerceToSequence(obj);
         int size = list.size();
         if (requiredExact ? size == requiredSize : size >= requiredSize)
             return list;
@@ -43,31 +44,46 @@ public class SeqSizeType extends LangObjType {
             throw new ClassCastException("sequence has size "+sz+" should be at least "+requiredSize);
     }
 
+    public static java.util.List coerceEq(Object object, int requiredSize) {
+        List list = Sequences.coerceToSequence(object);
+        checkSizeEq(list, requiredSize);
+        return list;        
+    }
+
+    public static java.util.List coerceGe(Object object, int requiredSize) {
+        List list = Sequences.coerceToSequence(object);
+        checkSizeGe(list, requiredSize);
+        return list;        
+    }
     public static java.util.List coerceEqOrNull(Object object, int requiredSize) {
+        List list;
         if (object instanceof List) {
-            List list = (List) object;
-            if (list.size() == requiredSize)
-                return list;
+            list = (List) object;
+        } else {
+            list = Sequences.asSequenceOrNull(object);
+            if (list == null)
+                return null;
         }
-        return null;
+        return list.size() == requiredSize ? list : null;
     }
 
     public static java.util.List coerceGeOrNull(Object object, int requiredSize) {
+        List list;
         if (object instanceof List) {
-            List list = (List) object;
-            if (list.size() >= requiredSize)
-                return list;
+            list = (List) object;
+        } else {
+            list = Sequences.asSequenceOrNull(object);
+            if (list == null)
+                return null;
         }
-        return null;
+        return list.size() >= requiredSize ? list : null;
     }
  
     @Override
     public void emitCoerceFromObject (CodeAttr code) {
-        code.emitCheckcast(implementationType);
-        code.emitDup();
         code.emitPushInt(requiredSize);
         ClassType thisCl = ClassType.make("gnu.kawa.lispexpr.SeqSizeType");
-        code.emitInvokeStatic(thisCl.getDeclaredMethod(requiredExact ? "checkSizeEq" : "checkSizeGe", 2));
+        code.emitInvokeStatic(thisCl.getDeclaredMethod(requiredExact ? "coerceEq" : "coerceGe", 2));
     }
 
     public boolean emitCoercionOrNull(CodeAttr code) {
@@ -81,6 +97,9 @@ public class SeqSizeType extends LangObjType {
     public int isCompatibleWithValue(Type valueType) {
         return Type.isSame(this, valueType) ? 2 : Type.isCompatibleWithValue(this, valueType);
     }
+
+    @Override
+    public boolean isInterface() { return false; }
    
     @Override
     public int compare(Type other) {
@@ -104,7 +123,7 @@ public class SeqSizeType extends LangObjType {
                     return -1;
             }
         }
-        int r = getImplementationType().compare(other);
+        int r = LangObjType.sequenceType.compare(other);
         return r == 0 || r == -1 ? -1 : r == -3 ? -3 : -2;
     }
 }

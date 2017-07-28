@@ -9,6 +9,7 @@ import gnu.bytecode.Label;
 import gnu.bytecode.Method;
 import gnu.bytecode.SwitchState;
 import gnu.bytecode.Type;
+import gnu.bytecode.Variable;
 import gnu.expr.Compilation;
 import gnu.expr.ExpVisitor;
 import gnu.expr.Expression;
@@ -274,6 +275,7 @@ public class CaseExp extends Expression {
                 // minus one for using it this time.
                 int pendingDatumCount = expToPendingDatumCounts.get(exp) - 1;
                 Label expLabel = expToLabelMap.get(exp);
+                Variable callContextSave = comp.callContextVar;
                 if (pendingDatumCount == 0) {
                     // It's the last time we use the exp, so compile it.
                     if (integer) {
@@ -296,6 +298,7 @@ public class CaseExp extends Expression {
                     else
                         code.emitGoto(expLabel);
                 }
+                comp.callContextVar = callContextSave;
                 if (!integer) code.emitFi();
             }
             // if this point is reached and we are handling 

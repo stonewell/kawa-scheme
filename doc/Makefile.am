@@ -154,7 +154,7 @@ $(HTML_TARGET_DIRECTORY)/index.html: kawa.xml Makefile
 kawa-manual.epub: kawa.xml
 	sed \
 	  -e 's|<?dbhtml filename="tutorial/\([^".]*\)\.html|<?dbhtml filename="tutorial-\1.xhtml|'\
-	  -e 's|<?dbhtml filename="\([^"]*\)\.html|<?dbhtml filename="\1.xhtml|'\
+	  -e '/id="News"/s|<?dbhtml filename="\([^"]*\)\.html|<?dbhtml filename="\1.xhtml|'\
 	  < $< | \
 	$(XSLT) --path $(DOCBOOK_XSL_DIR)/epub3$(pathsep)$(srcdir)/style \
 	  --stringparam base.dir ebook/OEBPS/ \
@@ -179,6 +179,8 @@ kawa-manual.epub: kawa.xml
 	sed -e '/<footer>/,/<.footer>/d' <ebook/OEBPS/bk01-toc.xhtml \
 	  >ebook/OEBPS/ToC.xhtml
 	rm ebook/OEBPS/bk01-toc.xhtml
+	for file in ebook/OEBPS/*.html; do \
+	  sed -e '/<?xml .*>/d' -e '/<script/s|/>|> </script>|' -i $$file; done
 	cp style/kawa-ebook.css ebook/OEBPS/kawa.css
 	cp style/kawa-ebook.js ebook/OEBPS/kawa-ebook.js
 	cp style/kawa-logo.png ebook/OEBPS/kawa-logo.png

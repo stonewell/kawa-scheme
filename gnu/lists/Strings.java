@@ -10,9 +10,16 @@ import java.io.IOException;
 
 public class Strings
 {
+    /** Get character (code point) at a offset.
+     * @param index offset measured in 16-bit code units
+     */
     public static int characterAt(CharSequence cseq, int index) {
         return characterAt(cseq, 0, cseq.length(), index);
     }
+    /** Get character (code point) at a offset.
+     * @param index offset measured in 16-bit code units,
+     * from begining of cseq, not frm start
+     */
     public static int characterAt(CharSequence cseq, int start, int end,
                                   int index) {
         if (index < start || index >= end)
@@ -33,8 +40,36 @@ public class Strings
         }
         return ch1;
     }
+    /** Get index'th character (code point).
+     * @param index offset by code points
+     */
+    public static int indexByCodePoints(CharSequence str, int index) {
+        if (str instanceof IString)
+            return ((IString) str).indexByCodePoints(index);
+        index = Character.offsetByCodePoints(str, 0, index);
+        return Character.codePointAt(str, index);
+    }
+
+    /** Like offsetByCodePoints, but optimize if an IString.
+     * @param offset number of code points beyond start index.
+     * @param cuStart start index in code units (Java chars)
+     * @param cpStart start index in Unicode code points
+     */
+    public static int offsetByCodePoints(CharSequence str, int offset,
+                                         int cuStart, int cpStart) {
+        if (str instanceof IString) {
+            IString istr = (IString) str;
+            offset += cpStart;
+            if (offset < 0 || offset > istr.size())
+                throw new IndexOutOfBoundsException();
+            return istr.offsetByCodePoints(offset);
+        }
+        return Character.offsetByCodePoints(str, cuStart, offset);
+    }
 
     public static int sizeInCodePoints(CharSequence str) {
+        if (str instanceof IString)
+            return ((IString) str).lengthByCodePoints();
         int len = str.length();
         int nsurr = 0;
         for (int i = 0; i < len;  ) {
@@ -172,8 +207,10 @@ public class Strings
         }
     }
 
-    /** Make a read-only substring, generalized to arbitrary index sequences. */
-    public static CharSequence indirectIndexed(CharSequence base,
+    /** Make a read-only substring, generalized to arbitrary index sequences.
+     * The indexes are in terms of code points (character) offsets.
+     */
+    public static IString indirectIndexed(CharSequence base,
                                                IntSequence indexes) {
         if (indexes instanceof Range.IntRange) {
             Range.IntRange range = (Range.IntRange) indexes;
@@ -182,28 +219,38 @@ public class Strings
                 int end = base.length();
                 if (start < 0 || start > end)
                     throw new IndexOutOfBoundsException();
+                int size;
                 if (! range.isUnbounded()) {
-                    int size = range.size();
+                    size = range.size();
                     if (start+size < 0 || start+size > end)
                         throw new IndexOutOfBoundsException();
-                    end = start+size;
-                }
-                return Strings.substring(base, start, end);
+                } else
+                    size = end - start;
+                return IString.valueOf(base, start, size);
             }
         }
         int len = indexes.size();
         StringBuilder sbuf = new StringBuilder(len);
-        for (int i = 0; i < len; i++)
-            sbuf.append(base.charAt(indexes.getInt(i)));
-        return sbuf.toString();
+        for (int i = 0; i < len; i++) {
+            int ch = Strings.indexByCodePoints(base, indexes.getInt(i));
+            if (ch >= 0x10000) {
+                sbuf.append((char) (((ch - 0x10000) >> 10) + 0xD800));
+                ch = (ch & 0x3FF) + 0xDC00;
+            }
+            sbuf.append((char) ch);
+        }
+        return new IString(sbuf.toString());
     }
 
+    /** Make a read-only substring.
+     * The start and end are in terms of code unit (16-bit char).
+     */
     public static CharSequence substring(CharSequence base,
                                          int start, int end) {
         if (base instanceof FString) {
             FString fstr = (FString) base;
             if (fstr.isVerySimple() || fstr.isSubRange())
-                return (CharSequence) Sequences.copy(fstr, start, end, false);
+                return (CharSequence) Sequences.copySimple(fstr, start, end, false);
         }
         if (base instanceof String) {
             return ((String) base).substring(start, end);
@@ -224,8 +271,8 @@ public class Strings
         }
     }
 
-    public static String toUtf8(byte[] bytes, int start, int length) {
-        /* #ifdef JAVA7 */  
+    public static String fromUtf8(byte[] bytes, int start, int length) {
+        /* #ifdef JAVA7 */
         return new String(bytes, start, length, java.nio.charset.StandardCharsets.UTF_8);
         /* #else */
         // try {
@@ -234,5 +281,79 @@ public class Strings
         //     throw new RuntimeException(ex);
         // }
         /* #endif */
+    }
+
+    public static byte[] toUtf16(CharSequence str, int start, int end,
+                                 boolean bigEndian, boolean writeBOM) {
+        int blen = 2*(end-start)+(writeBOM?2:0);
+        byte[] buf = new byte[blen];
+        int hi = bigEndian ? 0 : 1;
+        int lo = bigEndian ? 1 : 0;
+        int i = start;
+        int j = 0;
+        while (j < blen) {
+            char ch;
+            if (writeBOM) {
+                ch = '\uFEFF';
+                writeBOM = false;
+            }
+            else
+                ch = str.charAt(i++);
+            buf[j + lo] = (byte) ch;
+            buf[j + hi] = (byte) (ch >> 8);
+            j += 2;
+        }
+        return buf;
+    }
+
+    public static int compareTo(CharSequence str1, CharSequence str2) {
+        int n1 = str1.length();
+        int n2 = str2.length();
+        int n = n1 > n2 ? n2 : n1;
+        for (int i = 0; i < n; i++) {
+            char c1 = str1.charAt(i);
+            char c2 = str2.charAt(i);
+            int d = c1 - c2;
+            if (d != 0)
+                return d;
+        }
+        return n1 - n2;
+    }
+
+    public static String replicate(int from, int to, boolean suppliedTo,
+                                    CharSequence string,
+                                    int start, int end, boolean suppliedEnd) {
+        int sstart = Strings.offsetByCodePoints(string, start, 0, 0);
+        if (end <= start || (suppliedTo && to < from)) {
+            if (end >= start && from == to)
+                return "";
+            throw new StringIndexOutOfBoundsException();
+        }
+        int slen = end - start;
+        // startOffset = modulo(from, slen)
+        int startOffset = from % slen;
+        if (startOffset < 0) startOffset += slen;
+        int ptr = Strings.offsetByCodePoints(string, startOffset,
+                                             sstart, start);
+        int send = ! suppliedEnd ? string.length()
+            : Strings.offsetByCodePoints(string, end-startOffset, ptr, startOffset);
+        StringBuilder buf = new StringBuilder();
+        for (int i = from;
+             suppliedTo ? i < to : ptr < send;
+             i++) {
+            if (ptr == send)
+                ptr = sstart;
+            char ch = string.charAt(ptr);
+            ptr++;
+            buf.append(ch);
+            if (ch >= 0xD800 && ch <= 0xDBFF && ptr < send) {
+                char next = string.charAt(ptr);
+                if (next >= 0xDC00 && next <= 0xDFFF) {
+                    ptr++;
+                    buf.append(next);
+                }
+            }
+        }
+        return buf.toString();
     }
 }

@@ -1,3 +1,77 @@
+2017-07-26  Per Bothner  <per@bothner.com>
+
+	* kawa.texi (Extended formals): Update and expand.
+
+2017-07-16  Per Bothner  <per@bothner.com>
+
+	* kawa.texi: Add @kdb commands for better styling.
+	Also fix error in example - using make-vector instead of vector.
+
+2017-07-15  Frank Ruben <gitlab@mg.gitlab.com>
+
+	* kawa.texi (Method operations): Fix typo in example.
+	This fixes GitLab issue #14.
+
+2017-07-15  Per Bothner  <per@bothner.com>
+
+	* kawa.texi: Update about lambda expressions.
+
+2017-07-09  Per Bothner  <per@bothner.com>
+
+	* kawa.texi (Application and Arguments Lists): Fix some typos.
+	(Extended formals): Move earlier.
+
+2017-06-08  Per Bothner  <per@bothner.com>
+
+	* kawa.texi (Ideas and tasks): End-position recording is now working.
+	* news.html: Note this.
+
+2017-04-30  Per Bothner  <per@bothner.com>
+
+	* kawa.texi (Source distribution):
+	Improve instructions for building documentation.
+
+	* kawa.texi (Extended formals): Refactor to avoid texinfo.tex bug.
+
+	* texinfo.tex: Use newer version.
+
+	* kawa.texi: Update for Java 8 now being the default.
+
+2017-04-26  Per Bothner  <per@bothner.com>
+
+	* Makefile.am (kawa.xml): Change Top node to index.html, not start.html.
+	(kawa-manual.epub): Update to deal with above change.
+	* style/kawa-ebook.js: Update sidebar handling for index.html.
+	Also, various changes in readiness for html (not xml) files.
+
+	* kawa.texi: Some minor fixes.
+
+2017-04-25  Per Bothner  <per@bothner.com>
+
+	* kawa.texi: Document remaining new string procedures.
+	Various string-related fixes and updates.
+	* news.texi: Likewise update.
+
+2017-04-10  Per Bothner  <per@bothner.com>
+
+	* kawa.texi: More string procedures.  Some re-organization.
+
+2017-04-09  Per Bothner  <per@bothner.com>
+
+	* kawa.texi: Update for new UTF16/string conversions.
+	* news.texi: Likewise.
+
+2017-03-26  Per Bothner  <per@bothner.com>
+
+	* kawa.texi (Strings): Document new string functions.
+
+2017-03-20  Per Bothner  <per@bothner.com>
+
+	* kawa.texi: String updates.
+
+2017-03-15  Per Bothner  <per@bothner.com>
+
+	* kawa.texi (Strings): Update wih istring information.
 2017-03-13  Per Bothner  <per@bothner.com>
 
 	* kawa.texi (Ideas and tasks): Add more on function types.
@@ -15,6 +89,36 @@
 	* kawa.texi: Adjustments to the "projects" page.
 
 	* Makefile.am (kawa-manual.epub): Don't depend on Makefile.
+
+2017-02-11  Per Bothner  <per@bothner.com>
+
+	* news.texi: Mention new bitvector and c16vector types.
+	Mention that converting a Java array to a uniform vector wraps (re-uses) the array.
+
+2017-01-26  Per Bothner  <per@bothner.com>
+
+	* style/kawa-ebook.css: Some tweaking for consistency.
+
+	* style/kawa-ebook.js: For "scroll-to" message, only update
+	location.hash, to avoid reload.
+
+	* kawa-ebook.js: Re-do frame-management.
+	Use a fixed top-frame, and lazily load an iframe when visiting a page.
+	* kawa-ebook.css: Related changes.
+	* Makefile.am: Top frame is start.xhtml; make index.html from it.
+
+	* kawa.texi (Resources): Document new module-class.
+	* news.texi: Likewise.
+
+2017-01-21  Per Bothner  <per@bothner.com>
+
+	* kawa.texi (Variables and Patterns): Document guards and
+	literal (constant-match) patterns.
+	* kawa.texi (Conditionals): Document 'match' form.
+
+2017-01-17  Per Bothner  <per@bothner.com>
+
+	* news.texi: Update incompatible changes.
 
 2017-01-10  Per Bothner  <per@bothner.com>
 

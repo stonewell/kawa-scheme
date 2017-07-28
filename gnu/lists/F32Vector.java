@@ -110,6 +110,26 @@ public  class F32Vector extends SimpleVector<Float>
         return new F32Vector(newLength < 0 ? data : new float[newLength]);
     }
 
+    public static F32Vector castOrNull(Object obj) {
+        if (obj instanceof float[])
+            return new F32Vector((float[]) obj);
+        if (obj instanceof F32Vector)
+            return (F32Vector) obj;
+        return null;
+    }
+
+    public static F32Vector cast(Object value) {
+        F32Vector vec = castOrNull(value);
+        if (vec == null) {
+            String msg;
+            if (value == null)
+                msg = "cannot convert null to F32Vector";
+            else
+                msg = "cannot convert a "+value.getClass().getName()+" to F32Vector";
+            throw new ClassCastException(msg);
+        }
+        return vec;
+    }
     public int getElementKind() { return FLOAT_VALUE; }
 
     public String getTag() { return "f32"; }

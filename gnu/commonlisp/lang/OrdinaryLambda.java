@@ -1,5 +1,6 @@
 package gnu.commonlisp.lang;
 
+import gnu.bytecode.Type;
 import gnu.expr.*;
 import gnu.kawa.lispexpr.LangObjType;
 import gnu.lists.Consumer;
@@ -33,9 +34,6 @@ public class OrdinaryLambda extends Lambda
   protected Object allowOtherKeysKeyword;
   protected Object auxKeyword;
   protected Object bodyKeyword;
-  
-  Object[] rewriteHelper = new Object[16];
-  int rwIdx = 0;
   
   public void setKeywords (Object optional, Object rest, Object key,
                            Object allowOthers, Object aux, Object body)
@@ -76,6 +74,7 @@ public class OrdinaryLambda extends Lambda
   public void rewriteFormals (LambdaExp lexp, Object formals, Translator tr,
                               TemplateScope templateScopeRest)
   {
+    tr.pushScope(lexp);
     if (lexp.getSymbol() == null)
     {
       String filename = lexp.getFileName();
@@ -235,37 +234,14 @@ public class OrdinaryLambda extends Lambda
         //          tr.syntaxError("malformed lambda list `" + p + "`");
         //        }
       }
-      Declaration decl = new Declaration(name);
+      Declaration decl = addParam((Symbol) name, templateScope, lexp, tr);
       decl.setFlag(Declaration.IS_PARAMETER);
-      //Declaration tmpVar = new Declaration((keyname != null) ? keyname : gnu.expr.Symbols.gentemp());
-      Declaration tmpVar = new Declaration(gnu.expr.Symbols.gentemp());
       //if (suppliedp != null || keyname != null) {
-
-      if (suppliedp != null)
-      {
-        if (rwIdx >= rewriteHelper.length-4) {
-          Object[] newHelper = new Object[2 * rewriteHelper.length];
-          System.arraycopy(rewriteHelper, 0, newHelper, 0, rewriteHelper.length);
-          rewriteHelper = newHelper;
-        }
-        rewriteHelper[rwIdx++] = decl;
-        rewriteHelper[rwIdx++] = defaultValue;
-        rewriteHelper[rwIdx++] = new Declaration(suppliedp);
-        rewriteHelper[rwIdx++] = tmpVar;
-        tmpVar.setFlag(Declaration.IS_PARAMETER);
-      }
 
       if (mode == optionalKeyword || mode == keyKeyword || mode == auxKeyword)
       {
         //if (suppliedp != null || keyname != null) {
-        if (suppliedp != null)
-        {
-          tmpVar.setInitValue(new LangExp(Special.undefined));
-        }
-        else
-        {
-          decl.setInitValue(new LangExp(defaultValue));
-        }
+        decl.setInitValue(new LangExp(defaultValue));
 
         if (mode == keyKeyword)
         {
@@ -281,12 +257,23 @@ public class OrdinaryLambda extends Lambda
         }
       }
       Translator.setLine(decl, bindings);
-      if (mode == restKeyword || mode == bodyKeyword)
-        decl.setType(LangObjType.listType);
-      tmpVar.setFlag(Declaration.IS_SINGLE_VALUE);
+      if (mode == restKeyword || mode == bodyKeyword) {
+          decl.setType(LangObjType.listType);
+          decl.setFlag(Declaration.IS_REST_PARAMETER);
+      }
       decl.setFlag(Declaration.IS_SINGLE_VALUE);
-      //addParam(((suppliedp != null || keyname != null) ? tmpVar : decl), templateScope, lexp, tr);
-      addParam(((suppliedp != null) ? tmpVar : decl), templateScope, lexp, tr);
+      if (suppliedp != null) {
+          decl.setFlag(Declaration.IS_SUPPLIED_PARAMETER);
+          // FIXME suppliedp is not guaranteed to be a Symbol.
+          Declaration suppliedDecl = addParam((Symbol) suppliedp,
+                                              templateScope, lexp, tr);
+          suppliedDecl.setFlag(Declaration.IS_SUPPLIED_PARAMETER);
+          Language language = Language.getDefaultLanguage();
+          Type booleanType = language instanceof CommonLisp
+              ? ((CommonLisp) language).booleanType
+              : Type.booleanType;
+          suppliedDecl.setType(booleanType);
+      }
       tr.popPositionOf(savePos);
     }
     if (bindings instanceof SyntaxForm)
@@ -306,11 +293,11 @@ public class OrdinaryLambda extends Lambda
       else
       {
         rest_args = 1;
-        Declaration decl = new Declaration(bindings);
+        Declaration decl = addParam((Symbol) bindings,
+                                    templateScopeRest, lexp, tr);
         decl.setType(LangObjType.listType);
         decl.setFlag(Declaration.IS_SINGLE_VALUE);
         decl.noteValueUnknown();
-        addParam(decl, templateScopeRest, lexp, tr);
       }
     }
     else if (bindings != LList.Empty)
@@ -339,91 +326,6 @@ public class OrdinaryLambda extends Lambda
       lexp.keywords = keywords.toArray(new Keyword[keywords.size()]);
   }
   
-  @Override
-  /**
-   * Transform CL lambda lists into ones Scheme can understand.
-   * 
-   * This is a temporary measure to accommodate CL lambda lists. The idea is
-   * to transform code like:
-   * 
-   * (lambda (&optional (var init-form supplied-p)) body)
-   * 
-   * into
-   * 
-   * (lambda (#!optional (tmp-var <unbound-marker>))
-   *   (let* ((supplied-p (if (eq tmp-var <unbound-marker>) nil t))
-   *          (var (if (supplied-p tmp-var init-form))))
-   *     body))
-   * 
-   * The rewriteFormals method extracted all the relevant parts of the lambda
-   * list into the rewriteHelper array. Before we rewrite the lambda body, we
-   * emit the above transformation using this information.
-   * 
-   * This might be better expression when Kawa supports pattern matching.
-   */
-  public Expression auxillaryRewrite (Object body, Translator tr)
-  {
-    /*
-     * Key for the rewriteHelper array (&optional name init supp-p) [0] - name
-     * declaration [1] - init [2] - supp-p declaration [3] - temporary var
-     * declaration
-     */
-    boolean outerLet = false;
-    if (rwIdx == 0)
-      return super.auxillaryRewrite(body, tr);
-    int i = 2; // process supplied-p's
-    if (rewriteHelper[i] != null)
-    {
-      outerLet = true;
-      tr.letStart();
-      while (rewriteHelper[i] != null)
-      {
-        tr.letVariable((Declaration) rewriteHelper[i],
-            new IfExp(new ApplyExp(CommonLisp.isEq,
-            new ReferenceExp((Declaration) rewriteHelper[i + 1]),
-            new QuoteExp(Special.undefined)),
-            new QuoteExp(CommonLisp.FALSE),
-            new QuoteExp(CommonLisp.TRUE)));
-        i += 4;
-      }
-      tr.letEnter();
-    }
-    i = 0; // process names
-    tr.letStart();
-    while (rewriteHelper[i] != null)
-    {
-      if (rewriteHelper[i + 2] != null)
-      {
-        tr.letVariable((Declaration) rewriteHelper[i],
-            new IfExp(new ReferenceExp((Declaration) rewriteHelper[i + 2]),
-            new ReferenceExp((Declaration) rewriteHelper[i + 3]),
-            tr.rewrite(rewriteHelper[i + 1])));
-      }
-      else
-      {
-        tr.letVariable((Declaration) rewriteHelper[i],
-            new IfExp(new ApplyExp(CommonLisp.isEq,
-            new ReferenceExp((Declaration) rewriteHelper[i + 3]),
-            new QuoteExp(Special.undefined)),
-            tr.rewrite(rewriteHelper[i + 1]),
-            new ReferenceExp((Declaration) rewriteHelper[i + 3])));
-      }
-      i += 4;
-    }
-    tr.letEnter();
-    LetExp suppLet = tr.letDone(tr.rewrite_body(body));
-    if (outerLet)
-      suppLet = tr.letDone(suppLet);
-    // destroy the helper array for future use
-    for (i = 0; i < rewriteHelper.length; i += 4)
-    {
-      rewriteHelper[i] = rewriteHelper[i + 2] = null;
-    }
-    // reset the helper array pointer
-    rwIdx = 0;
-    return suppLet;
-  }
-
   @Override
   public void print (Consumer out)
   {

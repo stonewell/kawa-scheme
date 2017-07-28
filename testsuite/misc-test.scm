@@ -1,11 +1,11 @@
-(test-init "Miscellaneous" 217)
+(test-init "Miscellaneous" 229)
 
 ;;; DSSSL spec example 11
 (test '(3 4 5 6) (lambda x x) 3 4 5 6)
 (test '(5 6) (lambda (x y #!rest z) z) 3 4 5 6)
 (test '(3 4 5 i: 6 j: 1)
       (lambda ( x y #!optional z #!rest r #!key i (j 1))
-	(list x y z i: i j: j))
+	(list x y z 'i: i 'j: j))
       3 4 5 i: 6 i: 7)
 
 ;; Test for optional argument handling.
@@ -19,7 +19,7 @@
 		 #!optional (b (list a b c d (next-n)))
 		 (c (list a b c d (next-n)))
 		 #!key (d (list a b c d (next-n))))
-    (vector arg-a: a arg-b: b arg-c: c argd: d))
+    (vector 'arg-a: a 'arg-b: b 'arg-c: c 'argd: d))
   (list inner1: (inner 'a2) n: (next-n)
 	inner2: (inner 'a3 'b3 'c3 d: 'd3) n: (next-n)))
 (test
@@ -85,7 +85,7 @@
 (test "Hello" symbol->string 'H\x65;llo)
 
 ;;; DSSSL spec example 45
-(test foobar: string->keyword "foobar")
+(test 'foobar: string->keyword "foobar")
 
 (define-unit ft 12in)
 (test 18in + 6in 1ft)
@@ -656,6 +656,9 @@
 		 (append r1 (list (param1) param1v))))))
 	(append r0 (list (param1) param1v))))
 
+(define param2 (make-parameter 7 vector))
+(test #(7) 'param-test7 (param2))
+
 (begin
   (define var1 1)
   (test 2 'test-fluid-future-1a
@@ -1011,3 +1014,39 @@
 ;; Savannah bug report #39944 "Possible bug with omitted keyword arguments"
 (define (f-39944 #!key (y -1) (z -2)) z)
 (test 42 'savannah-39944 (f-39944 z: 42))
+
+(let ()
+  (! [[a b] [c d] e] '((3 4) (5 6) (7 9)))
+  (test "a:3 b:4 c:5 d:6 e:(7 9)"
+        format #f "a:~w b:~w c:~w d:~w e:~w" a b c d e)
+  (! [xs ...] [6 5 4])
+  (test 15 'sum-each (+ xs ...))
+  ;;(! [[as bs] ...] [[11 12] [21 22] [31 32]])
+  ;;(test "xx" 'list-each (list bs ... as ... (+ as ...)))
+)
+
+(! iarr1 (int[] 3 4 5 6))
+(! [a b c d] iarr1)
+(test '(11 7) list (+ c d) (+ a b))
+
+(test #(4 5 7 x 9 8 3) 'scan-1
+      (let (([a r ... b c] (list 3 4 5 7 8 9))) (vector r ... 'x c b a)))
+
+(let ()
+  (define (f1 a b @rst) (format #f "a:~w b:~w r:~w" a b rst))
+  (test "a:1 b:2 r:[7 8]" f1 1 2 7 8)
+  (define (f2 a #!key k1 k2 @rst)
+    (format #f "a:~w k1:~w k2:~w r:~w" a k1 k2 rst))
+  (test "a:12 k1:#f k2:#f r:[7 8]" f2 12 7 8)
+  (test "a:12 k1:#f k2:99 r:[7 8]" 'f2 (f2 12 k2: 99 7 8))
+  (define (f3 a #!key k1 k2 #!rest rst)
+    (format #f "a:~w k1:~w k2:~w r:~w" a k1 k2 rst))
+  (test "a:12 k1:#f k2:#f r:(7 8)" f3 12 7 8)
+  (test "a:12 k1:#f k2:99 r:(7 8)" 'f3
+        (f3 12 k2: 99 7 8))
+  (define (f4 a #!rest rst #!key k1 k2)
+    (format #f "a:~w k1:~w k2:~w r:~w" a k1 k2 rst))
+  (test "a:12 k1:#f k2:#f r:(7 8)" f4 12 7 8)
+  (test "a:12 k1:#f k2:99 r:(k2: 99 7 8)" 'f4
+        (f4 12 k2: 99 7 8))
+)

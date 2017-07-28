@@ -40,10 +40,9 @@ public class let extends Syntax {
         BindDecls bindDecls =
             new BindDecls() {
                 @Override
-                public Declaration define(Symbol name, SyntaxForm nameSyntax,
+                public Declaration define(Symbol name,
+                                          TemplateScope templateScope,
                                           ScopeExp defs, Translator comp) {
-                   ScopeExp templateScope = nameSyntax == null ? null
-                       : nameSyntax.getScope();
                     Declaration decl = new Declaration(name);
                     Object old = dupenv.get(name, templateScope, null);
                     if (old != null)
@@ -89,11 +88,12 @@ public class let extends Syntax {
                 Pair init = (Pair) binding_cdr;
                 binding_cdr = init.getCdr();
 
-                Expression initExp = tr.rewrite_car(init, null);
-                decl.setInitValue(initExp);
-                if (initExp != QuoteExp.undefined_exp)
-                    decl.noteValueFromLet(let);
-
+                Expression initExp = tr.rewrite_car(init, false);
+                if (decl != null) { // paranoia
+                    decl.setInitValue(initExp);
+                    if (initExp != QuoteExp.undefined_exp)
+                        decl.noteValueFromLet(let);
+                }
                 if (init.getCdr() != LList.Empty) {
                     Object saveLoc2 = tr.pushPositionOf(init.getCdr());
                     tr.error('e', "junk after initializer");

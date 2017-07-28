@@ -71,8 +71,7 @@ public class InPort extends Reader implements Printable
 
     public static InPort openFile(InputStream strm, Path path)
             throws java.io.UnsupportedEncodingException {
-        Object conv = Environment.user().get("port-char-encoding");
-        return openFile(strm, path, conv);
+        return openFile(strm, path, OutPort.charEncoding.get(null));
     }
 
     public static InPort openFile(InputStream strm, Path path, Object conv)

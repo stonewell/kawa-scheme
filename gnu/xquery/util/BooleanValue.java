@@ -33,8 +33,9 @@ public class BooleanValue extends Procedure1
       }
     if (value instanceof SeqPosition)
       return true;
-    if (value instanceof String
-        || value instanceof gnu.kawa.io.Path
+    if (value instanceof CharSequence)
+        return ((CharSequence) value).length() > 0;
+    if (value instanceof gnu.kawa.io.Path
         || value instanceof UntypedAtomic)
       return value.toString().length() > 0;
     if (value instanceof Values)

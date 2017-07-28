@@ -41,7 +41,7 @@ public abstract class Type
     /** Return JVM-level implementation type. */
     public Type getRawType() {
 	Type t = getImplementationType();
-	if (t != this)
+	if (t != this && t != null)
 	    t = t.getRawType();
 	return t;
     }

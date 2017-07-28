@@ -57,6 +57,8 @@
 @macro arbno{THING}
 \THING\@sup{*}
 @end macro
+@c maybe use \x2217
+@c \THING\ @var{...}
 
 @macro atleastone{THING}
 \THING\@sup{+}
@@ -1174,12 +1176,6 @@ so might have better hooks to the JVM and Java debugging architecture.
 @uref{http://cedet.sourceforge.net/,CEDET} is a more general
 framework of development tools.
 
-@subsubsection Implement @code{javax.tools} and code-range support in Kawa compiler
-
-Kawa currently records the line and column position of syntactic elements.
-For an IDE it is desirable to have both start and end position of an element,
-for example so it can put a squiggly line under an erroneous form.
-
 @subsection Hop-style web programming
 @uref{http://hop.inria.fr/,Hop} is an interesting design
 for integrating server-side and client-side programming using
@@ -1322,7 +1318,7 @@ You can also
 @section Getting and running Java
 
 Before installing Kawa, you will need a working Java system.
-The released Kawa jar file assumes Java 7 or newer.
+The released Kawa jar file assumes Java 8 or newer.
 You need to build Kawa from source if you have Java 5, Java 6,
 or are targeting Android.
 (Older versions of Kawa have been reported to
@@ -1333,8 +1329,8 @@ The discussion below assumes you are using the Java Developer's Kit
 (JDK) from Oracle.  You can download free copies of
 @uref{http://www.oracle.com/technetwork/java/javase/downloads/index.html, JDK 8} for various platforms.
 
-If you want to run Kawa on a Macintosh, see
-@uref{http://rdsathene.org/scheme/mackawa.html}.
+@c If you want to run Kawa on a Macintosh, see
+@c @uref{http://rdsathene.org/scheme/mackawa.html}.
 
 The program @code{java} is the Java interpreter.
 The program @code{javac} is the Java compiler,
@@ -1368,9 +1364,7 @@ unzip ~/Downloads/kawa-@var{version}.zip
 export KAWA_HOME=`pwd`/kawa-@var{version}
 @end example
 
-The binary release requires Java 7 or later.
-Java 8 is recommended. (Java 8 is needed for the JLine input editor,
-which is recommended for the REPL.)
+The binary release requires Java 8 or later.
 If you have an older Java implementation, or build for a mobile
 environment like Android,
 then you will need to get the source distribution.
@@ -1569,10 +1563,10 @@ and otherwise use @code{/opt/kawa} do:
 @end example
 
 @item @code{--with-java-source=@var{version}}
-As distributed, the Kawa source code requires Java 7.
-If you only have Java 6 or Java 5, use the @code{--with-java-source} option:
+As distributed, the Kawa source code requires Java 8.
+If you only have Java 7, Java 6, or Java 5, use the @code{--with-java-source} option:
 @example
-./configure --with-java-source=5
+./configure --with-java-source=6
 @end example
 
 Kawa no longer supports older verisons of Java (JDK 1.4 or older).
@@ -1590,7 +1584,8 @@ it enables nicer-looking and more functional documentation.)
 
 The stylesheets are found using @var{path};
 the file @code{@var{path}/epub3/chunk.xsl} needs to exist.
-(For example, on Fedora 25 @var{path} can be @code{/usr/share/sgml/docbook/xsl-ns-stylesheets}.)
+(For example, on Fedora 25 @var{path} can be @code{/usr/share/sgml/docbook/xsl-ns-stylesheets},
+while on Debian use @code{/usr/share/xml/docbook/stylesheet/docbook-xsl-ns}.)
 
 @item @code{--with-domterm}
 @itemx @code{--with-domterm=@var{domterm_home}}
@@ -1618,6 +1613,18 @@ An advantage of @code{--with-jline3} (compared to
 (on most Unix-like platforms), and it does not require a C wrapper program.
 
 As an optional convenience, you can use the @code{jline.jar}
+in the Kawa binary distribution.
+
+@item @code{--with-domterm}
+@itemx @code{--with-domterm=@var{domterm.jar}}
+Compile with extra support for the @ref{Using DomTerm,DomTerm}
+terminal emulator library.  (Some DomTerm support is built-in regardless.)
+
+If you use this option along with @code{--with-javafx}
+then creating a new @ref{REPL Console,REPL} window
+will create a DomTerm window.
+
+As an optional convenience, you can use the @code{domterm.jar}
 in the Kawa binary distribution.
 
 @item @code{--with-servlet}
@@ -1706,24 +1713,30 @@ You can work around that problem with @code{touch doc/kawa.info}.
 
 @subsection Building the documentation
 
-To build the documentation in a form suitable for a web-site do:
-@example
-cd doc && make web/index.html
-@end example
+@subsubsection Plain HTML documentation
 
-You can then point your browser at @code{file:/@var{kawa_srcdir}/doc/web/index.html}.
-
-The above requires @code{makeinfo} from the texinfo package,
-and the DocBook XSLT tools.
-
-If you don't have the DocBook XSLT tools (but have @code{makeinfo}),
-you can build a more plain HTML version of the documentation:
+You can build a plain HTML version of the documentation
+(using @code{makeinfo} from the @code{texinfo} distribution):
 @example
 cd doc && make kawa-html/index.html
 @end example
 
 In this case, point your browser at
 @code{file:/@var{kawa_srcdir}/doc/kawa-html/index.html}.
+
+@subsubsection Fancier HTML documentation
+
+To build the documentation in a nicer form suitable for a web-site
+you need @code{makeinfo} @emph{and} the DocBook XSLT tools
+(and to have run @code{configure} with
+the @code{--with-docbook-stylesheet} option):
+@example
+cd doc && make web/index.html
+@end example
+
+You can then point your browser at @code{file:/@var{kawa_srcdir}/doc/web/index.html}.
+
+@subsubsection Using ebook readers or the --browse-manual option
 
 To build an @code{EPUB} file suitable for ebook readers,
 as well as enabling support for the
@@ -1732,6 +1745,10 @@ as well as enabling support for the
 @example
 cd doc && make kawa-manual.epub
 @end example
+
+This also requires the DocBook XSLT tools.
+
+@subsubsection Building a printable PDF file
 
 To build a @code{pdf} file suitable for printing or online viewing do:
 @example
@@ -2098,9 +2115,9 @@ Given what was said above about being able to add, subtract and multiply integer
 the following may be unexpected:
 
 @example
-#|kawa:1|# (/ 2 3)
+#|kawa:1|# @kbd{(/ 2 3)}
 2/3
-#|kawa:2|# (+ (/ 1 3) (/ 2 3))
+#|kawa:2|# @kbd{(+ (/ 1 3) (/ 2 3))}
 1
 @end example
 
@@ -2114,11 +2131,11 @@ Floating-point real numbers are known in Kawa as @emph{inexact} numbers, as
 they cannot be stored exactly.  Consider:
 
 @example
-#|kawa:3|# (exact? 2/3)
+#|kawa:3|# @kbd{(exact? 2/3)}
 #t
-#|kawa:4|# (exact? 0.33333333)
+#|kawa:4|# @kbd{(exact? 0.33333333)}
 #f
-#|kawa:5|# (exact->inexact 2/3)
+#|kawa:5|# @kbd{(exact->inexact 2/3)}
 0.6666666666666666
 @end example
 
@@ -2130,11 +2147,11 @@ Numbers are converted between exact and inexact versions when required
 within operations or procedures:
 
 @example
-#|kawa:6|# (+ 0.33333333 2/3)
+#|kawa:6|# @kbd{(+ 0.33333333 2/3)}
 0.9999999966666666
-#|kawa:7|# (inexact? (+ 0.33333333 2/3))
+#|kawa:7|# @kbd{(inexact? (+ 0.33333333 2/3))}
 #t
-#|kawa:8|# (sin 2/3)
+#|kawa:8|# @kbd{(sin 2/3)}
 0.618369803069737
 @end example
 
@@ -2145,11 +2162,11 @@ A @emph{complex} number is made from two parts: a @emph{real} part and an
 be manipulated just like other numbers:
 
 @example
-#|kawa:9|# (+ 2+3i 5+2i)
+#|kawa:9|# @kbd{(+ 2+3i 5+2i)}
 7+5i
-#|kawa:10|# (* 2+3i 4-3i)
+#|kawa:10|# @kbd{(* 2+3i 4-3i)}
 17+6i
-#|kawa:11|# (integer? (+ 2+3i -3i))
+#|kawa:11|# @kbd{(integer? (+ 2+3i -3i))}
 #t
 @end example
 
@@ -2169,11 +2186,11 @@ Using Kawa, we can define units for our weight measurements, and specify the
 units along with numbers:
 
 @example
-#|kawa:12|# (define-base-unit pound "Weight")
-#|kawa:13|# (define-unit ounce 0.0625pound)
-#|kawa:14|# 3pound
+#|kawa:12|# @kbd{(define-base-unit pound "Weight")}
+#|kawa:13|# @kbd{(define-unit ounce 0.0625pound)}
+#|kawa:14|# @kbd{3pound}
 3.0pound
-#|kawa:15|# (+ 1pound 5ounce)
+#|kawa:15|# @kbd{(+ 1pound 5ounce)}
 1.3125pound
 @end example
 
@@ -2232,9 +2249,9 @@ The usual way of doing this is to create a named function, called
 @code{double}, and then apply it to a list:
 
 @example
-#|kawa:1|# (define (double x)
-#|.....2|#    (* 2 x))
-#|kawa:3|# (map double (list 1 2 3 4 5))
+#|kawa:1|# @kbd{(define (double x)}
+#|.....2|# @kbd{   (* 2 x))}
+#|kawa:3|# @kbd{(map double (list 1 2 3 4 5))}
 (2 4 6 8 10)
 @end example
 
@@ -2242,10 +2259,10 @@ Instead, anonymous functions make it easy to create a function to work on a
 list, without having to define it in advance:
 
 @example
-#|kawa:4|# (map (lambda (x) (* 2 x)) (list 1 2 3 4 5))
+#|kawa:4|# @kbd{(map (lambda (x) (* 2 x)) (list 1 2 3 4 5))}
 (2 4 6 8 10)
-#|kawa:5|# (define y 3)
-#|kawa:6|# (map (lambda (x) (* x y)) (list 1 2 3 4 5))
+#|kawa:5|# @kbd{(define y 3)}
+#|kawa:6|# @kbd{(map (lambda (x) (* x y)) (list 1 2 3 4 5))}
 (3 6 9 12 15)
 @end example
 
@@ -2296,13 +2313,13 @@ pass just one argument or more than three: @code{x} and @code{y} are compulsory,
 optional.
 
 @example
-#|kawa:12|# (addup 1 2)
+#|kawa:12|# @kbd{(addup 1 2)}
 3
-#|kawa:13|# (addup 1 2 3)
+#|kawa:13|# @kbd{(addup 1 2 3)}
 6
-#|kawa:14|# (addup 1)
+#|kawa:14|# @kbd{(addup 1)}
 /dev/stdin:14:1: call to 'addup' has too few arguments (1; min=2, max=3)
-#|kawa:15|# (addup 1 2 3 4)
+#|kawa:15|# @kbd{(addup 1 2 3 4)}
 /dev/stdin:15:1: call to 'addup' has too many arguments (4; min=2, max=3)
 @end example
 
@@ -2330,11 +2347,11 @@ The @code{args} are simply a list of all remaining values.  The following now al
 function only requires a minimum of two numbers:
 
 @example
-#|kawa:4|# (addup 1 2)
+#|kawa:4|# @kbd{(addup 1 2)}
 3
-#|kawa:5|# (addup 1 2 3)
+#|kawa:5|# @kbd{(addup 1 2 3)}
 6
-#|kawa:6|# (addup 1 2 3 4 5 6 7 8)
+#|kawa:6|# @kbd{(addup 1 2 3 4 5 6 7 8)}
 36
 @end example
 
@@ -2349,9 +2366,9 @@ Finally, it can be useful to identify parameters by name and, for this, Kawa
 provides @emph{keyword} arguments.  Consider the following function:
 
 @example
-(define (vector-3d #!key x y z)
-  (make-vector x y z))
-#|kawa:40|# (vector-3d #:x 2 #:z 3 #:y 4)
+#|kawa:38|# @kbd{(define (vector-3d #!key x y z)}
+#|.....39|# @kbd{  (vector x y z))}
+#|kawa:40|# @kbd{(vector-3d #:x 2 #:z 3 #:y 4)}
 #(2 4 3)
 @end example
 
@@ -2375,9 +2392,9 @@ You can declare a variable using a @code{!} form.
 This takes a variable name, and an expression.  It declares a new
 variable with the given name, and gives it the value of the expression.
 @example
-#|kawa:1|# (! binary-kilo 1024)
-#|kawa:2|# (! binary-mega (* binary-kilo binary-kilo))
-#|kawa:3|# binary-mega
+#|kawa:1|# @kbd{(! binary-kilo 1024)}
+#|kawa:2|# @kbd{(! binary-mega (* binary-kilo binary-kilo))}
+#|kawa:3|# @kbd{binary-mega}
 1048576
 @end example
 
@@ -2941,14 +2958,14 @@ The following example shows how to construct a normal Scheme vector,
 and a Java array of ints:
 
 @example
-|kawa:1|# (vector )
+#|kawa:1|# @kbd{(vector)}
 #()
-#|kawa:2|# (instance? (vector ) vector)
+#|kawa:2|# @kbd{(instance? (vector) vector)}
 #t
-#|kawa:3|# (define x (int[] 1 2 3))
-#|kawa:4|# x
+#|kawa:3|# @kbd{(define x (int[] 1 2 3))}
+#|kawa:4|# @kbd{x}
 [1 2 3]
-#|kawa:5|# (instance? x int[])
+#|kawa:5|# @kbd{(instance? x int[])}
 #t
 @end example
 
@@ -2959,7 +2976,7 @@ So are Java array types, as shown above.
 e.g. a JFrame is constructed by using its class name as a function:
 
 @example
-#|kawa:6|# (javax.swing.JFrame )
+#|kawa:6|# @kbd{(javax.swing.JFrame)}
 javax.swing.JFrame[frame0,0,25,0x0,invalid,hidden,layout=java.awt.BorderLayout,
 title=,resizable,normal,defaultCloseOperation=HIDE_ON_CLOSE,
 rootPane=javax.swing.JRootPane[,0,0,0x0,invalid,
@@ -3212,6 +3229,7 @@ You can specify multiple @samp{-w} options, and also use @samp{-s}.
 Prints out some help.
 @item --version
 Prints out the Kawa version number, and then exits.
+
 If Kawa was built with a @code{.git} repository present,
 also prints the result of @code{git describe}.
 @anchor{browse-manual-option}
@@ -4529,7 +4547,7 @@ character of Scheme.
 @stxdef{comment-text} character sequence not containing @stxlit{#|} or @stxlit{|#}
 @stxdef{comment-cont} @stxref{nested-comment} @stxref{comment-text}
 @stxdef{atmosphere} @stxref{whitespace} | @stxref{comment}
-@stxdef{interlexeme-space} @var{atmosphere}*
+@stxdef{interlexeme-space} @arbno{@var{atmosphere}}
 @end display
 
 As a special case the characters @stxlit{#!/} are treated as starting a comment,
@@ -4755,9 +4773,9 @@ Syntax'':
 @stxdef{symbol} @stxref{identifier}
 @stxdef{compound-datum} @stxref{list} | @stxref{vector} | @stxref{uniform-vector} | @stxref{array-literal} | @stxref{extended-string-literal} | @stxref{xml-literal}
 @stxdef{list} @stxlit{(}@stxref{datum}*@stxlit{)}
-         | @stxlit{(}@stxref{datum}+ @stxlit{.} @stxref{datum}@stxlit{)}
+         | @stxlit{(}@atleastone{@stxref{datum}} @stxlit{.} @stxref{datum}@stxlit{)}
          | @stxref{abbreviation}
-@stxdef{vector} @stxlit{#(}@stxref{datum}*@stxlit{)}
+@stxdef{vector} @stxlit{#(}@arbno{@stxref{datum}}@stxlit{)}
 @end display
 @c FIXME: add to abbrev-prefix: @stxlit{#,} | @stxlit{#,@@}
 
@@ -5030,6 +5048,9 @@ x   @result{}  28
 @stxdef{procedure-call} @stxlit{(}@stxref{operator} @stxref{operand} @dots{})
 @stxdef{operator} @stxref{expression}
 @stxdef{operand} @stxref{expression}
+  | @stxref{keyword} @stxref{expression}
+  | @code{@@} @stxref{expression}
+  | @code{@@:} @stxref{expression}
 @end display
 
 A procedure call consists of expressions for the procedure to be called
@@ -5045,6 +5066,21 @@ passed the resulting arguments.
 (+ 3 4)                @result{}  7
 ((if #f + *) 3 4)      @result{}  12
 @end example
+
+The syntax @stxref{keyword} @var{expression} is a @dfn{keyword argument}.
+This is a mechanism for specifying arguments using a name rather than position,
+and is especially useful for procedures with many optional paramaters.
+Note that @stxref{keyword} must be literal, and cannot be the
+result from evaluating a non-literal expression.
+(This is a change from previous versions of Kawa,
+and is different from Common Lisp and some other Scheme dialects.)
+
+An expression prefixed by @code{@@} or @code{@@:} is
+a splice argument.  The following expression must evaluate to an
+``argument list'' (see @ref{Application and Arguments Lists} for details);
+each element in the argument
+becomes a separate argument when call the @var{operator}.
+(This is very similar to the ``spread'' operator is EcmaScript 6.)
 
 @node Colon notation
 @section Property access using colon notation
@@ -6429,6 +6465,7 @@ structure of an entire source file.
 @menu
 * Boolean values::
 * Conditionals::
+* Variables and Patterns::
 * Definitions::
 * Local binding constructs::
 * Lazy evaluation::
@@ -6555,7 +6592,7 @@ context if the @func{if} expression itself is.
 @deffnx Syntax cond @arbno{@stxref{cond-clause}} @stxlit{(else} @meta{expression}@dots{}@stxlit{)} 
 
 @display
-@stxdef{cond-clause} @stxlit{(}@stxref{test-expression} @arbno{@stxref{expression}}@stxlit{)}
+@stxdef{cond-clause} @stxlit{(}@stxref{test-expression} @stxref{body}@stxlit{)}
     | @stxlit{(}@meta{test} @stxlit{=>} @meta{expression}@stxlit{)}
 @end display
 
@@ -6672,6 +6709,42 @@ The last @meta{expression} of a @meta{case clause} is in tail context if
 the @func{case} expression itself is.
 @end deffn
 
+@anchor{def-match}
+@deffn Syntax match @stxref{match-key} @stxref{expression} @atleastone{@stxref{match-clause}}
+The @code{match} form is a generalization of @code{case} using @stxref{pattern}s,
+@display
+@stxdef{match-key} @stxref{expression}
+@stxdef{match-clause}
+  @stxlit{(} @stxref{pattern} [@stxref{guard}] @stxref{body} @stxlit{)}
+@end display
+The @var{match-key} is evaluated,
+Then the @var{match-clause}s are tried in order.
+The first @var{match-clause} whose @var{pattern} matches (and
+the @var{guard}, if any, is true), is selected,
+and the corresponding @var{body} evaluated.
+It is an error if no @var{match-clause} matches.
+@example
+(match value
+  (0 (found-zero))
+  (x #!if (> x 0) (found-positive x))
+  (x #!if (< x 0) (found-negative x))
+  (x::symbol (found-symbol x))
+  (_ (found-other)))
+@end example
+
+One @code{case} feature is not (yet) directly supported by @code{match}:
+Matching against a list of values.
+However, this is easy to simulate using a guard using @code{memq},
+@code{memv}, or @code{member}:
+@example
+;; compare similar example under case
+(match (car '(c d))
+  (x #!if (memv x '(a e i o u)) ’vowel)
+  (x #!if (memv x '(w y)) ’semivowel)
+  (x x))
+@end example
+@end deffn
+
 @deffn Syntax and @stxref{test-expression} @dots{}
 
 If there are no @meta{test-expression}s, @true{} is returned.  Otherwise, the
@@ -6748,12 +6821,143 @@ If @var{test-expression} is false, evaluate each @var{form} in order,
 returning the value of the last one.
 @end deffn
 
+@node Variables and Patterns
+@section Variables and Patterns
+
+An identifier can name either a type of syntax or a location
+where a value can be stored. An identifier that names a
+type of syntax is called a @dfn{syntactic keyword}
+(informally called a @dfn{macro}), and is said to be
+@dfn{bound} to a transformer for that syntax. An identifier that
+names a location is called a @dfn{variable} and is said to be @dfn{bound}
+to that location. The set of all visible bindings in effect at
+some point in a program is known as the @dfn{environment} in
+effect at that point. The value stored in the location to
+which a variable is bound is called the variable’s value.
+By abuse of terminology, the variable is sometimes said
+to name the value or to be bound to the value. This is
+not quite accurate, but confusion rarely results from this
+practice.
+
+Certain expression types are used to create new kinds of
+syntax and to bind syntactic keywords to those new syntaxes,
+while other expression types create new locations
+and bind variables to those locations. These expression
+types are called @dfn{binding constructs}.
+Those that bind syntactic keywords are discussed in @ref{Macros}.
+The most fundamental of the variable binding constructs is the
+@ref{meta-lambda-expression,@code{lambda} expression},
+because all other variable binding constructs
+can be explained in terms of @code{lambda} expressions.
+Other binding constructs include the @ref{Definitions,@code{define} family},
+and the @ref{Local binding constructs,@code{let} family}.
+
+Scheme is a language with block structure. To each place
+where an identifier is bound in a program there corresponds
+a @dfn{region} of the program text within which the binding is visible.
+The region is determined by the particular binding construct that
+establishes the binding; if the binding is
+established by a @code{lambda} expression, for example, then its
+region is the entire @code{lambda} expression. Every mention of
+an identifier refers to the binding of the identifier that established
+the innermost of the regions containing the use.
+
+If there is no binding of the identifier whose region contains the use,
+then the use refers to the binding for the
+variable in the global environment, if any;
+if there is no binding for the identifier, it is said to be @dfn{unbound}.
+
+@subsection Patterns
+
+The usual way to bind variables is to match an incoming
+value against a @dfn{pattern}.  The pattern contains variables
+that are bound to some value derived from the value.
+@example
+(! [x::double y::double] (some-expression))
+@end example
+In the above example, the pattern @code{[x::double y::double]}
+is matched against the incoming value that results from
+evaluating @code{(some-expression)}.
+That value is required to be a two-element sequence.
+Then the sub-pattern @code{x::double} is matched against
+element 0 of the sequence, which means it is coerced to a @code{double}
+and then the coerced value is matched against the sub-pattern @code{x}
+(which trivially succeeds).  Similarly, @code{y::double} is matched
+against element 1.
+
+The syntax of patterns is a work-in-progress. (The focus until now
+has been in designing and implementing how patterns work in general,
+rather than the details of the pattern syntax.)
+
+@display
+@stxdef{pattern} @stxref{identifier}
+  | @stxlit{_}
+  | @stxref{pattern-literal}
+  | @stxlit{'}@stxref{datum}
+  | @stxref{pattern} @stxlit{::} @stxref{type}
+  | @stxlit{[} @arbno{@stxref{lpattern}} @stxlit{]}
+@stxdef{lpattern} @stxref{pattern}
+  | @stxlit{@@} @stxref{pattern}
+  | @stxref{pattern} @stxlit{...}
+  | @stxref{guard}
+@stxdef{pattern-literal}
+    @stxref{boolean} | number | @stxref{character} | @stxref{string}
+@stxdef{guard} @stxlit{#!if} @stxref{expression}
+@end display
+
+This is how the specific patterns work:
+
+@table @asis
+@item @stxref{identifier}
+This is the simplest and most common form of pattern.
+The @var{identifier} is bound to a new variable
+that is initialized to the incoming value.
+
+@item @stxlit{_}
+This pattern just discards the incoming value.
+It is equivalent to a unique otherwise-unused @var{identifier}.
+
+@item @stxref{pattern-literal}
+Matches if the value is @code{equal?} to the @var{pattern-literal}.
+
+@item @stxlit{'}@stxref{datum}
+Matches if the value is @code{equal?} to the quoted @var{datum}.
+
+@item @stxref{pattern} @stxlit{::} @stxref{type}
+The incoming value is coerced to a value of the specified @var{type},
+and then the coerced value is matched against the sub-@var{pattern}.
+Most commonly the sub-@var{pattern} is a plain @var{identifier},
+so the latter match is trivial.
+
+@item @stxlit{[} @arbno{@stxref{lpattern}} @stxlit{]}
+The incoming value must be a sequence (a list, vector or similar).
+In the case where each sub-pattern is a plain @var{pattern},
+then the number of sub-patterns must match the size of the sequence, and
+each sub-pattern is matched against the corresponding element of the sequence.
+More generally, each sub-pattern may match zero or more consequtive
+elements of the incoming sequence.
+
+@item @stxlit{#!if} @stxref{expression}
+No incoming value is used.  Instead the @var{expression} is evaluated.
+If the result is true, matching succeeds (so far);
+otherwise the match fails.
+This form is called a @uref{https://en.wikipedia.org/wiki/Guard_(computer_science),@dfn{guard}}.
+@end table
+
 @node Definitions
 @section Definitions
 
 A variable definition binds one or more identifiers and specifies
 an initial value for each of them. The simplest kind of
 variable definition takes one of the following forms:
+
+@deffn Syntax ! @stxref{pattern} @stxref{expression}
+Evaluate @stxref{expression}, and match the result against @var{pattern}.
+Defining variables in @stxref{pattern} becomes bound in the
+current (surrounding) scope.
+
+This is similar to @code{define-constant} except generalized to a @var{pattern}.
+@end deffn
 
 @deffn Syntax define name [@stxlit{::} @stxref{type}] @stxref{expression}
 Evaluate the @var{expression}, optionally converting it to @var{type},
@@ -6849,17 +7053,15 @@ values are being computed, thus allowing mutually recursive definitions.
 @c are designed to handle multiple-valued expressions, bind-
 @c ing different identifiers to the returned values.
 
-@deffn Syntax let @stxlit{((}variable [@stxlit{::} @stxref{type}] init@stxlit{)} ...@stxlit{)} @stxref{body}
-Declare new local variables with the given @var{name}, initial value
-@var{init}, and optional type specification @var{type}.
+@deffn Syntax let @stxlit{((}@stxref{pattern} @var{init}@stxlit{)} ...@stxlit{)} @stxref{body}
+Declare new local variables as found in the @meta{pattern}s.
+Each @var{pattern} is matched against the corresponding @var{init}.
 The @var{init}s are evaluated in the current environment (in left-to-right
-onder), the @var{variable}s are bound to fresh locations holding the results,
+onder), the @var{variable}s in the @var{patterns}s are bound to fresh
+locations holding the matched results,
 the @var{body} is evaluated in the extended environment, and the values of
 the last expression of body are returned.
 Each binding of a variable has @var{body} as its region.
-If @var{type} is specified, then after the expression @var{init} is evaluated,
-the result coerced to @var{type}, and then assigned to the variable.
-If @var{type} is not specified, it defaults to @code{Object}.
 
 @example
 (let ((x 2) (y 3))
@@ -6872,17 +7074,23 @@ If @var{type} is not specified, it defaults to @code{Object}.
         (z (+ x y)))
     (* z x)))   @result{} 35
 @end example
+
+An example with a non-trivial pattern:
+
+@example
+(let (([a::double b::integer] (vector 4 5)))
+  (cons b a))  @result{} (5 . 4.0)
+@end example
 @end deffn
 
-@deffn Syntax let* @stxlit{((}variable [@stxlit{::} @stxref{type}] init@stxlit{)} ...@stxlit{)} @stxref{body}
+@deffn Syntax let* @stxlit{((}@stxref{pattern} init@stxlit{)} ...@stxlit{)} @stxref{body}
 
 The @code{let*} binding construct is similar to @code{let},
 but the bindings are performed sequentially from left to
-right, and the region of a @var{variable}
+right, and the region of a @var{variable}s in a @var{pattern}
 is that part of the @code{let*} expression to the right of
-the binding. Thus the second binding is done in an environment
-in which the first binding is visible, and so on.
-The @var{variable}s need not be distinct.
+the @var{pattern}. Thus the second pattern is matched in an environment
+in which the bindings from the first pattern are visible, and so on.
 
 @example
 (let ((x 2) (y 3))
@@ -7435,7 +7643,7 @@ except that the current exception handler is that of the
       @result{} (b . 23)
 @end example
 
-@emph{Performance note:} Using @code{guard} is moderately efficient:
+@PerformanceNote{} Using @code{guard} is moderately efficient:
 there is some overhead compared to using native exception handling,
 but both the @var{body} and the handlers in the @var{cond-clause}
 are inlined.
@@ -8199,9 +8407,9 @@ Keywords are similar to symbols.
 They are used mainly for specifying keyword arguments.
 
 Historically keywords have been self-evaluating (you did not need to
-quote them).  This is changing: you should quote a keyword if you
+quote them).  This has changed: you must quote a keyword if you
 want a literal keyword value, and not quote it if it is used
-with a keyword argument.  (This change is a work-in-progress.)
+as a keyword argument.
 
 @display
 @stxdef{keyword} @stxref{identifier}@stxlit{:}
@@ -8284,13 +8492,247 @@ but is useful when interfacing to low-level Java code.
 @node Procedures, Numbers, Symbols and namespaces, Top
 @chapter Procedures
 
-@deffn Procedure apply proc [arg1 ...] args
-@var{Args} must be a sequence (list, vector, or string) or a
+@menu
+* Application and Arguments Lists::
+* Extended formals::
+* Procedure properties::
+* Generic procedures::
+* Partial application::
+@end menu
+
+@node Application and Arguments Lists
+@section Application and Arguments Lists
+
+When a procedure is called, the actual argument expressions are evaluated,
+and the resulting values becomes the actual argument list.
+This is then matched against the formal parameter list
+in the procedure definition, and (assuming they match)
+the procedure body is called.
+
+@anchor{argument list}
+@subsection Arguments lists
+
+An argument list has three parts:
+@itemize @bullet
+@item
+Zero or more @dfn{prefix arguments}, each of which is a value.
+These typically get bound to named required or optional formal parameters,
+but can also get bound to patterns.
+@item
+Zero or more @dfn{keyword arguments}, each of which is a keyword
+(an identifier specified with keyword syntax) combined with a value.
+These are bound to either named keyword formal parameters, or
+bundled in with a rest parameter.
+@item
+Zero or more @dfn{postfix arguments}, each of which is a value.
+These are usually bound to a ``rest'' formal parameter, which
+receives any remaining arguments.
+
+If there are no keyword arguments, then it ambiguous where
+prefix arguments end and where postfix arguments start.
+This is normally not a problem: the called procedure can
+split them up however it wishes.
+@end itemize
+
+Note that all keyword arguments have to be grouped together:
+It is not allowed to have a keyword argument followed by a plain
+argument followed by a keyword argument.
+
+The argument list is constructed by evaluating each @stxref{operand}
+of the @stxref{procedure-call} in order:
+@table @asis
+@item @var{expression}
+The @var{expression} is evaluated, yielding a single value
+that becomes a prefix or postfix argument.
+@item @var{keyword} @var{expression}
+The @var{expression} is evaluated.  The resulting value combined
+with the @var{keyword} becomes a keyword argument.
+@item @stxlit{@@}@var{expression}
+The @var{expression} is evaluated.
+The result must be a sequence - a list, vector, or primitive array.
+The values of the sequence are appended to the resulting argument list.
+Keyword arguments are not allowed.
+@item @stxlit{@@:}@var{expression}
+The @var{expression} is evaluted.
+The result can be a sequence;
+a hash table (viewed as a collection of (keyword,value) pairs);
+or an @dfn{explicit argument list} object, which is a sequence of values
+@emph{or} keyword arguments.
+The values and keyword arguments
+are appended to the resulting argument list, though subject to the restriction
+that keyword arguments must be adjacent in the resulting argument list.
+@end table
+
+@subsection Explicit argument list objects
+
+Sometimes it is useful to create an argument list out of
+pieces, take argument lists apart, iterate over them,
+and generally treat an argument list as an actual first-class value.
+
+Explicit argument list objects can take multiple forms.
+The simplest is a sequence: a list, vector, or primitive array.
+Each element of the list becomes a value in the resulting argument list.
+
+@example
+(define v1 '(a b c))
+(define v2 (int[] 10 11 12 13))
+(list "X" @@v1 "Y" @@v2 "Z")
+  @result{} ("X" a b c "Y" 10 11 12 13 "Z")
+@end example
+
+Things get more complicated once keywords are involved.
+An explicit argument list with keywords is only allowed
+when using the @code{@@:} splicing form,
+not the @code{@@} form.  It can be either
+a hash table, or the types @code{arglist} or @code{argvector}.
+
+@quotation
+@emph{Design note:} An argument list with keywords is straightforward
+in Common Lisp and some Scheme implementations (including order versions of
+Kawa): It's just a list some of whose @code{car} cells are keyword objects.
+The problem with this model is neither a human or the compiler can
+reliably tell when an argument is a keyword, since any variable
+might have been assigned a keyword.  This limits performance and
+error checking.
+@end quotation
+
+A hash table (anything the implements @code{java.util.Map})
+whose keys are strings or keyword objects is
+interpreted as a sequence of keyword arguments,
+using the hash-table keys and values.
+
+@deffn Type argvector
+@deffnx Constructor argvector @arbno{@stxref{operand}}
+List of arguments represented as an immutable vector.
+A keyword argument takes two elements in this vector:
+A keyword object, followed by the value.
+
+@example
+(define v1 (argvector 1 2 k1: 10 k2: 11 98 99))
+(v1 4) @result{} 'k2
+(v1 5) @result{} 11
+@end example
+When @code{v1} is viewed as a vector it
+is equivalent to @code{(vector 1 2 'k1: 10 'k2: 11 98 99)}.
+(Note in this case the keywords need to be quoted, since
+the @code{vector} constructor does not take keyword arguments.)
+However, the @code{argvector} ``knows'' which arguments
+are actually keyword arguments, and can be examined using the
+@code{(kawa arglist)} library discussed below:
+
+@example
+(arglist-key-count (argvector 1 x: 2 3)) @result{} 1
+(arglist-key-count (argvector 1 'x: 2 3)) @result{} 0
+(arglist-key-count (vector 1 'x: 2 3)) @result{} 0
+@end example
+
+In this case:
+@example
+(fun 'a @@:v1)
+@end example
+is equivalent to:
+@example
+(fun 'a 1 2 k1: 10 k2: 11 98 99)
+@end example
+@end deffn
+
+@deffn Type arglist
+@deffnx Constructor arglist @arbno{@stxref{operand}}
+Similar to @code{argvector}, but compatible with @code{list}.
+If there are no keyword arguments, returns a plain list.
+If there is at least one keyword argument creates a special
+@code{gnu.mapping.ArgListPair} object that implements the
+usual @code{list} properties but internally wraps a @code{argvector}.
+@end deffn
+
+@subsection Argument list library
+
+@example
+(import (kawa arglist))
+@end example
+
+In the following, @var{args} is an @code{arglist} or @code{argvector}
+(or in general any object that implement @code{gnu.mapping.ArgList}).
+Also, @var{args} can be any sequence, in which case it
+behaves like an @code{argvector} that has no keyword arguments.
+
+@deffn Procedure arglist-walk args proc
+Call @var{proc} once, in order, for each argument in @var{args}.
+The @var{proc} is called with two arguments,
+corresponding to @code{(arglist-key-ref @var{args} @var{i})}
+and @code{(arglist-arg-ref @var{args} @var{i})} for each @var{i} from 0
+up to @code{(arglist-arg-count @var{args})} (exclusive).
+I.e. the first argument is either @code{#!null} or the keyword (as a string);
+the second argument is the corresponding argument value.
+
+@example
+(define (print-arguments args #!optional (out (current-output-port)))
+  (arglist-walk args
+                (lambda (key value)
+                  (if key (format out "key: ~a value: ~w~%" key value)
+                      (format out "value: ~w~%" value)))))
+@end example
+@end deffn
+
+@deffn Procedure arglist-key-count args
+Return the number of keyword arguments.
+@end deffn
+
+@deffn Procedure arglist-key-start args
+Number of prefix arguments, which is the number of arguments before
+the first keyword argument.
+@end deffn
+
+@deffn Procedure arglist-arg-count args
+Return the number of arguments.
+The count includes the number of keyword arguments, but not the actual keywords.
+@example
+(arglist-arg-count (arglist 10 11 k1: -1 19)) @result{} 4
+@end example
+@end deffn
+
+@deffn Procedure arglist-arg-ref args index
+Get the @var{index}'th argument value.
+The @var{index} counts keyword argument values, but not the keywords themselves.
+@example
+(arglist-arg-ref (arglist 10 11 k1: -1 19) 2) @result{} -1
+(arglist-arg-ref (arglist 10 11 k1: -1 19) 3) @result{} 19
+@end example
+@end deffn
+
+@deffn Procedure arglist-key-ref args index
+The @var{index} counts arguments like @code{arglist-arg-ref} does.
+If this is a keyword argument, return the corresponding keyword
+(as a string); otherwise, return @code{#!null} (which counts as false).
+@example
+(arglist-key-ref (argvector 10 11 k1: -1 k2: -2 19) 3) @result{} "k2"
+(arglist-key-ref (argvector 10 11 k1: -1 k2: -2 19) 4) @result{} #!null
+@end example
+@end deffn
+
+@deffn Procedure arglist-key-index args key
+Search for a keyword matching @var{key} (which must be an interned string).
+If there is no such keyword, return -1.
+Otherwise return the keyword's index as an argument to @code{arglist-key-ref}.
+@end deffn
+
+@deffn Procedure arglist-key-value args key default
+Search for a keyword matching @var{key} (which must be an interned string).
+If there is no such keyword, return the @var{default}.
+Otherwise return the corresponding keyword argument's value.
+@end deffn
+
+@subsection Apply procedures
+
+@deffn Procedure apply proc @arbno{argi} argrest
+@var{Argrest} must be a sequence (list, vector, or string) or a
 primitive Java array.
 (This is an extension over standard Scheme, which requires that
 @var{args} be a list.)
 Calls the @var{proc} (which must be a procedure), using as arguments
-the @var{arg1}... values plus all the elements of @var{args}.
+the @var{argi}... values plus all the elements of @var{argrest}.
+
+Equivalent to: @code{(}@var{proc} @arbno{@var{argi}} @code{@@}@var{argrest}@code{)}.
 @end deffn
 
 @deffn Syntax constant-fold proc arg1 ...
@@ -8309,19 +8751,270 @@ is equivalent to @code{(quote #(a b c))}, assuming @code{vector}
 has not been re-bound.
 @end deffn
 
-@menu
-* Procedure properties::
-* Generic procedures::
-* Extended formals::
-* Partial application::
-@end menu
+@c The node name 'Extended formals' is klunky, but kept for compatibility
+@node Extended formals
+@section Lambda Expressions and Formal Parameters
 
-@node Procedure properties, Generic procedures, , Procedures
+A @code{lambda} expression evaluates to a procedure.
+The environment in effect when the @code{lambda} expression was
+evaluated is remembered as part of the procedure. When
+the procedure is later called with some actual arguments,
+the environment in which the @code{lambda} expression was evaluated
+will be extended by binding the variables in the formal
+argument list to fresh locations, and the corresponding actual
+argument values will be stored in those locations.
+(A @dfn{fresh location} is one that is distinct from every previously
+existing location.) Next, the expressions in the body of the
+lambda expression will be evaluated
+sequentially in the extended environment. The results of
+the last expression in the body will be returned as the results
+of the procedure call.
+
+@example
+(lambda (x) (+ x x))   @result{} @emph{a procedure}
+((lambda (x) (+ x x)) 4)  @result{} 8
+
+(define reverse-subtract
+  (lambda (x y) (- y x)))
+(reverse-subtract 7 10) @result{} 3
+
+(define add4
+  (let ((x 4))
+   (lambda (y) (+ x y))))
+(add4 6) @result{} 10
+@end example
+
+The formal arguments list of a lambda expression has some
+extensions over standard Scheme:
+Kawa borrows the extended formal argument list of DSSSL,
+and allows you to declare the type of the parameter.
+More generally, you can use @ref{Variables and Patterns,patterns}.
+
+@display
+@stxdef{lambda-expression} @stxlit{(lambda} @stxref{formals} @arbno{@stxref{option-pair}} @stxref{opt-return-type} @stxref{body}@stxlit{)}
+@stxdef{opt-return-type} [@stxlit{::} @stxref{type}]
+@stxdef{formals} @stxlit{(}@stxref{formal-arguments}@stxlit{)} | @stxref{rest-arg}
+@end display
+
+An @var{opt-return-type} specifies the return type of the procedure:
+The result of evaluating the @var{body} is coerced to the specified @var{type}.
+
+@emph{Deprecated}: If the first form of the function body is an unbound
+identifier of the form @code{<TYPE>} (that is the first character
+is @samp{<} and the last is @samp{>}), then that is another way to specify the
+function's return type.
+
+See @ref{Procedure properties,properties} for
+how to set and use an @var{option-pair}.
+
+The @ref{Definitions,@code{define}} form has a short-hand that combines
+a lambda definition with binding the lambda to a variable:
+@example
+@b{(define (}@var{name} @stxref{formal-arguments}@b{)} @stxref{opt-return-type} @stxref{body}@b{)}
+@end example
+
+@display
+@stxdef{formal-arguments} @arbno{@stxref{required-or-guard}} [@stxlit{#!optional} @stxref{optional-arg} ...] @stxref{rest-key-args}
+@stxdef{rest-key-args} [@stxlit{#!rest} @stxref{rest-arg}] [@stxlit{#!key} @stxref{key-arg} ...] [@stxref{guard}]
+  | [@stxlit{#!key} @stxref{key-arg} ...] [@stxref{rest-parameter}] [@stxref{guard}]
+  | @stxlit{.} @stxref{rest-arg}
+@end display
+
+When the procedure is applied to an
+@ref{argument list}, the latter is matched against formal parameters.
+This may involve some complex rules and pattern matching.
+
+@subsubheading Required parameters
+
+@display
+@stxdef{required-or-guard} @stxref{required-arg} | @stxref{guard}
+@stxdef{required-arg} @stxref{pattern}
+  | @stxlit{(} @stxref{pattern} @stxlit{::} @stxref{type}@stxlit{)}
+@end display
+
+The @var{required-arg}s are matched against the
+actual (pre-keyword) arguments in order,
+starting with the first actual argument.
+It is an error if there are fewer pre-keyword
+arguments then there are @var{required-arg}s.
+While a @var{pattern} is most commonly an identifier,
+more complicated patterns are possible, thus more (or fewer)
+variables may be bound than there are arguments.
+
+Note a @stxref{pattern} may include an @stxref{opt-type-specifier}.
+For example:
+@example
+(define (isquare x::integer)
+  (* x x))
+@end example
+In this case the actual argument is coerced to an @code{integer}
+and then the result matched against the pattern @code{x}.
+This is how parameter types are specified.
+
+The @var{pattern} may be enclosed in parentheses for clarify
+(just like for optional parameters), but in that case the
+type specifier is required to avoid ambiguity.
+
+@subsubheading Optional parameters
+
+@display
+@stxdef{optional-arg} @var{variable} @stxref{opt-type-specifier}
+  | @stxlit{(} @stxref{pattern} @stxref{opt-type-specifier} [@var{initializer} [@stxref{supplied-var}]]@stxlit{)}
+@stxdef{supplied-var} @var{variable}
+@end display
+
+Next the @var{optional-arg}s are bound to remaining pre-keyword arguments.
+If there are fewer remaining pre-keyword arguments than there are
+@var{optional-arg}s, then the remaining @var{variable}s are bound
+to the corresponding @var{initializer}.
+If no @var{initializer} was specified, it defaults to @code{#f}.
+(TODO: If a @var{type} is specified the default for @var{initializer}
+is the default value of the @var{type}.)
+The @var{initializer} is evaluated in an
+environment in which all the previous formal parameters have been bound.
+If a @var{supplied-var} is specified, it has type boolean,
+and is set to true if there was an actual corresponding argument,
+and false if the initializer was evaluated.
+
+@subsubheading Keyword parameters
+
+@display
+@stxdef{key-arg} @var{variable} @stxref{opt-type-specifier}
+    | @stxlit{(} @var{variable} @stxref{opt-type-specifier} [@var{initializer} [@stxref{supplied-var}]] @stxlit{)}
+@end display
+
+Keyword parameters follow @code{#!key}.
+For each @var{variable}
+if there is an actual keyword parameter whose keyword matches @var{variable},
+then @var{variable} is bound to the corresponding value.
+If there is no matching artual argument, then the @var{initializer} is
+evaluated and bound to the argument.
+If @var{initializer} is not specified, it defaults to @code{#f}.
+The @var{initializer} is evaluated in an
+environment in which all the previous formal parameters have been bound.
+
+@example
+(define (fun x #!key (foo 1) (bar 2) (baz 3))
+  (list x foo bar baz))
+(fun 9 baz: 10 foo: 11) @result{} (9 11 2 10)
+@end example
+
+The following cause a match failure, @emph{unless} there is a rest parameter:
+@itemize
+@item
+There may not be extra non-keyword arguments (prefix or postfix)
+beyond those matched by required and optional parameters.
+@item
+There may not be any duplicated keyword arguments.
+@item
+All keyowrds in the actual argument list must
+match one of the keyword formal parameters.
+@end itemize
+
+It is not recommended to use both keyword parameters
+and a rest parameter that can match keyword arguments.
+Currently, the rest parameter will include any arguments
+that match the explicit keyword parameters, as well any that don't,
+though this may change.
+
+On the other hand, it is fine to have both keyword parameters
+and a rest parameter does not accept keywords.  In that case
+the rest parameter will match any ``postfix'' arguments:
+
+@example
+#|kawa:8|# (define (fun x #!key k1 k2 #!rest r)
+  (format "x:~w k1:~w k2:~w r:~w" x k1 k2 r))
+(fun 3 k2: 12 100 101) @result{} x:3 k1:#f k2:12 r:(100 101)
+@end example
+
+The @var{supplied-var} argument is as for optional arguments.
+
+@PerformanceNote{} Keyword parameters are implemented very
+efficiently and compactly when explicit in the code.
+The parameters are sorted by the compiler, and the
+actual keyword arguemnts at the call state are also sorted at compile-time.
+So keyword matching just requires a fast linear scan comparing
+the two sorted lists.  This implementation is also very compact,
+compared to say a hash table.
+
+If a @var{type} is specified, the corresponding actual argument (or
+the @var{initializer} default value) is coerced to the specified @var{type}.
+In the function body, the parameter has the specified type.
+
+@subsubheading Rest parameters
+
+A ``rest parameter'' matches any arguments not matched by other parameters.
+You can write it using any of the following ways:
+
+@display
+@stxdef{rest-parameter}
+  @stxlit{#!rest} @stxref{rest-arg} [@stxlit{::} @stxref{type}]
+  | @stxlit{@@}@stxref{rest-arg}
+  | @stxlit{@@:}@stxref{rest-arg}
+@stxdef{rest-arg} @var{variable}
+@end display
+
+In addition, if @var{formals} is just a @var{rest-arg} identifier,
+or a @var{formal-arguments} ends with @code{. @var{rest-arg}}
+(i.e. is a dotted list) that is equivalent to using @code{#!rest}.
+
+These forms are similar but differ in the type of the @var{rest-arg}
+and whether keywords are allowed (as part of the @var{rest-arg}):
+
+@itemize
+@item
+If @stxlit{#!rest} @var{rest-arg} is used with no @var{type} specifier
+(or a @var{type} specifier of @code{list})
+then @var{rest-arg} is a list.
+Keywords are not allowed if @code{#!key} has been seen.
+(For backward compatibility, it is allowed to have extra keywords
+if @code{#!rest} is followed by @code{!key}.)
+If there are any keywords, then @var{rest-arg} is more specifically
+an @code{arglist}.
+@item
+If @stxlit{#!rest} @var{rest-arg} is used with @var{type} specifier
+that is a Java array (for example @code{#!rest r::string[]}
+then @var{rest-arg} has that type.  Each argument must be compatible
+with the element type of the array.
+Keywords are not allowed (even if @var{type} in @code{object[]}).
+
+The generated method will be compiled like a Java varargs
+methods if possible (i.e. no non-trivial patterns or keyword paremeters).
+@item
+Using @stxlit{@@}@var{rest-arg} is equivalent to
+@code{#!rest @var{rest-arg}::object[]}:
+Keywords are not allowed; the type of @var{rest-arg} is a Java array;
+the method is compiled like a Java varargs method.
+
+@item
+For @stxlit{@@:}@var{rest-arg} then @var{rest-arg} is a vector,
+specifically an @code{argvector}. Keywords are allowed.
+@end itemize
+
+@subsubheading Guards (conditional expressions)
+
+A @stxref{guard} is evaluated when it appears in the formal
+parameter list.
+If it evaluates to false, then matching fails.
+Guards can appears before or after required arguments,
+or at the very end, after all other formal parameters.
+
+@node Procedure properties
 @section Procedure properties
 
 You can associate arbitrary @dfn{properties} with any procedure.
 Each property is a (@var{key}, @var{value})-pair.  Usually the
 @var{key} is a symbol, but it can be any object.
+
+The preferred way to set a property is using an @stxref{option-pair}
+in a @stxref{lambda-expression}.
+For example,
+to set the @code{setter} property of a procedure
+to @code{my-set-car} do the following:
+@example
+(define my-car
+  (lambda (arg) setter: my-set-car (primitive-car arg)))
+@end example
 
 The system uses certain internal properties:
 @code{'name} refers to the name used when a procedure is printed;
@@ -8395,7 +9088,7 @@ If we see a call to a known function with this property,
 we can emit custom bytecode for the call.
 @end table
 
-@node Generic procedures, Extended formals, Procedure properties, Procedures
+@node Generic procedures
 @section Generic (dynamically overloaded) procedures
 
 A @dfn{generic procedure} is a collection of @dfn{method procedures}.
@@ -8431,98 +9124,6 @@ Unrecognized keywords are used to set the procedure properties of the result.
                             method: (lambda () 10)))
 @end example
 @end deffn
-
-@node Extended formals
-@section Extended Formal Arguments List
-
-The formal arguments list of a lambda expression has two
-extendsions over standard Scheme:
-Kawa borrows the extended formal argument list of DSSSL,
-and Kawa allows you to declare the type of the parameter.
-
-@display
-@stxdef{lambda-expression} @stxlit{(lambda} @stxref{formals} @arbno{@stxref{option-pair}} @stxref{opt-return-type} @stxref{body}@stxlit{)}
-@stxdef{return-type} @stxref{type}
-@stxdef{opt-return-type} [@stxlit{::} @stxref{type}]
-@end display
-where
-@display
-@stxdef{formals} @stxlit{(}@stxref{formal-arguments}@stxlit{)} | @stxref{rest-arg}
-@end display
-You can of course also use the extended format in a @ref{Definitions,@code{define}}:
-@example
-@b{(define (}@var{name} @var{formal-arguments}@b{)} [@var{rtype}] @var{body}@b{)}
-@end example
-@display
-@stxdef{formal-arguments}
-    @stxref{req-opt-args} (@stxref{rest-key-args} | @stxlit{.} @stxref{rest-arg})
-@end display
-@display
-@stxdef{req-opt-args} @stxref{req-arg} ... [@stxlit{#!optional} @stxref{opt-arg} ...]
-@stxdef{rest-key-args} [@stxlit{#!rest} @stxref{rest-arg}] [@stxlit{#!key} @stxref{key-arg} ...]
-@stxdef{req-arg}  @var{variable} [@stxlit{::} @var{type}] | @stxlit{(}@var{variable} @stxlit{::} @var{type} @stxlit{)}
-@stxdef{opt-arg} @stxref{arg-with-default}
-@stxdef{key-arg} @stxref{arg-with-default}
-@stxdef{arg-with-default} @var{variable} [@stxlit{::} @var{type}]
-    | @stxlit{(} @var{variable} [@stxlit{::} @var{type} [@var{initializer}] | @var{initializer} [@stxlit{::} @var{type}]] @stxlit{)}
-@stxdef{rest-arg} @var{variable}
-@end display
-
-When the procedure is applied to a list of actual arguments, the formal and
-actual arguments are processed from left to right as follows:
-
-@itemize
-@item
-The @var{req-arg}s are bound to actual arguments starting with the
-first actual argument.  It shall be an error if there are fewer actual
-arguments then there are @var{req-arg}s.
-@item
-Next the @var{opt-arg}s are bound to remaining actual arguemnts.
-If there are fewer remaining actual arguments than there are
-@var{opt-arg}s, then the remaining @var{variable}s are bound
-to the corresponding @var{initializer}, if one was specified, and
-otherwise to @code{#f}.  The @var{initializer} is evaluated in an
-environment in which all the previous formal parameters have been bound.
-@item
-If there is a @var{rest-arg}, it is bound to a list of all the
-remaining actual arguments.  These remaining actual arguments are also
-eligible to be bound to keyword arguments.   If there is no
-@var{rest-arg} and there are no @var{key-arg}s, then it shall
-be an error if there are any remaining actual arguments.
-@item
-If @code{#!key} was specified, then there shall be an even number of
-remaining actual arguments.  These are interpreted as a series of pairs,
-where the first member of each pair is a keyword specifying the argument name,
-and the second is the corresponding value.  It shall be an error if the first
-member of a pair is not a keyword.  It shall be an error if the argument name
-is not the same as a variable in a @var{key-arg}s, unless there
-is a @var{rest-arg}.  If the same argument name occurs more than once
-in the list of actual arguments, then the first value is used.
-If there is no actual argument for a particular @var{key-arg},
-then the variable is bound
-to the corresponding @var{initializer}, if one was specified, and
-otherwise to @code{#f}.  The @var{initializer} is evaluated in an
-environment in which all the previous formal parameters have been bound.
-@end itemize
-
-If a @var{type} is specified, the corresponding actual argument (or
-the @var{initializer} default value) is coerced to the specified @var{type}.
-In the function body, the parameter has the specified type.
-
-If @var{rtype} (the first form of the function body) is an unbound
-identifier of the form @code{<TYPE>} (that is the first character
-is @samp{<} and the last is @samp{>}), then that specifies the
-function's return type.  It is syntactic sugar for
-@code{(as <TYPE> (begin BODY))}.
-
-You can set the @ref{Procedure properties,properties}
-of the resulting procedure using an @var{option-pair}.  For example,
-to set the @code{setter} property of a procedure
-to @code{my-set-car} do the following:
-@example
-(define my-car
-  (lambda (arg) setter: my-set-car (primitive-car arg)))
-@end example
 
 @node Partial application
 @section Partial application
@@ -10568,7 +11169,7 @@ The following @meta{character-name} forms are recognized:
 @itemx @b{#\linefeed}
 @code{#\x001a} - the linefeed character
 @item @b{#\null}
-@item @b{#\nul}
+@itemx @b{#\nul}
 @code{#\x0000} - the null character
 @item @b{#\page}
 @code{#\000c} - the formfeed character
@@ -10690,9 +11291,6 @@ Other operations may take time proportional to the number of inversions.
 
 Strings are sequences of characters.  The @emph{length} of a string is
 the number of characters that it contains, as an exact non-negative integer.
-This number is usually fixed when the string is created,
-however, you can extend a mutable string with
-the (Kawa-specific) @code{string-append!} function.
 The @emph{valid indices} of a string are the
 exact non-negative integers less than the length of the string.
 The first character of a
@@ -10708,15 +11306,57 @@ character counts) difficult to implement efficiently.  Luckily one
 rarely needs to index or count based on character counts;
 alternatives are discussed below.
 
+@cindex istring
+@cindex mstring
+There are different kinds of strings:
+@itemize
+@item
+An @dfn{istring} is @emph{immutable}:
+It is fixed, and cannot be modified.
+On the other hand, indexing (e.g. @code{string-ref}) is efficient (constant-time),
+while indexing of other string implementations takes time proportional
+to the index.
+
+String literals are istrings, as are the return values of
+most of the procedures in this chapter.
+
+An @dfn{istring} is an instance of the @code{gnu.lists.IString} class.
+
+@item
+An @dfn{mstring} is @emph{mutable}:
+You can replace individual characters (using @code{string-set!}).
+You can also change the @var{mstring}'s length by inserting
+or removing characters (using @code{string-append!} or @code{string-replace!}).
+
+An @dfn{mstring} is an instance of the @code{gnu.lists.FString} class.
+
+@item
+Any other object that implements the @code{java.lang.CharSequence} interface
+is also a string.
+This includes standard Java @code{java.lang.String}
+and @code{java.lang.StringBuilder} objects.
+@end itemize
+
 Some of the procedures that operate on strings ignore the
 difference between upper and lower case. The names of
 the versions that ignore case end with “@code{-ci}” (for “case
 insensitive”).
 
+@CompatibilityNote{}
+Many of the following procedures (for example @code{string-append})
+return an immutable istring in Kawa,
+but return a ``freshly allocated'' mutable string in
+standard Scheme (include R7RS) as well as most Scheme implementations
+(including previous versions of Kawa).
+To get the  ``compatibility mode'' versions of those procedures
+(which return mstrings),
+invoke Kawa with one the @code{--r5rs}, @code{--r6rs}, or @code{--r7rs}
+options, or you can @code{import} a standard library like @code{(scheme base)}.
+
 @deffn Type string
 The type of string objects.
 The underlying type is the interface @code{java.lang.CharSequence}.
-Immultable strings are @code{java.lang.String},
+Immultable strings are @code{gnu.lists.IString} or @code{java.lang.String},
 while mutable strings are @code{gnu.lists.FString}.
 @end deffn
 
@@ -10726,23 +11366,24 @@ while mutable strings are @code{gnu.lists.FString}.
 Return @true{} if @var{obj} is a string, @false{} otherwise.
 @end deffn
 
-@deffn Constructor string @var{char} @dots{}
-Return a newly allocated string composed of the arguments.
-This is analogous to @var{list}.
+@deffn Procedure {istring?} @var{obj}
+Return @true{} if @var{obj} is a istring (a immutable, constant-time-indexable string); @false{} otherwise.
 @end deffn
 
-@deffn Procedure make-string @var{k}
-@deffnx Procedure make-string @var{k} @var{char}
-Return a newly allocated string of length @var{k}.  If @var{char} is
-given, then all elements of the string are initialized to @var{char},
-otherwise the contents of the @var{string} are unspecified.
+@deffn Constructor string @var{char} @dots{}
+Return a string composed of the arguments.
+This is analogous to @var{list}.
+
+@CompatibilityNote{} The result is an istring,
+except in compatibility mode, when it is a new allocated mstring.
 @end deffn
 
 @deffn Procedure string-length @var{string}
 Return the number of characters in the given @var{string} as an exact
 integer object.
 
-@PerformanceNote{} Calling @code{string-length} may take time proportional
+@PerformanceNote{} If the @var{string} is not an istring,
+the calling @code{string-length} may take time proportional
 to the length of the @var{string},
 because of the need to scan for surrogate pairs.
 @end deffn
@@ -10752,36 +11393,127 @@ because of the need to scan for surrogate pairs.
 procedure returns character @var{k} of @var{string} using zero--origin
 indexing.
 
-@PerformanceNote{} Calling @code{string-ref} may take time proportional
+@PerformanceNote{} If the @var{string} is not an istring,
+then calling @code{string-ref} may take time proportional
 to @var{k} because of the need to check for surrogate pairs.
 An alternative is to use @code{string-cursor-ref}.
 If iterating through a string, use @code{string-for-each}.
 @end deffn
 
-@deffn Procedure string-set! string k char
-This procedure stores @var{char} in element @var{k} of @var{string}.
+@deffn Procedure string-null? @var{string}
+Is @var{string} the empty string?
+Same result as @code{(= (string-length @var{string}) 0)} but
+executes in O(1) time.
+@end deffn
 
+@deffn Procedure string-every pred string [start end])
+@deffnx Procedure string-any pred string [start end])
+
+Checks to see if every/any character in @var{string} satisfies @var{pred},
+proceeding from left (index @var{start}) to right (index @var{end}). These
+procedures are short-circuiting: if @var{pred} returns false,
+@code{string-every} does not call @var{pred} on subsequent characters;
+if @var{pred} returns true, @code{string-any} does not call @var{pred}
+on subsequent characters. Both procedures are ``witness-generating'':
+@itemize
+@item
+If @code{string-every} is given an empty interval (with @var{start} = @var{end}),
+it returns @code{#t}.
+@item
+If @code{string-every} returns true for a non-empty interval
+(with @var{start} < @var{end}), the returned true value is the one returned by the final call to the predicate on
+@code{(string-ref @var{string} (- @var{end} 1))}.
+@item
+If @code{string-any} returns true, the returned true value is the one
+returned by the predicate.
+@end itemize
+
+@emph{Note:} The names of these procedures do not end with a question
+mark. This indicates a general value is returned instead of a simple
+boolean (@code{#t} or @code{#f}).
+@end deffn
+
+@subsection Immutable String Constructors
+
+@deffn Procedure string-tabulate proc len
+
+Constructs a string of size @var{len} by calling @var{proc} on
+each value from 0 (inclusive) to @var{len} (exclusive) to produce
+the corresponding element of the string.
+The procedure @var{proc} accepts an exact integer as its argument and returns a character.
+The order in which @var{proc} is called on those indexes is not specifified.
+
+@emph{Rationale:} Although @code{string-unfold} is more general,
+@code{string-tabulate} is likely to run faster for the common special
+case it implements.
+@end deffn
+
+@deffn Procedure string-unfold stop? mapper successor seed [base make-final]
+@deffnx Procedure string-unfold-right stop? mapper successor seed [base make-final]
+This is a fundamental and powerful constructor for strings.
+@itemize
+@item
+@var{successor} is used to generate a series of ``seed'' values from the initial seed:
+@var{seed}, @code{(}@var{successor} @var{seed}@code{)}, @code{(}@var{successor}@sup{2} @var{seed}@code{)}, @code{(}@var{successor}@sup{3} @var{seed}@code{)}, ...
+@item 
+@var{stop?} tells us when to stop — when it returns true when applied to one of these seed values.
+@item 
+@var{mapper} maps each seed value to the corresponding character(s) in the result string, which are assembled into that string in left-to-right order. It is an error for @var{mapper} to return anything other than a character or string.
+@item 
+@var{base} is the optional initial/leftmost portion of the constructed string, which defaults to the empty string @code{""}.
+It is an error if @var{base} is anything other than a character or string.
+@item 
+@var{make-final} is applied to the terminal seed value (on which @var{stop?} returns true) to produce the final/rightmost portion of the constructed string. It defaults to @code{(lambda (x) "")}.
+It is an error for @var{make-final} to return anything other than
+a character or string.
+@end itemize
+
+@code{string-unfold-right} is the same as @code{string-unfold} except the
+results of @var{mapper} are assembled into the string in right-to-left order,
+@var{base} is the optional rightmost portion of the constructed string, and
+@var{make-final} produces the leftmost portion of the constructed string.
+
+You can use it @code{string-unfold} to convert a list to a string,
+read a port into a string, reverse a string, copy a string, and so forth.
+Examples:
 @example
-(define s1 (make-string 3 #\*))
-(define s2 "***")
-(string-set! s1 0 #\?) @result{} @emph{void}
-s1 @result{} "?**"
-(string-set! s2 0 #\?) @result{} @emph{error}
-(string-set! (symbol->string 'immutable) 0 #\?) @result{} @emph{error}
+(define (port->string p)
+  (string-unfold eof-object? values
+                 (lambda (x) (read-char p))
+                 (read-char p)))
+
+(define (list->string lis)
+  (string-unfold null? car cdr lis))
+
+(define (string-tabulate f size)
+  (string-unfold (lambda (i) (= i size)) f add1 0))
+@end example
+To map @var{f} over a list @var{lis}, producing a string:
+@example
+(string-unfold null? (compose @var{f} car) cdr @var{lis})
 @end example
 
-@PerformanceNote{} Calling @code{string-set!} may take time proportional
-to the length of the string:  First it must scan for the right position,
-like @code{string-ref} does. Then if the new character requires
-using a surrogate pair (and the old one doesn't) then we have to make room
-in the string, possibly re-allocating a new @code{char} array.
-Alternatively, if the old character requires using a surrogate pair
-(and the new one doesn't) then following characters need to be moved.
+Interested functional programmers may enjoy noting that @code{string-fold-right}
+and @code{string-unfold} are in some sense inverses.
+That is, given operations @var{knull?}, @var{kar}, @var{kdr},
+@var{kons}, and @var{knil} satisfying
+@example
+(@var{kons} (@var{kar} x) (@var{kdr} x)) = x  and  (@var{knull?} @var{knil}) = #t
+@end example
+then
+@example
+(string-fold-right @var{kons} @var{knil} (string-unfold @var{knull?} @var{kar} @var{kdr} @var{x})) = @var{x}
+@end example
+and
+@example
+(string-unfold @var{knull?} @var{kar} @var{kdr} (string-fold-right @var{kons} @var{knil} @var{string})) = @var{string}.
+@end example
 
-The function @code{string-set!} is deprecated: It is inefficient,
-and it very seldom does the correct thing.  Instead, you can
-construct a string with @code{string-append!}.
+This combinator pattern is sometimes called an ``anamorphism.''
+
 @end deffn
+
+@subsection Selection
 
 @deffn Procedure substring @var{string} @var{start} @var{end}
 @var{string} must be a string, and @var{start} and @var{end} must be
@@ -10796,168 +11528,57 @@ from the characters of @var{string} beginning with index @var{start}
 (inclusive) and ending with index @var{end} (exclusive).
 @end deffn
 
-
-@deffn Procedure string-append @var{string} @dots{}
-Return a newly allocated string whose characters form the concatenation
-of the given strings.
-@end deffn
-
-@deffn Procedure string-append! @var{string} @var{value} @dots{}
-The @var{string} must be a mutable string, such as one returned
-by @code{make-string} or @code{string-copy}.
-The @code{string-append!} procedure extends @var{string}
-by appending each @var{value} (in order) to the end of @var{string}.
-Each @code{value} should be a character or a string.
-
-@PerformanceNote{} The compiler converts a call with multiple @var{value}s
-to multiple @code{string-append!} calls.
-If a @var{value} is known to be a @code{character}, then
-no boxing (object-allocation) is needed.
-
-The following example shows how to efficiently process a string
-using @code{string-for-each} and incrementally ``build'' a result string
-using @code{string-append!}.
+@deffn Procedure string-take string nchars
+@deffnx Procedure string-drop       string nchars
+@deffnx Procedure string-take-right string nchars
+@deffnx Procedure string-drop-right string nchars
+@code{string-take} returns an immutable string containing the
+first @var{nchars} of @var{string};
+@code{string-drop} returns a string containing all but the first @var{nchars}
+of @var{string}.
+@code{string-take-right} returns a string containing the last @var{nchars}
+of @var{string}; @code{string-drop-right} returns a string containing all
+but the last @var{nchars} of @var{string}.
 
 @example
-(define (translate-space-to-newline str::string)::string
-  (let ((result (make-string 0)))
-    (string-for-each
-     (lambda (ch)
-       (string-append! result
-                       (if (char=? ch #\Space) #\Newline ch)))
-     str)
-    result))
+(string-take "Pete Szilagyi" 6) @result{} "Pete S"
+(string-drop "Pete Szilagyi" 6) @result{} "zilagyi"
+
+(string-take-right "Beta rules" 5) @result{} "rules"
+(string-drop-right "Beta rules" 5) @result{} "Beta "
+@end example
+It is an error to take or drop more characters than are in the string:
+@example
+(string-take "foo" 37) @result{} @i{error}
 @end example
 @end deffn
 
-@deffn Procedure string->list @var{string} [@var{start} [@var{end}]]
-@deffnx Procedure list->string @var{list}
-It is an error if any element of @var{list} is not a character.
-
-The @func{string->list} procedure returns a newly allocated list of the
-characters of @var{string} between @var{start} and @var{end}.
-The @func{list->string} procedure returns a newly allocated string
-formed from the characters in @var{list}.
-In both procedures, order is preserved.
-The @func{string->list} and @func{list->string} procedures are inverses
-so far as @func{equal?} is concerned.
-@end deffn
-
-@deffn Procedure string-for-each @var{proc} @vari{string} @varii{string} @dots{}
-@deffnx Procedure string-for-each @var{proc} @vari{string} [start [end]]
-The @var{string}s must all have the same length.  @var{proc} should
-accept as many arguments as there are @var{string}s.
-
-The @var{start}-@var{end} variant is provided for compatibility
-with the SRFI-13 version.  (In that case @var{start} and @var{end}
-count code Unicode scalar values (@code{character} values),
-not Java 16-bit @code{char} values.)
-
-The @func{string-for-each} procedure applies @var{proc} element--wise to
-the characters of the @var{string}s for its side effects, in order from
-the first characters to the last.  @var{proc} is always called in the
-same dynamic environment as @func{string-for-each} itself.
-@c  The return values of @func{string-for-each} are unspecified.
-
-Analogous to @func{for-each}.
-
-@example
-(let ((v '()))
-  (string-for-each
-    (lambda (c) (set! v (cons (char->integer c) v)))
-    "abcde")
-   v)
-  @result{} (101 100 99 98 97)
-@end example
-
-@PerformanceNote{} The compiler generates efficient code
-for @code{string-for-each}.
-If @var{proc} is a lambda expression, it is inlined.
-@end deffn
-
-@deffn Procedure string-map @var{proc} @vari{string} @varii{string} @dots{}
-The @code{string-map} procedure applies @var{proc} element-wise to
-the elements of the strings and returns a string of the results, in order.
-It is an error if @var{proc} does not accept as many arguments as there
-are strings, or return other than a single character.
-If more than one string is given and not all strings have the same length,
-@code{string-map} terminates when the shortest string runs out.
-The dynamic order in
-which @var{proc} is applied to the elements of the strings is unspecified.
-@c If multiple returns occur from string-map, the
-@c values returned by earlier returns are not mutated.
-
-@example
-(string-map char-foldcase "AbdEgH")  @result{} "abdegh"
-@end example
-@example
-(string-map
-  (lambda (c) (integer->char (+ 1 (char->integer c))))
-  "HAL")
-        @result{} "IBM"
-@end example
-@example
-(string-map
-  (lambda (c k)
-    ((if (eqv? k #\u) char-upcase char-downcase) c))
-  "studlycaps xxx"
-  "ululululul")
-        @result{} "StUdLyCaPs"
-@end example
-
-@PerformanceNote{} The @code{string-map} procedure has not been
-optimized (mainly because it is not very useful):
-The characters are boxed, and the @var{proc} is not inlined even if
-it is a lambda expression.
-@end deffn
-
-@deffn Procedure string-copy @var{string} [@var{start} [@var{end}]]
-Returns a newly allocated copy of the part of the given @var{string}
-between @var{start} and @var{end}.
-@end deffn
-
-@deffn Procedure string-replace!  @var{dst} @var{dst-start} @var{dst-end} @var{src} [@var{src-start} [@var{src-end}]]
-Replaces the characters of string @var{dst} (between @var{dst-start} and @var{dst-end}) with the characters of @var{src} (between @var{src-start} and @var{src-end}).
-The number of characters from @var{src} may be different than the
-number replaced in @var{dst}, so the string may grow or contract.
-The special case where @var{dst-start} is equal to @var{dst-end} corresponds to
-insertion; the case where @var{src-start} is equal to @var{src-end}
-corresponds to deletion.
-The order in which characters are copied
-is unspecified, except that if the source and destination overlap,
-copying takes place as if the source is first copied into a
-temporary string and then into the destination.
-(This is achieved without allocating storage by making sure to copy in
-the correct direction in such circumstances.)
-@end deffn
-
-@deffn Procedure string-copy!  @var{to}  @var{at}  @var{from} [@var{start} [@var{end}]]
-Copies the characters of the string @var{from} that are between
-@var{start} end @var{end} into the string @var{to},
-starting at index @var{at}.  The order in which characters are copied
-is unspecified, except that if the source and destination overlap,
-copying takes place as if the source is first copied into a
-temporary string and then into the destination.
-(This is achieved without allocating storage by making sure to copy in
-the correct direction in such circumstances.)
-
-This is equivalent to (and implemented as):
-@example
-(string-replace! to at (+ at (- end start)) from start end))
-@end example
-
-@example
-(define a "12345")
-(define b (string-copy "abcde"))
-(string-copy! b 1 a 0 2)
-b  @result{}  "a12de"
+@deffn Procedure string-pad       string len [char start end]
+@deffnx Procedure string-pad-right string len [char start end]
+Returns an istring of length @var{len} comprised of the characters
+drawn from the given subrange of @var{string},
+padded on the left (right) by as many occurrences of the
+character @var{char} as needed.
+If @var{string} has more than @var{len} chars, it is truncated on the
+left (right) to length @var{len}.
+The @var{char} defaults to @code{#\space}
+@example.
+(string-pad     "325" 5) @result{} "  325"
+(string-pad   "71325" 5) @result{} "71325"
+(string-pad "8871325" 5) @result{} "71325"
 @end example
 @end deffn
 
-@deffn Procedure string-fill! @var{string} @var{fill} [@var{start} [@var{end}]]
-The @code{string-fill!} procedure stores @var{fill} in the elements
-of @var{string} between @var{start} and @var{end}.
-It is an error if @var{fill} is not a character or is forbidden in strings.
+@deffn Procedure string-trim       string [pred start end]
+@deffnx Procedure string-trim-right string [pred start end]
+@deffnx Procedure string-trim-both  string [pred start end]
+Returns an istring obtained from the given subrange of @var{string}
+by skipping over all characters on the left / on the right / on both sides that satisfy the second argument @var{pred}:
+@var{pred} defaults to @code{char-whitespace?}.
+@example
+(string-trim-both "  The outlook wasn't brilliant,  \n\r")
+    @result{} "The outlook wasn't brilliant,"
+@end example
 @end deffn
 
 @subsection String Comparisons
@@ -11014,7 +11635,55 @@ before invoking the corresponding procedures without @code{-ci}.
 @end example
 @end deffn
 
-@subsection String Conversions
+@subsection Conversions
+
+@deffn Procedure list->string @var{list}
+The @func{list->string} procedure returns an istring
+formed from the characters in @var{list}, in order.
+It is an error if any element of @var{list} is not a character.
+
+@CompatibilityNote{} The result is an istring,
+except in compatibility mode, when it is an mstring.
+@end deffn
+
+@deffn Procedure reverse-list->string @var{list}
+An efficient implementation of @code{(compose list->text reverse)}:
+@example
+(reverse-list->text '(#\a #\B #\c))  @result{} "cBa"
+@end example
+This is a common idiom in the epilogue of string-processing loops
+that accumulate their result using a list in reverse order.
+(See also @code{string-concatenate-reverse} for the ``chunked'' variant.)
+@end deffn
+
+@deffn Procedure string->list @var{string} [@var{start} [@var{end}]]
+The @func{string->list} procedure returns a newly allocated list of the
+characters of @var{string} between @var{start} and @var{end}, in order.
+The @func{string->list} and @func{list->string} procedures are inverses
+so far as @func{equal?} is concerned.
+@end deffn
+
+@deffn Procedure vector->string vector [start [end]]
+The @code{vector->string} procedure returns a newly allocated
+string of the objects contained in the elements of @var{vector}
+between @var{start} and @var{end}.
+It is an error if any element of @var{vector} between @var{start}
+and @var{end} is not a character, or is a character forbidden in strings.
+@example
+(vector->string #(#\1 #\2 #\3))             @result{} "123"
+(vector->string #(#\1 #\2 #\3 #\4 #\5) 2 4) @result{} "34"
+@end example
+@end deffn
+
+@deffn Procedure string->vector string [start [end]]
+The @code{string->vector} procedure
+returns a newly created vector initialized to the elements
+of the string @var{string} between @var{start} and @var{end}.
+@example
+(string->vector "ABC")       @result{} #(#\A #\B #\C)
+(string->vector "ABCDE" 1 3) @result{} #(#\B #\C)
+@end example
+@end deffn
 
 @deffn Procedure string-upcase @var{string}
 @deffnx Procedure string-downcase @var{string}
@@ -11062,30 +11731,17 @@ all other cased characters.
 (string-titlecase "R6RS")         @result{} "R6rs"
 @end example
 
-@quotation
-@emph{Note:} The case mappings needed for implementing these procedures
-can be extracted from @file{UnicodeData.txt}, @file{SpecialCasing.txt},
-@file{WordBreakProperty.txt} (the ``MidLetter'' property partly defines
-case--ignorable characters), and @file{CaseFolding.txt} from the Unicode
-Consortium.
-
 Since these procedures are locale--independent, they may not be
 appropriate for some locales.
-@end quotation
 
-@quotation
-@emph{Note:} Word breaking, as needed for the correct casing of the
-upper case greek sigma and for @func{string-titlecase}, is specified in
-Unicode Standard Annex #29.
-@end quotation
-
-@quotation
 @emph{Kawa Note:}  The implementation of @func{string-titlecase}
 does not correctly handle the case where an initial character
 needs to be converted to multiple characters, such as
 ``LATIN SMALL LIGATURE FL'' which should be converted to
 the two letters @code{"Fl"}.
-@end quotation
+
+@CompatibilityNote{} The result is an istring,
+except in compatibility mode, when it is an mstring.
 @end deffn
 
 @deffn Procedure string-normalize-nfd @var{string}
@@ -11104,6 +11760,592 @@ the argument instead of a newly allocated string.
 (string-normalize-nfd "\x65;\x301;")    @result{} "\x65;\x301;"
 (string-normalize-nfc "\x65;\x301;")    @result{} "\xE9;"
 @end example
+@end deffn
+
+@subsection Searching and matching
+
+@deffn Procedure string-prefix-length string@sub{1} string@sub{2} [start@sub{1} end@sub{1} start@sub{2} end@sub{2}]
+@deffnx Procedure string-suffix-length string@sub{1} string@sub{2} [start@sub{1} end@sub{1} start@sub{2} end@sub{2}]
+Return the length of the longest common prefix/suffix of @var{string@sub{1}}
+and @var{string@sub{2}}.
+For prefixes, this is equivalent to their ``mismatch index''
+(relative to the start indexes).
+
+The optional @var{start}/@var{end} indexes restrict the comparison
+to the indicated substrings of @var{string@sub{1}} and @var{string@sub{2}}.
+@end deffn
+
+@deffn Procedure string-prefix? string@sub{1} string@sub{2} [start@sub{1} end@sub{1} start@sub{2} end@sub{2}]
+@deffnx Procedure string-suffix? string@sub{1} string@sub{2} [start@sub{1} end@sub{1} start@sub{2} end@sub{2}]
+Is @var{string@sub{1}} a prefix/suffix of @var{string@sub{2}}?
+
+The optional @var{start}/@var{end} indexes restrict the comparison
+to the indicated substrings of @var{string@sub{1}} and @var{string@sub{2}}.
+@end deffn
+
+@deffn Procedure string-index       string pred [start end]
+@deffnx Procedure string-index-right string pred [start end]
+@deffnx Procedure string-skip        string pred [start end]
+@deffnx Procedure string-skip-right  string pred [start end]
+
+@code{string-index} searches through the given substring from the
+left, returning the index of the leftmost character satisfying the
+predicate @var{pred}.
+@code{string-index-right} searches from the right, returning
+the index of the rightmost character satisfying the predicate @var{pred}.
+If no match is found, these procedures return @code{#f}.
+
+The @var{start} and @var{end} arguments specify the beginning and end
+of the search; the valid indexes relevant to the search include @var{start}
+but exclude @var{end}. Beware of ``fencepost''" errors: when searching
+right-to-left, the first index considered is @code{(- @var{end} 1)},
+whereas when searching left-to-right, the first index considered is @var{start}.
+That is, the start/end indexes describe the same half-open interval
+@code{[@var{start},@var{end})}
+in these procedures that they do in other string procedures.
+
+The @code{-skip} functions are similar, but use the complement of the
+criterion: they search for the first char that @emph{doesn't} satisfy
+@var{pred}. To skip over initial whitespace, for example, say
+
+@example
+(substring string
+            (or (string-skip string char-whitespace?)
+                (string-length string))
+            (string-length string))
+@end example
+
+These functions can be trivially composed with @code{string-take} and
+@code{string-drop} to produce @code{take-while}, @code{drop-while},
+@code{span}, and @code{break} procedures without loss of efficiency.
+@end deffn
+
+@c SRFI-13 and Guile generalizes pred to char_pred, which can be a
+@c predicate, a character, or a character set. That seems
+@c convenient.
+
+@deffn Procedure string-contains       string@sub{1} string@sub{2} [start@sub{1} end@sub{1} start@sub{2} end@sub{2}]
+@deffnx Procedure string-contains-right string@sub{1} string@sub{2} [start@sub{1} end@sub{1} start@sub{2} end@sub{2}]
+Does the substring of @var{string@sub{1}} specified by @var{start@sub{1}} and @var{end@sub{1}} contain the sequence of characters given by the substring of @var{string@sub{2}} specified by @var{start@sub{2}} and @var{end@sub{2}}?
+
+Returns @code{#f} if there is no match.
+If @var{start@sub{2}} = @var{end@sub{2}}, @code{string-contains}
+returns @var{start@sub{1}} but @code{string-contains-right}
+returns @var{end@sub{1}}. Otherwise returns the index in @var{string@sub{1}} for the first character of the first/last match; that index lies within the half-open interval [@var{start@sub{1}},@var{end@sub{1}}), and the match lies entirely within the [@var{start@sub{1}},@var{end@sub{1}}) range of @var{string@sub{1}}.
+
+@example
+(string-contains "eek -- what a geek." "ee" 12 18) ; Searches "a geek"
+    @result{} 15
+@end example
+Note: The names of these procedures do not end with a question mark. This indicates a useful value is returned when there is a match.
+
+
+@end deffn
+
+@subsection Concatenation and replacing
+
+@deffn Procedure string-append @var{string} @dots{}
+Returns a string whose characters form the concatenation
+of the given strings.
+
+@CompatibilityNote{} The result is an istring,
+except in compatibility mode, when it is an mstring.
+@end deffn
+
+@deffn Procedure string-concatenate string-list
+Concatenates the elements of @var{string-list} together into a single istring.
+
+@emph{Rationale:} Some implementations of Scheme limit the number of
+arguments that may be passed to an n-ary procedure, so the
+@code{(apply string-append @var{string-list})} idiom,
+which is otherwise equivalent to using this procedure, is not as portable.
+@end deffn
+
+@deffn Procedure string-concatenate-reverse string-list [final-string [end]])
+With no optional arguments, calling this procedure is equivalent to
+@code{(string-concatenate (reverse @var{string-list}))}.
+If the optional argument @var{final-string} is specified,
+it is effectively consed onto the beginning of @var{string-list}
+before performing the list-reverse and string-concatenate operations.
+
+If the optional argument @var{end} is given, only the characters up to but not including @var{end} in @var{final-string} are added to the result,
+thus producing
+@example
+(string-concatenate 
+  (reverse (cons (substring final-string 0 end)
+                 string-list)))
+@end example
+For example:
+@example
+(string-concatenate-reverse '(" must be" "Hello, I") " going.XXXX" 7)
+  @result{} "Hello, I must be going."
+@end example
+
+@emph{Rationale:} This procedure is useful when constructing
+procedures that accumulate character data into lists of string
+buffers, and wish to convert the accumulated data into a single string
+when done. The optional end argument accommodates that use case when
+@var{final-string} is a bob-full mutable string,
+and is allowed (for uniformity) when
+@var{final-string} is an immutable string.
+@end deffn
+
+@deffn Procedure string-join string-list [delimiter [grammar]]
+This procedure is a simple unparser; it pastes strings together
+using the @var{delimiter} string, returning an istring.
+
+The @var{string-list} is a list of strings.
+The @var{delimiter} is the string used to delimit elements; it defaults to a single space @code{" "}.
+
+The @var{grammar} argument is a symbol that determines how the @var{delimiter}
+is used, and defaults to @code{'infix}.
+It is an error for @var{grammar} to be any symbol other than these four:
+@table @code
+@item 'infix
+An infix or separator grammar: insert the delimiter between list elements. An empty list will produce an empty string.
+@item 'strict-infix
+Means the same as @code{'infix} if the string-list is non-empty,
+but will signal an error if given an empty list.
+(This avoids an ambiguity shown in the examples below.)
+@item 'suffix
+Means a suffix or terminator grammar: insert the @var{delimiter}
+after every list element.
+@item 'prefix
+Means a prefix grammar: insert the @var{delimiter} before every list element.
+@end table
+
+@example
+(string-join '("foo" "bar" "baz"))
+         @result{} "foo bar baz"
+(string-join '("foo" "bar" "baz") "")
+         @result{} "foobarbaz"
+(string-join '("foo" "bar" "baz") ":")
+         @result{} "foo:bar:baz"
+(string-join '("foo" "bar" "baz") ":" 'suffix)
+         @result{} "foo:bar:baz:"
+
+;; Infix grammar is ambiguous wrt empty list vs. empty string:
+(string-join '()   ":") @result{} ""
+(string-join '("") ":") @result{} ""
+
+;; Suffix and prefix grammars are not:
+(string-join '()   ":" 'suffix)) @result{} ""
+(string-join '("") ":" 'suffix)) @result{} ":"
+@end example
+
+@end deffn
+
+@deffn Procedure string-replace string@sub{1} string@sub{2} start@sub{1} end@sub{1} [start@sub{2} end@sub{2}]
+Returns
+@example
+(string-append (substring @var{string@sub{1}} 0 @var{start@sub{1}})
+               (substring @var{string@sub{2}} @var{start@sub{2}} @var{end@sub{2}})
+               (substring @var{string@sub{1}} @var{end@sub{1}} (string-length @var{string@sub{1}})))
+@end example
+That is, the segment of characters in @var{string@sub{1}} from @var{start@sub{1}}
+to @var{end@sub{1}} is replaced by the segment of characters in @var{string@sub{2}} from @var{start@sub{2}} to @var{end@sub{2}}.
+If @var{start@sub{1}}=@var{end@sub{1}}, this simply splices the characters
+drawn from @var{string@sub{2}} into @var{string@sub{1}} at that position.
+
+Examples:
+@example
+(string-replace "The TCL programmer endured daily ridicule."
+                 "another miserable perl drone" 4 7 8 22)
+    @result{} "The miserable perl programmer endured daily ridicule."
+
+(string-replace "It's easy to code it up in Scheme." "lots of fun" 5 9)
+    @result{} "It's lots of fun to code it up in Scheme."
+
+(define (string-insert s i t) (string-replace s t i i))
+
+(string-insert "It's easy to code it up in Scheme." 5 "really ")
+    @result{} "It's really easy to code it up in Scheme."
+
+(define (string-set s i c) (string-replace s (string c) i (+ i 1)))
+
+(string-set "String-ref runs in O(n) time." 19 #\1)
+    @result{} "String-ref runs in O(1) time."
+@end example
+@end deffn
+
+Also see @code{string-append!} and @code{string-replace!}
+for destructive changes to a mutable string.
+
+@subsection Mapping and folding
+
+@deffn Procedure string-fold kons knil string [start end]
+@deffnx Procedure string-fold-right kons knil string [start end]
+These are the fundamental iterators for strings.
+
+The @code{string-fold} procedure maps the @var{kons} procedure across
+the given @var{string} from left to right:
+@example
+(... (@var{kons} @var{string}@sub{2} (@var{kons} @var{string}@sub{1} (@var{kons} @var{string}@sub{0} @var{knil}))))
+@end example
+In other words, string-fold obeys the (tail) recursion
+@example
+  (string-fold @var{kons} @var{knil} @var{string} @var{start} @var{end})
+= (string-fold @var{kons} (@var{kons} @var{string}@sub{start} @var{knil}) @var{start+1} @var{end})
+@end example
+The @code{string-fold-right} procedure maps @var{kons} across the given
+string @var{string} from right to left:
+@example
+(@var{kons} @var{string}@sub{0}
+      (... (@var{kons} @var{string}@sub{@var{end-3}}
+                 (@var{kons} @var{string}@sub{@var{end-2}}
+                       (@var{kons} @var{string}@sub{@var{end-1}}
+                             @var{knil})))))
+@end example
+obeying the (tail) recursion
+@example
+  (string-fold-right @var{kons} @var{knil} @var{string} @var{start} @var{end})
+= (string-fold-right @var{kons} (@var{kons} @var{string}@sub{@var{end-1}} @var{knil}) @var{start} @var{end-1})
+@end example
+Examples:
+@example
+;;; Convert a string or string to a list of chars.
+(string-fold-right cons '() string)
+
+;;; Count the number of lower-case characters in a string or string.
+(string-fold (lambda (c count)
+                (if (char-lower-case? c)
+                    (+ count 1)
+                    count))
+              0
+              string)
+@end example
+The string-fold-right combinator is sometimes called a "catamorphism."
+@end deffn
+
+@deffn Procedure string-for-each @var{proc} @vari{string} @varii{string} @dots{}
+@deffnx Procedure string-for-each @var{proc} @vari{string} [start [end]]
+The @var{string}s must all have the same length.  @var{proc} should
+accept as many arguments as there are @var{string}s.
+
+The @var{start}-@var{end} variant is provided for compatibility
+with the SRFI-13 version.  (In that case @var{start} and @var{end}
+count code Unicode scalar values (@code{character} values),
+not Java 16-bit @code{char} values.)
+
+The @func{string-for-each} procedure applies @var{proc} element--wise to
+the characters of the @var{string}s for its side effects, in order from
+the first characters to the last.  @var{proc} is always called in the
+same dynamic environment as @func{string-for-each} itself.
+@c  The return values of @func{string-for-each} are unspecified.
+
+Analogous to @func{for-each}.
+
+@example
+(let ((v '()))
+  (string-for-each
+    (lambda (c) (set! v (cons (char->integer c) v)))
+    "abcde")
+   v)
+  @result{} (101 100 99 98 97)
+@end example
+
+@PerformanceNote{} The compiler generates efficient code
+for @code{string-for-each}.
+If @var{proc} is a lambda expression, it is inlined.
+@end deffn
+
+@deffn Procedure string-map @var{proc} @vari{string} @varii{string} @dots{}
+The @code{string-map} procedure applies @var{proc} element-wise to
+the elements of the strings and returns a string of the results, in order.
+It is an error if @var{proc} does not accept as many arguments as there
+are strings, or return other than a single character or a string.
+If more than one string is given and not all strings have the same length,
+@code{string-map} terminates when the shortest string runs out.
+The dynamic order in
+which @var{proc} is applied to the elements of the strings is unspecified.
+@c If multiple returns occur from string-map, the
+@c values returned by earlier returns are not mutated.
+
+@example
+(string-map char-foldcase "AbdEgH")  @result{} "abdegh"
+@end example
+@example
+(string-map
+  (lambda (c) (integer->char (+ 1 (char->integer c))))
+  "HAL")
+        @result{} "IBM"
+@end example
+@example
+(string-map
+  (lambda (c k)
+    ((if (eqv? k #\u) char-upcase char-downcase) c))
+  "studlycaps xxx"
+  "ululululul")
+        @result{} "StUdLyCaPs"
+@end example
+
+Traditionally the result of @var{proc} had to be a character,
+but Kawa (and SRFI-140) allows the result to be a string.
+
+@PerformanceNote{} The @code{string-map} procedure has not been
+optimized (mainly because it is not very useful):
+The characters are boxed, and the @var{proc} is not inlined even if
+it is a lambda expression.
+@end deffn
+
+@deffn Procedure string-map-index proc string [start end]
+
+Calls @var{proc} on each valid index of the specified substring, converts
+the results of those calls into strings, and returns the concatenation
+of those strings. It is an error for @var{proc} to return anything other
+than a character or string. The dynamic order in which proc is called
+on the indexes is unspecified, as is the dynamic order in which the
+coercions are performed. If any strings returned by @var{proc} are mutated
+after they have been returned and before the call to @code{string-map-index}
+has returned, then @code{string-map-index} returns a string with unspecified
+contents; the @var{string-map-index} procedure itself does not mutate those
+strings.
+@end deffn
+
+@deffn Procedure string-for-each-index proc string [start end]
+
+Calls @var{proc} on each valid index of the specified substring, in
+increasing order, discarding the results of those calls. This is
+simply a safe and correct way to loop over a substring.
+
+Example:
+@example
+(let ((txt (string->string "abcde"))
+      (v '()))
+  (string-for-each-index
+    (lambda (cur) (set! v (cons (char->integer (string-ref txt cur)) v)))
+    txt)
+  v) @result{} (101 100 99 98 97)
+@end example
+@end deffn
+
+@deffn Procedure string-count string pred [start end]
+Returns a count of the number of characters in the specified substring
+of @var{string} that satisfy the predicate @var{pred}.
+@end deffn
+
+@deffn Procedure string-filter pred string [start end]
+@deffnx Procedure string-remove pred string [start end]
+Return an immutable string consisting of only selected characters, in order:
+@code{string-filter} selects only the characters that satisfy @var{pred};
+@code{string-remove} selects only the characters that @emph{not}
+satisfy @var{pred}
+@end deffn
+
+@subsection Replication & splitting
+
+@deffn Procedure string-repeat string-or-character len
+Create an istring by repeating the first argument @var{len} times.
+If the first argument is a character, it is as if it were wrapped with
+the @code{string} constructor.
+We can define string-repeat in terms of the more general @code{xsubstring}
+procedure:
+@example
+(define (string-repeat S N)
+   (let ((T (if (char? S) (string S) S)))
+     (xsubstring T 0 (* N (string-length T))))
+@end example
+@end deffn
+
+@deffn Procedure xsubstring string [from to [start end]]
+This is an extended substring procedure that implements replicated copying of a substring.
+The @var{string} is a string; @var{start} and @var{end} are optional arguments that specify a substring of @var{string},
+defaulting to 0 and the length of @var{string}.
+This substring is conceptually replicated both up and down the index space,
+in both the positive and negative directions.
+For example, if @var{string} is @code{"abcdefg"}, @var{start} is 3,
+and @var{end} is 6, then we have the conceptual bidirectionally-infinite string
+@example
+  ...  d  e  f  d  e  f  d  e  f  d  e  f  d  e  f  d  e  f  d ...
+      -9 -8 -7 -6 -5 -4 -3 -2 -1  0 +1 +2 +3 +4 +5 +6 +7 +8 +9
+@end example
+@code{xsubstring} returns the substring of the @var{string} beginning
+at index @var{from}, and ending at @var{to}.
+It is an error if @var{from} is greater than @var{to}.
+
+If @var{from} and @var{to} are missing they default to 0 and
+@var{from}+(@var{end}-@var{start}), respectively.
+This variant is a generalization of using @code{substring},
+but unlike @code{substring} never shares substructures that would
+retain characters or sequences of characters that are substructures of
+its first argument or previously allocated objects.
+
+You can use @code{xsubstring} to perform a variety of tasks:
+@itemize
+@item
+To rotate a string left: @code{(xsubstring "abcdef" 2 8) @result{} "cdefab"}
+@item
+To rotate a string right: @code{(xsubstring "abcdef" -2 4) @result{} "efabcd"}
+@item
+To replicate a string: @code{(xsubstring "abc" 0 7) @result{} "abcabca"}
+@end itemize
+
+Note that
+@itemize
+@item
+The @var{from}/@var{to} arguments give a half-open range containing the
+characters from index @var{from} up to, but not including, index @var{to}.
+@item
+The @var{from}/@var{to} indexes are not expressed in the index space of
+@var{string}. They refer instead to the replicated index space of the
+substring defined by @var{string}, @var{start}, and @var{end}.
+@end itemize
+
+It is an error if @var{start}=@var{end}, unless @var{from}=@var{to},
+which is allowed as a special case.
+@end deffn
+
+@deffn Procedure string-split string delimiter [grammar limit start end]
+Returns a list of strings representing the words contained in the substring of @var{string} from @var{start} (inclusive) to @var{end} (exclusive).
+The @var{delimiter} is a string to be used as the word separator.
+This will often be a single character, but multiple characters are
+allowed for use cases such as splitting on @code{"\r\n"}.
+The returned list will have one more item than the number of non-overlapping
+occurrences of the @var{delimiter} in the string.
+If @var{delimiter} is an empty string, then the returned list contains a
+list of strings, each of which contains a single character.
+
+The @var{grammar} is a symbol with the same meaning as in
+the @code{string-join} procedure.
+If it is @code{infix}, which is the default, processing is done as
+described above, except an empty string produces the empty list;
+if grammar is @code{strict-infix}, then an empty string signals an error.
+The values @code{prefix} and @code{suffix} cause a leading/trailing empty string in the result to be suppressed.
+
+If @var{limit} is a non-negative exact integer, at most that many splits occur, and the remainder of string is returned as the final element of the list (so the result will have at most limit+1 elements). If limit is not specified or is #f, then as many splits as possible are made. It is an error if limit is any other value.
+
+To split on a regular expression, you can use SRFI 115's @code{regexp-split}
+procedure.
+@end deffn
+
+@subsection String mutation
+
+The following procedures create a mutable string,
+i.e. one that you can modify.
+
+@deffn Procedure make-string [@var{k} [@var{char}]]
+Return a newly allocated mstring of @var{k} characters,
+where @var{k} defaults to 0.  If @var{char} is
+given, then all elements of the string are initialized to @var{char},
+otherwise the contents of the @var{string} are unspecified.
+
+The 1-argument version is deprecated as poor style, except when k is 0.
+
+@emph{Rationale:} In many languags the most common pattern for mutable strings
+is to allocate an empty string and incrementally append to it.
+It seems natural to initialize the string
+with @code{(make-string)}, rather than @code{(make-string 0)}.
+
+To return an immutable string that repeats @var{k} times a character
+@var{char} use @code{string-repeat}.
+
+This is as R7RS, except the result is variable-size and we allow
+leaving out @var{k} when it is zero.
+
+@end deffn
+
+@deffn Procedure string-copy @var{string} [@var{start} [@var{end}]]
+Returns a newly allocated mutable (mstring) copy of the part of the given
+@var{string} between @var{start} and @var{end}.
+@end deffn
+
+The following procedures modify a mutable string.
+
+@deffn Procedure string-set! string k char
+This procedure stores @var{char} in element @var{k} of @var{string}.
+
+@example
+(define s1 (make-string 3 #\*))
+(define s2 "***")
+(string-set! s1 0 #\?) @result{} @emph{void}
+s1 @result{} "?**"
+(string-set! s2 0 #\?) @result{} @emph{error}
+(string-set! (symbol->string 'immutable) 0 #\?) @result{} @emph{error}
+@end example
+
+@PerformanceNote{} Calling @code{string-set!} may take time proportional
+to the length of the string:  First it must scan for the right position,
+like @code{string-ref} does. Then if the new character requires
+using a surrogate pair (and the old one doesn't) then we have to make room
+in the string, possibly re-allocating a new @code{char} array.
+Alternatively, if the old character requires using a surrogate pair
+(and the new one doesn't) then following characters need to be moved.
+
+The function @code{string-set!} is deprecated: It is inefficient,
+and it very seldom does the correct thing.  Instead, you can
+construct a string with @code{string-append!}.
+@end deffn
+
+@deffn Procedure string-append! @var{string} @var{value} @dots{}
+The @var{string} must be a mutable string, such as one returned
+by @code{make-string} or @code{string-copy}.
+The @code{string-append!} procedure extends @var{string}
+by appending each @var{value} (in order) to the end of @var{string}.
+Each @code{value} should be a character or a string.
+
+@PerformanceNote{} The compiler converts a call with multiple @var{value}s
+to multiple @code{string-append!} calls.
+If a @var{value} is known to be a @code{character}, then
+no boxing (object-allocation) is needed.
+
+The following example shows how to efficiently process a string
+using @code{string-for-each} and incrementally ``build'' a result string
+using @code{string-append!}.
+
+@example
+(define (translate-space-to-newline str::string)::string
+  (let ((result (make-string 0)))
+    (string-for-each
+     (lambda (ch)
+       (string-append! result
+                       (if (char=? ch #\Space) #\Newline ch)))
+     str)
+    result))
+@end example
+@end deffn
+
+@deffn Procedure string-copy!  @var{to}  @var{at}  @var{from} [@var{start} [@var{end}]]
+Copies the characters of the string @var{from} that are between
+@var{start} end @var{end} into the string @var{to},
+starting at index @var{at}.  The order in which characters are copied
+is unspecified, except that if the source and destination overlap,
+copying takes place as if the source is first copied into a
+temporary string and then into the destination.
+(This is achieved without allocating storage by making sure to copy in
+the correct direction in such circumstances.)
+
+This is equivalent to (and implemented as):
+@example
+(string-replace! to at (+ at (- end start)) from start end))
+@end example
+
+@example
+(define a "12345")
+(define b (string-copy "abcde"))
+(string-copy! b 1 a 0 2)
+b  @result{}  "a12de"
+@end example
+@end deffn
+
+@deffn Procedure string-replace!  @var{dst} @var{dst-start} @var{dst-end} @var{src} [@var{src-start} [@var{src-end}]]
+Replaces the characters of string @var{dst} (between @var{dst-start} and @var{dst-end}) with the characters of @var{src} (between @var{src-start} and @var{src-end}).
+The number of characters from @var{src} may be different than the
+number replaced in @var{dst}, so the string may grow or contract.
+The special case where @var{dst-start} is equal to @var{dst-end} corresponds to
+insertion; the case where @var{src-start} is equal to @var{src-end}
+corresponds to deletion.
+The order in which characters are copied
+is unspecified, except that if the source and destination overlap,
+copying takes place as if the source is first copied into a
+temporary string and then into the destination.
+(This is achieved without allocating storage by making sure to copy in
+the correct direction in such circumstances.)
+@end deffn
+
+@deffn Procedure string-fill! @var{string} @var{fill} [@var{start} [@var{end}]]
+The @code{string-fill!} procedure stores @var{fill} in the elements
+of @var{string} between @var{start} and @var{end}.
+It is an error if @var{fill} is not a character or is forbidden in strings.
 @end deffn
 
 @subsection Strings as sequences
@@ -11131,91 +12373,50 @@ and so it must be encoded by a surrogate pair
 
 The number of scalar values (@code{character}s) is 8,
 while the number of 16-bits code units (@code{char}s) is 9.
-The @code{java.lang.CharSequence#length} method
-counts @code{char}s; the @code{length} function calls that method;
-the @code{string-length} procedure counts @code{character}s.  Thus:
+The @code{java.lang.CharSequence:length} method
+counts @code{char}s. Both the @code{length} and the
+@code{string-length} procedures count @code{character}s.  Thus:
 
 @example
-(length str1)          @result{} 9
-(str1:length)          @result{} 9
+(length str1)          @result{} 8
 (string-length str1)   @result{} 8
+(str1:length)          @result{} 9
 @end example
 
 Counting @code{char}s is a constant-time operation (since it
-is stored in the data structure), while counting @code{character}s
-takes time proportional to the length of the string,
-since it has to subtract one for each surrogate pair.
+is stored in the data structure).
+Counting @code{character}s depends on the representation used:
+In geneeral it may take time proportional to the length of
+the string, since it has to subtract one for each surrogate pair;
+however the @var{istring} type (@code{gnu.lists.IString} class)
+uses a extra structure so it can count characters in constant-time.
 
 Similarly we can can index the string in 3 ways:
 
 @example
 (str1 1)              @result{} #\m :: character
-(str1:charAt 1)       @result{} #\m :: char
 (string-ref str1 1)   @result{} #\m :: character
+(str1:charAt 1)       @result{} #\m :: char
 @end example
 
-Note using the function-call syntax returns a @code{character}.
+Using function-call syntax when the ``function'' is a string
+and a single integer argument is the same as using @code{string-ref}.
 
 Things become interesting when we reach the emoticon:
 
 @example
 (str1 6)              @result{} #\😃 :: character
 (str1:charAt 6)       @result{} #\d83d :: char
-(string-ref str1 6)   @result{} #\😃 :: character
 @end example
 
 Both @code{string-ref} and the function-call syntax return the
 real character, while the @code{charAt} methods returns a partial character.
-However, @code{string-ref} needs to linearly count from the
-start of the string, while the function-call syntax can do a constant-time
-lookup.  It does this by calling @code{(str1:charAt 6)} first.
-If that returns a leading-surrogate character, it checks that the
-next character (i.e. @code{(str1:charAt 7)}) is a trailing-surrogate character,
-and if so combines the two.  (If there is no next character or it is not
-a trailing-surrogate, then indexing just returns the leading-surrogate
-partial character.)
-
-In other words @code{(string-ref s i)} returns the @code{i}'th
-@code{character}, while @code{(s i)} return the @code{character}
-at the @code{i}'th index.
-
-If the character at the @code{i}'th index is a surrogate pair,
-then @code{(s (+ i 1))} returns a special pseudo-character
-named @code{#\ignorable-char}.  This pseudo-character should
-generally be ignored.  (It is automatically ignored by
-Kawa functions including @code{write-char}, @code{string-append!},
-and the @code{string} constructor.)
 
 @example
-(str1 7)              @result{} #\ignorable-char :: character
-(str1 8)              @result{} #\! :: character
+(str1 7)              @result{} #\! :: character
 (str1:charAt 7)       @result{} #\de03 :: char
+(str1 8)              @result{} @i{throws} StringIndexOutOfBoundsException
 (str1:charAt 8)       @result{} #\! :: char
-(string-ref str1 7)   @result{} #\! :: character
-(string-ref str1 8)   @result{} @i{throws} StringIndexOutOfBoundsException
-@end example
-
-Following are two possible implementations
-of a single-string version of @code{string-for-each}.
-The @code{string-for-each-1} version is simple,
-obvious, and traditional - but the execution time is
-quadratic in the string length.
-The @code{string-for-each-2} version requires filtering
-out any @code{#\ignorable-char}, but the execution time
-is only linear.
-
-@example
-(define (string-for-each-1 proc s::string)
-  (! slen (string-length s))
-  (do ((i ::int 0 (+ i 1))) ((= i slen))
-    (proc (string-ref s i))))
-
-(define (string-for-each-2 proc s::string)
-  (! slen (length s))
-  (do ((i ::int 0 (+ i 1))) ((= i slen))
-    (let ((ch (s i)))
-      (if (not (char=? ch #\ignorable-char))
-          (proc ch)))))
 @end example
 
 @subsubsection Indexing with a sequence
@@ -11227,26 +12428,19 @@ most commonly a range:
 @end example
 is basically the same as:
 @example
-(string (@var{str}:charAt @var{i}) ...)
-@end example
-This is usually the same as the following:
-@example
 (string (@var{str} @var{i}) ...)
 @end example
-(The exception is if you select only part of a surrogate pair.)
 
 Generally when working with strings it is best to
 work with substrings rather than individual characters:
 @example
 (@var{str} [@var{start} <: @var{end}])
 @end example
-This is equivalent to invoking the @code{CharSequence:subSequence} method:
+
+This is equivalent to invoking the @code{substring} procedure:
 @example
-(@var{str}:subSequence @var{start} @var{end})
+(substring @var{str} @var{start} @var{end})
 @end example
-This is much more efficient than the @code{substring} procedure,
-since the latter has to convert @code{character} indexes
-to @code{char} offsets.
 
 @c not implemented yet
 @c @subsubsection Assigning to a subsequence
@@ -12242,14 +13436,14 @@ Returns the number of elements of the @var{seq}.
 (length (int[] 7 6))          @result{}  2
 @end example
 
-The length of a string is the number of 16-bit code units,
-not the number the code points.
-@strong{Warning: This will change in Kawa 3.x!}
+The length of a string is the number of characters (Unicode code points).
+In contrast, the @code{length} @emph{method} (of the @code{CharSequence} interface)
+returns the number of 16-bit code points:
 @example
 (length "Hello")              @result{}  5
 (define str1 "Hello \x1f603;!")
 (invoke str1 'length)         @result{}  9
-(length str1)                 @result{}  9 ;; 8 in Kawa 3.x
+(length str1)                 @result{}  8 ; Used to return 9 in Kawa 2.x.
 (string-length str1)          @result{}  8
 @end example
 @end deffn
@@ -12502,28 +13696,6 @@ The @func{list->vector} procedure returns a newly created vector
 initialized to the elements of the list @var{list}, in order.
 @example
 (list->vector '(dididit dah))           @result{}  #(dididit dah)
-@end example
-@end deffn
-
-@deffn Procedure vector->string vector [start [end]]
-The @code{vector->string} procedure returns a newly allocated
-string of the objects contained in the elements of @var{vector}
-between @var{start} and @var{end}.
-It is an error if any element of @var{vector} between @var{start}
-and @var{end} is not a character, or is a character forbidden in strings.
-@example
-(vector->string #(#\1 #\2 #\3))             @result{} "123"
-(vector->string #(#\1 #\2 #\3 #\4 #\5) 2 4) @result{} "34"
-@end example
-@end deffn
-
-@deffn Procedure string->vector string [start [end]]
-The @code{string->vector} procedure
-returns a newly created vector initialized to the elements
-of the string @var{string} between @var{start} and @var{end}.
-@example
-(string->vector "ABC")       @result{} #(#\A #\B #\C)
-(string->vector "ABCDE" 1 3) @result{} #(#\B #\C)
 @end example
 @end deffn
 
@@ -12941,6 +14113,8 @@ the concatenation of the elements in the given bytevectors.
 @end example
 @end deffn
 
+@subsection Converting to or from strings
+
 @deffn Procedure utf8->string bytevector [start [end]]
 This procedure decodes the bytes of a bytevector between @var{start}
 and @var{end}, interpreting as a UTF-8-encoded string,
@@ -12951,6 +14125,31 @@ It is an error for @var{bytevector} to contain invalid UTF-8 byte sequences.
 @end example
 @end deffn
 
+@deffn Procedure utf16->string bytevector [start [end]]
+@deffnx Procedure utf16be->string bytevector [start [end]]
+@deffnx Procedure utf16le->string bytevector [start [end]]
+These procedures interpret their <var>bytevector</var> argument as
+a UTF-16 encoding of a sequence of characters,
+and return an istring containing that sequence.
+
+The bytevector subrange given to @code{utf16->string}
+may begin with a byte order mark (BOM); if so, that BOM
+determines whether the rest of the subrange is to be
+interpreted as big-endian or little-endian; in either case,
+the BOM will not become a character in the returned string.
+If the subrange does not begin with a BOM, it is decoded using
+the same implementation-dependent endianness used by
+@code{string->utf16}.
+
+The @code{utf16be->string} and @code{utf16le->string}
+procedures interpret their inputs as big-endian or little-endian,
+respectively.  If a BOM is present, it is treated as a normal
+character and will become part of the result.
+
+It is an error if @code{(- @var{end} @var{start})} is odd,
+or if the bytevector subrange contains invalid UTF-16 byte sequences.
+@end deffn
+
 @deffn Procedure string->utf8 string [start [end]]
 This procedure encodes the characters of a string between
 @var{start} and @var{end} and returns the corresponding bytevector,
@@ -12958,6 +14157,29 @@ in UTF-8 encoding.
 @example
 (string->utf8 "λ")     @result{} " #u8(#xCE #xBB)
 @end example
+@end deffn
+
+@deffn Procedure string->utf16 string [start [end]]
+@deffnx Procedure string->utf16be string [start [end]]
+@deffnx Procedure string->utf16le string [start [end]]
+These procedures return a newly allocated (unless empty)
+bytevector containing a UTF-16 encoding of the given substring.
+
+The bytevectors returned by @code{string->utf16be}
+and @code{string->utf16le}
+do not contain a byte-order mark (BOM);
+@code{string->utf16be}> returns a big-endian encoding,
+while @code{string->utf16le} returns a little-endian encoding.
+
+The bytevectors returned by @code{string->utf16}
+begin with a BOM that declares an implementation-dependent
+endianness, and the bytevector elements following that BOM
+encode the given  substring using that endianness.
+
+@emph{Rationale:}
+These procedures are consistent with the Unicode standard.
+Unicode suggests UTF-16 should default to big-endian, but
+Microsoft prefers little-endian.
 @end deffn
 
 @node Ranges
@@ -16389,6 +17611,10 @@ The macro @code{resource-url} works by using @code{module-uri}
 and resolving that to a normal @code{URL}.
 @end deffn
 
+@deffn Syntax module-class
+Evaluates to the containing module class, as a @code{java.lang.Class} instance.
+@end deffn
+
 @node Types, Objects Classes and Modules, Input-Output, Top
 @chapter Types
 
@@ -16473,7 +17699,7 @@ An arbitrary Scheme value - and hence an arbitrary Java object.
 @defvar symbol
 The type of Scheme symbols.
 (Implemented using the Java class @code{gnu.mapping.Symbol}.)
-(Compatibility note: Previous versions of Kawa implemented
+(@CompatibilityNote{} Previous versions of Kawa implemented
 a simple Scheme symbol using an interned @code{java.lang.String}.)
 @end defvar
 
@@ -16496,7 +17722,7 @@ and @code{gnu.lists.FString} for mutable strings.
 Both of these implement the interface @code{java.lang.CharSequence}.
 In the future, we may change the representation for strings
 containing ``surrogate characters'', for efficient indexing.)
-(Compatibility note: Previous versions of Kawa
+(@CompatibilityNote{} Previous versions of Kawa
 always used @code{gnu.lists.FString}.)
 @end defvar
 
@@ -18247,7 +19473,7 @@ You can also use a defined alias:
 You can even evaluate @var{class-expression} at run-time
 (in which case Kawa may have to use slower reflection):
 @example
-(let ((math java.lang.Math)) math:sqrt 9.0) @result{} 3.0
+(let ((math java.lang.Math)) (math:sqrt 9.0)) @result{} 3.0
 @end example
 
 Here @code{java.lang.Math} evaluates to a @code{java.lang.Class}
@@ -18923,8 +20149,8 @@ languages) can in principle contain any character (if using a
 suitable quoting convention), but typically names consist of
 "words" (one or more letters) separated by hyphens, such
 as @samp{make-temporary-file}.  Digits
-and some special symbols are also used.  Standard Scheme
-is case-insensitive;  this means that the names @samp{loop},
+and some special symbols are also used.  Traditionally, Scheme is
+case-insensitive;  this means that the names @samp{loop},
 @samp{Loop}, and @samp{LOOP} are all the same name.  Kawa
 is by default case-sensitive, but we recommend that you
 avoid using upper-case letters as a general rule.
@@ -18933,18 +20159,24 @@ The Java language and the Java virtual machine uses names for
 classes, variables, fields and methods.
 Names in the Java language can contain upper- and lower-case letters,
 digits, and the special symbols @samp{_} and @samp{$}.
-The Java virtual machine allows most characters, but still
-has some limitations.  Kawa limits characters in generated names to those
-allowed by Java language (rather than those allowed by the
-virtual machine), for simplify and Java interoperatbility.
+The Java virtual machine (JVM) allows most characters, but still
+has some limitations.
 
-Given a name in a Scheme program,
-Kawa needs to map that name into a valid Java name.  A typical
-Scheme name such as @samp{make-temporary-file} is not a valid
-Java name.  The convention for Java names is to use
+Kawa translates class names, package names, field names, and local variable
+names using the
+@uref{https://blogs.oracle.com/jrose/entry/symbolic_freedom_in_the_vm,''symbolic'' convention}, so most characters are unchanged.
+For example the Scheme function @samp{file-exists?}
+becomes the field @samp{file-exists?}, but @code{dotted.name}
+becomes @samp{dotted\,name}.
+Such names may not be valid Java name, so to access them from a
+Java program you might have to use reflection.
+
+When translating procedure names to method names,
+Kawa uses a different translation, in order to achieve
+more ``Java-like'' names. This means translating a
+Scheme-style name like @samp{make-temporary-file} to
 "mixed-case" words, such as @samp{makeTemporaryFile}.
-So Kawa will translate a Scheme-style name into a Java-style
-name.  The basic rule is simple:  Hyphens are dropped, and
+The basic rule is simple:  Hyphens are dropped, and
 a letter that follows a hyphen is translated to its
 upper-case (actually "title-case") equivalent.  Otherwise,
 letters are translated as is.
@@ -18962,7 +20194,7 @@ Some symbols are mapped to a mnemonic sequence, starting with a dollar-sign,
 followed by a two-character abbreviation.  For example, the less-than
 symbol @samp{<} is mangled as @samp{$Ls}.
 See the source code to the @code{mangleName} method in the
-@code{gnu.expr.Compilation} class for the full list.
+@code{gnu.expr.Mangling} class for the full list.
 Characters that do not have a mnemonic abbreviation are
 mangled as @samp{$} followed by a four-hex-digit unicode value.
 For example @samp{Tamil vowel sign ai} is mangled as @samp{$0bc8}.
@@ -18979,19 +20211,6 @@ Kawa depend on being able to map Scheme name to Java names
 naturally, so we urge you to @emph{not} write code that
 "mixes" naming conventions by using (say) the names @samp{open-file}
 and @samp{openFile} to name two different objects.
-
-The above mangling is used to generate Java method names.
-Each top-level definition is also mapped to a Java field.
-The name of this field is also mangled, but using a mostly
-reversible mapping:  The Scheme function @samp{file-exists?}
-is mapped to the method name @samp{file$Mnexists$Qu}.
-Because @samp{$} is used to encode special characters, you
-should avoid using it in names in your source file.
-
-Class and package name generally don't need to be mangled,
-as most characters are used directly.
-The exception is a few characters
-as described @uref{https://blogs.oracle.com/jrose/entry/symbolic_freedom_in_the_vm,here}.
 
 @node Scheme types in Java, Array operations, Mangling, Objects Classes and Modules
 @section Scheme types in Java
@@ -22644,6 +23863,18 @@ Applying the procedure returns the length of the array.
 
 @node FAQs
 @chapter Frequently Asked Questions
+
+@ignore
+@subsubheading What is the difference between load, require, import, and include?
+
+Handling @code{include} is all done at compile time.  It's as if the text
+of the included file is copied and replaces the include command.
+If the include is inside a @code{let}, the included text can
+use the name defined in the @code{let}.
+
+In contrast @code{load} is a procedure, not syntax.
+It reads and evaluates each line in the file, one at a time,
+@end ignore
 
 @anchor{importing-class-names}
 @subsubheading What is the equivalent of Java import?

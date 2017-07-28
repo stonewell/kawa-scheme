@@ -6,6 +6,28 @@ import java.io.*;
 import java.util.*;
 
 /** A generic simple vector.
+ * This is normally a wrapper around a plain Java array, the "data buffer",
+ * which is the value of code{@code getBuffer()}.
+ * (FUTURE: could be a wrapper around a String?)
+ * The elements of the vector (viewed as a java.util.List)
+ * are stored in order, in the array, in one of these modes:
+ * <p>
+ * <em>Very-simple mode:</em> All of elements of the data buffer are used.
+ * Normally {@code get(i)} is the @code{i}'th element of the data buffer.
+ * An exception: For a CharSequence (FString), the value of {@code get(i)}
+ * is a Unicode code point, so it is found at offset computed by
+ * {@code Character.offsetByCodePoints(i)}.
+ * <p>
+ * <em>Sub-range mode:</em> The elements of this vector are a
+ * contiguous sub-range of the data buffer, given by a start offset
+ * and a size.  This is used for creating a read-only sub-list
+ * with sharing of the data buffer.
+ * The original is made copy-on-write.
+ * <p>
+ * <em>Gap-buffer mode:</em> The elements of this vector are in <em>two</em>
+ * contiguous sub-range of the data buffer, one at the very start of the
+ * buffer, and one at the very end, with an unused gap between them.
+ * (The gap and either sub-range may be empty.)
  */
 
 public abstract class SimpleVector<E> extends AbstractSequence<E>
@@ -14,7 +36,7 @@ public abstract class SimpleVector<E> extends AbstractSequence<E>
     // 1-bit sign; 25-bit offset; 6-bit flags; 32-bit size;
     protected long info = VERY_SIMPLE_FLAG;
     public static final int MAX_GAP_SIZE = (1 << 25) - 1;
-    /** If isSimple(), the values are all the values of the guffer.
+    /** If isSimple(), the values are all the values of the buffer.
      * In this case getSize() == getBufferLength(); */
     protected final boolean isVerySimple() { return info < 0; }
     /** The values are {@code buffer[offset <: offset+size]}. */
@@ -29,6 +51,7 @@ public abstract class SimpleVector<E> extends AbstractSequence<E>
     }
     protected final int getGapStart() { return getSizeBits(); }
     protected final int getGapEnd() { return getSizeBits()+getOffsetBits(); }
+    protected final int getGapSize() { return getOffsetBits(); }
     protected final void setGapBounds(int gapStart, int gapEnd, long flags) {
         setInfoField(gapStart, gapEnd-gapStart, flags|GAP_FLAG);
     }
@@ -53,7 +76,9 @@ public abstract class SimpleVector<E> extends AbstractSequence<E>
         info |= READ_ONLY_FLAG;
     }
 
-    public int size() {
+    public int size() { return length(); }
+
+    protected int length() {
         int len = getBufferLength();
         if (isVerySimple())
             return len;
@@ -200,7 +225,7 @@ public abstract class SimpleVector<E> extends AbstractSequence<E>
      *   but we try to do better.
      */
     public long getSegment(int index) {
-        int sz = size();
+        int sz = length();
         int where, size;
         if (isVerySimple()) {
             where = index;
@@ -226,7 +251,7 @@ public abstract class SimpleVector<E> extends AbstractSequence<E>
 
     public int getSegment(int index, int len) {
         if (isGapBuffer()) {
-            int sz = size();
+            int sz = length();
             if (index < 0 || index > sz)
                 return -1;
             if (index < 0)
@@ -255,7 +280,7 @@ public abstract class SimpleVector<E> extends AbstractSequence<E>
     }
 
     public int getSegmentReadOnly(int start, int len) {
-        int sz = size();
+        int sz = length();
         if (start < 0 || len < 0 || start + len > sz)
             return -1;
         long result = getSegment(start);
@@ -279,20 +304,20 @@ public abstract class SimpleVector<E> extends AbstractSequence<E>
   }
 
     /* #ifdef JAVA8 */
-    // @Override
-    // public void forEach(java.util.function.Consumer<? super E> action) {
-    //     int len = size();
-    //     int index = 0;
-    //     while (len > 0) {
-    //         long result = getSegment(index);
-    //         int where = (int) result;
-    //         int size = (int) (result >> 32);
-    //         for (int i = 0; i < size; i++)
-    //             action.accept(getRaw(where+i));
-    //         len -= size;
-    //         index += size;
-    //     }
-    // }
+    @Override
+    public void forEach(java.util.function.Consumer<? super E> action) {
+        int len = size();
+        int index = 0;
+        while (len > 0) {
+            long result = getSegment(index);
+            int where = (int) result;
+            int size = (int) (result >> 32);
+            for (int i = 0; i < size; i++)
+                action.accept(getRaw(where+i));
+            len -= size;
+            index += size;
+        }
+    }
     /* #endif */
 
     public void fill(E value) {

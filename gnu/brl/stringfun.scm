@@ -165,7 +165,7 @@
 (define-syntax brl-name-proc
   (syntax-rules ()
     ((brl-name-proc name)
-     (invoke (as <procedure> name) 'setName (quote name)))))
+     (invoke (as <procedure> name) 'setName ((quote name):toString)))))
 
 (define brl-html-escape (brl-string-escaper '((#\< . "&lt;")
 					      (#\> . "&gt;")

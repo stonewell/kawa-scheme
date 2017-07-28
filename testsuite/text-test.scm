@@ -86,6 +86,8 @@
 (test-equal 5 (string-length str1))
 (test-equal #\c (string-ref str1 4))
 (test-equal #\😼 (string-ref str1 3))
+(test-equal "😼bc😂" (str1 [3 2 4 1]))
+(test-equal "😂b😼" (str1 [1 <: 4]))
 (define str1lst '())
 (string-for-each (lambda (x)
                    (set! str1lst (cons (char->integer x) str1lst)))
@@ -97,6 +99,8 @@
 ;; or 2-char (i.e. surrogate pairs).
 (define strx2 (string-copy str1 0))
 (test-equal str1 strx2)
+(test-equal "😼bc😂" (strx2 [3 2 4 1]))
+(test-equal "😂b😼" (strx2 [1 <: 4]))
 (string-set! strx2 3 #\y)
 (test-equal "a😂byc" strx2)
 (string-set! strx2 2 #\x)
@@ -124,42 +128,10 @@
                    str1 1 4)
   (test-equal '(128514 98 128572) (reverse str)))
 
-(import (srfi :13 strings))
-(test-equal 15 (string-contains "eek -- what a geek." "ee" 12 18))
-
-;;; Test SRFI-13 string-append/shared
-(let ((str "abc"))
-  (test-equal "" (string-append/shared))
-  (test-equal "" (string-append/shared ""))
-  (test-equal "abc" (string-append/shared str))
-  (set! str (string-append/shared str "123" "xy"))
-  (test-equal "abc123xy" (string-append/shared str))
-  (test-equal "abc123xy" str))
-
-(define (translate-space-to-newline str::string)::string
-  (let ((result (make-string 0)))
-    (string-for-each
-     (lambda (ch)
-       (string-append! result
-                       (if (char=? ch #\Space) #\Newline ch)))
-     str)
-    result))
-(test-equal "ab\ncd\nx"
-            (translate-space-to-newline "ab cd x"))
-
 (let ((str (make-string 3 #\😂)))
   (test-equal 3 (string-length str))
   (test-equal 6 (str:length))
-  (string-replace! str 1 2 "abc")
-  (test-equal "😂abc😂" str)
-  (string-replace! str 5 5 str 3)
-  (test-equal "😂abc😂c😂" str)
-  (string-replace! str 0 2 "ABC" 1 2)
-  (test-equal "Bbc😂c😂" str)
-  (test-equal #\c (str 2))
-  (test-equal #\x1f602 (str 3))
-  (test-equal #\ignorable-char (str 4))
-  (test-equal #\c (str 5)))
+  (test-equal #\x1f602 (str 2)))
 
 (let ((str1 (string-copy "abcdef")))
   (test-equal "ef" (str1 [4 <:]))
@@ -272,5 +244,5 @@
     &|    (list 987 xy))})
 
 (test-end)
-  
+
 (test-end)

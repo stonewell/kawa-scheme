@@ -151,9 +151,8 @@ public class ClassExp extends LambdaExp
                 int flags = decl.getAccessFlags(Access.PUBLIC);
                 if (decl.getFlag(Declaration.STATIC_SPECIFIED))
                     flags |= Access.STATIC;
-                String fname = Mangling.mangleNameIfNeeded(decl.getName());
-                decl.field
-                    = instanceType.addField(fname, null, flags);
+                String fname = Mangling.mangleField(decl.getName());
+                decl.setField(instanceType.addField(fname, null, flags));
                 Declaration old = seenFields.get(fname);
                 if (old != null)
                     duplicateDeclarationError(old, decl, comp);
@@ -243,9 +242,9 @@ public class ClassExp extends LambdaExp
             Field prev = null;
             for (Declaration decl = firstDecl();
                  decl != null;  decl = decl.nextDecl()) {
-                Field fld = decl.field;
+                Field fld = decl.getField();
                 if (decl.getCanRead()) {
-                    int fflags = decl.field.getFlags() | Access.ABSTRACT;
+                    int fflags = decl.getField().getFlags() | Access.ABSTRACT;
                     String gname = slotToMethodName("get", decl.getName());
                     decl.getterMethod =
                         compiledType.addMethod(gname,
@@ -256,7 +255,7 @@ public class ClassExp extends LambdaExp
                         compiledType.addMethod(sname, fflags, stypes,
                                                Type.voidType);
                     instanceType.removeField(fld, prev);
-                    decl.field = null;
+                    decl.setField(null);
                 }
                 prev = fld;
             }
@@ -348,7 +347,7 @@ public class ClassExp extends LambdaExp
                     decl.setterMethod.getParameterTypes()[0] = ftype;
                 } else {
                     decl.setSimple(false);
-                    decl.field.setType(decl.getType());
+                    decl.getField().setType(decl.getType());
                 }
             }
         }
@@ -504,7 +503,7 @@ public class ClassExp extends LambdaExp
                 nameDecl.compileAnnotations(compiledType, ElementType.TYPE);
             for (Declaration decl = firstDecl(); decl != null;
                  decl = decl.nextDecl()) {
-                decl.compileAnnotations(decl.field, ElementType.FIELD);
+                decl.compileAnnotations(decl.getField(), ElementType.FIELD);
             }
 
             for (LambdaExp child = firstChild;  child != null;
@@ -531,10 +530,11 @@ public class ClassExp extends LambdaExp
                 child.allocParameters(comp);
                 if ("*init*".equals(child.getName())) {
                     code = comp.getCode();
-
                     if (staticLinkField != null) {
                         code.emitPushThis();
-                        code.emitLoad(code.getCurrentScope().getVariable(1));
+                        Variable var = code.getArg(1);
+                        var.allocateLocal(code);
+                        code.emitLoad(var);
                         code.emitPutField(staticLinkField);
                     }
 
@@ -551,14 +551,9 @@ public class ClassExp extends LambdaExp
                     }
                     else if (calledInit != instanceType)
                         ((ApplyExp) bodyFirst).setFlag(ApplyExp.IS_SUPER_INIT);
-                    child.enterFunction(comp);
-                    child.compileBody(comp);
-                } else {
-                    child.enterFunction(comp);
-                    child.compileBody(comp);
                 }
-                child.compileEnd(comp);
-                child.generateApplyMethods(comp);
+                child.enterFunction(comp);
+                child.compileBody(comp);
 
                 // Check to see if child overrides a superclass method and has
                 // a covariant return type. If so, generate a bridge method

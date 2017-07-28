@@ -7,7 +7,7 @@
                string-cursor>? string-cursor>=? string-cursor
                string-cursor-for-each)
 
-(require <kawa.lib.prim_syntax>)
+(require <kawa.lib.prim_imports>)
 (require <kawa.lib.std_syntax>)
 
 (import (rename (only (gnu kawa lispexpr LangPrimType) stringCursorType)

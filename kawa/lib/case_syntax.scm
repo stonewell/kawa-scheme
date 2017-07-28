@@ -1,8 +1,9 @@
-(require <kawa.lib.prim_syntax>)
+(require <kawa.lib.prim_imports>)
 (require <kawa.lib.std_syntax>)
+(require kawa.lib.syntax)
 (require <kawa.lib.lists>)
 
-(define-namespace <CaseClause> <gnu.expr.CaseExp>:CaseClause)
+(define-alias <CaseClause> gnu.expr.CaseExp:CaseClause)
 (define-namespace <CaseExp> <gnu.expr.CaseExp>)
 (define-namespace <Expression> <gnu.expr.Expression>)
 (define-namespace <QuoteExp> <gnu.expr.QuoteExp>)
@@ -57,7 +58,7 @@
     (syntax-case x (else =>)
       ((_ case-key case-clause ... (else case-else ...))
        (<CaseExp>
-         (syntax->expression (syntax case-key))
+         (syntax-pair->expression #'(case-key))
          (<CaseClause>[]
                 @(syntax->case-clauses (syntax (case-clause ...))
                                        (syntax case-key)))
@@ -66,7 +67,7 @@
                                     (syntax case-key)))))
       ((_ case-key case-clause ...)
        (<CaseExp>
-         (syntax->expression (syntax case-key))
+         (syntax-pair->expression #'(case-key))
          (<CaseClause>[]
                 @(syntax->case-clauses (syntax (case-clause ...))
                                        (syntax case-key))))))))

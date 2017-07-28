@@ -84,9 +84,9 @@ InliningTest.lengthIarr2(int[])int: 3 bytes
 InliningTest.lengthIarr3(int[])int: 3 bytes
 InliningTest.getIarr1(int[],int)int: 4 bytes
 InliningTest.setIarr1(int[],int,int)void: 5 bytes
-InliningTest.varargs1()java.lang.reflect.Method: 25 bytes
-InliningTest.varargs2(java.lang.Class[])java.lang.reflect.Method: 10 bytes
-InliningTest.varargs3(java.lang.Object)java.lang.reflect.Method: 35 bytes
+InliningTest.varargs1()java.lang.reflect.Method: 26 bytes
+InliningTest.varargs2(java.lang.Class[])java.lang.reflect.Method: 11 bytes
+InliningTest.varargs3(java.lang.Object)java.lang.reflect.Method: 47 bytes
 InliningTest.factoriali1(int)int: 18 bytes
 InliningTest.factoriali2(int)int: 18 bytes
 InliningTest.factoriall1(long)long: 19 bytes
@@ -103,12 +103,12 @@ InliningTest.factorialInfer1(int)java.lang.Object: 25 bytes
 InliningTest.getFromVector1(gnu.lists.FVector,int)java.lang.Integer: 9 bytes
 InliningTest.getFromVector2(gnu.lists.FVector,int)java.lang.Integer: 9 bytes
 InliningTest.read1(gnu.kawa.io.InPort)int: 54 bytes
-InliningTest.stringForEach1(java.lang.CharSequence)void: 48 bytes
-InliningTest.stringForEach2(java.lang.CharSequence)void: 42 bytes
-InliningTest.stringForEach3(java.lang.CharSequence)void: 46 bytes
-InliningTest.stringForEach4(java.lang.CharSequence,int,int)void: 38 bytes
-InliningTest.stringForEach5(java.lang.CharSequence,int,int)void: 52 bytes
-InliningTest.stringForEach6(java.lang.CharSequence)void: 138 bytes
+InliningTest.stringForEach1(java.lang.CharSequence)void: 49 bytes
+InliningTest.stringForEach2(java.lang.CharSequence)void: 43 bytes
+InliningTest.stringForEach3(java.lang.CharSequence)void: 47 bytes
+InliningTest.stringForEach4(java.lang.CharSequence,int,int)void: 39 bytes
+InliningTest.stringForEach5(java.lang.CharSequence,int,int)void: 53 bytes
+InliningTest.stringForEach6(java.lang.CharSequence)void: 141 bytes
 InliningTest.stringAppend1(gnu.lists.FString,char)gnu.lists.FString: 6 bytes
 InliningTest.stringAppend2(gnu.lists.FString,int)gnu.lists.FString: 6 bytes
 InliningTest.stringAppend3(gnu.lists.FString,gnu.lists.FString)gnu.lists.FString: 6 bytes
@@ -116,7 +116,7 @@ InliningTest.stringAppend4(gnu.lists.FString,gnu.text.Char)gnu.lists.FString: 9 
 InliningTest.stringAppend5(gnu.lists.FString,java.lang.Character)gnu.lists.FString: 9 bytes
 InliningTest.stringAppend6(gnu.lists.FString,java.lang.Object)gnu.lists.FString: 6 bytes
 InliningTest.stringAppend7(gnu.lists.FString,java.lang.Object,int)void: 13 bytes
-InliningTest.translateSpaceToNewline(java.lang.CharSequence)java.lang.CharSequence: 65 bytes
+InliningTest.translateSpaceToNewline(java.lang.CharSequence)java.lang.CharSequence: 66 bytes
 InliningTest.topLevelRecurse1(gnu.lists.Pair)gnu.bytecode.Type$NeverReturns: 10 bytes
 InliningTest.topLevelRecurse2(java.lang.Object,java.lang.Object)gnu.bytecode.Type$NeverReturns: 7 bytes
 InliningTest.sum1(gnu.math.IntNum)java.lang.Object: 34 bytes
@@ -214,7 +214,7 @@ nbody.jupiter()nbody$Body: 57 bytes
 nbody$Body.offsetMomentum(double,double,double)void: 32 bytes
 regexdna.regexdna(java.io.InputStream)void: 329 bytes
 revcomp1.revcomp(java.io.InputStream)void: 341 bytes
-revcomp2.run(gnu.mapping.CallContext)void: 194 bytes
+revcomp2.run(gnu.mapping.CallContext)void: 197 bytes
 revcomp2$RevByteArray.reverseAndPrint()void: 117 bytes
 spectralnorm.Approximate(int)double: 110 bytes
 spectralnorm.A(int,int)double: 19 bytes
@@ -231,3 +231,4 @@ map1.vector2VmapFormat(gnu.lists.FVector,gnu.lists.FVector)gnu.lists.FVector: 93
 values2.test1()void: 7 bytes
 values2.test2()void: 19 bytes
 values2.test3(java.lang.Object)gnu.mapping.Values: 29 bytes
+reflect-fname.kittensClass()java.lang.Object: 3 bytes

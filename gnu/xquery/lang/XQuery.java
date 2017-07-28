@@ -296,7 +296,7 @@ public class XQuery extends Language
     throws Throwable
   {
     CallContext ctx = CallContext.getInstance();
-    proc.check3(item, IntNum.valueOf(position), IntNum.valueOf(size), ctx);
+    ctx.setupApply(proc, item, IntNum.valueOf(position), IntNum.valueOf(size));
     Consumer save = ctx.consumer;
     try
       {
@@ -325,7 +325,7 @@ public class XQuery extends Language
     int oldIndex = ctx.startFromContext();
     try
       {
-	proc.check3(item, IntNum.valueOf(position), IntNum.valueOf(size), ctx);
+        ctx.setupApply(proc, item, IntNum.valueOf(position), IntNum.valueOf(size));
 	return ctx.getFromContext(oldIndex);
       }
     catch (Throwable ex)
@@ -407,7 +407,7 @@ public class XQuery extends Language
 	IntNum size = IntNum.valueOf(count);
 	for (int i = 1;  ;  i++)
 	  {
-	    proc.check3(v.getPosNext(ipos), IntNum.valueOf(i), size, ctx);
+            ctx.setupApply(proc, v.getPosNext(ipos), IntNum.valueOf(i), size);
 	    ctx.runUntilDone();
 	    if (i == count)
 	      break;
@@ -417,7 +417,7 @@ public class XQuery extends Language
     else
       {
 	IntNum one = IntNum.one();
-	proc.check3(values, one, one, ctx);
+        ctx.setupApply(proc, values, one, one);
 	ctx.runUntilDone();
       }
   }
@@ -547,7 +547,7 @@ public class XQuery extends Language
     throws Throwable
   {
     Procedure proc = evalToFocusProc(expr);
-    proc.check3(item, IntNum.valueOf(position), IntNum.valueOf(size), ctx);
+    ctx.setupApply(proc, item, IntNum.valueOf(position), IntNum.valueOf(size));
   }
 
   public static final Environment xqEnvironment
@@ -570,7 +570,7 @@ public class XQuery extends Language
 
     defProcStFld("unescaped-data", "gnu.kawa.xml.MakeUnescapedData", "unescapedData");
     defProcStFld("item-at", "gnu.xquery.util.ItemAt", "itemAt");
-    defProcStFld("count", "kawa.lib.xquery.Xutils", "count$Mnvalues");
+    defProcStFld("count", "kawa.lib.xquery.Xutils", "count-values");
     define_method("sum", "gnu.xquery.util.Reduce", "sum"); // Overloaded
     defProcStFld("avg", "gnu.xquery.util.Average", "avg");
     defProcStFld("sublist", "kawa.lib.xquery.Xutils", "sublist"); // deprecated

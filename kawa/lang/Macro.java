@@ -31,8 +31,8 @@ public class Macro extends Syntax implements Printable, Externalizable
         if (capturedScope == null) {
             if (instance instanceof ModuleExp) // possibly if immediate.
                 capturedScope = (ModuleExp) instance;
-            else if (instance instanceof String)
-                capturedScope = ModuleInfo.findWithClassName((String) instance).getModuleExp();
+            else if (instance instanceof Class)
+                capturedScope = ModuleManager.findWithClass((Class) instance).getModuleExp();
             else if (instance != null)
                 capturedScope = ModuleInfo.findFromInstance(instance).getModuleExp();
         }
@@ -181,26 +181,28 @@ public class Macro extends Syntax implements Printable, Externalizable
             Object result;
             if (! isHygienic()) {
                 form = Quote.quote(form, tr);
-                int nargs = Translator.listLength(form);
-                if (nargs <= 0)
+                int nargs = Translator.listLength(form) - 1;
+                if (nargs < 0)
                     return tr.syntaxError("invalid macro argument list to "+this);
-                Object[] args = new Object[nargs-1];
+                CallContext ctx = CallContext.getInstance();
+                ctx.setupApply(pr);
+                form = ((Pair) form).getCdr();
                 for (int i = 0;  i < nargs;  i++) {
                     Pair pair = (Pair) form;
-                    if (i > 0)
-                        args[i-1] = pair.getCar();
+                    Object arg = pair.getCar();
+                    if (arg instanceof Keyword && i + 1 < nargs) {
+                        String key = ((Keyword) arg).getName();
+                        pair = (Pair) pair.getCdr();
+                        ctx.addKey(key, pair.getCar());
+                        i++;
+                    } else
+                        ctx.add(arg);
                     form = pair.getCdr();
                 }
-                result = pr.applyN(args);
+                result = ctx.runUntilValue();
             }
             else
                 result = pr.apply1(form);
-            if (form instanceof PairWithPosition && result instanceof Pair
-                && ! (result instanceof PairWithPosition)) {
-                Pair p = (Pair) result;
-                result = new PairWithPosition((PairWithPosition) form,
-                                              p.getCar(), p.getCdr());
-            }
             return result;
         } catch (Throwable ex) {
             String msg = "evaluating syntax transformer '"
@@ -217,17 +219,12 @@ public class Macro extends Syntax implements Printable, Externalizable
             super.scanForm(st, defs, tr);
             return;
         }
-        String save_filename = tr.getFileName();
-        int save_line = tr.getLineNumber();
-        int save_column = tr.getColumnNumber();
         Syntax saveSyntax = tr.currentSyntax;
         try {
-            tr.setLine(st);
             tr.currentSyntax = this;
             Object x = expand(st, tr);
             tr.scanForm(x, defs);
         } finally {
-            tr.setLine(save_filename, save_line, save_column);
             tr.currentSyntax = saveSyntax;
         }
     }

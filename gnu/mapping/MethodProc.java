@@ -5,12 +5,23 @@ package gnu.mapping;
 import gnu.bytecode.Type;
 import gnu.bytecode.ArrayType;
 import gnu.expr.PrimProcedure;
+/* #ifdef use:java.lang.invoke */
+import java.lang.invoke.*;
+/* #else */
+// import gnu.mapping.CallContext.MethodHandle; 
+/* #endif */
 
 /** Similar to a CLOS method.
  * Can check if arguments "match" before committing to calling method. */
 
 public abstract class MethodProc extends ProcedureN
 {
+    public MethodProc() { // FIXME - remove
+        super(true, applyToConsumerDefaultMP);
+    }
+    public MethodProc(boolean resultGoesToConsumer, MethodHandle applyMethod) {
+        super(resultGoesToConsumer, applyMethod);
+    }
   /** The parameter types.
    * Usually either an Type[] or a String encoding. */
   protected Object argTypes;
@@ -35,21 +46,12 @@ public abstract class MethodProc extends ProcedureN
         for (int i = 0;  ; i++ )  {
             if (i >= argCount && (restType == null || i >= min))
                 break;
-            Type ptype = getParameterType(i);
-            boolean toStringTypeHack = ptype == Type.toStringType;
-            // Treat Type.toString as if it might need a narrowing cast, even
-            // though it always succeeds, so as to prefer methods that don't
-            // require the toString converstion.
-            if (toStringTypeHack)
-                ptype = Type.javalangStringType;
-            int code = ptype.compare(i < argCount ? argTypes[i] : restType);
-            if (code == -3) {
-                if (toStringTypeHack)
-                    result = 0;
-                else
-                    return -1;
+            Type argType = i < argCount ? argTypes[i] : restType;
+            int code =  getParameterType(i).isCompatibleWithValue(argType);
+            if (code < 0) {
+                return -1;
             }
-            else if (code < 0)
+            else if (code == 0)
                 result = 0;
         }
         return result;
@@ -93,6 +95,9 @@ public abstract class MethodProc extends ProcedureN
     return Type.objectType;
   }
 
+  /* Special code for matchState field to require exception on mismatch. */
+  public static final int THROW_ON_EXCEPTION = 0;
+
   /** Return code from match:  Unspecified failure. */
   public static final int NO_MATCH = -1;
 
@@ -112,24 +117,24 @@ public abstract class MethodProc extends ProcedureN
    * argument that does not match. */
   public static final int NO_MATCH_BAD_TYPE = 0xfff40000;
 
+  /** Return code from match: Unused keyword argument.
+   * I.e. a keyword in the call doesn't match a keyword parameter.
+   * In that case the lower half is the 1-origin index of the first
+   * keyword argument that does not match. */
+  public static final int NO_MATCH_UNUSED_KEYWORD = 0xfff50000;
+
+  public static final int NO_MATCH_GUARD_FALSE =  0xfff60000;
+
   /** Helper method to throw an exception if a <code>matchX</code>
    * method fails. */
   public static RuntimeException
-  matchFailAsException(int code, Procedure proc, Object[] args)
+  matchFailAsException(int code, Procedure proc, ArgList args)
   {
     int arg = (short) code;
     code &= 0xffff0000;
     if (code != NO_MATCH_BAD_TYPE)
-      return new WrongArguments(proc, args.length);
-    return new WrongType(proc, arg, arg > 0 ? args[arg-1] : null);
-  }
-
-  public Object applyN(Object[] args) throws Throwable
-  {
-    checkArgCount(this, args.length);
-    CallContext ctx = CallContext.getInstance();
-    checkN(args, ctx);
-    return ctx.runUntilValue();
+      return new WrongArguments(proc, args.numArguments());
+    return new WrongType(proc, arg, arg > 0 ? args.getArgAsObject(arg-1) : null);
   }
 
   /** Return the more specific of the arguments.
@@ -197,4 +202,24 @@ public abstract class MethodProc extends ProcedureN
         }
         return true;
     }
+
+    public static Object applyToConsumerDefaultMP(Procedure proc, CallContext ctx) throws Throwable {
+        throw new Error("applyToConsumerDefaultMP for "+proc+"::"+proc.getClass().getName());
+        /*
+        Object[] args = ctx.getArgs();
+        System.err.println("applyToConsumerDefaultMP for "+proc+"::"+proc.getClass().getName());
+        int code = proc.matchN(args, ctx);
+        if (code != 0) {
+             if (ctx.matchState == CallContext.MATCH_THROW_ON_EXCEPTION)
+                 throw MethodProc.matchFailAsException(code, proc, args);
+             else
+                 return ctx;
+        }
+        //proc.apply(ctx);
+        Object ignored = proc.applyToConsumerMethod.invokeExact(proc, ctx);
+        return null;
+        */
+    }
+    public static final MethodHandle applyToConsumerDefaultMP
+        = lookupApplyHandle(MethodProc.class, "applyToConsumerDefaultMP");
 }

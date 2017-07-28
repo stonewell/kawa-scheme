@@ -47,6 +47,9 @@
   (provide 'srfi-64)
   (provide 'testing)
   (require 'srfi-35))
+ (gauche
+  (define-module srfi-64)
+  (select-module srfi-64))
  (else
   ))
 
@@ -62,6 +65,8 @@
     (syntax-rules ()
       ((%test-export test-begin . other-names)
        (module-export %test-begin test-begin . other-names)))))
+ (gauche
+  (define-syntax %test-export export))
  (else
   (define-syntax %test-export
     (syntax-rules ()
@@ -109,16 +114,16 @@
  (srfi-9
   (define-syntax %test-record-define
     (syntax-rules ()
-      ((%test-record-define alloc runner? (name index setter getter) ...)
-       (define-record-type test-runner
+      ((%test-record-define tname alloc runner? (name index getter setter) ...)
+       (define-record-type tname
 	 (alloc)
 	 runner?
-	 (name setter getter) ...)))))
+	 (name getter setter) ...)))))
  (else
   (define %test-runner-cookie (list "test-runner"))
   (define-syntax %test-record-define
     (syntax-rules ()
-      ((%test-record-define alloc runner? (name index getter setter) ...)
+      ((%test-record-define tname alloc runner? (name index getter setter) ...)
        (begin
 	 (define (runner? obj)
 	   (and (vector? obj)
@@ -135,7 +140,7 @@
 	   (define (setter runner value)
 	     (vector-set! runner index value)) ...)))))))
 
-(%test-record-define
+(%test-record-define test-runner
  %test-runner-alloc test-runner?
  ;; Cumulate count of all tests that have passed and were expected to.
  (pass-count 1 test-runner-pass-count test-runner-pass-count!)
@@ -242,13 +247,21 @@
        (set! %test-runner-factory runner))))))
 
 ;; A safer wrapper to test-runner-current.
-(define (test-runner-get)
-  (let ((r (test-runner-current)))
-    (if (not r)
-	(cond-expand
-	 (srfi-23 (error "test-runner not initialized - test-begin missing?"))
-	 (else #t)))
-    r))
+(cond-expand
+ (kawa
+  (define (test-runner-get) ::test-runner
+    (let ((r (test-runner-current)))
+      (if (not r)
+          (error "test-runner not initialized - test-begin missing?"))
+      r)))
+ (else
+  (define (test-runner-get)
+    (let ((r (test-runner-current)))
+      (if (not r)
+          (cond-expand
+           (srfi-23 (error "test-runner not initialized - test-begin missing?"))
+           (else #t)))
+      r))))
 
 (define (%test-specifier-matches spec runner)
   (spec runner))
@@ -528,6 +541,12 @@
 	(set-cdr! p value)
 	(test-result-alist! runner (cons (cons pname value) alist)))))
 
+(define (test-result-actual-value! runner value)
+  (test-result-set! runner 'actual-value value))
+
+(define (test-result-expected-value! runner value)
+  (test-result-set! runner 'expected-value value))
+
 (define (test-result-clear runner)
   (test-result-alist! runner '()))
 
@@ -657,9 +676,9 @@
 		 (let ()
 		   (if (%test-on-test-begin r)
 		       (let ((exp expected))
-			 (test-result-set! r 'expected-value exp)
+			 (test-result-expected-value! r exp)
 			 (let ((res (%test-evaluate-with-catch expr)))
-			   (test-result-set! r 'actual-value res)
+			   (test-result-actual-value! r res)
 			   (%test-on-test-end r (comp exp res)))))
 		   (%test-report-result)))))
 
@@ -681,7 +700,7 @@
        (if (%test-on-test-begin r)
 	   (let ()
 	     (let ((res (%test-evaluate-with-catch expr)))
-	       (test-result-set! r 'actual-value res)
+	       (test-result-actual-value! r res)
 	       (%test-on-test-end r res))))
        (%test-report-result)))))
 
@@ -804,7 +823,7 @@
                 (%test-on-test-end r
                                    (catch #t
                                      (lambda ()
-                                       (test-result-set! r 'actual-value expr)
+                                       (test-result-actual-value! r expr)
                                        #f)
                                      (lambda (key . args)
                                        ;; TODO: decide how to specify expected
@@ -835,7 +854,7 @@
 	      (%test-on-test-end r
 				 (try-catch
 				  (let ()
-				    (test-result-set! r 'actual-value expr)
+				    (test-result-actual-value! r expr)
 				    #f)
 				  (ex <java.lang.Throwable>
 				      (test-result-set! r 'actual-error ex)
@@ -848,12 +867,11 @@
 	     (%test-on-test-end r
 				(try-catch
 				 (let ()
-				   (test-result-set! r 'actual-value expr)
+				   (test-result-actual-value! r expr)
 				   #f)
 				 (ex <java.lang.Throwable>
 				     (test-result-set! r 'actual-error ex)
-				     (cond ((and (instance? et <gnu.bytecode.ClassType>)
-						 (gnu.bytecode.ClassType:isSubclass et <java.lang.Throwable>))
+				     (cond ((instance? et java.lang.Class)
 					    (instance? ex et))
 					   (else #t)))))
 	     (%test-report-result)))))))
@@ -921,6 +939,15 @@
          (test-result-alist! r '())
          (%test-error r #t expr)))))))
 
+(define-syntax test-with-runner
+  (syntax-rules ()
+    ((test-with-runner runner form ...)
+     (let ((saved-runner (test-runner-current)))
+       (dynamic-wind
+           (lambda () (test-runner-current runner))
+           (lambda () form ...)
+           (lambda () (test-runner-current saved-runner)))))))
+
 (define (test-apply first . rest)
   (if (test-runner? first)
       (test-with-runner first (apply test-apply rest))
@@ -939,15 +966,6 @@
 	    (let ((r (test-runner-create)))
 	      (test-with-runner r (apply test-apply first rest))
 	      ((test-runner-on-final r) r))))))
-
-(define-syntax test-with-runner
-  (syntax-rules ()
-    ((test-with-runner runner form ...)
-     (let ((saved-runner (test-runner-current)))
-       (dynamic-wind
-           (lambda () (test-runner-current runner))
-           (lambda () form ...)
-           (lambda () (test-runner-current saved-runner)))))))
 
 ;;; Predicates
 
@@ -1030,6 +1048,7 @@
     (if (eof-object? (read-char port))
 	(cond-expand
 	 (guile (eval form (current-module)))
+         (gauche (eval form ((with-module gauche.internal vm-current-module))))
 	 (else (eval form)))
 	(cond-expand
 	 (srfi-23 (error "(not at eof)"))

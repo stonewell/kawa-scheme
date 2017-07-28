@@ -1,4 +1,5 @@
-(require <kawa.lib.prim_syntax>)
+(require <kawa.lib.prim_imports>)
+(require <kawa.lib.std_syntax>)
 (require <kawa.lib.compile_misc>)
 
 (define (char? x)

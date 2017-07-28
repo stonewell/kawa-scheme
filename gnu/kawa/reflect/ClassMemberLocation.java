@@ -201,7 +201,7 @@ public abstract class ClassMemberLocation<T> extends Location<T>
     boolean isFinal = (rModifiers & Access.FINAL) != 0;
     Object fdname = (isFinal && (fvalue instanceof Named && ! isAlias)
 		     ? ((Named) fvalue).getSymbol()
-		     : Mangling.demangleName(rfield.getName(), true));
+		     : Mangling.demangleField(rfield.getName()));
     try {
         SourceName sourceName = rfield.getAnnotation(SourceName.class);
         if (sourceName != null) {
@@ -241,7 +241,13 @@ public abstract class ClassMemberLocation<T> extends Location<T>
   public static void defineAll (Object instance, Language language, Environment env)
     throws IllegalAccessException
   {
-    Class clas = instance.getClass();
+    Class clas;
+    if (instance instanceof Class) {
+        clas = (Class) instance;
+        instance = null;
+    } else {
+        clas = instance.getClass();
+    }
     java.lang.reflect.Field[] fields = clas.getFields();
     for (int i = fields.length;  --i >= 0; )
       {

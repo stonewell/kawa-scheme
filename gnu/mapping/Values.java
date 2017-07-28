@@ -107,9 +107,11 @@ public abstract class Values<E>
         return proc.applyN(getValues());
     }
 
+    /*
     public void check_with(Procedure proc, CallContext ctx) {
         proc.checkN(getValues(), ctx);
     }
+    */
 
     public void print(Consumer out) {
         if (this == empty) {
@@ -209,6 +211,7 @@ public abstract class Values<E>
     }
 
     public static void writeValues(Object value, Consumer out) {
+        //System.err.println("writeValues -> "+(value==null?"null":(value+"::"+value.getClass().getName()))+" to "+out.getClass().getName());
         if (value instanceof Values) {
             ((Values) value).consume(out);
             /*
@@ -373,10 +376,12 @@ public abstract class Values<E>
             return proc.apply2(value1, value2);
         }
 
+        /*
         @Override
         public void check_with(Procedure proc, CallContext ctx) {
             proc.check2(value1, value2, ctx);
         }
+        */
 
         @Override
         public int size() {

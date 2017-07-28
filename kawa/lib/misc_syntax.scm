@@ -1,4 +1,6 @@
-(require <kawa.lib.prim_syntax>)
+(require <kawa.lib.prim_imports>)
+(require <kawa.lib.std_syntax>)
+(require <kawa.lib.misc>)
 
 (define-syntax (provide form)
   (syntax-case form ()
@@ -7,9 +9,8 @@
          #,(datum->syntax-object
            form
            (string->symbol
-            (string-append "%provide%"
-                           (symbol->string
-                            (syntax-object->datum (syntax feature))))))
+            (format "%provide%~a"
+                    (syntax-object->datum (syntax feature)))))
          ;; The value doesn't matter.
          ::int 123))
     ((_ . rest)
@@ -26,6 +27,12 @@
      (begin
        (cond-expand (srfi-64 #!void) (else (require 'srfi-64)))
        (%test-begin suite-name count)))))
+
+(define-syntax module-class
+  (lambda (form)
+    (syntax-case form ()
+      ((_)
+        (gnu.kawa.functions.GetModuleClass:getModuleClassExp)))))
 
 (define-syntax module-uri
   (lambda (form)

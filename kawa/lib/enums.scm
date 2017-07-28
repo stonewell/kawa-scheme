@@ -1,8 +1,12 @@
 ;; A macro to define enums.
 ;; Jamison Hope
 
-(module-static #t)
 (module-export define-enum)
+(import (scheme base)
+        (only kawa.lib.prim_imports
+              report-syntax-error quasisyntax syntax syntax-case)
+        (only kawa.lib.std_syntax
+              datum->syntax datum->syntax-object identifier?))
 
 (define (make-field-desc (t-name :: symbol)
                          (e-name :: symbol)

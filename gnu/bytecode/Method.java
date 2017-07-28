@@ -27,9 +27,9 @@ public class Method implements AttrContainer, Member {
     ClassType classfile;
     CodeAttr code;
     /* #ifdef JAVA8 */
-    // java.lang.reflect.Executable rmethod;
+    java.lang.reflect.Executable rmethod;
     /* #else */
-    java.lang.reflect.AccessibleObject rmethod;
+    // java.lang.reflect.AccessibleObject rmethod;
     /* #endif */
 
     Attribute attributes;

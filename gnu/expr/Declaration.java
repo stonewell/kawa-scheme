@@ -6,6 +6,8 @@ import gnu.bytecode.*;
 import gnu.kawa.functions.*;
 import gnu.kawa.io.OutPort;
 import gnu.mapping.*;
+import gnu.kawa.reflect.MappedArrayType;
+import gnu.text.SourceLocator;
 import gnu.text.SourceLocator;
 import gnu.math.*;
 import java.util.ArrayList;
@@ -41,8 +43,7 @@ import java.lang.annotation.ElementType;
  * procedure prologue, so the parameters henceforth act like local variables.
  */
 
-public class Declaration 
-  implements SourceLocator
+public class Declaration extends SourceLocator.Simple
 {
   static int counter;
   /** Unique id number, to ease print-outs and debugging.
@@ -67,8 +68,8 @@ public class Declaration
    * It is null if the type is un-specified and not yet inferred.
    * Will get set implicitly by getType, to avoid inconsistencies.
    */
-  protected Type type;
-  protected Expression typeExp;
+    public/*protected*/ Type type;
+    public/*protected*/ Expression typeExp;
   public final Expression getTypeExp()
   {
     if (typeExp == null)
@@ -254,7 +255,7 @@ public class Declaration
    * If IS_FLUID, base points to IS_UNKNOWN Symbol. */
   public Declaration base;
 
-    public Field field;
+    private Field field;
     public Method getterMethod;
     public Method setterMethod;
 
@@ -268,6 +269,32 @@ public class Declaration
     else
       getContext().currentLambda().loadHeapFrame(comp);
   }
+
+    public Type loadFieldLocation(Declaration owner, Compilation comp) {
+        Field fld = getField();
+        if (fld == null)
+          throw new Error("internal error: cannot take location of "+this);
+        Method meth;
+        ClassType ltype;
+        boolean immediate = comp.immediate;
+        if (! fld.getStaticFlag())
+            loadOwningObject(owner, comp);
+        if (fld.getStaticFlag()) {
+            ltype = Compilation.typeStaticFieldLocation;
+            meth = ltype.getDeclaredMethod("make", immediate ? 1 : 2);
+        } else {
+            ltype = Compilation.typeFieldLocation;
+            meth = ltype.getDeclaredMethod("make", immediate ? 2 : 3);
+        }
+        if (immediate)
+            comp.compileConstant(this);
+        else {
+            comp.compileConstant(fld.getDeclaringClass().getName());
+            comp.compileConstant(fld.getName());
+        }
+        comp.getCode().emitInvokeStatic(meth);
+        return ltype;
+    }
 
   public void load (AccessExp access, int flags,
                     Compilation comp, Target target)
@@ -306,32 +333,7 @@ public class Declaration
     Type rtype = dontDeref ? Compilation.typeLocation : getType();
     if (! isIndirectBinding() && dontDeref)
       {
-        if (field == null)
-          throw new Error("internal error: cannot take location of "+this);
-        Method meth;
-        ClassType ltype;
-        boolean immediate = comp.immediate;
-        if (field.getStaticFlag())
-          {
-            ltype = Compilation.typeStaticFieldLocation;
-            meth = ltype.getDeclaredMethod("make", immediate ? 1 : 2);
-          }
-        else
-          {
-            ltype = Compilation.typeFieldLocation;
-            meth = ltype.getDeclaredMethod("make", immediate ? 2 : 3);
-
-            loadOwningObject(owner, comp);
-          }
-        if (immediate)
-          comp.compileConstant(this);
-        else
-          {
-            comp.compileConstant(field.getDeclaringClass().getName());
-            comp.compileConstant(field.getName());
-          }
-        code.emitInvokeStatic(meth);
-        rtype = ltype;
+        rtype = loadFieldLocation(owner, comp);
       }
     else if (getFlag(ALLOCATE_ON_STACK))
       {
@@ -357,17 +359,17 @@ public class Declaration
           {
             comp.loadClassRef(((LambdaExp) value).getCompiledClassType(comp));
           }
-        else if (field != null)
+        else if (getField() != null)
           {
-            comp.usedClass(field.getDeclaringClass());
-            comp.usedClass(field.getType());
+            comp.usedClass(getField().getDeclaringClass());
+            comp.usedClass(getField().getType());
             if (! field.getStaticFlag())
               {
                 loadOwningObject(owner, comp);
-                code.emitGetField(field);
+                code.emitGetField(getField());
               }
             else
-              code.emitGetStatic(field);
+              code.emitGetStatic(getField());
             code.fixUnsigned(getType());
           }
         else if (isClassField())
@@ -486,10 +488,10 @@ public class Declaration
           {
             loadOwningObject(null, comp);
             code.emitSwap();
-	    code.emitPutField(field);
+	    code.emitPutField(getField());
           }
 	else
-	  code.emitPutStatic(field);
+	  code.emitPutStatic(getField());
       }
   }
 
@@ -567,7 +569,7 @@ public class Declaration
   {
     return base == null
         && ((isClassField() && ! isStatic())
-            || (field != null && ! field.getStaticFlag()));
+            || (getField() != null && ! field.getStaticFlag()));
   }
 
   /** True if this is a field or method in a class definition. */
@@ -628,7 +630,19 @@ public class Declaration
     public static final long SKIP_FOR_METHOD_PARAMETER = 0x20000000000l;
     public static final long IS_REST_PARAMETER = 0x40000000000l;
     public static final long IS_PARAMETER = 0x80000000000l;
-    public static final long DONT_COPY = 0x10000000000l;
+    /** Is this a supplied-parameter variable?
+     * If IS_SUPPLIED_PARAMETER is true and IS_PARAMETER is false
+     * then this is a boolean variable which reports if the previous parameter
+     * was provided by the argument list, rather than defaulted.
+     * If IS_SUPPLIED_PARAMETER is true and IS_PARAMETER is true then
+     * this is an optional or keyword parameter that has corresponding
+     * supplied-parameter later in the parameter list.
+     */
+    public static final long IS_SUPPLIED_PARAMETER = 0x100000000000l;
+    /** Applies to a 'rest' parameter if it can match keywords. */
+    public static final long KEYWORDS_OK = 0x200000000000l;
+    public static final long DONT_COPY = 0x400000000000l;
+    public static final long SCAN_OWNER = 0x800000000000l;
 
     protected long flags = IS_SIMPLE;
 
@@ -752,6 +766,13 @@ public class Declaration
         return context instanceof ModuleExp && context != comp.mainLambda;
     }
 
+    /** Does this encapsulate a boolean guard expression?
+     * In that case this is an unnamed pseudo-parameter, that matches no
+     * actual arguments but where {@code getInitValue()} is the expression. */
+    public boolean isGuard() {
+        return typeExp == QuoteExp.isTrueTypeExp;
+    }
+
   /* Note:  You probably want to use !ignorable(). */
   public final boolean getCanRead() { return (flags & CAN_READ) != 0; }
   public final void setCanRead(boolean read)
@@ -819,13 +840,13 @@ public class Declaration
     if (value == null || ! (value instanceof LambdaExp))
       return false;
     LambdaExp lexp = (LambdaExp) value;
-    return ! lexp.isHandlingTailCalls() || lexp.getInlineOnly();
+    return lexp.getInlineOnly();
   }
 
   public boolean isStatic()
   {
-    if (field != null)
-      return field.getStaticFlag();
+    if (getField() != null)
+      return getField().getStaticFlag();
     if (getFlag(STATIC_SPECIFIED)
         || isCompiletimeConstant())
       return true;
@@ -1006,7 +1027,7 @@ public class Declaration
       {
         String vname = null;
         if (symbol != null)
-          vname = Mangling.mangleNameIfNeeded(getName());
+          vname = Mangling.mangleVariable(getName());
 	if (isAlias() && getValue() instanceof ReferenceExp)
 	  {
 	    Declaration base = followAliases(this);
@@ -1014,8 +1035,7 @@ public class Declaration
 	  }
 	else
 	  {
-	    Type type = isIndirectBinding() ? Compilation.typeLocation
-	      : getType().getImplementationType();
+            Type type = getImplementationType();
             Scope scope = autoPopScope ? code.pushAutoPoppableScope()
                 : context.getVarScope();
 	    var = scope.addVariable(code, type, vname);
@@ -1024,64 +1044,24 @@ public class Declaration
     return var;
   }
 
-  String filename;
-  int position;
-
-  public final void setLocation (SourceLocator location)
-  {
-    this.filename = location.getFileName();
-    setLine(location.getLineNumber(), location.getColumnNumber());
-  }
-
-  public final void setFile (String filename)
-  {
-    this.filename = filename;
-  }
-
-  public final void setLine (int lineno, int colno)
-  {
-    if (lineno < 0)
-      lineno = 0;
-    if (colno < 0)
-      colno = 0;
-    position = (lineno << 12) + colno;
-  }
-
-  public final void setLine (int lineno)
-  {
-    setLine (lineno, 0);
-  }
-
-  public final String getFileName ()
-  {
-    return filename;
-  }
-
-  public String getPublicId ()
-  {
-    return null;
-  }
-
-  public String getSystemId ()
-  {
-    return filename;
-  }
-
-  /** Get the line number of (the start of) this Expression.
-    * The "first" line is line 1; unknown is -1. */
-  public final int getLineNumber()
-  {
-    int line = position >> 12;
-    return line == 0 ? -1 : line;
-  }
-
-  public final int getColumnNumber()
-  {
-    int column = position & ((1 << 12) - 1);
-    return column == 0 ? -1 : column;
-  }
-
-  public boolean isStableSourceLocation() { return true; }
+    public Type getImplementationType() {
+        Type ftype = getType().getImplementationType();
+        if (isIndirectBinding() && ! ftype.isSubtype(Compilation.typeLocation)) {
+            if (ftype == null || ftype == Type.objectType)
+                ftype = Compilation.typeLocation;
+            else {
+                if (ftype instanceof PrimType)
+                    ftype = ((PrimType) ftype).boxedType();
+                ftype = new ParameterizedType(Compilation.typeLocation, ftype);
+            }
+        }
+        int scan = getScanNesting();
+        if (scan > 0 && ! (type instanceof MappedArrayType)) {
+            while (--scan >= 0)
+                ftype =  new ParameterizedType(Compilation.typeList, ftype);
+        }
+        return ftype;
+    }
 
   public void printInfo(OutPort out)
   {
@@ -1224,16 +1204,7 @@ public class Declaration
                  || (context instanceof ModuleExp && ((ModuleExp) context).staticInitRun()))))
         && (context instanceof ClassExp || context instanceof ModuleExp))
       fflags |= Access.FINAL;
-    Type ftype = getType().getImplementationType();
-    if (isIndirectBinding() && ! ftype.isSubtype(Compilation.typeLocation)) {
-        if (ftype == null || ftype == Type.objectType)
-            ftype = Compilation.typeLocation;
-        else {
-            if (ftype instanceof PrimType)
-                ftype = ((PrimType) ftype).boxedType();
-            ftype = new ParameterizedType(Compilation.typeLocation, ftype);
-        }
-    }
+    Type ftype = getImplementationType();
     if (! ignorable())
       {
         String dname = getName();
@@ -1247,7 +1218,7 @@ public class Declaration
           }
         else
           {
-            fname = Mangling.mangleNameIfNeeded(fname);
+            fname = Mangling.mangleField(fname);
             if (getFlag(IS_UNKNOWN))
               {
                 fname = UNKNOWN_PREFIX + fname;
@@ -1263,13 +1234,13 @@ public class Declaration
         int counter = 0;
         while (frameType.getDeclaredField(fname) != null)
           fname = fname.substring(0, nlength) + '$' + (++ counter);
-        field = frameType.addField (fname, ftype, fflags);
+            setField(frameType.addField (fname, ftype, fflags));
         if (getAnnotation(kawa.SourceType.class) == null) {
             String encType = comp.getLanguage().encodeType(getType());
             if (encType != null && encType.length() > 0) {
                 AnnotationEntry ae = new AnnotationEntry(ClassType.make("kawa.SourceType"));
                 ae.addMember("value", encType, Type.javalangStringType);
-                RuntimeAnnotationsAttr.maybeAddAnnotation(field, ae);
+                RuntimeAnnotationsAttr.maybeAddAnnotation(getField(), ae);
             }
         }
         if (haveName)
@@ -1296,7 +1267,7 @@ public class Declaration
               }
             // FIXME should optimize if uri == module.getNamespaceUri()
             if (haveUri || havePrefix
-                || ! Mangling.demangleName(fname, true).equals(dname))
+                || ! Mangling.demangleField(fname).equals(dname))
               {
                 AnnotationEntry ae = new AnnotationEntry(ClassType.make("gnu.expr.SourceName"));
                 ae.addMember("name", dname, Type.javalangStringType);
@@ -1304,26 +1275,26 @@ public class Declaration
                   ae.addMember("uri", uri, Type.javalangStringType);
                 if (havePrefix)
                   ae.addMember("prefix", prefix, Type.javalangStringType);
-                RuntimeAnnotationsAttr.maybeAddAnnotation(field, ae);
+                RuntimeAnnotationsAttr.maybeAddAnnotation(getField(), ae);
               }
           }
         if (value instanceof QuoteExp)
           {
             Object val = ((QuoteExp) value).getValue();
-            if (field.getStaticFlag()
+            if (getField().getStaticFlag()
                 && val != null
                 && val.getClass().getName().equals(ftype.getName()))
               {
                 Literal literal = comp.litTable.findLiteral(val);
                 if (literal.field == null)
-                  literal.assign(field, comp.litTable);
+                  literal.assign(getField(), comp.litTable);
               }
             else if (ftype instanceof PrimType
                      || "java.lang.String".equals(ftype.getName()))
               {
                 if (val instanceof gnu.text.Char)
                   val = gnu.math.IntNum.make(((gnu.text.Char) val).intValue());
-                field.setConstantValue(val, frameType);
+                getField().setConstantValue(val, frameType);
                 return;
               }
           }
@@ -1410,7 +1381,7 @@ public class Declaration
                 ClassType procType
                   = (ClassType) ClassType.make(name.substring(0, colon));
                 name = name.substring(colon+1);
-                String fname = Mangling.mangleNameIfNeeded(name);
+                String fname = Mangling.mangleField(name);
                 procField = procType.getDeclaredField(fname);
               }
             catch (Exception ex)
@@ -1426,7 +1397,7 @@ public class Declaration
             if (procClass != null)
               {
                 ClassType procType = (ClassType) Type.make(procClass);
-                String fname = Mangling.mangleNameIfNeeded(name);
+                String fname = Mangling.mangleField(name);
                 procField = procType.getDeclaredField(fname);
               }
           }
@@ -1477,15 +1448,15 @@ public class Declaration
   {
     if (nvalues == 0)
       {
-        if (field != null
-            && field.getDeclaringClass().isExisting()
-            && ((field.getModifiers() & Access.STATIC+Access.FINAL)
+        if (getField() != null
+            && getField().getDeclaringClass().isExisting()
+            && ((getField().getModifiers() & Access.STATIC+Access.FINAL)
                 == Access.STATIC+Access.FINAL)
             && ! isIndirectBinding())
           {
             try
               {
-                Expression value = new QuoteExp(field.getReflectField().get(null));
+                Expression value = new QuoteExp(getField().getReflectField().get(null));
                 noteValue(value);
                 return value;
               }
@@ -1631,6 +1602,9 @@ public class Declaration
         if (value instanceof LambdaExp)
             ((LambdaExp) value).nameDecl = nvalues == 0 ? this : null;
     }
+
+    public Field getField() { return field; }
+    public void setField(Field field) { this.field = field; }
 
   public static class ValueSource
   {

@@ -29,6 +29,8 @@ public abstract class LispLanguage extends Language
     public static final SimpleSymbol dots3_sym = Symbol.valueOf("...");
   static public final String splice_str = "$splice$";
   static public final Symbol splice_sym = Namespace.EmptyNamespace.getSymbol(splice_str);
+  static public final String splice_colon_str = "$splice-colon$";
+  static public final Symbol splice_colon_sym = Namespace.EmptyNamespace.getSymbol(splice_colon_str);
   /** Used for Kawa infix ':' operator. */
   static public final Symbol lookup_sym = Namespace.EmptyNamespace.getSymbol("$lookup$");
   // FUTURE: Used for: [ e1 e2 ... ]
@@ -189,7 +191,7 @@ public abstract class LispLanguage extends Language
 
   protected void defSntxStFld(String name, String cname)
   {
-    defSntxStFld(name, cname, mangleNameIfNeeded(name));
+    defSntxStFld(name, cname, Mangling.mangleField(name));
   }
 
     /**
@@ -248,7 +250,8 @@ public abstract class LispLanguage extends Language
             types.put("dynamic", LangObjType.dynamicType);
             types.put("Object", Type.objectType);
             types.put("String", Type.toStringType);
-
+            types.put("arglist", LangObjType.argListType);
+            types.put("argvector", LangObjType.argVectorType);
             types.put("object", Type.objectType);
             types.put("number", LangObjType.numericType);
             types.put("quantity", ClassType.make("gnu.math.Quantity"));
@@ -263,7 +266,8 @@ public abstract class LispLanguage extends Language
             types.put("pair", ClassType.make("gnu.lists.Pair"));
             types.put("pair-with-position",
                       ClassType.make("gnu.lists.PairWithPosition"));
-            types.put("constant-string", ClassType.make("java.lang.String"));
+            // FIXME should be UNION(java.lang.String, gnu.lists.IString)
+            types.put("constant-string", ClassType.make("java.lang.CharSequence"));
             types.put("abstract-string", ClassType.make("gnu.lists.CharSeq"));
             types.put("vector", LangObjType.vectorType);
             types.put("string", LangObjType.stringType);
@@ -327,17 +331,24 @@ public abstract class LispLanguage extends Language
         return (type != null) ? type : getPackageStyleType(name);
     }
 
-    // FIXME: Would be better and little fuss to use a perfect hash
-    // function for this.
+    public Type getTypeFor (Object spec, boolean lenient) {
+        if (spec == String.class)
+            return LangObjType.jstringType;
+        else
+            return super.getTypeFor(spec, lenient);
+    }
+
     public Type getTypeFor(Class clas) {
         String name = clas.getName();
         if (clas.isPrimitive())
             return getNamedType(name);
+        if (clas.isArray())
+            return ArrayType.make(getTypeFor(clas.getComponentType()));
         /* #ifdef JAVA7 */
         ; // FIXME - FUTURE: Use a switch with string keys.
         /* #endif */
-        if ("java.lang.String".equals(name))
-            return Type.toStringType;
+        if ("java.lang.String".equals(name)) // ???
+            return LangObjType.jstringType;
         Type t = LangObjType.getInstanceFromClass(name);
         if (t != null)
             return t;

@@ -88,3 +88,27 @@
              (list 12 #((4 5) 7) #(9 8) '(#(p q) r) '(m n) '()))))
 (newline)
 ;; Output: to list2-int: (no-match:12 no-match:#((4 5) 7) [a:9 b:8] no-match:(#(p q) r) no-match:(m n) no-match:())
+
+(display (format "match#1: ~a"
+                 (map (lambda (o)
+                        (match o
+                               (x::integer (list 'integer x))
+                               (x::double (list 'double x))
+                               (_ (list 'other o))))
+                      '(3.4 12 sym))))
+(newline)
+;; Output: match#1: ((double 3.4) (integer 12) (other sym))
+
+(display (format "match#2: ~a"
+                 (map (lambda (o)
+                        (match o
+                               (x::integer #!if (> x 0) (list 'pos-integer x))
+                               (x::integer #!if (< x 0) (list 'neg-integer x))
+                               (0 (list 'zero-integer))
+                               ('(a b) (list 'list o))
+                               (x::double (list 'double x))
+                               (_ (list 'other o))))
+                      '(3.4 0.0 12 (a b) (a c) "str" -3 0))))
+(newline)
+;; Output: match#2: ((double 3.4) (double 0.0) (pos-integer 12) (list (a b)) (other (a c)) (other str) (neg-integer -3) (zero-integer))
+

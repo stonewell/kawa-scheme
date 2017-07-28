@@ -11,6 +11,7 @@ import java.util.zip.*;
 import java.util.Stack;
 import gnu.kawa.functions.Convert;
 import gnu.kawa.io.*;
+import gnu.kawa.lispexpr.LangObjType;
 import gnu.kawa.lispexpr.LangPrimType;
 import gnu.kawa.reflect.LazyType;
 import gnu.lists.Pair;
@@ -20,6 +21,7 @@ import gnu.text.Options;
 import gnu.text.SourceLocator;
 import gnu.text.SourceMessages;
 import kawa.lang.Translator.FormStack;
+import kawa.standard.require.DeclSetMapper;
 
 /** State for a single expression or module.
  * For each top-level thing (expression or file) we compile or evaluate
@@ -46,7 +48,7 @@ public class Compilation implements SourceLocator
   public ModuleExp mainLambda;
   public Variable thisDecl;
 
-  /** Contains "$instance" if the module is static; otherwise null. */
+  /** Contains "$class" if the module is static; otherwise null. */
   Variable moduleInstanceVar;
 
   /** A code, one of the following constants, indicating how far along
@@ -85,34 +87,27 @@ public class Compilation implements SourceLocator
     public void setPedantic(boolean value) { pedantic = value; }
 
   /** Used to access the "main" instance.
-   * This is used for two different purposes, which may be confusing:
-   * <ul>
-   * <li>
-   * If we're compiling a static module, then {@code moduleInstanceMainField}
+   * If we're compiling a static module (FIXME: and not init-run), then {@code moduleInstanceMainField}
    * is a field in {@code mainClass} named {@code "$instance"} that
-   * points to the single instance of the module.</li>
-   * <li>
-   * If {@code moduleClass!=mainClass} (typically because we've specified
-   * {@code module-extends}) <em>and</em> the module is non-static then
-   * {@code moduleInstanceMainField} is a field in {@code moduleClass}
-   * named {@code "$main"} that points back to {@code mainClass}.</li></ul>
+   * points to the single instance of the module.
    */
   Field moduleInstanceMainField;
 
   /** Stack of quads of (ModuleInfo, ScopeExp, position, formSize). */
   public java.util.Stack<Object> pendingImports;
 
-  public void pushPendingImport(ModuleInfo info, ScopeExp defs, FormStack forms)
-  {
-    if (pendingImports == null)
-      pendingImports = new java.util.Stack<Object>();
-    pendingImports.push(info);
-    pendingImports.push(defs);
-    Expression posExp = new ReferenceExp((Object) null);
-    posExp.setLine(this);
-    pendingImports.push(posExp);
-    pendingImports.push(forms.lastPair());
-  }
+    public void pushPendingImport(ModuleInfo info, ScopeExp defs,
+                                  FormStack forms, DeclSetMapper mapper) {
+        if (pendingImports == null)
+            pendingImports = new java.util.Stack<Object>();
+        pendingImports.push(info);
+        pendingImports.push(defs);
+        Expression posExp = new ReferenceExp((Object) null);
+        posExp.setLine(this);
+        pendingImports.push(posExp);
+        pendingImports.push(forms.lastPair());
+        pendingImports.push(mapper);
+    }
 
     public Map<String,ModuleInfo> subModuleMap;
 
@@ -220,10 +215,10 @@ public class Compilation implements SourceLocator
     // ClassType.JAVA_9_VERSION
     /* #else */
     /* #ifdef JAVA8 */
-    // ClassType.JDK_1_8_VERSION
+    ClassType.JDK_1_8_VERSION
     /* #else */
     /* #ifdef JAVA7 */
-    ClassType.JDK_1_7_VERSION
+    // ClassType.JDK_1_7_VERSION
     /* #else */
     /* #ifdef JAVA6 */
     // ClassType.JDK_1_6_VERSION
@@ -349,6 +344,9 @@ public class Compilation implements SourceLocator
     = scmBooleanType.getDeclaredField("TRUE"); 
   static public final Field falseConstant
     = scmBooleanType.getDeclaredField("FALSE");
+    public static final Field voidConsumerInstanceField
+        = ClassType.make("gnu.lists.VoidConsumer")
+        .getDeclaredField("instance");
 
   static Method makeListMethod;
   
@@ -441,10 +439,8 @@ public class Compilation implements SourceLocator
     = typeCallContext.getDeclaredField("pc");
   public static ClassType typeMethodProc
   = ClassType.make("gnu.mapping.MethodProc");
-  public static ClassType typeModuleMethod
-  = ClassType.make("gnu.expr.ModuleMethod");
-  public static ClassType typeModuleMethodWithContext
-  = ClassType.make("gnu.expr.ModuleMethodWithContext");
+  public static ClassType typeCompiledProc
+  = ClassType.make("gnu.expr.CompiledProc");
   //  public static Field numArgsCallFrameField = typeCallFrame.getDeclaredField("numArgs");
   public static Field argsCallContextField
     = typeCallContext.getDeclaredField("values");
@@ -458,6 +454,8 @@ public class Compilation implements SourceLocator
   public static ClassType[] typeProcedureArray = {
     typeProcedure0, typeProcedure1, typeProcedure2, typeProcedure3,
     typeProcedure4 };
+
+    public static final Method getNextArgMethod = typeCallContext.getDeclaredMethod("getNextArg", 0);
 
   /** Rembembers stuff to do in <clinit> of main class. */
   Initializer clinitChain;
@@ -537,13 +535,14 @@ public class Compilation implements SourceLocator
     return inlineOk;
   }
 
-  public boolean inlineOk (Procedure proc)
-  {
-    if (immediate && proc instanceof ModuleMethod
-        && ((ModuleMethod) proc).module.getClass().getClassLoader() instanceof ArrayClassLoader)
-      return false;
-    return inlineOk;
-  }
+    public boolean inlineOk(Procedure proc) {
+        if (immediate && proc instanceof CompiledProc) {
+            Class moduleClass = ((CompiledProc) proc).getModuleClass();
+            if (moduleClass.getClassLoader() instanceof ArrayClassLoader)
+                return false;
+        }
+        return inlineOk;
+    }
 
     /** Should this inlineable method by inlined?
      * Usually it's best to not inline a module-level function, since that
@@ -1021,7 +1020,8 @@ public class Compilation implements SourceLocator
   {
     return ! generatingServlet() && ! generatingApplet()
       && ! getModule().staticInitRun()
-      && ! getModule().getFlag(ModuleExp.USE_DEFINED_CLASS);
+      && ! getModule()
+        .getFlag(ModuleExp.USE_DEFINED_CLASS|ModuleExp.SUPERTYPE_SPECIFIED);
   }
 
   public void addMainClass (ModuleExp module)
@@ -1046,7 +1046,9 @@ public class Compilation implements SourceLocator
     if (makeRunnable())
       type.addInterface(typeRunnable);
     if (! module.staticInitRun())
-        type.addInterface(typeRunnableModule);
+      type.addInterface(typeRunnableModule);
+    else
+      module.setInlineOnly(true);
     type.setSuper(sup);
 
     module.compiledType = type;
@@ -1200,586 +1202,456 @@ public class Compilation implements SourceLocator
       }
   }
 
-  public void generateMatchMethods(LambdaExp lexp)
-  {
-    int numApplyMethods
-      = lexp.applyMethods == null ? 0 : lexp.applyMethods.size();
-    if (numApplyMethods == 0)
-      return;
-    Method save_method = method;
-    ClassType save_class = curClass;
-    ClassType procType = typeModuleMethod;
-    curClass = lexp.getHeapFrameType();
-    if (! (curClass.getSuperclass().isSubtype(typeModuleBody)))
-      curClass = moduleClass;
-    CodeAttr code = null;
-    for (int i = 0;  i <= 5; i++)
-      {
-	boolean needThisMatch = false;
-	SwitchState aswitch = null;
-	String mname = null;
-	Type[] matchArgs = null;
-	for (int j = numApplyMethods;  --j >= 0; )
-	  {
-	    LambdaExp source = lexp.applyMethods.get(j);
-	    // Select the subset of source.primMethods[*] that are suitable
-	    // for the current apply method.
-	    Method[] primMethods = source.primMethods;
-	    int numMethods = primMethods.length;
-	    boolean varArgs = source.max_args < 0
-	      || source.max_args >= source.min_args + numMethods;
-	    int methodIndex;
-	    if (i < 5) // Handling match0 .. match4
-	      {
-		methodIndex = i - source.min_args;
-		if (methodIndex < 0 || methodIndex >= numMethods
-		    || (methodIndex == numMethods - 1 && varArgs))
-		  continue;
-		numMethods = 1;
-		varArgs = false;
-	      }
-	    else // Handling matchN
-	      {
-		methodIndex = 5 - source.min_args;
-		if (methodIndex > 0 && numMethods <= methodIndex && ! varArgs)
-		  continue;
-		methodIndex = numMethods-1;
-	      }
-	    if (! needThisMatch)
-	      {
-		// First LambdaExp we seen suitable for this i.
-		if (i < 5)
-		  {
-		    mname = "match"+i;
-		    matchArgs = new Type[i + 2];
-		    for (int k = i;  k >= 0;  k--)
-		      matchArgs[k+1] = typeObject;
-		    matchArgs[i+1] = typeCallContext;
-		  }
-		else
-		  {
-		    mname = "matchN";
-		    matchArgs = new Type[3];
-		    matchArgs[1] = objArrayType;
-		    matchArgs[2] = typeCallContext;
-		  }
-		matchArgs[0] = procType;
-		method = curClass.addMethod (mname, matchArgs, Type.intType,
-					     Access.PUBLIC);
-		code = method.startCode();
+    public Method generateCheckMethod(LambdaExp lexp, LambdaExp parent) {
+        Method saveMethod = method;
+	LambdaExp saveLambda = curLambda;
+	ClassType saveClass = curClass;
+	curLambda = lexp;
+        Method primMethod = lexp.getMainMethod();
+        if (! lexp.inlinedInCheckMethod())
+            curClass = primMethod.getDeclaringClass();
+	Variable callContextSave = callContextVar;
+        String primName = lexp.getMethodName(this);
+        String checkName = primName  + "$check";
+        Type[] checkArgs = { typeProcedure, typeCallContext };
 
-		code.emitLoad(code.getArg(1)); // method
-		code.emitGetField(procType.getField("selector"));
-		aswitch = code.startSwitch();
+        int mcount = 0;
+        while (curClass.getDeclaredMethod(checkName, checkArgs) != null) {
+            checkName = primName + "$" + (++mcount) + "$check";
+        }
+        Method checkMethod =
+            curClass.addMethod(checkName, Access.PUBLIC|Access.STATIC,
+                               checkArgs, (Type) Type.objectType);
+        this.method = checkMethod;
+	CodeAttr code = method.startCode();
+	SourceLocator saveLoc1 = messages.swapSourceLocator(lexp);
+	int line = lexp.getLineNumber();
+	if (line > 0)
+	    code.putLineNumber(lexp.getFileName(), line);
+	Variable ctxVar = code.getArg(method.getStaticFlag()?1:2);
+        callContextVar = ctxVar;
+	//int kin = 0;
+	//int scopesToPop = 0;
+        Scope scope = code.pushScope();
+        lexp.scope = scope;
+        if (lexp.inlinedInCheckMethod()) {
+            Variable clEnv = lexp.declareClosureEnv();
+            if (clEnv != null)
+                clEnv.allocateLocal(code);
+            lexp.allocFrame(this);
+            lexp.allocChildMethods(this);
+            lexp.enterFunction(this);
+        }
+        Declaration[] keyDecls = generateCheckKeywords(lexp);
+        ArrayList<Variable> argVariables = new ArrayList<Variable>();
+	Declaration param = lexp.firstDecl();
+        if (param != null && param.isThisParameter())
+            param = param.nextDecl();
+        generateCheckArg(param, lexp, 0, code, keyDecls, argVariables, null);
+	messages.swapSourceLocator(saveLoc1);
+        this.method = saveMethod;
+	curLambda = saveLambda;
+	curClass = saveClass;
+	callContextVar = callContextSave;
+        return checkMethod;
+    }
 
-		needThisMatch = true;
-	      }
+   private static final Comparator<Declaration> keyComparator = 
+        new Comparator<Declaration> () {
+            public int compare(Declaration d1, Declaration d2) {
+                String s1 = (String) d1.getSymbol();
+                String s2 = (String) d2.getSymbol();
+                return s1.compareTo(s2);
+            }
+        };
 
-	    aswitch.addCase(source.getSelectorValue(this), code);
+    /** An initial pass through the keyword parameters.
+     * This is in keyword lexical order.
+     * For each keyword formal parameter, we check if there is
+     * a corresponding actual keyword parameter.  If so we get its value.
+     * Default value expressions are only evaluated if "simple" (literals);
+     * otherwise they are evaluated in the later declaration-order pass.
+     */
+    private Declaration[] generateCheckKeywords(LambdaExp lexp) {
+        int nkeys = lexp.keywords == null ? 0 : lexp.keywords.length;
+        if (nkeys == 0)
+            return null;
+        CodeAttr code = getCode();
+	Variable ctxVar = callContextVar;
+        Scope scope = lexp.scope;
+        // A helper array of fake Declarations.
+        // We use Declaration as a convenient type for sorting.
+        Declaration[] keyDecls = new Declaration[nkeys];
+        Declaration[] tmpDecls = new Declaration[nkeys];
+        int pin = 0;
+        int kin = 0;
+        boolean allowOtherKeys = lexp.getFlag(LambdaExp.ALLOW_OTHER_KEYWORDS);
+        for (Declaration decl = lexp.firstDecl();
+	     decl != null; decl = decl.nextDecl()) {
+            if (kin >= nkeys)
+                break;
+            if (! decl.getFlag(Declaration.IS_PARAMETER)
+                || decl.getFlag(Declaration.IS_REST_PARAMETER))
+                continue;
+            if (pin >= lexp.min_args+lexp.opt_args) {
+                Object key = lexp.keywords[kin];
+                if (key instanceof Keyword)
+                    key = ((Keyword) key).getName();
+                Declaration keyDecl = new Declaration(key);
+                keyDecl.base = decl;
+                keyDecl.evalIndex = kin;
+                keyDecls[kin++] = keyDecl;
+            }
+            pin++;
+        }
+        java.util.Arrays.sort(keyDecls, keyComparator);
+        for (kin = 0;  kin < nkeys;  kin++) {
+            Declaration keyDecl = keyDecls[kin];
+            Declaration param = keyDecl.base;
+            Expression dfault = param.getInitValue();
+            boolean simple = dfault instanceof QuoteExp
+                && ! param.getFlag(Declaration.IS_SUPPLIED_PARAMETER);
+            Variable var;
+            keyDecl.setSimple(simple);
+            code.emitLoad(ctxVar);
+            code.emitPushString((String) keyDecl.getSymbol());
+            String mname = allowOtherKeys ? "nextKeywordAllowOthers" : "nextKeyword";
+            if (simple) {
+                var = scope.addVariable(code, Type.objectType, null);
+                dfault.compile(this, Target.pushObject);
+                code.emitInvoke(typeCallContext.getDeclaredMethod(mname, 2));
+            } else {
+                var = scope.addVariable(code, Type.intType, null);
+                code.emitInvoke(typeCallContext.getDeclaredMethod(mname, 1));
+            }
+            keyDecl.var = var;
+            code.emitStore(var);
+            tmpDecls[keyDecl.evalIndex] = keyDecl;
+        }
+        System.arraycopy(tmpDecls, 0, keyDecls, 0, nkeys);
+        return keyDecls;
+    }
 
-	    int line = source.getLineNumber();
-	    if (line > 0)
-	      code.putLineNumber(source.getFileName(), line);
+    /** Generate code to process one formal parameter.
+     * Calls recursively to handle the next parameter.
+     * If there are no more parameters, calls generateCheckCall to finish,
+     */
+    private void generateCheckArg(Declaration param, LambdaExp lexp, int kin, CodeAttr code, Declaration[] keyDecls, ArrayList<Variable> argVariables, Variable suppliedParameterVar) {
+	Variable ctxVar = callContextVar;
+	if (param == null) {
+            code.emitLoad(ctxVar);
+            code.emitInvoke(typeCallContext.getDeclaredMethod("checkDone", 0));
+            code.emitIfIntNotZero();
+            code.emitLoad(ctxVar);
+            code.emitReturn();
+            code.emitFi();
 
-	    Variable ctxVar = code.getArg(i == 5 ? 3 : i+2);
+            generateCheckCall(lexp, code, lexp.getMainMethod(), argVariables);
+	    return;
+        }
+	boolean recurseNeeded = true;
+	Type ptype = param.getType();
 
-	    if (i < 5)
-	      {
-		Declaration var = source.firstDecl();
-		for (int k = 1;  k <= i;  k++)
-		  {
-		    code.emitLoad(ctxVar);
-		    code.emitLoad(code.getArg(k+1));
-		    Type ptype = var.getType();
-		    if (ptype != Type.objectType)
-		      {
-                        StackTarget.forceLazyIfNeeded(this, Type.objectType, ptype);
-			if (ptype instanceof TypeValue)
-			  {
-			    Label trueLabel = new Label(code),
-			      falseLabel = new Label(code);
-			    ConditionalTarget ctarget =
-			      new ConditionalTarget(trueLabel, falseLabel,
-						    getLanguage());
-			    code.emitDup();
-			    ((TypeValue) ptype).emitIsInstance(null, this,
-							       ctarget);
-			    falseLabel.define(code);
-			    code.emitPushInt(MethodProc.NO_MATCH_BAD_TYPE|k);
-			    code.emitReturn();
-			    trueLabel.define(code);
-			  }
-			else if (ptype instanceof ClassType
-			    && ptype != Type.objectType
-			    && ptype != Type.toStringType)  // FIXME
-			  {
-			    code.emitDup();
-			    ptype.emitIsInstance(code);
-			    code.emitIfIntEqZero();
-			    code.emitPushInt(MethodProc.NO_MATCH_BAD_TYPE|k);
-			    code.emitReturn();
-			    code.emitFi();
-			  }
-		      }
-		    code.emitPutField(typeCallContext.getField("value"+k));
-		    var = var.nextDecl();
-		  }
-	      }
-	    else
-	      {
-		// FIXME - need to check
-		code.emitLoad(ctxVar);
-		code.emitLoad(code.getArg(2));
-		code.emitPutField(typeCallContext.getField("values"));
-	      }
-	    code.emitLoad(ctxVar);
-            boolean usingCallContext = usingCallContext();
+        // Actual primMethod is already generated.
+        // Now we're re-using the parameter declaration to set them.
+        // So they should always be plain variables.
+        // FIXME: If the parameter is computed by an init expression,
+        // we have a problem - which we should handle by lambda lifting?
+        if (! lexp.inlinedInCheckMethod())
+            param.setSimple(true);
+
+        Variable incoming = null;
+        boolean convertNeeded = ptype != Type.objectType;
+        Scope scope = code.pushAutoPoppableScope();
+        int knext = kin;
+        Type itype = param.getType().getImplementationType();
+
+        if (param.getFlag(Declaration.PATTERN_NESTED)) {
+            Expression init = param.getInitValue();
+            init.compile(this, init.getType());
+        } else if (param.getFlag(Declaration.IS_REST_PARAMETER)) {
+            int singleArgs = lexp.min_args; // FIXME
+            Type lastArgType = ptype.getRawType();
+            if (lastArgType instanceof ArrayType) {
+                varArgsToArray(lexp, singleArgs, null/*counter*/, ptype, ctxVar, param.getFlag(Declaration.KEYWORDS_OK));
+                convertNeeded = false;
+            } else if (ptype == LangObjType.argVectorType
+                       || ptype == LangObjType.argListType) {
+                code.emitLoad(ctxVar);
+                String mname = ptype == LangObjType.argListType
+                    ? "getRestArgsList" : "getRestArgsVector";
+                code.emitInvokeVirtual(typeCallContext.getDeclaredMethod(mname, 0));
+                convertNeeded = false;
+            }
+            else if ("gnu.lists.LList".equals
+                     (lastArgType.getName())) {
+                code.emitLoad(ctxVar);
+                //code.emitDup(); //
+                //code.emitPushInt(singleArgs);
+                //String mname = "peekRestArgsList";// if followed by #!key?
+                String mname = true /* FIXME*/ ? "getRestArgsList"
+                    : "getRestPlainList";
+                code.emitInvokeVirtual(typeCallContext.getDeclaredMethod(mname, 0));
+                convertNeeded = false; // FIXME - may need convert if list[T]
+            } else {
+                // FIXME
+                throw new Error("unsupported #!rest conversion in "+lexp+" param:"+param+" pt:"+ptype+" cl:"+curClass);
+            }
+        } else if (param.getFlag(Declaration.IS_SUPPLIED_PARAMETER)
+                   && ! param.getFlag(Declaration.IS_PARAMETER)) {
+            incoming = suppliedParameterVar;
+            convertNeeded = false;
+        } else if (kin >=lexp.min_args && kin < lexp.min_args+lexp.opt_args) {
+            // Optional parameter
+            code.emitLoad(ctxVar);
+            code.emitInvoke(typeCallContext.getDeclaredMethod("haveArg", 0));
+            if (param.getFlag(Declaration.IS_SUPPLIED_PARAMETER)) {
+                code.emitDup();
+                suppliedParameterVar =
+                    scope.addVariable(code, Type.booleanType, null);
+                code.emitStore(suppliedParameterVar);
+            }
+            if (lexp.primMethods == null || lexp.primMethods.length == 1) {
+                code.emitIfIntNotZero();
+                code.emitLoad(ctxVar);
+                code.emitInvoke(getNextArgMethod);
+                code.emitElse();
+                Expression defaultArg = param.getInitValue();
+                defaultArg.compile(this, Type.objectType);
+                code.emitFi();
+            } else {
+                code.emitIfIntEqZero();
+                code.emitLoad(ctxVar);
+                code.emitInvoke(typeCallContext.getDeclaredMethod("checkDone", 0));
+                code.emitIfIntNotZero();
+                code.emitLoad(ctxVar);
+                code.emitReturn();
+                code.emitFi();
+                generateCheckCall(lexp, code,
+                                  lexp.primMethods[kin-lexp.min_args], argVariables);
+                code.emitFi();
+                code.emitLoad(ctxVar);
+                code.emitInvoke(getNextArgMethod);
+            }
+            knext++;
+        } else if (kin >= lexp.min_args+lexp.opt_args) {
+            // keyword parameter
+            int kindex = kin - (lexp.min_args+lexp.opt_args);
+            Declaration keyDecl = keyDecls[kindex];
+            if (keyDecl.isSimple()) {
+                if (convertNeeded)
+                    code.emitLoad(keyDecl.var);
+                else
+                    incoming = keyDecl.var;
+            } else {
+                code.emitLoad(ctxVar);
+                code.emitLoad(keyDecl.var);
+                if (param.getFlag(Declaration.IS_SUPPLIED_PARAMETER)) {
+                    code.emitDup();
+                    suppliedParameterVar =
+                        scope.addVariable(code, Type.booleanType, null);
+                    // {suppliedParameterVar} = {keyDecl.var} >= 0,
+                    // where the latter is equal to ({keyDecl.var}>>31)+1.
+                    code.emitPushInt(31);
+                    code.emitShr();
+                    code.emitStore(suppliedParameterVar);
+                    code.emitInc(suppliedParameterVar, (short) 1);
+                }
+                code.emitIfIntGEqZero();
+                code.emitLoad(ctxVar);
+                code.emitLoad(keyDecl.var);
+                code.emitInvoke(typeCallContext.getDeclaredMethod("getArgAsObject", 1));;
+                code.emitElse();
+                Expression defaultArg = param.getInitValue();
+                defaultArg.compile(this, Type.objectType);
+                code.emitFi();
+            }
+            if (kindex+1 == keyDecls.length
+                && ! lexp.getFlag(LambdaExp.ALLOW_OTHER_KEYWORDS)) {
+                code.emitLoad(ctxVar);
+                code.emitInvoke(typeCallContext.getDeclaredMethod("checkKeywordsDone", 0));
+            }
+            knext++;
+        } else {
+            // Required parameter
+            knext++;
+            code.emitLoad(ctxVar);
+            code.emitInvoke(getNextArgMethod);
+        }
+        //param.allocateVariable(code, true);
+        //boolean saveSimple = param.isSimple();
+        //param.setSimple(true);
+        int line = param.getLineNumber();
+        if (line > 0)
+            code.putLineNumber(param.getFileName(), line);
+        if (incoming != null && ! convertNeeded)
+            param.var = incoming;
+        else {
+            param.var = scope.addVariable(code, itype, null/*vname*/);
+        }
+        if (param.parameterForMethod()
+            && (lexp.inlinedInCheckMethod()
+                || ! param.getFlag(Declaration.IS_SUPPLIED_PARAMETER)
+                || param.getFlag(Declaration.IS_PARAMETER))) {
+            argVariables.add(param.var);
+        }
+        if (! convertNeeded) {
+            if (incoming == null)
+                code.emitStore(param.var);
+        }
+        else if (ptype instanceof TypeValue ||
+                 ptype instanceof PrimType /*FIXME only if number */) {
+            // what if incoming!=null && convertNeeded
+            if (incoming != null)
+                throw new InternalError();
+            if (param.isGuard()) {
+                code.emitIfIntNotZero();
+            }
+            else {
+                StackTarget.forceLazyIfNeeded(this, Type.objectType, ptype);
+                incoming = code.addLocal(Type.pointer_type);
+                code.emitStore(incoming);
+                if (ptype instanceof TypeValue) {
+                    ((TypeValue) ptype).emitTestIf(incoming, param, this);
+                }
+                else {
+                    code.emitLoad(incoming);
+                    LangPrimType.emitTestIfNumber(incoming, param,
+                                                  ptype, this);
+                }
+            }
+            generateCheckArg(param.nextDecl(), lexp, knext, code, keyDecls, argVariables, suppliedParameterVar);
+            recurseNeeded = false;
+            code.emitElse();
+            if (line > 0)
+                code.putLineNumber(param.getFileName(), line);
+            code.emitLoad(ctxVar);
+            code.emitDup();
+            int errCode = param.isGuard() ? MethodProc.NO_MATCH_GUARD_FALSE
+                : MethodProc.NO_MATCH_BAD_TYPE|kin;
+            code.emitPushInt(errCode);
+            code.emitInvoke(typeCallContext.getDeclaredMethod("matchError", 1));
+            code.emitReturn();
+            code.emitFi();
+        } else {
+            if (incoming != null)
+                code.emitLoad(incoming);
+            StackTarget.forceLazyIfNeeded(this, Type.objectType, ptype);
+            // FIXME
+            if (ptype instanceof ObjectType &&
+                ptype != Type.objectType
+                && ptype != Type.toStringType) { // FIXME
+                code.emitDup();
+                ptype.getRawType().emitIsInstance(code);
+                code.emitIfIntEqZero();
+                code.emitLoad(ctxVar);
+                code.emitPushInt(MethodProc.NO_MATCH_BAD_TYPE|kin);
+                code.emitInvoke(typeCallContext.getDeclaredMethod("matchError", 1));
+                code.emitLoad(ctxVar);
+                code.emitReturn();
+                //code.emitElse();
+                code.emitFi();
+            }
+            ptype.emitCoerceFromObject(code);
+            code.emitStore(param.var);
+        }
+        if (lexp.inlinedInCheckMethod()) {
+            lexp.saveParameter(param, this);
+        }
+	if (recurseNeeded)
+	    generateCheckArg(param.nextDecl(), lexp, knext, code, keyDecls, argVariables, suppliedParameterVar);
+    }
+
+    private void generateCheckCall(LambdaExp lexp, CodeAttr code, Method primMethod, ArrayList<Variable> argVariables) {
+	boolean usingCallContext = lexp.usingCallContext();
+	Variable ctxVar = callContextVar;
+        if (lexp.inlinedInCheckMethod()) {
+            lexp.compileBody(this);
+        } else {
+            if (lexp.getNeedsClosureEnv() || ! primMethod.getStaticFlag()) {
+                ClassType mtype =
+                    ! primMethod.getStaticFlag()
+                    ? primMethod.getDeclaringClass()
+                    : (ClassType) lexp.closureEnv.getType();
+                loadModuleRef(mtype);
+            }
+            for (Variable var : argVariables)
+                code.emitLoad(var);
+            for (Declaration param = lexp.firstDecl();
+                 param != null; param = param.nextDecl()) {
+                param.var = null;
+            }
+            if (primMethod == lexp.getMainMethod())
+                code.popScope();
             if (usingCallContext)
-	      code.emitLoad(code.getArg(0)); // this (module)
-	    else
-	      code.emitLoad(code.getArg(1)); // proc
-	    code.emitPutField(procCallContextField);
-	    code.emitLoad(ctxVar);
-	    if (usingCallContext)
-	      code.emitPushInt(source.getSelectorValue(this)+methodIndex);
-	    else
-	      code.emitPushInt(i);
-	    code.emitPutField(pcCallContextField);
-	    code.emitPushInt(0);
-	    code.emitReturn();
-          }
-	if (needThisMatch)
-	  {
-	    aswitch.addDefault(code);
-	    int nargs = i > 4 ? 2 : i + 1;
-	    nargs++;
-	    for (int k = 0;  k <= nargs;  k++)
-	      code.emitLoad(code.getArg(k));
-	    Method defMethod = (typeModuleBody
-				.getDeclaredMethod(mname, matchArgs.length));
-	    code.emitInvokeSpecial(defMethod);
-	    code.emitReturn();
-	    aswitch.finish(code);
-	  }
-      }
-    method = save_method;
-    curClass = save_class;
-  }
+                code.emitLoad(ctxVar); // get $ctx
+            code.emitInvoke(primMethod);
+        }
+	if (usingCallContext) {
+            code.emitPushNull();
+        } else {
+            Target.pushObject.compileFromStack(this,
+                                               lexp.getReturnType());
+        }
+	code.emitReturn();
+    }
 
-  /** Generate ModuleBody's <tt>apply(CallContext)</tt> method
-   * Use the <tt>applyMethods</tt> vector, which contains methods that
-   * implement the (public, readable) methods of the current module. */
-  public void generateApplyMethodsWithContext(LambdaExp lexp)
-  {
-    int numApplyMethods
-      = lexp.applyMethods == null ? 0 : lexp.applyMethods.size();
-    if (numApplyMethods == 0)
-      return;
-    ClassType save_class = curClass;
-    curClass = lexp.getHeapFrameType();
-    if (! (curClass.getSuperclass().isSubtype(typeModuleBody)))
-      curClass = moduleClass;
-    ClassType procType = typeModuleMethod;
-    Method save_method = method;
-    CodeAttr code = null;
-    Type[] applyArgs = { typeCallContext };
+    public void generateCheckMethods(LambdaExp parent) {
+        int numApplyMethods
+            = parent.applyMethods == null ? 0 : parent.applyMethods.size();
+        if (numApplyMethods == 0)
+            return;
+        for (int j = 0;  j < numApplyMethods;  ++j) {
+            LambdaExp source = parent.applyMethods.get(j);
+            generateCheckMethod(source, parent);
+        }
+    }
 
-    // First LambdaExp we seen suitable for this i.
-    method = curClass.addMethod ("apply", applyArgs,
-				 (Type) Type.voidType,
-				 Access.PUBLIC);
-    code = method.startCode();
-    Variable ctxVar = code.getArg(1);
-
-    code.emitLoad(ctxVar);
-    code.emitGetField(pcCallContextField);
-    SwitchState aswitch = code.startSwitch();
-
-    for (int j = 0;  j < numApplyMethods;  ++j)
-      {
-	LambdaExp source = lexp.applyMethods.get(j);
-        if (! source.usingCallContext())
-          continue;
-	Method[] primMethods = source.primMethods;
-	int numMethods = primMethods.length;
-
-	for (int i = 0; i < numMethods; i++)
-	  {
-	    // Select the subset of source.primMethods[*] that are suitable
-	    // for the current apply method.
-	    boolean varArgs
-	      = (i == numMethods - 1
-		 && (source.max_args < 0
-		     || source.max_args >= source.min_args + numMethods));
-	    int methodIndex = i;
-
-	    aswitch.addCase(source.getSelectorValue(this) + i, code);
-
-            SourceLocator saveLoc1 = messages.swapSourceLocator(source);
-	    int line = source.getLineNumber();
-	    if (line > 0)
-	      code.putLineNumber(source.getFileName(), line);
-
-	    Method primMethod = primMethods[methodIndex];
-	    Type[] primArgTypes = primMethod.getParameterTypes();
-	    int singleArgs = source.min_args+methodIndex;
-	    Variable counter = null;
-	    int pendingIfEnds = 0;
-
-	    if (i > 4 && numMethods > 1) // FIXME
-	      {
-		counter = code.addLocal(Type.intType);
-		code.emitLoad(ctxVar);
-                code.emitInvoke(typeCallContext.getDeclaredMethod("getArgCount", 0));
-		if (source.min_args != 0)
-		  {
-		    code.emitPushInt(source.min_args);
-		    code.emitSub(Type.intType);
-		  }
-		code.emitStore(counter);
-	      }
-
-	    int needsThis = primMethod.getStaticFlag() ? 0 : 1;
-            int explicitFrameArg
-              = singleArgs + (varArgs ? 2 : 1) < primArgTypes.length ? 1 : 0;
-	    if (needsThis + explicitFrameArg > 0)
-	      {
-		code.emitPushThis();
-		if (curClass == moduleClass && mainClass != moduleClass)
-		  code.emitGetField(moduleInstanceMainField);
-	      }
-
-	    Declaration var = source.firstDecl();
-            if (var != null && var.isThisParameter())
-              var = var.nextDecl();
-	    for (int k = 0; k < singleArgs;  k++)
-	      {
-		if (counter != null && k >= source.min_args)
-		  {
-		    code.emitLoad(counter);
-		    code.emitIfIntLEqZero();
-		    code.emitLoad(ctxVar);
-		    code.emitInvoke(primMethods[k - source.min_args]);
-		    code.emitElse();
-		    pendingIfEnds++;
-		    code.emitInc(counter, (short) (-1));
-		  }
-
-		code.emitLoad(ctxVar);
-		if (k <= 4 && ! varArgs && source.max_args <= 4)
-		  code.emitGetField(typeCallContext
-				    .getDeclaredField("value"+(k+1)));
-		else
-		  {
-		    code.emitGetField(typeCallContext
-				      .getDeclaredField("values"));
-		    code.emitPushInt(k);
-		    code.emitArrayLoad(Type.objectType);
-		  }
-		Type ptype = var.getType();
-		if (ptype != Type.objectType)
-                  {
-                    SourceLocator saveLoc2 = messages.swapSourceLocator(var);
-                    CheckedTarget.emitCheckedCoerce(this, source, k+1,
-                                                    Type.objectType, ptype,
-                                                    null);
-                    messages.swapSourceLocator(saveLoc2);
-                  }
-		var = var.nextDecl();
-	      }
-
-	    if (varArgs)
-	      {
-		Type lastArgType = primArgTypes[explicitFrameArg+singleArgs];
-		if (lastArgType instanceof ArrayType)
-                  varArgsToArray(source, singleArgs, counter, lastArgType, ctxVar);
-		else if ("gnu.lists.LList".equals
-			 (lastArgType.getName()))
-		  {	
-		    code.emitLoad(ctxVar);
-		    code.emitPushInt(singleArgs);
-		    code.emitInvokeVirtual(typeCallContext.getDeclaredMethod("getRestArgsList", 1));
-		  }
-		else if (lastArgType == typeCallContext)
-		  code.emitLoad(ctxVar);
-		else
-		  throw new RuntimeException("unsupported #!rest type:"+lastArgType);
-              }
-	    code.emitLoad(ctxVar); // get $ctx
-	    code.emitInvoke(primMethod);
-	    while (--pendingIfEnds >= 0)
-	      code.emitFi();
-	    if (! usingCallContext())
-	      Target.pushObject.compileFromStack(this,
-						 source.getReturnType());
-            messages.swapSourceLocator(saveLoc1);
-	    code.emitReturn();
-          }
-      }
-    aswitch.addDefault(code);
-    Method errMethod = typeModuleMethod.getDeclaredMethod("applyError", 0);
-    code.emitInvokeStatic(errMethod);
-    code.emitReturn();
-    aswitch.finish(code);
-    method = save_method;
-    curClass = save_class;
-  }
-
-  /** Generate ModuleBody's <tt>apply0</tt>...<tt>applyN</tt> methods.
-   * Use the <tt>applyMethods</tt> vector, which contains methods that
-   * implement the (public, readable) methods of the current module.
-   */
-  public void generateApplyMethodsWithoutContext(LambdaExp lexp)
-  {
-    int numApplyMethods
-      = lexp.applyMethods == null ? 0 : lexp.applyMethods.size();
-    if (numApplyMethods == 0)
-      return;
-    ClassType save_class = curClass;
-    curClass = lexp.getHeapFrameType();
-    ClassType procType = typeModuleMethod;
-    if (! (curClass.getSuperclass().isSubtype(typeModuleBody)))
-      curClass = moduleClass;
-    Method save_method = method;
-    CodeAttr code = null;
-    for (int i = usingCallContext() ? 5 : 0; i < 6; i++)
-      {
-	// If i < 5, generate the method named ("apply"+i);
-	// else generate "applyN".
-	boolean needThisApply = false;
-	SwitchState aswitch = null;
-	String mname = null;
-	Type[] applyArgs = null;
-
-	for (int j = 0;  j < numApplyMethods;  j++)
-	  {
-	    LambdaExp source = lexp.applyMethods.get(j);
-            if (source.usingCallContext())
-              continue;
-	    // Select the subset of source.primMethods[*] that are suitable
-	    // for the current apply method.
-	    Method[] primMethods = source.primMethods;
-	    int numMethods = primMethods.length;
-	    boolean varArgs = source.max_args < 0
-	      || source.max_args >= source.min_args + numMethods;
-	    int methodIndex;
-	    boolean skipThisProc = false;
-	    if (i < 5) // Handling apply0 .. apply4
-	      {
-		methodIndex = i - source.min_args;
-		if (methodIndex < 0 || methodIndex >= numMethods
-		    || (methodIndex == numMethods - 1 && varArgs))
-		  skipThisProc = true;
-		numMethods = 1;
-		varArgs = false;
-	      }
-	    else // Handling applyN
-	      {
-		methodIndex = 5 - source.min_args;
-		if (methodIndex > 0 && numMethods <= methodIndex && ! varArgs)
-		  skipThisProc = true;
-		methodIndex = numMethods-1;
-	      }
-	    if (skipThisProc)
-	      continue;
-	    if (! needThisApply)
-	      {
-		// First LambdaExp we seen suitable for this i.
-		if (i < 5)
-		  {
-		    mname =  "apply"+i;
-		    applyArgs = new Type[i + 1];
-		    for (int k = i;  k > 0;  k--)
-		      applyArgs[k] = typeObject;
-		  }
-		else
-		  {
-		    mname = "applyN";
-		    applyArgs = new Type[2];
-		    applyArgs[1] = objArrayType;
-		  }
-		applyArgs[0] = procType;
-		method = curClass.addMethod (mname, applyArgs,
-					     usingCallContext() ? (Type) Type.voidType : (Type) Type.objectType,
-					     Access.PUBLIC);
-		code = method.startCode();
-
-		code.emitLoad(code.getArg(1)); // method
-		code.emitGetField(procType.getField("selector"));
-		aswitch = code.startSwitch();
-
-		needThisApply = true;
-	      }
-
-	    aswitch.addCase(source.getSelectorValue(this), code);
-
-            SourceLocator saveLoc1 = messages.swapSourceLocator(source);
-	    int line = source.getLineNumber();
-	    if (line > 0)
-	      code.putLineNumber(source.getFileName(), line);
-
-	    Method primMethod = primMethods[methodIndex];
-	    Type[] primArgTypes = primMethod.getParameterTypes();
-	    int singleArgs = source.min_args+methodIndex;
-	    Variable counter = null;
-	    int pendingIfEnds = 0;
-
-	    if (i > 4 && numMethods > 1)
-	      {
-		counter = code.addLocal(Type.intType);
-		code.emitLoad(code.getArg(2));
-		code.emitArrayLength();
-		if (source.min_args != 0)
-		  {
-		    code.emitPushInt(source.min_args);
-		    code.emitSub(Type.intType);
-		  }
-		code.emitStore(counter);
-	      }
-
-	    int needsThis = primMethod.getStaticFlag() ? 0 : 1;
-            int explicitFrameArg
-              = singleArgs + (varArgs ? 1 : 0) < primArgTypes.length ? 1 : 0;
-	    if (needsThis + explicitFrameArg > 0)
-	      {
-		code.emitPushThis();
-		if (curClass == moduleClass && mainClass != moduleClass)
-		  code.emitGetField(moduleInstanceMainField);
-	      }
-
-	    Declaration var = source.firstDecl();
-            if (var != null && var.isThisParameter())
-              var = var.nextDecl();
-	    for (int k = 0; k < singleArgs;  k++)
-	      {
-		if (counter != null && k >= source.min_args)
-		  {
-		    code.emitLoad(counter);
-		    code.emitIfIntLEqZero();
-		    code.emitInvoke(primMethods[k - source.min_args]);
-		    code.emitElse();
-		    pendingIfEnds++;
-		    code.emitInc(counter, (short) (-1));
-		  }
-
-		Variable pvar = null;
-		if (i <= 4) // apply'i method
-		  {
-		    pvar = code.getArg(k + 2);
-		    code.emitLoad(pvar);
-		  }
-		else // applyN method
-		  {
-		    // Load Object[]args value:
-		    code.emitLoad(code.getArg(2));
-		    code.emitPushInt(k);
-		    code.emitArrayLoad(Type.objectType);
-		  }
-		Type ptype = var.getType();
-		if (ptype != Type.objectType)
-                  {
-                    SourceLocator saveLoc2 = messages.swapSourceLocator(var);
-                    CheckedTarget.emitCheckedCoerce(this, source, k+1,
-                                                    Type.objectType, ptype,
-                                                    pvar);
-                    messages.swapSourceLocator(saveLoc2);
-                  }
-		var = var.nextDecl();
-	      }
-
-	    if (varArgs)
-	      {
-		Type lastArgType = primArgTypes[explicitFrameArg+singleArgs];
-		if (lastArgType instanceof ArrayType)
-                  varArgsToArray(source, singleArgs, counter, lastArgType, null);
-		else if ("gnu.lists.LList".equals
-			 (lastArgType.getName()))
-		  {	
-		    code.emitLoad(code.getArg(2)); // load args array.
-		    code.emitPushInt(singleArgs);
-		    code.emitInvokeStatic(Compilation.makeListMethod);
-		  }
-		else if (lastArgType == typeCallContext)
-		  code.emitLoad(code.getArg(2));
-		else
-		  throw new RuntimeException("unsupported #!rest type:"+lastArgType);
-              }
-	    code.emitInvoke(primMethod);
-	    while (--pendingIfEnds >= 0)
-	      code.emitFi();
-	    if (! usingCallContext())
-	      Target.pushObject.compileFromStack(this,
-						 source.getReturnType());
-            messages.swapSourceLocator(saveLoc1);
-	    code.emitReturn();
-          }
-	if (needThisApply)
-	  {
-	    aswitch.addDefault(code);
-	    if (usingCallContext())
-	      {
-		Method errMethod
-		  = typeModuleMethod.getDeclaredMethod("applyError", 0);
-		code.emitInvokeStatic(errMethod);
-	      }
-	    else
-	      {
-		int nargs = i > 4 ? 2 : i + 1;
-		nargs++;
-		for (int k = 0; k < nargs;  k++)
-		  code.emitLoad(code.getArg(k));
-		code.emitInvokeSpecial(typeModuleBody.getDeclaredMethod(mname, applyArgs));
-	      }
-	    code.emitReturn();
-	    aswitch.finish(code);
-	  }
-      }
-    method = save_method;
-    curClass = save_class;
-  }
+    void loadModuleRef(ClassType clas) {
+        CodeAttr code = getCode();
+        code.emitLoad(code.getArg(0));
+        code.emitCheckcast(Compilation.typeCompiledProc);
+        code.emitInvoke(Compilation.typeCompiledProc
+                        .getDeclaredMethod("getModule", 0));
+        code.emitCheckcast(clas);
+    }
 
   /** Copy incoming arguments to varargs/#!rest array.
    */
   private void varArgsToArray (LambdaExp source, int singleArgs,
-                               Variable counter, Type lastArgType,
-                               Variable ctxVar)
+                               Variable sizeVar, Type lastArgType,
+                               Variable ctxVar, boolean keywordsOk)
   {
     CodeAttr code = getCode();
     Type elType = ((ArrayType) lastArgType).getComponentType();
     boolean mustConvert = ! "java.lang.Object".equals(elType.getName());
-    if (ctxVar != null && ! mustConvert)
+    if (! mustConvert)
       {
         code.emitLoad(ctxVar);
-        code.emitPushInt(singleArgs);
-        code.emitInvokeVirtual(typeCallContext.getDeclaredMethod("getRestArgsArray", 1));
+        //code.emitPushInt(singleArgs);
+        String mname = keywordsOk ? "getRestArgsArray" : "getRestPlainArray";
+        code.emitInvokeVirtual(typeCallContext.getDeclaredMethod(mname, 0));
       }
-    else if (singleArgs == 0 && ! mustConvert)
-      code.emitLoad(code.getArg(2)); // load args array.
     else
       {
         code.pushScope();
-        if (counter == null)
+        if (sizeVar == null)
           {
-            counter = code.addLocal(Type.intType);
-            if (ctxVar != null)
-              {
-                code.emitLoad(ctxVar);
-                code.emitInvoke(typeCallContext.getDeclaredMethod("getArgCount", 0));
-              }
-            else
-              {
-                code.emitLoad(code.getArg(2));
-                code.emitArrayLength();
-              }
+            sizeVar = code.addLocal(Type.intType);
+            code.emitLoad(ctxVar);
+            code.emitInvoke(typeCallContext.getDeclaredMethod("getArgCount", 0));
             if (singleArgs != 0)
               {
                 code.emitPushInt(singleArgs);
                 code.emitSub(Type.intType);
               }
-            code.emitStore(counter);
+            code.emitStore(sizeVar);
           }
-        code.emitLoad(counter);
+        code.emitLoad(sizeVar);
         code.emitNewArray(elType.getImplementationType());
+        Variable index = code.addLocal(Type.intType);
+        code.emitPushInt(0);
+        code.emitStore(index);
         Label testLabel = new Label(code);
         Label loopTopLabel = new Label(code);
         loopTopLabel.setTypes(code);
@@ -1787,21 +1659,9 @@ public class Compilation implements SourceLocator
         loopTopLabel.define(code);
 
         code.emitDup(1); // new array
-        code.emitLoad(counter);
-        if (ctxVar != null)
-          code.emitLoad(ctxVar);
-        else
-          code.emitLoad(code.getArg(2));
-        code.emitLoad(counter);
-        if (singleArgs != 0)
-          {
-            code.emitPushInt(singleArgs);
-            code.emitAdd(Type.intType);
-          }
-        if (ctxVar != null)
-          code.emitInvokeVirtual(typeCallContext.getDeclaredMethod("getArgAsObject", 1));
-        else
-          code.emitArrayLoad(Type.objectType);
+        code.emitLoad(index);
+        code.emitLoad(ctxVar);
+        code.emitInvokeVirtual(typeCallContext.getDeclaredMethod("getNextArg", 0));
         if (mustConvert)
           {
             CheckedTarget.emitCheckedCoerce
@@ -1809,10 +1669,11 @@ public class Compilation implements SourceLocator
                0, elType, null);
           }
         code.emitArrayStore(elType);
+        code.emitInc(index, (short) 1);
         testLabel.define(code);
-        code.emitInc(counter, (short) (-1));
-        code.emitLoad(counter);
-        code.emitGotoIfIntGeZero(loopTopLabel);
+        code.emitLoad(index);
+        code.emitLoad(sizeVar);
+        code.emitGotoIfLt(loopTopLabel);
         code.popScope();	
       }
   }
@@ -1985,62 +1846,55 @@ public class Compilation implements SourceLocator
       }
 
     ClassType neededSuper = getModuleType();
-    if (mainClass.getSuperclass().isSubtype(neededSuper)
-        && ! module.getFlag(ModuleExp.USE_DEFINED_CLASS))
-      moduleClass = mainClass;
-    else
-      {
-	moduleClass = new ClassType(generateClassName("frame"));
-	moduleClass.setSuper(neededSuper);
-	addClass(moduleClass);
-	generateConstructor(moduleClass, null);
-      }
+    moduleClass = mainClass;
 
     curClass = module.compiledType;
-    int arg_count;
     LambdaExp saveLambda = curLambda;
     curLambda = module;
-    Type[] arg_types;
-    String runName = "run";
-    int runFlags = Access.PUBLIC+Access.FINAL;
-    if (module.staticInitRun())
-      {
-	arg_types = Type.typeArray0;
-        runName = "$runBody$";
-        runFlags = Access.PRIVATE|Access.STATIC;
-      }
-    else if (module.isHandlingTailCalls()) // Is this ever false?
-      {
-	arg_count = 1;
-	arg_types = new Type[1];
-	arg_types[0] = typeCallContext;
-      }
-    else if (module.min_args != module.max_args || module.min_args > 4)
-      { // Likely dead code.
-	arg_count = 1;
-	arg_types = new Type[1];
-	arg_types[0] = new ArrayType (typeObject);
-      }
-    else
-      { // Likely dead code.
-	arg_count = module.min_args;
-	arg_types = new Type[arg_count];
-	for (int i = arg_count;  --i >= 0; )
-	  arg_types[i] = typeObject;
-      }
 
     CodeAttr code;
     Variable heapFrame = module.heapFrame;
     boolean staticModule = module.isStatic();
+
+    if (curClass.getSuperclass() != typeModuleBody
+        && ! module.staticInitRun()) {
+        Field runDoneField = curClass.addField("$runDone$", Type.booleanType,
+                             Access.PROTECTED);
+        Method runDoneMethod =
+            curClass.addMethod ("checkRunDone", new Type[] { Type.booleanType },
+                                Type.booleanType, Access.PUBLIC);
+        method = runDoneMethod;
+        code = method.startCode();
+        code.emitLoad(code.getArg(0));
+        code.emitGetField(runDoneField);
+        code.emitLoad(code.getArg(0));
+        code.emitLoad(code.getArg(1));
+        code.emitPutField(runDoneField);
+        code.emitReturn();
+    }
+    
     Method apply_method;
-    apply_method = curClass.addMethod(runName, arg_types, Type.voidType,
-                                      runFlags);
+    if (module.staticInitRun()) {
+        apply_method = startClassInit();
+    } else {
+        Type[] arg_types = { typeCallContext };
+        ClassType sup = module.getSuperType();
+        Method srun = sup.getMethod("run", arg_types);
+        String mname = "run";
+        if (srun != null && ! srun.isAbstract()) {
+            Method srunx = sup.getMethod("$run$", arg_types);
+            if (srunx != null && srunx.isAbstract())
+                mname = "$run$";
+        }
+        apply_method = curClass.addMethod (mname, arg_types, Type.voidType,
+                                           Access.PUBLIC+Access.FINAL);
+        apply_method.initCode();
+    }
     method = apply_method;
     // For each parameter, assign it to its proper slot.
     // If a parameter !isSimple(), we cannot assign it to a local slot,
     // so instead create an artificial Variable for the incoming argument.
     // Below, we assign the value to the slot.
-    method.initCode();
     code = getCode();
     // if (usingCPStyle())   code.addParamLocals();
 
@@ -2049,54 +1903,58 @@ public class Compilation implements SourceLocator
     module.heapFrame = module.isStatic() ? null : module.thisVariable;
     module.allocChildClasses(this);
 
-    if (! module.staticInitRun()
-        && (module.isHandlingTailCalls() || usingCPStyle()))
-      {
-	callContextVar = new Variable ("$ctx", typeCallContext);
-	module.getVarScope().addVariableAfter(thisDecl, callContextVar);
-	callContextVar.setParameter(true);
-      }
+    callContextVar = new Variable ("$ctx", typeCallContext);
+    module.getVarScope().addVariableAfter(thisDecl, callContextVar);
+    callContextVar.setParameter(true);
 
-    int line = module.getLineNumber();
-    if (line > 0)
-      code.putLineNumber(module.getFileName(), line);
+    if (! module.staticInitRun()) {
+        module.allocParameters(this);
+        module.enterFunction(this);
+        if (usingCPStyle()) {
+            loadCallContext();
+            code.emitGetField(pcCallContextField);
+            fswitch = code.startSwitch();
+            fswitch.addCase(0, code);
+        }
+        module.compileBody(this);
+    }
 
-    module.allocParameters(this);
-    module.enterFunction(this);
-    if (usingCPStyle())
-      {
-	loadCallContext();
-        code.emitGetField(pcCallContextField);
-        fswitch = code.startSwitch();
-	fswitch.addCase(0, code);
-      }
 
-    module.compileBody(this);
-    module.compileEnd(this);
-
-    Label startLiterals = null;
-    Label afterLiterals = null;
-    Method initMethod = null;
-
-    if (curClass == mainClass) // redundant - never false.
-      {
 	Method save_method = method;
         Variable callContextSave = callContextVar;
         callContextVar = null;
 
-	initMethod = startClassInit();
+        Method initMethod;
+        if (module.staticInitRun())
+            initMethod = apply_method;
+        else
+            initMethod = startClassInit();
         clinitMethod = initMethod;
+        method = clinitMethod;
 	code = getCode();
+        Label beforeBody = null;
+        Label afterBody = null;
+        Label afterInits = null;
+        if (module.staticInitRun()) {
+            beforeBody = new Label(code);
+            afterBody = new Label(code);
+            afterInits = new Label(code);
+            code.fixupChain(beforeBody, afterBody);
+            module.compileAsInlined(this, Target.Ignore);
+            code.fixupChain(afterBody, afterInits);
+        }
 
-        startLiterals = new Label(code);
-        afterLiterals = new Label(code);
+        Label startLiterals = new Label(code);
+        Label afterLiterals = new Label(code);
         code.fixupChain(afterLiterals, startLiterals);
 
-	if (staticModule)
+	if (staticModule && ! module.staticInitRun())
 	  {
             if (! module.getFlag(ModuleExp.USE_DEFINED_CLASS))
               generateConstructor(module);
-
+            else if (moduleClass.constructor == null)
+              moduleClass.constructor = getConstructor(module);
+              
 	    code.emitNew(moduleClass);
 	    code.emitDup(moduleClass);
 	    code.emitInvokeSpecial(moduleClass.constructor);
@@ -2117,61 +1975,11 @@ public class Compilation implements SourceLocator
             dumpInitializers(init);
           }
 
-	if (module.staticInitRun()) {
-	    code.emitInvoke(apply_method);
-	  }
-	code.emitReturn();
+        if (! module.staticInitRun())
+            code.emitReturn();
 
-	if (moduleClass != mainClass && ! staticModule
-            && curClass.getSuperclass().getDeclaredMethod("run", 0) == null)
-	  {
-	    // Compare the run methods in ModuleBody.
-	    method = curClass.addMethod("run", Access.PUBLIC,
-					Type.typeArray0, Type.voidType);
-	    code = method.startCode();
-	    Variable ctxVar = code.addLocal(typeCallContext);
-	    Variable saveVar = code.addLocal(typeConsumer);
-	    Variable exceptionVar = code.addLocal(Type.javalangThrowableType);
-	    // ctx = CallContext.getInstance();
-	    code.emitInvokeStatic(getCallContextInstanceMethod);
-	    code.emitStore(ctxVar);
-	    Field consumerFld = typeCallContext.getDeclaredField("consumer");
-	    // save = ctx.consumer;
-	    code.emitLoad(ctxVar);
-	    code.emitGetField(consumerFld);
-	    code.emitStore(saveVar);
-	    // ctx.consumer = VoidConsumer.instance:
-	    code.emitLoad(ctxVar);
-	    code.emitGetStatic(ClassType.make("gnu.lists.VoidConsumer")
-			       .getDeclaredField("instance"));
-	    code.emitPutField(consumerFld);
-	    // try {
-	    code.emitTryStart(false, Type.voidType);
-	    // this.apply(ctx):
-	    code.emitPushThis();
-	    code.emitLoad(ctxVar);
-	    code.emitInvokeVirtual(save_method);
-	    // exception = null
-	    code.emitPushNull();
-	    code.emitStore(exceptionVar);
-	    // } catch (Throwable th) { exception = th; }
-	    code.emitCatchStart(exceptionVar);
-	    code.emitCatchEnd();
-	    code.emitTryCatchEnd();
-	    // MooduleBody.runCleanup(ctx, ex, save);
-	    code.emitLoad(ctxVar);
-	    code.emitLoad(exceptionVar);
-	    code.emitLoad(saveVar);
-	    code.emitInvokeStatic(typeModuleBody
-				  .getDeclaredMethod("runCleanup", 3));
-	    code.emitReturn();
-	  }
-
-	method = save_method;
+        method = save_method;
         callContextVar = callContextSave;
-      }
-
-    module.generateApplyMethods(this);
 
     curLambda = saveLambda;
 
@@ -2213,6 +2021,10 @@ public class Compilation implements SourceLocator
 	  }
 	code.fixupChain(endLiterals, afterLiterals);
       }
+    if (module.staticInitRun()) {
+        code.fixupChain(afterInits, beforeBody);
+        code.emitReturn();
+    }
 
     if (generateMainMethod() && curClass == mainClass)
       {
@@ -2638,6 +2450,10 @@ public class Compilation implements SourceLocator
 
   public final int getLineNumber()  { return messages.getLineNumber(); }
   public final int getColumnNumber() { return messages.getColumnNumber(); }
+  public final int getStartLine()  { return messages.getStartLine(); }
+  public final int getStartColumn()  { return messages.getStartColumn(); }
+  public final int getEndLine()  { return messages.getEndLine(); }
+  public final int getEndColumn()  { return messages.getEndColumn(); }
   public final String getFileName() { return messages.getFileName(); }
   public String getPublicId() { return messages.getPublicId(); }
   public String getSystemId() { return messages.getSystemId(); }
@@ -2648,6 +2464,7 @@ public class Compilation implements SourceLocator
   public void setColumn(int column) { messages.setColumn(column); }
   public final void setLine(Expression position)
   { messages.setLocation(position); }
+
   public void setLine (Object location)
   {
     if (location instanceof SourceLocator)

@@ -49,6 +49,7 @@ public class BlockExp extends Expression
 
   protected boolean mustCompile () { return false; }
 
+  @Override
   public void apply (CallContext ctx) throws Throwable
   {
     Object result;

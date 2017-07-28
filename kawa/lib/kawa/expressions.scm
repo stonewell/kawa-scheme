@@ -5,15 +5,11 @@
         syntax-as-exp define-validate
         apply-exp begin-exp if-exp set-exp apply-to-args-exp
         Declaration Expression ApplyExp QuoteExp ReferenceExp Compilation Type)
-(define-alias Expression gnu.expr.Expression)
-(define-alias ApplyExp gnu.expr.ApplyExp)
-(define-alias QuoteExp gnu.expr.QuoteExp)
-(define-alias ReferenceExp gnu.expr.ReferenceExp)
-(define-alias Compilation gnu.expr.Compilation)
-(define-alias Declaration gnu.expr.Declaration)
-(define-alias Type gnu.bytecode.Type)
 
-(require <kawa.lib.prim_syntax>)
+(import (class gnu.expr ApplyExp Compilation Declaration
+               Expression QuoteExp ReferenceExp)
+        (class gnu.bytecode Type))
+(require <kawa.lib.prim_imports>)
 (require <kawa.lib.std_syntax>)
 
 (define (->exp obj) ::Expression
@@ -39,8 +35,10 @@
   (lambda (form)
     (syntax-case form ()
       ((_ expr)
-       (syntax->expression (syntax expr))))))
+       (syntax-pair->expression #'(expr))))))
 
+;; FIXME Maybe #!rest args::object[]
+;; FIXME maybe (Expression[] @(gnu.kawa.functions.Map:map1 ->exp args))
 (define (apply-exp func . args) ::gnu.expr.ApplyExp
   (gnu.expr.ApplyExp (->exp func)
                      @(gnu.kawa.functions.Map:map1 ->exp args)))

@@ -12,6 +12,7 @@ public class Special extends Object implements Printable, Externalizable
   public static final Special undefined = new Special("undefined");
   public static final Special optional = new Special("optional");
   public static final Special rest = new Special("rest");
+  public static final Special ifk = new Special("if");
   public static final Special key = new Special("key");
   public static final Special dfault = new Special("default");
   public static final Special abstractSpecial = new Special("abstract");

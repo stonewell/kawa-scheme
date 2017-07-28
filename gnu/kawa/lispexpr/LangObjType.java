@@ -13,11 +13,13 @@ import gnu.kawa.reflect.CompileBuildObject;
 import gnu.kawa.reflect.CompileInvoke;
 import gnu.kawa.reflect.Invoke;
 import gnu.kawa.reflect.LazyType;
-import gnu.lists.Blob;
-import gnu.lists.FVector;
-import gnu.lists.Sequences;
-import gnu.lists.U8Vector;
+import gnu.lists.*;
 import java.util.*;
+/* #ifdef use:java.lang.invoke */
+import java.lang.invoke.*;
+/* #else */
+// import gnu.mapping.CallContext.MethodHandle; 
+/* #endif */
 
 /** A wrapper around a class type.
  * A LangObjType is implemented using some class type,
@@ -53,10 +55,16 @@ public class LangObjType extends SpecialObjectType implements TypeValue
   private static final int U64VECTOR_TYPE_CODE = 24;
   private static final int F32VECTOR_TYPE_CODE = 25;
   private static final int F64VECTOR_TYPE_CODE = 26;
-  private static final int PROCEDURE_TYPE_CODE = 27;
-  private static final int PROMISE_TYPE_CODE = 28;
-  private static final int SEQUENCE_TYPE_CODE = 29;
-  private static final int DYNAMIC_TYPE_CODE = 30;
+  private static final int C16VECTOR_TYPE_CODE = 27;
+  private static final int BITVECTOR_TYPE_CODE = 28;
+  private static final int PROCEDURE_TYPE_CODE = 29;
+  private static final int PROMISE_TYPE_CODE = 30;
+  private static final int SEQUENCE_TYPE_CODE = 31;
+  private static final int DYNAMIC_TYPE_CODE = 32;
+  private static final int ARGLIST_TYPE_CODE = 33;
+  private static final int ARGVECTOR_TYPE_CODE = 34;
+  private static final int JSTRING_TYPE_CODE = 35;
+  private static final int ISTRING_TYPE_CODE = 36;
 
   public static final LangObjType pathType =
     new LangObjType("path", "gnu.kawa.io.Path",
@@ -146,6 +154,14 @@ public class LangObjType extends SpecialObjectType implements TypeValue
     new LangObjType("f64vector", "gnu.lists.F64Vector",
                     F64VECTOR_TYPE_CODE);
 
+  public static final LangObjType c16vectorType =
+    new LangObjType("c16vector", "gnu.lists.CharVector",
+                    C16VECTOR_TYPE_CODE);
+
+  public static final LangObjType bitvectorType =
+    new LangObjType("bitvector", "gnu.lists.BitVector",
+                    BITVECTOR_TYPE_CODE);
+
   public static final LangObjType regexType =
     new LangObjType("regex", "java.util.regex.Pattern",
                     REGEX_TYPE_CODE);
@@ -153,6 +169,16 @@ public class LangObjType extends SpecialObjectType implements TypeValue
   public static final LangObjType stringType =
     new LangObjType("string", "java.lang.CharSequence",
                     STRING_TYPE_CODE);
+
+    /** Wrapper for java.lang.String, with extra coercions. */
+    public static final LangObjType jstringType =
+        new LangObjType("java.lang.String", "java.lang.String",
+                        JSTRING_TYPE_CODE);
+
+    /** Immutuable string, implemented using IString */
+    public static final LangObjType istringType =
+        new LangObjType("istring", "gnu.lists.IString",
+                    ISTRING_TYPE_CODE);
 
   public static final LangObjType listType =
     new LangObjType("list", "gnu.lists.LList",
@@ -177,12 +203,22 @@ public class LangObjType extends SpecialObjectType implements TypeValue
     new LangObjType("dynamic", "java.lang.Object",
                     DYNAMIC_TYPE_CODE);
 
+    public static final LangObjType argListType =
+    new LangObjType("arglist", "gnu.lists.LList",
+                    ARGLIST_TYPE_CODE);
+
+    public static final LangObjType argVectorType =
+    new LangObjType("argvector", "gnu.mapping.ArgListVector",
+                    ARGVECTOR_TYPE_CODE);
+
     LangObjType(String name, String implClass, int typeCode) {
         super(name, ClassType.make(implClass));
         this.typeCode = typeCode;
     }
 
     public static LangObjType getInstanceFromClass(String name) {
+        if ("gnu.lists.IString".equals(name))
+            return LangObjType.istringType;
         if ("gnu.math.IntNum".equals(name))
             return LangObjType.integerType;
         if ("gnu.math.DFloNum".equals(name))
@@ -229,6 +265,10 @@ public class LangObjType extends SpecialObjectType implements TypeValue
             return LangObjType.u16vectorType;
         if ("gnu.lists.U8Vector".equals(name))
             return LangObjType.u8vectorType;
+        if ("gnu.lists.CharVector".equals(name))
+            return LangObjType.c16vectorType;
+        if ("gnu.lists.BitVector".equals(name))
+            return LangObjType.bitvectorType;
         return null;
     }
 
@@ -245,6 +285,41 @@ public class LangObjType extends SpecialObjectType implements TypeValue
             break;
         case DYNAMIC_TYPE_CODE:
             return valueType instanceof ObjectType ? 2 : 1;
+        case ISTRING_TYPE_CODE:
+        case JSTRING_TYPE_CODE:
+            Type vt = valueType.getImplementationType();
+            if (vt == getImplementationType())
+                return 2;
+            if (vt instanceof ClassType
+                && (((ClassType) vt)
+                  .implementsInterface(Compilation.typeCharSequence)))
+                return 1;
+            break; 
+        case VECTOR_TYPE_CODE:
+            if (valueType instanceof ArrayType
+                && ((ArrayType) valueType).getComponentType() instanceof ObjectType)
+                return 1;
+            break;
+        case BITVECTOR_TYPE_CODE:
+        case C16VECTOR_TYPE_CODE:
+        case F32VECTOR_TYPE_CODE:
+        case F64VECTOR_TYPE_CODE:
+        case S8VECTOR_TYPE_CODE:
+        case S16VECTOR_TYPE_CODE:
+        case S32VECTOR_TYPE_CODE:
+        case S64VECTOR_TYPE_CODE:
+        case U8VECTOR_TYPE_CODE:
+        case U16VECTOR_TYPE_CODE:
+        case U32VECTOR_TYPE_CODE:
+        case U64VECTOR_TYPE_CODE:
+            if (valueType instanceof ArrayType) {
+                Type valueElementType = ((ArrayType) valueType).getComponentType();
+                Type elementType = getElementType();
+                if (elementType == valueElementType
+                    || elementType.getImplementationType() == valueElementType)
+                    return 1;
+            }
+            break;
         }
         return getImplementationType().isCompatibleWithValue(valueType);
     }
@@ -295,8 +370,12 @@ public class LangObjType extends SpecialObjectType implements TypeValue
     switch (typeCode)
       {
       case STRING_TYPE_CODE:
+      case ISTRING_TYPE_CODE:
+      case JSTRING_TYPE_CODE:
       case LIST_TYPE_CODE:
       case VECTOR_TYPE_CODE:
+      case BITVECTOR_TYPE_CODE:
+      case C16VECTOR_TYPE_CODE:
       case S8VECTOR_TYPE_CODE:
       case U8VECTOR_TYPE_CODE:
       case S16VECTOR_TYPE_CODE:
@@ -474,6 +553,8 @@ public class LangObjType extends SpecialObjectType implements TypeValue
   }
 
     public static U8Vector coerceToU8Vector(Object obj) {
+        if (obj instanceof byte[])
+            return new U8Vector((byte[]) obj);
         if (obj instanceof LProcess)
             return ((LProcess) obj).getValue().asPlainBytevector();
         if (obj instanceof Blob)
@@ -508,6 +589,8 @@ public class LangObjType extends SpecialObjectType implements TypeValue
       case CONST_VECTOR_TYPE_CODE:
         return typeLangObjType.getDeclaredMethod("coerceToConstVector", 1);
       case VECTOR_TYPE_CODE:
+      case BITVECTOR_TYPE_CODE:
+      case C16VECTOR_TYPE_CODE:
       case S8VECTOR_TYPE_CODE:
       case S16VECTOR_TYPE_CODE:
       case U16VECTOR_TYPE_CODE:
@@ -517,6 +600,7 @@ public class LangObjType extends SpecialObjectType implements TypeValue
       case U64VECTOR_TYPE_CODE:
       case F32VECTOR_TYPE_CODE:
       case F64VECTOR_TYPE_CODE:
+          return getDeclaredMethod("cast", 1);
       case STRING_TYPE_CODE:
       case LIST_TYPE_CODE:
       case REGEX_TYPE_CODE:
@@ -525,9 +609,9 @@ public class LangObjType extends SpecialObjectType implements TypeValue
         return ClassType.make("gnu.lists.Sequences").getDeclaredMethod("coerceToSequence", 1);
       default:
         Procedure cons = getConstructor();
-        if (cons == null)
-          return null;
-        return ((PrimProcedure) cons).getMethod();
+        return cons instanceof PrimProcedure
+            ?  ((PrimProcedure) cons).getMethod()
+            : null;
       }
   }
 
@@ -586,6 +670,21 @@ public class LangObjType extends SpecialObjectType implements TypeValue
         methodDeclaringClass = ClassType.make("gnu.lists.Sequences");
         mname = "asSequenceOrNull";
         break;
+      case VECTOR_TYPE_CODE:
+      case BITVECTOR_TYPE_CODE:
+      case C16VECTOR_TYPE_CODE:
+      case S8VECTOR_TYPE_CODE:
+      case S16VECTOR_TYPE_CODE:
+      case U16VECTOR_TYPE_CODE:
+      case S32VECTOR_TYPE_CODE:
+      case U32VECTOR_TYPE_CODE:
+      case S64VECTOR_TYPE_CODE:
+      case U64VECTOR_TYPE_CODE:
+      case F32VECTOR_TYPE_CODE:
+      case F64VECTOR_TYPE_CODE:
+          methodDeclaringClass = (ClassType) getImplementationType();
+          mname = "castOrNull";
+          break;
       default:
         return null;
       }
@@ -604,7 +703,22 @@ public class LangObjType extends SpecialObjectType implements TypeValue
         CodeAttr code = comp.getCode();
         if (incoming != null)
             code.emitLoad(incoming);
-        if (emitCoercionOrNull(code)) {
+        if (this == jstringType) {
+            Label beforeStore = new Label();
+            code.emitIfNull();
+            code.emitPushNull();
+            code.emitGoto(beforeStore);
+            code.emitFi();
+            code.emitLoad(incoming);
+            code.emitInstanceof(Compilation.typeCharSequence);
+            code.emitIfIntNotZero();
+            code.emitLoad(incoming);
+            code.emitCheckcast(Compilation.typeCharSequence);
+            code.emitInvoke(Type.toString_method);
+            beforeStore.define(code);
+            decl.compileStore(comp);
+        }
+        else if (emitCoercionOrNull(code)) {
             if (decl != null) {
                 code.emitDup();
                 decl.compileStore(comp);
@@ -653,17 +767,36 @@ public class LangObjType extends SpecialObjectType implements TypeValue
           return Sequences.coerceToSequence(obj);
       case CONST_VECTOR_TYPE_CODE:
           return coerceToConstVector(obj);
+      case JSTRING_TYPE_CODE:
+          return obj == null ? null : ((CharSequence) obj).toString();
+      case ISTRING_TYPE_CODE:
+          return IString.valueOf((CharSequence) obj);
       case VECTOR_TYPE_CODE:
-      case S8VECTOR_TYPE_CODE:
-      case U8VECTOR_TYPE_CODE:
-      case S16VECTOR_TYPE_CODE:
-      case U16VECTOR_TYPE_CODE:
-      case S32VECTOR_TYPE_CODE:
-      case U32VECTOR_TYPE_CODE:
-      case S64VECTOR_TYPE_CODE:
-      case U64VECTOR_TYPE_CODE:
+          return FVector.cast(obj);
       case F32VECTOR_TYPE_CODE:
+          return F32Vector.cast(obj);
       case F64VECTOR_TYPE_CODE:
+          return F64Vector.cast(obj);
+      case BITVECTOR_TYPE_CODE: // FIXME etc
+          return BitVector.cast(obj);
+      case C16VECTOR_TYPE_CODE:
+          return CharVector.cast(obj);
+      case S8VECTOR_TYPE_CODE:
+          return S8Vector.cast(obj);
+      case U8VECTOR_TYPE_CODE:
+          return U8Vector.cast(obj);
+      case S16VECTOR_TYPE_CODE:
+          return S16Vector.cast(obj);
+      case U16VECTOR_TYPE_CODE:
+          return U16Vector.cast(obj);
+      case S32VECTOR_TYPE_CODE:
+          return S32Vector.cast(obj);
+      case U32VECTOR_TYPE_CODE:
+          return U32Vector.cast(obj);
+      case S64VECTOR_TYPE_CODE:
+          return S64Vector.cast(obj);
+      case U64VECTOR_TYPE_CODE:
+          return U64Vector.cast(obj);
       case LIST_TYPE_CODE:
       case REGEX_TYPE_CODE:
         // optimize?
@@ -769,7 +902,27 @@ public class LangObjType extends SpecialObjectType implements TypeValue
   {
     switch (typeCode)
       {
+      case STRING_TYPE_CODE:
+      case LIST_TYPE_CODE:
+      case REGEX_TYPE_CODE:
+      case PROMISE_TYPE_CODE:
+      case ARGLIST_TYPE_CODE:
+      case ARGVECTOR_TYPE_CODE:
+        code.emitCheckcast(implementationType);
+        break;
+      case ISTRING_TYPE_CODE:
+          // Allow any CharSequence - but *not* null
+          code.emitInvoke(implementationType.getDeclaredMethod("valueOf", 1));
+          break;
+      case JSTRING_TYPE_CODE:
+          // Allow any CharSequence *or* null
+          // (unlike toStringType which allows any Object or null).
+          code.emitCheckcast(Compilation.typeCharSequence);
+          toStringType.emitCoerceFromObject(code);
+          break;
       case VECTOR_TYPE_CODE:
+      case BITVECTOR_TYPE_CODE:
+      case C16VECTOR_TYPE_CODE:
       case S8VECTOR_TYPE_CODE:
       case S16VECTOR_TYPE_CODE:
       case U16VECTOR_TYPE_CODE:
@@ -779,12 +932,6 @@ public class LangObjType extends SpecialObjectType implements TypeValue
       case U64VECTOR_TYPE_CODE:
       case F32VECTOR_TYPE_CODE:
       case F64VECTOR_TYPE_CODE:
-      case STRING_TYPE_CODE:
-      case LIST_TYPE_CODE:
-      case REGEX_TYPE_CODE:
-      case PROMISE_TYPE_CODE:
-        code.emitCheckcast(implementationType);
-        break;
       default:
         code.emitInvoke(coercionMethod());
       }
@@ -822,24 +969,34 @@ public class LangObjType extends SpecialObjectType implements TypeValue
       case LIST_TYPE_CODE:
         return gnu.kawa.functions.MakeList.list;
       case STRING_TYPE_CODE:
-        return new PrimProcedure("kawa.lib.strings", "$make$string$"+VARARGS_SUFFIX, 1);
+        return new PrimProcedure("kawa.lib.kawa.istrings", "$make$string$"+VARARGS_SUFFIX, 1);
       case REGEX_TYPE_CODE:
         return new PrimProcedure("java.util.regex.Pattern", "compile", 1);
       case DYNAMIC_TYPE_CODE:
           return MakeDynamic.instance;
+      case ARGLIST_TYPE_CODE:
+          return ArgListBuilder.makeArgList;
+      case ARGVECTOR_TYPE_CODE:
+          return ArgListBuilder.makeArgVector;
       default:
         return null;
       }
   }
 
     public String encodeType(Language language) {
-        if (this == sequenceType) return "sequence";
+        switch (typeCode) {
+        case SEQUENCE_TYPE_CODE: return "sequence";
+        case ARGLIST_TYPE_CODE: return "arglist";
+        case ARGVECTOR_TYPE_CODE: return "argvector";
+        }
         return null;
     }
 
     public Type getElementType() {
         switch (typeCode) {
-        case S8VECTOR_TYPE_CODE:  return LangPrimType.byteType; 
+        // Should we use Scheme.booleanType here?
+        case BITVECTOR_TYPE_CODE: return Type.booleanType;
+        case C16VECTOR_TYPE_CODE: return LangPrimType.charType; 
         case S16VECTOR_TYPE_CODE: return LangPrimType.shortType; 
         case S32VECTOR_TYPE_CODE: return LangPrimType.intType; 
         case S64VECTOR_TYPE_CODE: return LangPrimType.longType; 
@@ -855,6 +1012,10 @@ public class LangObjType extends SpecialObjectType implements TypeValue
 
     public String elementGetterMethodName() {
         switch (typeCode) {
+        case BITVECTOR_TYPE_CODE:
+            return "getBoolean";
+        case C16VECTOR_TYPE_CODE:
+            return "charAt";
         case S8VECTOR_TYPE_CODE:
         case U8VECTOR_TYPE_CODE:
             return "getByte";
@@ -887,6 +1048,9 @@ public class LangObjType extends SpecialObjectType implements TypeValue
 
     public CompileBuildObject getBuildObject() {
         switch (typeCode) {
+        case VECTOR_TYPE_CODE:
+        case BITVECTOR_TYPE_CODE:
+        case C16VECTOR_TYPE_CODE:
         case S8VECTOR_TYPE_CODE:
         case S16VECTOR_TYPE_CODE:
         case S32VECTOR_TYPE_CODE:
@@ -925,6 +1089,29 @@ public class LangObjType extends SpecialObjectType implements TypeValue
         public Expression buildAddChild(Declaration target, Expression child) {
             return new ApplyExp(addProc, new ReferenceExp(target),
                                 child);
+        }
+    }
+
+    // Use a custom class (rather than Procedure directly)
+    // so makeArgList and makeArgVector can be found by the LitTable support.
+    public static class ArgListBuilder extends Procedure {
+        public static final Procedure makeArgList;
+        public static final Procedure makeArgVector;
+        static {
+            MethodHandle handle =
+                Procedure.lookupApplyHandle(ArgListBuilder.class,
+                                            "applyToObjArgList");
+            makeArgList = new ArgListBuilder(handle, "arglist");
+            makeArgVector = new ArgListBuilder(handle, "argvector");
+        }
+        private ArgListBuilder(MethodHandle handle, String name) {
+            super(false, handle, name);
+        }
+
+        public static Object applyToObjArgList(Procedure proc, CallContext ctx) throws Throwable {
+            ArgListVector args = ctx.getRestArgsVector();
+            return proc == makeArgVector ? args
+                : ArgListPair.valueOf(args);
         }
     }
 }

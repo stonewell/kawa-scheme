@@ -57,6 +57,26 @@ public  class U64Vector extends LongVector<ULong>
         return new U64Vector(newLength < 0 ? data : new long[newLength]);
     }
 
+    public static U64Vector castOrNull(Object obj) {
+        if (obj instanceof long[])
+            return new U64Vector((long[]) obj);
+        if (obj instanceof U64Vector)
+            return (U64Vector) obj;
+        return null;
+    }
+
+    public static U64Vector cast(Object value) {
+        U64Vector vec = castOrNull(value);
+        if (vec == null) {
+            String msg;
+            if (value == null)
+                msg = "cannot convert null to U64Vector";
+            else
+                msg = "cannot convert a "+value.getClass().getName()+" to U64Vector";
+            throw new ClassCastException(msg);
+        }
+        return vec;
+    }
     public int getElementKind() { return INT_U64_VALUE; }
 
     public String getTag() { return "u64"; }

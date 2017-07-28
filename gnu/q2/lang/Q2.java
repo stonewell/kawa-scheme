@@ -109,6 +109,7 @@ public class Q2 extends Scheme
     ReadTable rt = ReadTable.createInitial();
     rt.set('(', new Q2Read.ReadTableEntry());
     rt.set(';', new Q2Read.ReadTableEntry());
+    rt.set('|', new Q2Read.ReadTableEntry());
     ReaderDispatch rdispatch = ReaderDispatch.create(rt, false);
     rt.set('#', rdispatch);
     rdispatch.set(' ', ReaderIgnoreRestOfLine.getInstance());
@@ -119,6 +120,7 @@ public class Q2 extends Scheme
     rt.setFinalColonIsKeyword(true);
     rt.postfixLookupOperator = ':';
     rt.set('@', new ReaderQuote(LispLanguage.splice_sym,
+                                ':', LispLanguage.splice_colon_sym,
                                 ReadTable.NON_TERMINATING_MACRO));
     return rt;
   }

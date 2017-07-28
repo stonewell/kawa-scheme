@@ -46,7 +46,7 @@ extends HttpServlet
     Context.setInstance(sctx);
     // FIXME should path be relative to context?
     Path.setCurrentPath(Path.valueOf(request.getRequestURL().toString()));
-    ctx.values = Values.noArgs;
+    ctx.reset();
 
     /* FIXME should use fluid binding - or ThreadLocation!
     gnu.expr.Language language = gnu.expr.Language.getDefaultLanguage();

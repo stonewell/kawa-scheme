@@ -79,9 +79,9 @@ public class DivideOp extends ArithOp
                   if (rounding_mode == Numeric.TRUNCATE
                       && code >= Arithmetic.INT_CODE
                       /* #ifdef JAVA8 */
-                      // && code <= Arithmetic.ULONG_CODE
+                      && code <= Arithmetic.ULONG_CODE
                       /* #else */
-                      && code <= Arithmetic.LONG_CODE
+                      // && code <= Arithmetic.LONG_CODE
                       /* #endif */
                       )
                   ; // handled specifically
@@ -143,20 +143,20 @@ public class DivideOp extends ArithOp
                 result = Long.valueOf(l1);
 	    break;
           /* #ifdef JAVA8 */
-          // case Arithmetic.ULONG_CODE:
-          //   l1 = Arithmetic.asLong(arg1);
-          //   l2 = Arithmetic.asLong(arg2);
-          //   switch (op)
-          //     { // FIXME Hacker's Delight has better algorithms than jdk8
-          //     case MODULO:
-          //       l1 = Long.divideUnsigned(l1, l2);
-          //       break;
-          //     default:
-          //       l1 = Long.remainderUnsigned(l1, l2);
-          //       break;
-          //     }
-          //   result = ULong.valueOf(l1);
-          //   break;
+          case Arithmetic.ULONG_CODE:
+            l1 = Arithmetic.asLong(arg1);
+            l2 = Arithmetic.asLong(arg2);
+            switch (op)
+              { // FIXME Hacker's Delight has better algorithms than jdk8
+              case MODULO:
+                l1 = Long.divideUnsigned(l1, l2);
+                break;
+              default:
+                l1 = Long.remainderUnsigned(l1, l2);
+                break;
+              }
+            result = ULong.valueOf(l1);
+            break;
           /* #endif */
 	  case Arithmetic.INTNUM_CODE:
             switch (op)

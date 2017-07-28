@@ -25,6 +25,7 @@ import gnu.kawa.reflect.SingletonType;
 import gnu.kawa.functions.AppendValues;
 import gnu.kawa.functions.Convert;
 import gnu.lists.FString;
+import gnu.lists.IString;
 import gnu.lists.LList;
 import gnu.text.Lexer;
 import gnu.text.SourceError;
@@ -1306,7 +1307,7 @@ public class XQParser extends Lexer
     switch (op)
       {
       case OP_ADD: 
-	func = makeFunctionExp("gnu.xquery.util.ArithOp", "add", "+");
+        func = makeFunctionExp("gnu.xquery.util.ArithOp", "add", "+");
 	break;
       case OP_SUB:
 	func = makeFunctionExp("gnu.xquery.util.ArithOp", "sub", "-");
@@ -1342,22 +1343,22 @@ public class XQParser extends Lexer
 	func = makeFunctionExp("gnu.xquery.util.Compare", "valGe", "ge");
 	break;
       case OP_EQU:
-	func = makeFunctionExp("gnu.xquery.util.Compare", "=");
+        func = makeFunctionExp("gnu.xquery.util.Compare", "$Eq", "=");
 	break;
       case OP_NEQ:
-	func = makeFunctionExp("gnu.xquery.util.Compare", "!=");
+        func = makeFunctionExp("gnu.xquery.util.Compare", "$Ex$Eq", "!=");
 	break;
       case OP_LSS:
-	func = makeFunctionExp("gnu.xquery.util.Compare", "<");
+        func = makeFunctionExp("gnu.xquery.util.Compare", "$Ls", "<");
 	break;
       case OP_LEQ:
-	func = makeFunctionExp("gnu.xquery.util.Compare", "<=");
+        func = makeFunctionExp("gnu.xquery.util.Compare", "$Ls$Eq", "<=");
 	break;
       case OP_GRT:
-	func = makeFunctionExp("gnu.xquery.util.Compare", ">");
+        func = makeFunctionExp("gnu.xquery.util.Compare", "$Gr", ">");
 	break;
       case OP_GEQ:
-	func = makeFunctionExp("gnu.xquery.util.Compare", ">=");
+        func = makeFunctionExp("gnu.xquery.util.Compare", "$Gr$Eq", ">=");
 	break;
       case OP_IS:
 	func = makeFunctionExp("gnu.kawa.xml.NodeCompare", "$Eq", "is");
@@ -2717,7 +2718,7 @@ public class XQParser extends Lexer
     args = new Expression[vec.size()];
     vec.copyInto(args);
     MakeElement mkElement = new MakeElement();
-    mkElement.copyNamespacesMode = copyNamespacesMode;
+    mkElement.setCopyNamespacesMode(copyNamespacesMode);
     // Ths is just the chain of NamespaceBindings for namespace declaration
     // attributes from this immediate constructor.  At resolve time we chain
     // this list onto the list from outer element constructors.
@@ -2966,7 +2967,9 @@ public class XQParser extends Lexer
         break;
 
       case STRING_TOKEN:
-	exp = new QuoteExp(new String(tokenBuffer, 0, tokenBufferLength).intern());
+        // Possible FUTURE:
+        //exp = new QuoteExp(new IString(new String(tokenBuffer, 0, tokenBufferLength)));
+        exp = new QuoteExp(new String(tokenBuffer, 0, tokenBufferLength).intern());
         break;
 
       case INTEGER_TOKEN:
@@ -3049,7 +3052,7 @@ public class XQParser extends Lexer
             if (token == ELEMENT_TOKEN)
               {
                 MakeElement mk = new MakeElement();
-                mk.copyNamespacesMode = copyNamespacesMode;
+                mk.setCopyNamespacesMode(copyNamespacesMode);
                 func = new QuoteExp(mk);
               }
             else
@@ -4323,7 +4326,7 @@ public class XQParser extends Lexer
   public static Expression makeFunctionExp(String className, String name)
   {
     return makeFunctionExp(className,
-			   Mangling.mangleNameIfNeeded(name),
+			   Mangling.mangleField(name),
 			   name);
   }
 

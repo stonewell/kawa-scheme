@@ -267,8 +267,20 @@ public class ReaderXmlElement extends ReaderExtendedLiteral
                                             ch == '[' ? ']' : ')');
                 } else if (ch == '"' || ch == '\'')
                     attrTail = readContent(reader, (char) ch, attrTail);
-                else
-                    reader.error("missing attribute value");
+                else {
+                    reader.unread(ch);
+                    reader.error("missing attribute value (literal values must be quoted)");
+                    for (;;) {
+                        ch = reader.readUnicodeChar();
+                        if (ch < 0)
+                            break;
+                        if (ch == '\'' || ch == '\"' || ch == '/' || ch == '>'
+                            || Character.isWhitespace(ch)) {
+                            reader.unread(ch);
+                            break;
+                        }
+                    }
+                }
                 attrExpr = attrList;
                 if (definingNamespace != null) {
                     namespaceList = new PairWithPosition(attrPair,

@@ -1,3 +1,126 @@
+2017-07-24  Per Bothner  <per@bothner.com>
+
+	* Compilation.java (generateCheckArg): Move call to
+	generateCheckArg so it is called even if no rest parameter.
+
+2017-07-15  Per Bothner  <per@bothner.com>
+
+	* Language.java (decodeType): Handle MappedArrayAtyoe.
+	(declFromField): Likewise.
+	* Declaration.java (getImplementationType): Likewise.
+
+2017-06-08  Per Bothner  <per@bothner.com>
+
+	* Compilation.java: Support range with end position.
+	* ExpVisitor.java: Likewise.
+	* Expression.java: Likewise.
+	* Declaration.java: Likewise. Extend SourceLocator.Simple.
+	* KawaScriptEngine.java: Update to use accessor methods.
+
+2017-05-23  Per Bothner  <per@bothner.com>
+
+	Fix save/restore of callContextVar, used for CallContext in a method.
+	* LambdaExp.java (compileBody): Specifically restore *after* calling
+	compileEnd, since the latters calls compileAsInlined on pending inlines.
+	To do that, compileEnd needs to be inlined into compileEnd,
+	and (most) calls to compileEnd becomes redundant.
+	(compileAsMethod): Don't call compileEnd, now called by compileBody.
+	* ClassExp.java (compileMembers): Likewise.
+	* Compilation.java (generateBytecode, generateCheckCall): Likewise.
+	* CaseExp.java (compile): Save/restore callContextVar.
+	* TryExp.java (compile): Likewise.
+
+	* ClassExp.java (comp[ileMembers): Call allocateLocal for static link.
+	This applies to a construtor call.
+
+2017-05-16  Per Bothner  <per@bothner.com>
+
+	* Compilation.java (generateCheckMethod): Fix generation of method name.
+
+2017-05-12  Per Bothner  <per@bothner.com>
+
+	* Declaration.java (ignorable): Remove strange test.
+	I'm not sure the motivation for checking isHandlingTailCalls;
+	it doesn't seem to be needed, and breaks new pattern code.
+
+2017-05-03  Per Bothner  <per@bothner.com>
+
+	* LambdaExp.java (addMethodFor): Add a getLangTypeFor call.
+	This was for unspecified but inherited parameter or result type.
+
+2017-04-30  Per Bothner  <per@bothner.com>
+
+	* Compilation.java (generateBytecode):Sometimes create "$run$" method..
+	If the super class defines a non-abstract "run" and an abstract "$run$"
+	generate the latter rather then the former for the body method. This is
+	useful for a superclass "wrapping" the run method, as used for JavaFX.
+
+2017-04-29  Per Bothner  <per@bothner.com>
+
+	Better compilation even if supplied-optional booleans are used.
+	Don't disable generatation of direct-callable overladed methods.
+
+2017-04-20  Per Bothner  <per@bothner.com>
+
+	* Mangling.java: Use "symbolic" mangling for fields and variables.
+	(mangleVariable, mangleField, demangleField, mangleMethod)
+	demangleMethod): New convenience methods.
+	(* InlineCalls.java (isCompatibleWithValue): New helper method.
+	Takes into account LazyType.
+	* Language.java (mangleNameIfNeeded): Removed method.
+
+	* InlineCalls.java (maybeInline): Extended constant-folding.
+	If validate-apply property is 'inline-if-constant, optimize.
+	(visitIfExp): Don't visit never-used branches.
+	This avoids some bogus error messages - as well as some useful ones.
+	(visitTryExp): Optimize if body is constant.
+
+2017-04-15  Per Bothner  <per@bothner.com>
+
+	* LambdaExp.java (declareClosureEnv): Fix for inlining.
+	If declareClosureEnv has not been called on our inlineHome, do so.
+
+2017-03-26  Per Bothner  <per@bothner.com>
+
+	* LambdaExp.java (compileAsMethod): Fix default-arg optimization.
+
+2017-03-20  Per Bothner  <per@bothner.com>
+
+	* Compilation.java (pushPendingImport): Also push DeclSetMapper.
+
+2017-03-15  Per Bothner  <per@bothner.com>
+
+	* Compilation.java (generateCheckArg): Fix default parameters.
+	The default expressions have to be compiled to Type.objectType,
+	and not the parameter's type, to be consistent with the unknown
+	type from the CallContext.  We can perhaps optimize if default is
+	known to be of correct type, but requires some logic changes.
+
+2017-02-25  Per Bothner  <per@bothner.com>
+
+	Fixes due to stricter Java-9 verifier.
+	Specfically, a static final field can only be set in <clinit>.
+	* Compilation.java: Inline earlier $runBody$ method in <clinit>.
+	* ProcInitializer.java: If field is static set it in <clinit>.
+
+2017-01-21  Per Bothner  <per@bothner.com>
+
+	Disable inlining for procedures with guards.
+	* Compilation.java: Use different error code for guard failure.
+	* Declaration.java (isGuard): New method.
+	* InlineCalls.java (inlineCalls): Check CANNOT_INLINE.
+	* PushApply.java: Set CANNOT_INLINE if HAS_NONTRIVIAL_PATTERN.
+	* QuoteExp.java (isTrueTypeExp): New constant.
+
+2017-01-20  Per Bothner  <per@bothner.com>
+
+	* Compilation.java (generateCheckArg): Handle boolean guards.
+	* Special.java (ifk): New special for #!if, used for boolean guards.
+
+2017-01-18  Per Bothner  <per@bothner.com>
+
+	* InlineCalls.java (inlineCalls): Fix indexing error.
+
 2017-01-18  Per Bothner  <per@bothner.com>
 
 	* InlineCalls.java (visitCaseExp): Warning if string used for case.
@@ -5,6 +128,19 @@
 2017-01-10  Per Bothner  <per@bothner.com>
 
 	* Language.java (languages): Add "kashell" as alias of "q2".
+
+2017-01-06  Per Bothner  <per@bothner.com>
+
+	Various fixes for top-level bindings.
+	* Declaration.java (loadFieldLocation): New method.
+	(load): Use it.
+	* BindingInitializer.java (emit): Use loadFieldLocation rather than
+	just compiling the value - see comment.
+	* ReferenceExp.java (calculateType): Tweak getDontDereference() result.
+	* BindingInitializer.java (emit): In normal "module mode" create a
+	simple local Location, rather than defining in teh environment.
+
+	* CompiledProc.java (resolveParameterTypes): Port from master.
 
 2017-01-04  Per Bothner  <per@bothner.com>
 
@@ -32,6 +168,15 @@
 	* Mangling.java: New file, for mangling-related static methods.
 	* Compilation.java: Move a bunch of methods here.
 
+2016-12-04  Per Bothner  <per@bothner.com>
+
+	Various changes to support IString for imutable strings.
+	* Language.java (getTypeFor(Object,boolean)): Tweak and make non-final.
+	(getTypeFor(Expression,boolean)): Defer Class-handling to above.
+	* PrimProcedure.java (compileRestArg): Better handing of splice
+	with var/rest args using isCompatibleWithValue.
+	(getVerboseName): Add a null-check for paranoia.
+
 2016-12-03  Per Bothner  <per@bothner.com>
 
 	* StackTarget.java (compileFromStack0): Better "type-compatible" test.
@@ -39,6 +184,13 @@
 	* InlineCalls.java (maybeInline): Allow method specifier to
 	be general CharSequence, not just String.
 	* ApplyExp.java (inlineCompile): Likewise.
+
+2016-11-28  Per Bothner  <per@bothner.com>
+
+	* Language.java (unionType): Rearrange logic for equal types.
+
+	No longer allow a non-spliced argument array to a Java varargs method.
+	* PrimProcedure.java (explicitArrayAsVarArgsAllowed): Change to false.
 
 2016-11-27  Per Bothner  <per@bothner.com>
 

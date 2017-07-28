@@ -1,18 +1,193 @@
+2017-07-24  Per Bothner  <per@bothner.com>
+
+	* parameters.scm (make-parameter): Allow non-Procedure as converter.
+	Fixes GitLib issue #15 "make-parameter doesn't like vector
+	as converter".
+
+2017-07-15  Per Bothner  <per@bothner.com>
+
+	* kawa/arglist.scm: Allow general sequence.
+
+2017-06-13  Sudarshan S Chawathe <chaw@eip10.org>
+
+	* kawa/pprint.scm (pprint-logical-block): Initialize out-expr.
+
+2017-06-08  Per Bothner  <per@bothner.com>
+
+	* prim_imports.scm (syntax-pair->expression): An alternative
+	to syntax->expression that sets position info better.
+	(try-catch): Tweak for line numbers.
+
+2017-05-12  Per Bothner  <per@bothner.com>
+
+	* compile_map.scm (scanner-for): Handle MappedArrayType.
+	This is used for scan patterns (ellipsis).
+
+2017-04-25  Per Bothner  <per@bothner.com>
+
+	* compile_misc.scm: Fix optimization of length for strings.
+
+2017-04-24  Per Bothner  <per@bothner.com>
+
+	Make string-map default to returning an istring.
+
+2017-04-23  Per Bothner  <per@bothner.com>
+
+	* strings.scm (istring?): New predicate.
+
+	Fixes for strings-test.scm testsuite.
+	* strings_ext.scm (string-replace, string-split): New procedures.
+
+2017-04-20  Per Bothner  <per@bothner.com>
+
+	Case-converting string functions now default to returning istrings.
+	* kawa/istrings.scm (string-upcase, string-downcase, string-foldcase,
+	string-titlecase): New istring-returning functions.
+
+	* strings.scm (string-replicate): Rename to xsubstring.
+
+	* strings_ext.scm (string-take, string-take-right, string-drop)
+	string-drop-right, string-contains-right): New procedures.
+	(string-contains): Fix bug.
+
+	* numbers.scm: Annotate various predicates with 'inline-if-constant.
+
+2017-04-19  Per Bothner  <per@bothner.com>
+
+	* strings_ext.scm (strim-trim, string-trim-right, string-trim-both,
+	string-prefix?, string-suffix?, string-prefix-length,
+	string-suffix-length, string-contains): More string procedures.
+	((* strings.scm (string-pad, string-pad-right): Fix parameter order.
+	* bytevectors.scm: Fix incorrect parentheses.
+
+2017-04-18  Per Bothner  <per@bothner.com>
+
+	Implement more SRFI-140 string functions.
+	* strings_syntax.scm (string-for-each-forward, string-for-each-backward):
+	New macros useful for efficiently implementing many string functions.
+
+2017-04-10  Per Bothner  <per@bothner.com>
+
+	* strings.scm (string-fold, string-fold-right, string-for-each-index,
+	string-map-index, string-repeat, string-tabulate, string-unfold,
+	string-unfold-right): New procedures.
+	* kawa/base.scm: Export new functions.
+
+2017-04-09  Per Bothner  <per@bothner.com>
+
+	* bytevectors.scm (string->utf8): Moved to strings.scm.
+	(utf16->string, utf16be->string, utf16le->string): New functions.
+	* strings.scm (string->utf8): Moved from bytevectors.scm.
+	(string->utf16, string->utf16be, string->utf16l2): New procedures.
+	* kawa/base.scm: Export new functions.
+
+2017-04-06  Per Bothner  <per@bothner.com>
+
+	* bytevectors.scm (utf8->string): Update for renamed method.
+
+2017-03-26  Per Bothner  <per@bothner.com>
+
+	Add string-concatenate and string-concatenate-reverse procedures.
+	Add string-join.
+	* kawa/strings_ext.scm: New file.
+
+2017-03-25  Per Bothner  <per@bothner.com>
+
+	* strings.scm (reverse-list->string): Add SRFI-140 procedure.
+	* kawa/base.scm: Export reverse-list->string.
+
+2017-03-20  Per Bothner  <per@bothner.com>
+
+	Change vector->string to (by default) return an istring.
+	* kawa/istrings.scm (list->string): Re-implement using mstring.
+	* strings.scm: Avdoid import of kawa.lib.characters.
+	* kawa/mstrings.scm (vector->string): Move here ...
+	* vectors.scm: ... instead of here.
+
+2017-03-15  Per Bothner  <per@bothner.com>
+
+	* strings.scm (string-replicate): New procedure.
+	* kawa/base.scm: Define it by default.
+
+	* strings.scm (make-string): Default count to zero.
+
 2017-02-27  Per Bothner  <per@bothner.com>
 
 	* kawa/string-cursors.scm (string-cursor-ref): Inline.
 	Change to return #\ignorable-char if second char of surrogate pair.
 	(string-cursor-next-quick): New function.
 
+2017-02-25  Per Bothner  <per@bothner.com>
+
+	* case_syntax.scm (<CaseClause>): Define using define-alias.
+	Don't remember the reason ...
+
+	* kawa/base.scm: Only export domterm-load-stylesheet
+	if DomTermBackend exists.
+
+2017-02-03  Per Bothner  <per@bothner.com>
+
+	* prim_imports.scm (bitvector, c16vector): New type names.
+	* kawa/base.scm (bitvector, c16vector): Export these.
+
+2017-01-26  Per Bothner  <per@bothner.com>
+
+	* misc_syntax.scm (module-class): New macro.
+	* kawa/base.scm: Also export module-class.
+
+2017-01-20  Per Bothner  <per@bothner.com>
+
+	* syntax.scm (match): Allow #!if guards.
+
+2017-01-18  Per Bothner  <per@bothner.com>
+
+	* syntax.scm (match): Update for new lambda pattern syntax.
+
 2017-01-18  Jamison Hope  <jrh@theptrgroup.com>
 
 	* kawa/rotations.scm: Don't use non-portable strings in case.
+
+2017-01-17  Per Bothner  <per@bothner.com>
+
+	Also change list->string and string to return immutable strings.
+
+2017-01-17  Per Bothner  <per@bothner.com>
+
+	Change so substring (by default) returns an immutable IString.
+	* strings.scm: Move substring to ...
+	* kawa/mstrings.scm: ... here.
+	* kawa/istrings.scm: Add substring - returning an IString.
+
+2017-01-06  Per Bothner  <per@bothner.com>
+
+	Re-do so all default bindings are in kawa.base.
+	* kawa/base.scm: Do-do.
+	* prim_syntax.scm: Renamed to ...
+	* prim_imports.scm: ... new name.  Add imports from Java code.
+	* Makefile.am: Build classes in 3 stages.
+	* strings.scm (string-append): Remove.
+	* kawa/istrings.scm: New module, with immutable string-append.
+	* kawa/mstrings.scm: New module, with mutable string-append.
 
 2016-12-18  Per Bothner  <per@bothner.com>
 
 	* vectors.scm (make-vector): Fix default to #!null as in documentation.
 	Fixes Savannah bug #49866 "make-vector default elements #!null
 	v #!undefined".
+
+2016-12-09  Per Bothner  <per@bothner.com>
+
+	* enums.scm: Moved from gnu/kawa/slib.
+	* srfi/26.scm: Renamed from gnu/kawa/slib/cut.scm.
+	* srfi/8.scm: Renamed from gnu/kawa/slib/receive.scm.
+	* srfi/95.scm: Moved from srfi95.scm.
+	* Makefile.am: Update accoringly.  Also compile using two separate
+	commands.  This allows simplifying imports/requires.
+
+2016-12-04  Per Bothner  <per@bothner.com>
+
+	* syntax.scm (%symbol->construct): Update for string literal change.
+	* rnrs/programs.scm (command-line): Likewise.
 
 2016-12-03  Per Bothner  <per@bothner.com>
 

@@ -125,6 +125,26 @@ public  class FVector<E> extends SimpleVector<E>
         return new FVector<E>(newLength < 0 ? data : new Object[newLength]);
     }
 
+    public static FVector castOrNull(Object obj) {
+        if (obj instanceof Object[])
+            return new FVector((Object[]) obj);
+        if (obj instanceof FVector)
+            return (FVector) obj;
+        return null;
+    }
+
+    public static FVector cast(Object value) {
+        FVector vec = castOrNull(value);
+        if (vec == null) {
+            String msg;
+            if (value == null)
+                msg = "cannot convert null to FVector<E>";
+            else
+                msg = "cannot convert a "+value.getClass().getName()+" to FVector<E>";
+            throw new ClassCastException(msg);
+        }
+        return vec;
+    }
     public final void fill(int start, int end, E new_value) {
         if (isVerySimple())
             java.util.Arrays.fill(data, start, end, new_value);

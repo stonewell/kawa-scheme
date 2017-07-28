@@ -1,7 +1,6 @@
 package gnu.kawa.reflect;
 import gnu.mapping.*;
 import gnu.bytecode.*;
-import gnu.lists.FString;
 import gnu.expr.*;
 
 public class SlotSet extends Procedure3 implements Inlineable

@@ -1,5 +1,5 @@
 qdnl Process this with autoconf to create configure
-AC_INIT([kawa],[2.3.1]) dnl Also update bin/configure.ac and build.xml.
+AC_INIT([kawa],[2.93]) dnl Also update bin/configure.ac and build.xml.
 AC_CONFIG_SRCDIR([doc/kawa.texi])
 
 AM_MAINTAINER_MODE([enable])
@@ -79,8 +79,8 @@ test -z "${with_swing}" -a "$with_awt" == "no" \
   && with_swing=no
 
 with_java_source=`echo ${with_java_source} | tr A-Z a-z`
-# Java 7 is the (current) default
-test "${with_java_source}" = "" && with_java_source=7
+# Java 8 is the (current) default
+test "${with_java_source}" = "" && with_java_source=8
 case "/${with_java_source}/" in
   /1/|/1.1*/) # JDK 1.1 - not supported
     JAVA_SOURCE=1; JAVA_SOURCE_SELECTOR='%java1';;
@@ -253,8 +253,7 @@ AC_SUBST_FILE(Make_rules)
 AC_CONFIG_LINKS(
   testsuite/scribble.html:testsuite/scribble.html.in)
 
-AM_COND_IF([ENABLE_KAWA_FRONTEND],
-        [AC_CONFIG_SUBDIRS([bin])])
+AC_CONFIG_SUBDIRS([bin])
 
 AC_CONFIG_FILES([Makefile gnu/bytecode/Makefile
   gnu/Makefile gnu/kawa/servlet/Makefile

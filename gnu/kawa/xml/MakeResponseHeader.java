@@ -15,8 +15,12 @@ public class MakeResponseHeader extends MethodProc
   public static MakeResponseHeader makeResponseHeader
     = new MakeResponseHeader();
 
-  public void apply (CallContext ctx)
-  {
+    private MakeResponseHeader() {
+        this.applyToConsumerMethod =
+             Procedure.lookupApplyHandle(MakeResponseHeader.class, "applyToConsumer");
+   }
+
+   public static Object applyToConsumer(Procedure proc, CallContext ctx) throws Throwable {
     String key = ctx.getNextArg().toString();
     Object val = ctx.getNextArg();
     ctx.lastArg();
@@ -24,6 +28,7 @@ public class MakeResponseHeader extends MethodProc
     out.startAttribute(key);
     out.write(val.toString());
     out.endAttribute();
+    return null;
   }
 
 }

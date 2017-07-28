@@ -4,7 +4,145 @@ most recent changes first.
 See also the list of @uref{../qexo/news.html,Qexo (XQuery)-specific
 changes}.
 
+@subheading In Git repository (invoke branch) since last release
+@itemize
+@item
+Binary release are now built for Java 8.
+The repository source code is now set up for Java 8.
+(Biulding fro Java 6 or 7 is still supported.
+Java 5 might also work, but not not been tested recently.)
+@item
+Most places where you could declare a new identifier
+binding have been generalized to accept @ref{Variables and Patterns,patterns},
+including literals and boolean @stxref{guard}s.
+@item
+The new form @ref{def-match,@code{match}} form is a generalization
+of @code{case} using patterns.
+@item
+The internal calling convention used for ``apply'' (ie. calling
+an unknown-at-compile-time procedure) has been completely changed.
+@item
+Major changes to strings:
+@itemize
+@item
+@emph{Incompatible change:} String literals are now
+@code{gnu.lists.IString} rather than @code{java.lang.String}.
+The advantage of using @code{gnu.lists.IString} is that @code{string-ref}
+and @code{string-length} are (roughly) constant-time, rather than
+having to linearly scan the string.
+@item
+@emph{Incompatible change:}
+The procedures @code{string-append}, @code{string-map},
+@code{substring}, @code{list->string}, @code{vector->string},
+@code{string-downcase}, @code{string-upcase}, @code{string-foldcase}, 
+@code{string-titlecase}, and the constructor @code{string}
+return an immutable string (an @code{IString}).
+(The function @code{string-copy} is similar to @code{substring},
+but returns a mutable string.)
+This is a work-in-progress with the goal of implementing
+@uref{http://srfi.schemers.org/srfi-140/srfi-140.html,SRFI-140}:
+Other procedures will be changed to return immutable strings.
+
+If you @code{(import (scheme base))} standard procedures
+such as @code{string-append} will return mutable strings;
+if you @code{(import (kawa base))} the procedures will return immutable strings.
+The command-line options @code{--r5rs} or @code{--r6rs} or @code{--r7rs}
+override the default so these procedures return mutable strings.
+@item
+@emph{Incompatible change:}
+Treating a string as a sequence is now simpler but possibly slower:
+The @var{I}'th element is now the @var{I}'th Unicode code point.
+Indexing with function-call syntax
+@code{(@var{string} @var{i})} is the same as @code{(string-ref @var{string} @var{i})} and
+@code{(length @var{string})} is the same as @code{(string-length @var{string})}.
+This applies to all classes that implement @code{java.lang.CharSequence}.
+Indexing may be a linear-time operation (thus much slower),
+unless the string is an @code{IString} (in which case it is constant-time),
+@item
+@emph{Incompatible change:} Before, if a Java parameter type
+was @code{java.lang.String} Kawa would accept any value, converting it
+using Object's @code{toString} method.
+Now Kawa will reject an argument if it is not a @code{java.lang.CharSequence}.
+@item
+New procedures: @code{istring?}, @code{reverse-list->string},
+@code{string-any}, @code{string-concatenate}, @code{string-concatenate-reverse},
+@code{string-contains}, @code{string-contains-right},
+@code{string-count}, @code{string-drop},  @code{string-drop-right},
+@code{string-every}, @code{string-filter}, @code{string-fold},
+@code{string-fold-right}, @code{string-for-each-index},
+@code{string-index}, @code{string-index-right}, @code{string-join},
+@code{string-map-index}, @code{string-null?},
+@code{string-prefix?}, @code{string-prefix-length},
+@code{string-repeat}, @code{string-remove}, @code{string-replace},
+@code{string-skip}, @code{string-skip-right}, @code{string-split},
+@code{string-suffix?}, @code{string-suffix-length},
+@code{string-tabulate}, @code{string-take}, @code{string-take-right},
+@code{string-trim}, @code{string-trim-right}, @code{string-trim-both},
+@code{string-unfold}, @code{string-unfold-right},
+@code{string->utf16}, @code{string->utf16be}, @code{string->utf16le},
+@code{utf16->string}, @code{utf16be->string}, @code{utf16le->string},
+@code{xsubstring}.
+These follow SRFI-140 and return immutable strings.
+(Some of these had previously been available in SRFI-13,
+but the older versions return mutable strings.)
+@end itemize
+@item
+@emph{Incompatible change:} Kawa traditionally followed Java in allowing you
+to pass an array with the ``rest'' arguments to a varargs method.
+For example, you could write:
+
+@verbatim
+(define args (Object[] 3 "cm"))
+(java.lang.String:format "length:%s%s" args)
+@end verbatim
+
+This is no longer allowed. Instead,
+use the splice operator:
+
+@verbatim
+(java.lang.String:format "length:%s%s" @args)
+@end verbatim
+@item
+@emph{Incompatible change:} You used to be able to write a
+type-specifier in a formal parameter or return type without
+using @samp{::}, as in:
+@example
+(define (incr (x int)) int (+ x 1))
+@end example
+This is no longer allowed, because it conflicts with the
+syntax for patterns.  Instead you have to write:
+@example
+(define (incr (x ::int)) ::int (+ x 1))
+@end example
+@item
+New type aliases @code{bitvector} and @code{c16vector}.
+The latter is a @ref{Uniform vectors,uniform vector} type for wrapping @code{char[]} arrays.
+@item
+You can convert a Java array (for example a @code{int[]} to the corresponing uniform vector type
+(for example @code{u32vector}) using the @code{as} pseudo-function or the corresponding
+conversion procedure (for example @code{->u32vector}).  The result shares storage with the
+array, so changes in one will update the other.
+@item
+The expression @code{(module-class)} evaluates to the
+containing module class.
+@item
+Change the @ref{Mangling,mangling} for field and local variables names
+to match the @uref{https://blogs.oracle.com/jrose/entry/symbolic_freedom_in_the_vm,Symbolic Freedom} style.
+@item
+Internally, expressions now record their ending position (line/column),
+in addition to the starting position.
+@end itemize
+
 @c @subheading In Git repository (master branch) since last release
+@c @anchor{#in-git-repository-since-last-release}
+
+@subheading Kawa 2.4 (April 30, 2017)
+
+@itemize
+@item
+Final 2.x release.
+Minor updates and fixes.
+@end itemize
 
 @subheading Kawa 2.3 (January 13, 2017)
 

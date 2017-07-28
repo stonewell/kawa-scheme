@@ -36,7 +36,8 @@
 
 (test '(1 nil c t t nil) 'lambda.13
       ((lambda (&optional (x 'a x-p) (y 'b y-p) (z 'c z-p))
-         (list x y z x-p y-p z-p)) 1 nil))
+         (list x y z x-p y-p z-p))
+       1 nil))
 
 (test 2 'lambda.14
       (let ((x 1))

@@ -9,6 +9,7 @@ import gnu.kawa.xml.*;
 import gnu.lists.Consumer;
 import gnu.lists.TreeList;
 import gnu.mapping.CallContext;
+import gnu.mapping.Procedure;
 import gnu.mapping.Symbol;
 
 /** Implements the XSLT apply-templates command. */
@@ -18,7 +19,11 @@ public class ApplyTemplates extends NodeConstructor {
     public static final ApplyTemplates applyTemplatesProc
         = new ApplyTemplates();
 
-    public int numArgs() { return 0x2002; }
+     private ApplyTemplates() {
+        this.applyToConsumerMethod =
+            Procedure.lookupApplyHandle(ApplyTemplates.class, "applyToConsumer");
+    }
+   public int numArgs() { return 0x2002; }
 
     public static void applyTemplates$C(String select, Symbol mode,
                                         Consumer out) throws Throwable {
@@ -45,10 +50,11 @@ public class ApplyTemplates extends NodeConstructor {
         pos.pop();
     }
 
-    public void apply(CallContext ctx) throws Throwable {
+    public static Object applyToConsumer(Procedure proc, CallContext ctx) throws Throwable {
         applyTemplates$X((String) ctx.getNextArg(null),
                          (Symbol) ctx.getNextArg(null),
                          ctx);
+        return null;
     }
 
     public void compileToNode(ApplyExp exp, Compilation comp,

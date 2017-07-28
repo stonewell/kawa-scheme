@@ -1,3 +1,30 @@
+2017-07-15  Per Bothner  <per@bothner.com>
+
+	Fix scan patterns with type specifiers.
+	* MappedArrayType.java (emitCoerceFromObject): New method.
+	(emiTestCoerce): New helper method.
+	(encodeType): New method.
+
+2017-05-16  Per Bothner  <per@bothner.com>
+
+	* MappedArrayType.java (emitTestIf): Handle non-TypeValue element types.
+
+2017-05-12  Per Bothner  <per@bothner.com>
+
+	* MappedArrayType.java: New class, extends ObjectType.
+
+2017-04-30  Per Bothner  <per@bothner.com>
+
+	* ClassMethods.java: Accept any CharSequence as a string.
+	* CompileBuildObject.java: Likewise.
+	* Invoke.java: Likewise.
+
+2017-04-01  Per Bothner  <per@bothner.com>
+
+	* CompileReflect.java (validate): Optimize 'class' static pseudo-field.
+	* SlotGet.java (validateApplySlotGet): Don't optimize 'class' here.
+	This fixes problem of T:class where T is a not-yet-compiled ClassExp.
+
 2017-01-06  Per Bothner  <per@bothner.com>
 
 	* ClassMemberLocation.java (define): Check SourceName attribute.

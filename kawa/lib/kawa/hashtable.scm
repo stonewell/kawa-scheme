@@ -1,8 +1,10 @@
 (module-name <kawa.lib.kawa.hashtable>)
 (export hashtable hashtable-check-mutable)
-(require <kawa.lib.prim_syntax>)
+(require <kawa.lib.prim_imports>)
 (require <kawa.lib.std_syntax>)
 (require <kawa.lib.misc>)
+(require <kawa.lib.lists>)
+(require kawa.lib.exceptions)
 
 (define-alias hashnode gnu.kawa.util.HashNode)
 

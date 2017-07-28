@@ -2,6 +2,12 @@
 // This is free software;  for terms and warranty disclaimer see ./COPYING.
 
 package gnu.expr;
+
+/* #ifdef use:java.lang.invoke */
+import java.lang.invoke.*;
+/* #else */
+// import gnu.mapping.CallContext.MethodHandle; 
+/* #endif */
 import gnu.bytecode.*;
 import gnu.mapping.*;
 import gnu.kawa.lispexpr.LangObjType;
@@ -36,6 +42,7 @@ public class PrimProcedure extends MethodProc {
      * '\0' means don't expect a target. */
     private char mode;
     private boolean sideEffectFree;
+
     /** Do we needs to zero-truncate the returned result?
      * A Kawa-compiled function will do so before loading the value
      * on the stack (and hence before returning), but post-return
@@ -110,7 +117,7 @@ public class PrimProcedure extends MethodProc {
     /** Support passing an explicit array to a varargs function.
      * This is a kludge inherited from Java to support backwards
      * compatibility after various methods were converte to take varargs.
-     * If Java5-style VARARS we allow both a variable-length argument list,
+     * If Java5-style VARARGS we allow both a variable-length argument list,
      * or if the last argument already is an array we can use it as is.
      * The tricky part is we sometimes have to distinguish these cases
      * at run-time - see the logic for createVarargsArrayIfNeeded in
@@ -119,7 +126,7 @@ public class PrimProcedure extends MethodProc {
      * create a varargs array - even if the actual argument is an array.
      * People should now use splices instead.
      */
-    public static boolean explicitArrayAsVarArgsAllowed = true;
+    public static boolean explicitArrayAsVarArgsAllowed = false;
 
     public int isApplicable(Type[] argTypes, Type restType) {
         int app = super.isApplicable(argTypes, restType);
@@ -178,46 +185,22 @@ public class PrimProcedure extends MethodProc {
     return takesVarArgs() ? (num - 1) + (-1 << 12) : num + (num << 12);
   }
 
-  public int match0 (CallContext ctx)
-  {
-    return matchN(ProcedureN.noArgs, ctx);
-  }
-
-  public int match1 (Object arg1, CallContext ctx)
-  {
-    Object[] args = { arg1 };
-    return matchN(args, ctx);
-  }
-
-  public int match2 (Object arg1, Object arg2, CallContext ctx)
-  {
-    Object[] args = { arg1, arg2 };
-    return matchN(args, ctx);
-  }
-
-  public int match3 (Object arg1, Object arg2, Object arg3, CallContext ctx)
-  {
-    Object[] args = { arg1, arg2, arg3 };
-    return matchN(args, ctx);
-  }
-
-  public int match4 (Object arg1, Object arg2, Object arg3, Object arg4,
-		     CallContext ctx)
-  {
-    Object[] args = { arg1, arg2, arg3, arg4 };
-    return matchN(args, ctx);
-  }
-
-    public int matchN(Object[] args, CallContext ctx) {
-        int nargs = args.length;
+    public static Object applyToConsumer(Procedure proc, CallContext ctx) throws Throwable {
+        return ((PrimProcedure) proc).applyToConsumerX(ctx);
+    }
+    public Object applyToConsumerX(CallContext ctx) throws Throwable {
+        int nargs = ctx.getArgCount();
         boolean takesVarArgs = takesVarArgs();
         int fixArgs = minArgs();
-        if (nargs < fixArgs)
-            return NO_MATCH_TOO_FEW_ARGS|fixArgs;
-        if (! takesVarArgs && nargs > fixArgs)
-            return NO_MATCH_TOO_MANY_ARGS|fixArgs;
+        if (nargs < fixArgs) {
+            ctx.matchError(NO_MATCH_TOO_FEW_ARGS|fixArgs);
+            return ctx;
+        }
+        if (! takesVarArgs && nargs > fixArgs) {
+            ctx.matchError(NO_MATCH_TOO_MANY_ARGS|fixArgs);
+            return ctx;
+        }
         int paramCount = argTypes.length;
-        Type elementType = null;
         Object restArray = null;
         int extraCount = (takesTarget() || isConstructor()) ? 1 : 0;
         boolean takesContext = takesContext();
@@ -225,12 +208,14 @@ public class PrimProcedure extends MethodProc {
         if (takesContext)
             rargs[--paramCount] = ctx;
         Object extraArg;
+        Type elementType = null;
         if (takesVarArgs) {
             Type restType = argTypes[paramCount-1];
-            if (restType == Compilation.scmListType || restType == LangObjType.listType) {
-                // FIXME
-                rargs[paramCount-1] = gnu.lists.LList.makeList(args, fixArgs);
-                nargs = fixArgs;
+            if (restType == Compilation.scmListType
+                || restType == LangObjType.listType
+                || restType == LangObjType.argListType
+                || restType == LangObjType.argVectorType) {
+                nargs = fixArgs+1;
                 elementType = Type.objectType;
             } else {
                 ArrayType restArrayType = (ArrayType) restType;
@@ -241,42 +226,43 @@ public class PrimProcedure extends MethodProc {
             }
         }
         if (isConstructor())
-            extraArg = args[0];
+            extraArg = ctx.getNextArg();
         else if (extraCount != 0) {
             try {
-                extraArg = getDeclaringClass().coerceFromObject(args[0]);
+                extraArg = getDeclaringClass().coerceFromObject(ctx.getNextArg());
             } catch (ClassCastException ex) {
-                return NO_MATCH_BAD_TYPE|1;
+                ctx.matchError(NO_MATCH_BAD_TYPE|1);
+                return ctx;
             }
         } else
             extraArg = null;
-        for (int i = extraCount;  i < args.length; i++) {
-            Object arg = args[i];
+        for (int i = extraCount;  i < nargs; i++) {
+            // Why is extraArg used twice if isConstructor()
+            Object arg = i==0&&isConstructor() ? extraArg
+                : i==fixArgs && restArray == null ? ctx.getRestArgsList()
+                : ctx.getNextArg();
             Type type = i < fixArgs ? argTypes[i-extraCount]
                 : elementType == null ? null : elementType;
             if (type != Type.objectType) {
                 try {
                     arg = type.coerceFromObject(arg);
                 } catch (ClassCastException ex) {
-                    return NO_MATCH_BAD_TYPE|(i+1);
+                    ctx.matchError(NO_MATCH_BAD_TYPE|(i+1));
+                    return ctx;
                 }
             }
-            if (i < fixArgs)
+            if (i < fixArgs || restArray == null) { // I.e. using a LList
                 rargs[i-extraCount] = arg;
-            else if (restArray != null) { // I.e. using array rather than LList.
+            } else { // using array rather than LList.
                 if (type instanceof PrimType)
                     arg = ((PrimType) type).convertToRaw(arg);
                 Array.set(restArray, i - fixArgs, arg);
             }
         }
-        ctx.value1 = extraArg;
-        ctx.values = rargs;
-        ctx.proc = this;
-        return 0;
-    }
+        int cd = ctx.checkDone();
+        if (cd != 0)
+            return ctx;
 
-  public void apply (CallContext ctx) throws Throwable
-  {
     int arg_count = argTypes.length;
     boolean is_constructor = isConstructor();
     boolean slink = is_constructor && getDeclaringClass().hasOuterLink();
@@ -299,23 +285,21 @@ public class PrimProcedure extends MethodProc {
 	Object result;
 	if (is_constructor)
           {
-            Object[] args = ctx.values;
             if (slink)
               {
-                int nargs = args.length + 1;
                 Object[] xargs = new Object[nargs];
-                System.arraycopy(args, 0, xargs, 1, nargs-1);
-                xargs[0] = ((PairClassType) ctx.value1).staticLink;
-                args = xargs;
+                System.arraycopy(rargs, 0, xargs, 1, nargs-1);
+                xargs[0] = ((PairClassType) extraArg).staticLink;
+                rargs = xargs;
               }
 
             result = (((java.lang.reflect.Constructor) member)
-                      .newInstance(args));
+                      .newInstance(rargs));
           }
         else if (method == Type.clone_method)
           {
             // The special Type.clone_method is only used for array types.
-            Object arr = ctx.value1;
+            Object arr = extraArg;
             Class elClass = arr.getClass().getComponentType();
             int n = java.lang.reflect.Array.getLength(arr);
             result = java.lang.reflect.Array.newInstance(elClass, n);
@@ -323,7 +307,7 @@ public class PrimProcedure extends MethodProc {
           }
 	else
 	  result = retType.coerceToObject(((java.lang.reflect.Method) member)
-					  .invoke(ctx.value1, ctx.values));
+					  .invoke(extraArg, rargs));
         if (! takesContext())
           ctx.consumer.writeObject(result);
       }
@@ -331,6 +315,7 @@ public class PrimProcedure extends MethodProc {
       {
 	throw ex.getTargetException();
       }
+    return null;
   }
 
   public PrimProcedure (String className, String methodName, int numArgs)
@@ -344,8 +329,8 @@ public class PrimProcedure extends MethodProc {
          .getMethod(method), language);
   }
 
-  public PrimProcedure(Method method)
-  {
+    public PrimProcedure(Method method) {
+        super(true, applyToConsumer);
     init(method);
     this.retType = method.getName().endsWith("$X") ? Type.objectType
       : method.getReturnType();
@@ -365,6 +350,7 @@ public class PrimProcedure extends MethodProc {
 
     public PrimProcedure(Method method, char mode, Language language,
 			 ParameterizedType parameterizedType) {
+        super(true, applyToConsumer);
         this.mode = mode;
 
         init(method);
@@ -507,7 +493,73 @@ public class PrimProcedure extends MethodProc {
 
   public final Type[] getParameterTypes() { return argTypes; }
 
-  /** Compile arguments and push unto stack.
+    public static final void compileRestArg(Type arg_type, ApplyExp exp, int startArg, int i, Compilation comp) {
+        Expression[] args = exp.getArgs();
+        int nargs = args.length - startArg;
+        CodeAttr code = comp.getCode();
+        boolean argTypeIsList = arg_type == Compilation.scmListType
+            || arg_type == LangObjType.listType;
+        if (argTypeIsList) {
+            if (exp.firstSpliceArg < 0)  {
+		gnu.kawa.functions.MakeList.compile(args, startArg+i, comp);
+		return;
+            }
+            // FIXME check if can use splice argument directly
+        }
+        if (startArg+i+1== args.length
+            && exp.firstSpliceArg==startArg+i) {
+            // See if final argument is a splice of an array we can re-use.
+            Expression spliceArg = MakeSplice.argIfSplice(args[startArg+i]);
+            Type spliceType = spliceArg.getType();
+            if (spliceType instanceof ArrayType && arg_type instanceof ArrayType) {
+                Type spliceElType = ((ArrayType) spliceType).getComponentType();
+                Type argElType = ((ArrayType) arg_type).getComponentType();
+                if (argElType.isCompatibleWithValue(spliceElType) == 2) {
+                    spliceArg.compileWithPosition(comp, Target.pushObject);
+                    return;
+                }
+            }
+            if (arg_type == spliceType
+                || ((argTypeIsList || arg_type == LangObjType.argListType)
+                    && (spliceType == Compilation.scmListType
+                        || spliceType == LangObjType.listType))) {
+                spliceArg.compileWithPosition(comp,
+                                              Target.pushValue(arg_type));
+                return;
+            }
+        }
+        if (arg_type == LangObjType.argListType
+            || arg_type == LangObjType.argVectorType) {
+            Expression[] xargs = new Expression[nargs-i];
+            System.arraycopy(args, startArg+i, xargs, 0, xargs.length);
+            ApplyExp xexp = new ApplyExp(exp.func, xargs);
+            xexp.adjustSplice(exp, startArg+i);
+            Method setupMethod =
+                Compilation.typeCallContext.getDeclaredMethod("reset", 0);
+            comp.loadCallContext();
+            ApplyExp.compileArgsToContext(xexp, setupMethod, comp);
+            comp.loadCallContext();
+            ClassType ctype =
+                ClassType.make(arg_type == LangObjType.argListType
+                               ? "gnu.mapping.ArgListPair"
+                               : "gnu.mapping.ArgListVector");
+            Method getArgsMethod = ctype.getDeclaredMethod("getArgs", 1);
+            code.emitInvokeStatic(getArgsMethod);
+            return;
+        }
+                
+        Type el_type = arg_type instanceof ArrayType
+            ? ((ArrayType) arg_type).getComponentType()
+            : Type.objectType;
+        CompileArrays.createArray(el_type, comp,
+                                  args, startArg+i, args.length);
+        if (argTypeIsList) {
+            code.emitPushInt(0);
+            code.emitInvokeStatic(Compilation.makeListMethod);
+        }
+    }
+
+    /** Compile arguments and push unto stack.
    * @param args arguments to evaluate and push.
    * @param startArg Normally 0, but 1 in the case of a constructor,
    *   or the case of "static" method of a non-static class.
@@ -517,8 +569,9 @@ public class PrimProcedure extends MethodProc {
    *   pass a link to a closure environment, which was pushed by our caller.)
    *   If thisType==null, no special handling of args[0] or argTypes[0].
    */
-    private void compileArgs(ApplyExp exp, Expression[] args, int startArg, Type thisType, Compilation comp)
+    private void compileArgs(ApplyExp exp, int startArg, Type thisType, Compilation comp)
  {
+    Expression[] args = exp.getArgs();
     boolean variable = takesVarArgs();
     String name = getName();
     Type arg_type = null;
@@ -529,7 +582,6 @@ public class PrimProcedure extends MethodProc {
       arg_count--;
     int nargs = args.length - startArg;
     boolean is_static = thisType == null || skipArg != 0;
-
     // Do we need to check at runtime whether a final argument to a VARARGS
     // is an array or need to be wrapped in an array?
     // See comment at explicitArrayAsVarArgsAllowed.
@@ -558,36 +610,9 @@ public class PrimProcedure extends MethodProc {
       {
         if (variable && i == fix_arg_count)
           {
-            arg_type = argTypes[arg_count-1+skipArg];
-	    if (arg_type == Compilation.scmListType || arg_type == LangObjType.listType)
-	      {
-		gnu.kawa.functions.MakeList.compile(args, startArg+i, comp);
-		break;
-	      }
-            if (startArg+i+1== args.length
-                && exp.firstSpliceArg==startArg+i) {
-                // See if final argument is a splice of an array we can re-use.
-                Expression spliceArg = MakeSplice.argIfSplice(args[startArg+i]);
-                Type spliceType = spliceArg.getType();
-                if (spliceType instanceof ArrayType) {
-                    Type spliceElType = ((ArrayType) spliceType).getComponentType();
-                    Type argElType = ((ArrayType) arg_type).getComponentType();
-                    if (spliceElType == argElType
-                        || (argElType == Type.objectType
-                            && spliceElType instanceof ObjectType)
-                        || (argElType instanceof ClassType
-                            && spliceElType instanceof ClassType
-                            && spliceElType.isSubtype(argElType))) {
-                        spliceArg.compileWithPosition(comp, Target.pushObject);
-                        i = nargs;
-                        break;
-                    }
-                }
-            }
-                
-            arg_type = ((ArrayType) arg_type).getComponentType();
-            CompileArrays.createArray(arg_type, comp,
-                                      args, startArg+i, args.length);
+            arg_type = argDecl != null ? argDecl.getType()
+              : argTypes[arg_count-1+skipArg];
+            compileRestArg(arg_type, exp, startArg, i, comp);
             i = nargs;
             break;
           }
@@ -632,8 +657,11 @@ public class PrimProcedure extends MethodProc {
           }
         if (i >= fix_arg_count)
           code.emitArrayStore(arg_type);
-	if (argDecl != null && (is_static || i > 0))
+	if (argDecl != null && (is_static || i > 0)) {
+          if (argDecl.getFlag(Declaration.IS_SUPPLIED_PARAMETER))
+              argDecl = argDecl.nextDecl();
 	  argDecl = argDecl.nextDecl();
+        }
       }
   }
 
@@ -745,7 +773,7 @@ public class PrimProcedure extends MethodProc {
       }
     else if (takesTarget() && method.getStaticFlag())
       startArg = 1;
-    compileArgs(exp, args, startArg, thisType, comp);
+    compileArgs(exp, startArg, thisType, comp);
 
     if (method == null)
       {
@@ -1052,8 +1080,8 @@ public class PrimProcedure extends MethodProc {
       }
     String pname = null;
     Class cl = proc.getClass();
-    if (proc instanceof ModuleMethod)
-      cl = ((ModuleMethod) proc).module.getClass();
+    if (proc instanceof CompiledProc)
+      cl = ((CompiledProc) proc).getModuleClass();
     else if (proc instanceof PrimProcedure)
       {
         Method pmethod = ((PrimProcedure) proc).methodForInvoke;
@@ -1106,8 +1134,8 @@ public class PrimProcedure extends MethodProc {
   public static Class getProcedureClass (Object pproc)
   {
     Class procClass;
-    if (pproc instanceof ModuleMethod)
-      procClass = ((ModuleMethod) pproc).module.getClass();
+    if (pproc instanceof CompiledProc)
+      procClass = ((CompiledProc) pproc).getModuleClass();
     else
       procClass = pproc.getClass();
     try
@@ -1231,36 +1259,33 @@ public class PrimProcedure extends MethodProc {
     return name;
   }
 
-  public String getVerboseName()
-  {
-    StringBuffer buf = new StringBuffer(100);
-    if (method == null)
-      {
-	buf.append("<op ");
-	buf.append(op_code);
-	buf.append('>');
-      }
-    else
-      {
-	buf.append(getDeclaringClass().getName());
-	buf.append('.');
-	buf.append(method.getName());
-      }
-    buf.append('(');
-    for (int i = 0; i < argTypes.length; i++)
-      {
-	if (i > 0)
-	  buf.append(',');
-	buf.append(argTypes[i].getName());
-      }
-    buf.append(')');
-    return buf.toString();
-  }
+    public String getVerboseName() {
+        StringBuilder buf = new StringBuilder(100);
+        if (method == null) {
+            buf.append("<op ");
+            buf.append(op_code);
+            buf.append('>');
+        } else {
+            buf.append(getDeclaringClass().getName());
+            buf.append('.');
+            buf.append(method.getName());
+        }
+        if (argTypes != null) {
+            buf.append('(');
+            for (int i = 0; i < argTypes.length; i++) {
+                if (i > 0)
+                    buf.append(',');
+                buf.append(argTypes[i].getName());
+            }
+            buf.append(')');
+        }
+        return buf.toString();
+    }
 
   public String toString()
   {
     StringBuffer buf = new StringBuffer(100);
-    buf.append(retType == null ? "<unknown>" : retType.getName());
+    buf.append(retType == null ? "<unknown>" : retType/*.getName()*/);
     buf.append(' ');
     buf.append(getVerboseName());
     return buf.toString();
@@ -1272,4 +1297,7 @@ public class PrimProcedure extends MethodProc {
     ps.print(toString());
     ps.print ('>');
   }
+
+    public static final MethodHandle applyToConsumer
+        = lookupApplyHandle(PrimProcedure.class, "applyToConsumer");
 }

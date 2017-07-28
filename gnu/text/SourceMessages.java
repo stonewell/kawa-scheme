@@ -11,7 +11,7 @@ package gnu.text;
  * Similar functionality as JAVA6's javax.tools.DiagnosticCollector.
  */
 
-public class SourceMessages implements SourceLocator {
+public class SourceMessages extends SourceLocator.Simple {
     // Number of errors (not counting warnings).  A value of 1000 is "fatal".
     private int errorCount = 0;
 
@@ -23,10 +23,6 @@ public class SourceMessages implements SourceLocator {
     public SourceError getErrors() { return firstError; }
 
     SourceLocator locator;
-
-    String current_filename;
-    int current_line;
-    int current_column;
 
     public static boolean stripDirectoriesDefault = false;
     public boolean stripDirectories = stripDirectoriesDefault;
@@ -102,12 +98,16 @@ public class SourceMessages implements SourceLocator {
                     next = prev.next;
                 if (next == null)
                     break;
-                if (error.line != 0 && next.line != 0) {
-                    if (error.line < next.line)
+                int errline = error.getStartLine();
+                int nextline = next.getStartLine();
+                if (errline != 0 && nextline != 0) {
+                    if (errline < nextline)
                         break;
-                    if (error.line == next.line
-                        && error.column != 0 && next.column != 0) {
-                        if (error.column < next .column)
+                    if (errline == nextline) {
+                        int errcol = error.getStartColumn();
+                        int nextcol = next.getStartColumn();
+                        if (errcol > 0 && nextcol > 0
+                            && errcol < nextcol)
                             break;
                     }
                 }
@@ -163,20 +163,17 @@ public class SourceMessages implements SourceLocator {
      * @param message the error message
      */
     public void error(char severity, String message) {
-        error(new SourceError(severity, current_filename,
-                              current_line, current_column, message));
+        error(new SourceError(severity, this, message));
     }
 
     public void error(char severity, String message, Throwable exception) {
-        SourceError err = new SourceError(severity, current_filename,
-                                          current_line, current_column, message);
+        SourceError err = new SourceError(severity, this, message);
         err.fakeException = exception;
         error(err);
     }
 
     public void error(char severity, String message, String code) {
-        SourceError err = new SourceError(severity, current_filename,
-                                          current_line, current_column, message);
+        SourceError err = new SourceError(severity, this, message);
         err.code = code;
         error(err);
     }
@@ -255,44 +252,45 @@ public class SourceMessages implements SourceLocator {
     /** Copies the current position of locator. */
     public final void setLocation(SourceLocator locator) {
         this.locator = null;
-        current_line = locator.getLineNumber();
-        current_column = locator.getColumnNumber();
-        current_filename = locator.getFileName();
+        super.setLocation(locator);
     }
 
     public String getPublicId() {
-        return locator == null ? null : locator.getPublicId();
+        return locator == null ? super.getPublicId() : locator.getPublicId();
     }
     public String getSystemId() {
-        return locator == null ? current_filename : locator.getSystemId();
+        return locator == null ? super.getSystemId() : locator.getSystemId();
     }
 
     public boolean isStableSourceLocation() { return false; }
 
     /** The default filename to use for a new error. */
-    public final String getFileName() { return current_filename; }
+    public final String getFileName() {
+        return locator == null ? super.getFileName() : locator.getFileName();
+    }
 
     /** The default line number to use for a new error. */
     public final int getLineNumber() {
-        return locator == null ? current_line : locator.getLineNumber();
+        return locator == null ? super.getLineNumber() : locator.getLineNumber();
     }
 
     /** The default column number to use for a new error. */
     public final int getColumnNumber() {
-        return locator == null ? current_column : locator.getColumnNumber();
+        return locator == null ? super.getColumnNumber() : locator.getColumnNumber();
+    }
+    public int getStartLine() {
+        return locator == null ? super.getStartLine() : locator.getStartLine();
+    }
+    public int getStartColumn() {
+        return locator == null ? super.getStartColumn() : locator.getStartColumn();
+    }
+    public int getEndLine() {
+        return locator == null ? super.getEndLine() : locator.getEndLine();
+    }
+    public int getEndColumn() {
+        return locator == null ? super.getEndColumn() : locator.getEndColumn();
     }
 
-    /** Set the default filename to use for a new error. */
-    public void setFile(String filename) { current_filename = filename; }
-    /** Set the default line number to use for a new error. */
-    public void setLine(int line) { current_line = line; }
     /** Set the default column number to use for a new error. */
-    public void setColumn(int column) { current_column = column; }
-
-    /** Set the default filename, line and column to use for a new error. */
-    public void setLine(String filename, int line, int column) {
-        current_filename = filename;
-        current_line = line;
-        current_column = column;
-    }
+    public void setColumn(int column) { setLine(getLineNumber(), column); }
 }

@@ -8,6 +8,11 @@ import gnu.lists.*;
 public class Attributes extends MethodProc
 {
   public static final Attributes attributes = new Attributes();
+
+    private Attributes() {
+        applyToConsumerMethod =
+            Procedure.lookupApplyHandle(Attributes.class, "applyToConsumer");
+    }
   
   public int numArgs() { return 0x1001; }
 
@@ -45,8 +50,7 @@ public class Attributes extends MethodProc
       }
   }
 
-  public void apply (CallContext ctx)
-  {
+    public static Object applyToConsumer(Procedure proc, CallContext ctx) throws Throwable {
     Consumer consumer = ctx.consumer;
     Object node = ctx.getNextArg();
     ctx.lastArg();
@@ -68,5 +72,6 @@ public class Attributes extends MethodProc
       }
     else
       attributes(node, consumer);
+    return null;
   }
 }

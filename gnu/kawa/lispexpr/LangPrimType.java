@@ -68,6 +68,11 @@ public class LangPrimType extends PrimType implements TypeValue {
        = new LangPrimType(Type.intType);
     static { stringCursorType.setName("string-cursor"); }
 
+    /** Special type used for boolean-valued guard expressions in patterns. */
+    public static final LangPrimType isTrueType
+        = new LangPrimType(Type.booleanType);
+    static { stringCursorType.setName("true-values"); }
+
     public LangPrimType(PrimType type) {
         super(type);
         implementationType = type;
@@ -357,12 +362,28 @@ public class LangPrimType extends PrimType implements TypeValue {
         return r;
     }
 
+    public static void emitTestIfNumber(Variable incoming, Declaration decl,
+                                        Type type, Compilation comp) {
+        CodeAttr code = comp.getCode();
+        Type.javalangNumberType.emitIsInstance(code);
+        code.emitIfIntNotZero();
+        if (decl != null) {
+            code.emitLoad(incoming);
+            type.emitCoerceFromObject(code);
+            decl.compileStore(comp);
+        }
+    }
+
     public void emitTestIf(Variable incoming, Declaration decl,
                            Compilation comp) {
         CodeAttr code = comp.getCode();
         char sig1 = getSignature().charAt(0);
         if (incoming != null)
             code.emitLoad(incoming);
+        if (this == isTrueType) {
+            code.emitIfIntNotZero();
+            return;
+        }
         switch (sig1) {
         case 'Z':
             Type.javalangBooleanType.emitIsInstance(code);
@@ -381,6 +402,9 @@ public class LangPrimType extends PrimType implements TypeValue {
         } else if (this == stringCursorType) {
             code.emitInvokeStatic(boxedStringCursorType
                                   .getDeclaredMethod("checkStringCursor", 1));
+        } else {
+            emitTestIfNumber(incoming, decl, getImplementationType(), comp);
+            return;
         }
         if (decl != null) {
             code.emitDup();

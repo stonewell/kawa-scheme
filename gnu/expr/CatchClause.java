@@ -46,7 +46,7 @@ public class CatchClause extends LetExp
     throws Throwable
   {
     // This is the Throwable caught and set by TryExpr.apply.
-    return ctx.value1;
+    return ctx.getArgAsObject(0);
   }
 
   public void compile (Compilation comp, Target target)

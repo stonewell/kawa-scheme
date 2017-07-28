@@ -10,6 +10,11 @@ import gnu.kawa.xml.*;
 import gnu.math.IntNum;
 import gnu.kawa.functions.*;
 import gnu.kawa.reflect.OccurrenceType;
+/* #ifdef use:java.lang.invoke */
+import java.lang.invoke.*;
+/* #else */
+// import gnu.mapping.CallContext.MethodHandle; 
+/* #endif */
 
 /** Implements XPath path expression.
  * The XPath expression E1/E2 is compiled into:
@@ -18,21 +23,22 @@ import gnu.kawa.reflect.OccurrenceType;
 
 public class RelativeStep extends MethodProc implements Inlineable
 {
-  public static final RelativeStep relativeStep = new RelativeStep();
+   static final MethodHandle applyToConsumer =
+        Procedure.lookupApplyHandle(RelativeStep.class, "applyToConsumer");
+    public static final RelativeStep relativeStep = new RelativeStep();
 
-  RelativeStep ()
-  {
-    setProperty(Procedure.validateApplyKey,
-                   "gnu.xquery.util.CompileMisc:validateApplyRelativeStep");
-  }
+    RelativeStep() {
+        this.applyToConsumerMethod = applyToConsumer;
+        setProperty(Procedure.validateApplyKey,
+                    "gnu.xquery.util.CompileMisc:validateApplyRelativeStep");
+    }
 
   public int numArgs() { return 0x2002; }
 
-  public void apply (CallContext ctx) throws Throwable
-  {
+     public static Object applyToConsumer(Procedure proc, CallContext ctx) throws Throwable {
     Object arg = ctx.getNextArg();
     Object next = ctx.getNextArg();
-    Procedure proc = (Procedure) next;
+    Procedure sproc = (Procedure) next;
     Consumer out = ctx.consumer;
     IntNum countObj;
     Nodes values;
@@ -51,10 +57,11 @@ public class RelativeStep extends MethodProc implements Inlineable
       {
 	it = values.nextPos(it);
 	Object dot = values.getPosPrevious(it);
-	proc.check3(dot, IntNum.make(pos), countObj, ctx);
+	ctx.setupApply(sproc, dot, IntNum.make(pos), countObj);
         Values.writeValues(ctx.runUntilValue(), filter);
       }
     filter.finish();
+    return null;
   }
 
   public void compile (ApplyExp exp, Compilation comp, Target target)

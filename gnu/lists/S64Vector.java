@@ -56,6 +56,26 @@ public  class S64Vector extends LongVector<Long>
         return new S64Vector(newLength < 0 ? data : new long[newLength]);
     }
 
+    public static S64Vector castOrNull(Object obj) {
+        if (obj instanceof long[])
+            return new S64Vector((long[]) obj);
+        if (obj instanceof S64Vector)
+            return (S64Vector) obj;
+        return null;
+    }
+
+    public static S64Vector cast(Object value) {
+        S64Vector vec = castOrNull(value);
+        if (vec == null) {
+            String msg;
+            if (value == null)
+                msg = "cannot convert null to S64Vector";
+            else
+                msg = "cannot convert a "+value.getClass().getName()+" to S64Vector";
+            throw new ClassCastException(msg);
+        }
+        return vec;
+    }
     public int getElementKind() { return INT_S64_VALUE; }
 
     public String getTag() { return "s64"; }

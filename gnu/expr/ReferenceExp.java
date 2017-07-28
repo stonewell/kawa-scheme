@@ -95,6 +95,7 @@ public class ReferenceExp extends AccessExp
     return null;
   }
 
+  @Override
   public void apply (CallContext ctx)
     throws Throwable
   {
@@ -116,20 +117,20 @@ public class ReferenceExp extends AccessExp
           }
         value = dvalue.eval(ctx);
       }
-    else if (binding != null && binding.field != null
-             && binding.field.getDeclaringClass().isExisting()
+    else if (binding != null && binding.getField() != null
+             && binding.getField().getDeclaringClass().isExisting()
              && (! getDontDereference() || binding.isIndirectBinding()))
       {
         try
           {
-            Object instance = binding.field.getStaticFlag() ? null
+            Object instance = binding.getField().getStaticFlag() ? null
               : contextDecl().getValue().eval(ctx);
-            value = binding.field.getReflectField().get(instance);
+            value = binding.getField().getReflectField().get(instance);
           }
         catch (Exception ex)
           {
             String msg = "exception evaluating "+symbol
-              +" from "+binding.field+" - "+ex;
+              +" from "+binding.getField()+" - "+ex;
             // We abuse msg as a UnboundLocationException name.
             throw new UnboundLocationException(msg, this);
           }
@@ -249,8 +250,8 @@ public class ReferenceExp extends AccessExp
       return Type.pointer_type;
     if (getDontDereference())
       {
-        if (decl.field != null && ! decl.isIndirectBinding())
-          return decl.field.getStaticFlag()
+        if (decl.getField() != null)
+          return decl.getField().getStaticFlag()
             ? Compilation.typeStaticFieldLocation
             : Compilation.typeFieldLocation;
         return Compilation.typeLocation;

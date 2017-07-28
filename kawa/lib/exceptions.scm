@@ -1,11 +1,8 @@
 (require <kawa.lib.ExceptionClasses>)
 (require <kawa.lib.std_syntax>)
 (require <kawa.lib.syntax>)
-(require <kawa.lib.prim_syntax>)
+(require <kawa.lib.prim_imports>)
 (require kawa.lib.prim_imports)
-(import (only (kawa reflect) primitive-throw invoke-static))
-;(import (rename (only (gnu kawa lispexpr LispLanguage) getNamedPartLocation)
-;                (getNamedPartLocation $lookup$)))
 
 (define-procedure with-exception-handler
   validate-apply:  "gnu.kawa.functions.CompileMisc:validateApplyWithExceptionHandler"

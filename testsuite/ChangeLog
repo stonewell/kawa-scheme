@@ -1,16 +1,142 @@
+2017-07-24  Per Bothner  <per@bothner.com>
+
+	* misc-test.scm: Add test for GitLib issue #15
+	"make-parameter doesn't like vector as converter".
+
+	* bad-keywords1.scm: Use arglist constructor, rather than list,
+	since they latter doesn't (shouldn't) allow keywords.
+
+2017-07-20  Per Bothner  <per@bothner.com>
+
+	* vars-test.scm: Add some tests for #!if guards.
+
+2017-06-08  Per Bothner  <per@bothner.com>
+
+	Some updates for updated position handling.
+
+2017-05-23  Per Bothner  <per@bothner.com>
+
+	* nesting-1.scm: New test for object form with statis link.
+	Simplified from an Android test case from Peter <craven@gmx.net>.
+
+2017-05-16  Per Bothner  <per@bothner.com>
+
+	* vars-test.scm: Test scan pattern with primitive type specifier.
+
+2017-05-14  Jim Rees <jimreesma@gmail.com>
+
+	* strings-tests.scm: Some portability fixes.
+
+2017-05-14  Per Bothner  <per@bothner.com>
+
+	* vars-test.scm: More tests.
+
+2017-05-12  Per Bothner  <per@bothner.com>
+
+	* vars-test.scm: New testsuite.
+	* Makefile.am (check-vars):  New rule.
+
+2017-05-08  Per Bothner  <per@bothner.com>
+
+	* strings-test.scm: Add/import some more SRFI-140 tests.
+	* text-test.scm: Remove duplicated tests.
+
+2017-05-08  Timo Myyrä <timo.myyra@wickedbsd.net>
+
+	* Makefile.am: Don't use --strip-trailing-c for diff.
+	It doesn't seem to be needed, and isn't available on OpenBSD.
+
+2017-05-03  Timo Myyrä <gitlab@mg.gitlab.com>
+
+	* Makefile.am: Avoid bash-specific syntax.
+
+2017-04-23  Per Bothner  <per@bothner.com>
+
+	* strings-test.scm: A bunch of tests using istring?.
+
+	* Makefile.am (check-strings): Run strings-test.scm.
+
+2017-04-20  Per Bothner  <per@bothner.com>
+
+	* bad-voidexp.scm: Fix to avoid unwanted constant-folding.
+
+	* r7rs-tests.scm (is-number): Separate method to reduce code size.
+	Also avoids some bogus warnings.
+
+2017-04-19  William D Clinger
+            Per Bothner  <per@bothner.com>
+
+	* strings-test.scm: New tests for extended srfi-140 stings.
+	This is a work-in-progess - a fair number fail.
+	This is based on texts-test.sps from srfi-135, by William Clinger.
+
+2017-04-09  Per Bothner  <per@bothner.com>
+
+	* lib-test.scm: Two string/bytevector-conversion tests.
+
+2017-03-26  Per Bothner  <per@bothner.com>
+
+	* text-test.scm: Add tests for string-concatenate,
+	string-concatenate-reverse, and string-join.
+
+2017-03-25  Per Bothner  <per@bothner.com>
+
+	* text-test.scm: Add tests for reverse-list->string.
+
+2017-03-15  Per Bothner  <per@bothner.com>
+
+	* text-test.scm: Add some tests for new string-replicate procedure.
+
+2017-03-10  Per Bothner  <per@bothner.com>
+
+	* text-test.scm: Update for new string-as-list model.
+
+2017-04-01  Vasantha Ganesh <vasanthaganesh.k@gmail.com>
+            Per Bothner  <per@bothner.com>
+
+	* reflect-fname.scm (kitten-class): New test of T:class,
+	where T is a class defined in the current compilation unit.
+	* Makefiler.am (inlining.log): Check code-generation of kitten-class.
+	* inlining.expected: Update accordingly.
+
 2017-02-27  Per Bothner  <per@bothner.com>
 
 	* lib-test.scm: Added a string-cursor test.
+
+2017-01-20  Per Bothner  <per@bothner.com>
+
+	* match1.scm: Test the 'match' form.
 
 2017-01-18  Per Bothner  <per@bothner.com>
 
 	* case-test.scm: Remove useless case using string.
 	* case-warnings.scm: Update for new warning for string case.
 
+2017-01-17  Per Bothner  <per@bothner.com>
+
+	* Makefile.am (check-r7rs): Pass --r7rs flag since otherwise
+	the 'string' function returns an immutable string. and a test fails.
+
 2017-01-02  Duncan Mak <duncanmak@gmail.com>
             Per Bothner <per@bothner.com>
 
 	* testsuite/reflect-fname.scm: New test for procedure name property.
+
+2016-12-04  Per Bothner  <per@bothner.com>
+
+	* fasta.scm: Update since string literals are now IString.
+	* sva36853.scm: Likewise - but we now have smarter constructors.
+	* lib-test.scm: Update since there is no longer automatic conversion
+	from symbol to java.lang.String.
+	* use-slots.scm: Likewise.
+	* inlining.expected: Update.
+
+2016-11-28  Per Bothner  <per@bothner.com>
+
+	No longer allow a non-spliced argument array to a Java varargs method.
+	* inlining-test.scm (varargs2, varargs3): UUse splice operator.
+	* inlining.expected: Update.
+	* sva48938.scm: Fix incorrect expected output.
 
 2016-11-27  Per Bothner  <per@bothner.com>
 

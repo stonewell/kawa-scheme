@@ -32,6 +32,7 @@ public class ValuesMap extends MethodProc implements Inlineable
 
   public int numArgs() { return 0x2002; }
 
+    /*
   public void apply (CallContext ctx) throws Throwable
   {
     Procedure proc = (Procedure) ctx.getNextArg();
@@ -62,6 +63,7 @@ public class ValuesMap extends MethodProc implements Inlineable
 	ctx.runUntilDone();
       }
   }
+    */
 
   /** If we can inline, return LambdaExp for first arg; otherwise null. */
   static LambdaExp canInline (ApplyExp exp, ValuesMap proc)

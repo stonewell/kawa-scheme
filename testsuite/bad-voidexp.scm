@@ -66,8 +66,8 @@
 ;; Output: test-savannah-18736: #t
 
 (format #t "compare 3 2: ~s~%"
-        (cond ((> 3 2) 'greater)
-              ((< 3 2) 'less)))
+        (cond ((> (car (list 3)) 2) 'greater)
+              ((< (car (list 3)) 2) 'less)))
 ;; Diagnostic: bad-voidexp.scm:69:9: warning - missing else where value is required
 ;; Output: compare 3 2: greater
 

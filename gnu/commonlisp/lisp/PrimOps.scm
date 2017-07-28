@@ -146,3 +146,8 @@
 
 (define (prin1 value #!optional (out (current-output-port))) :: <void>
   (gnu.commonlisp.lang.CommonLisp:writeFormat:format value out))
+
+(define (apply func #!rest args)
+  (kawa.standard.Scheme:apply
+   (if (symbol? func) (symbol-function func) func)
+   @args))

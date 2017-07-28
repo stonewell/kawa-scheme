@@ -62,7 +62,7 @@
          $>>$)
        "<ul><li>We have cookies for you.</li><li>If you want to eat a cookie,\n                       you must bring your own straw.</li></ul>")
 
-(define (make-foo . args) (apply list 'FOO args))
+(define (make-foo #!rest args) (apply arglist 'FOO args))
 
 (define-simple-constructor foo make-foo)
 

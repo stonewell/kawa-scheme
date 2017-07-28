@@ -16,18 +16,19 @@ import gnu.kawa.functions.GetNamedPart;
 import gnu.kawa.functions.CompileNamedPart;
 import gnu.kawa.functions.MakeSplice;
 import gnu.kawa.functions.MultiplyOp;
+import gnu.kawa.functions.Expt;
 import gnu.kawa.xml.XmlNamespace;
 import gnu.math.DFloNum;
 import gnu.math.IntNum;
 import gnu.math.Unit;
-import kawa.standard.Scheme;
-import kawa.standard.expt;
 import gnu.text.Char;
 import gnu.text.SourceLocator;
 import gnu.text.StandardNamedChars;
 /* #ifdef enable:XML */
 import gnu.xml.NamespaceBinding;
 /* #endif */
+import kawa.standard.Scheme;
+import kawa.standard.require.DeclSetMapper;
 
 /** Used to translate from source to Expression.
  * The result has macros expanded, lexical names bound, etc, and is
@@ -109,10 +110,15 @@ public class Translator extends Compilation
 
   public final Expression rewrite_car (Pair pair, SyntaxForm syntax)
   {
-    if (syntax == null || syntax.getScope() == current_scope
+    return rewrite_car(pair, syntax == null ? current_scope : syntax.getScope());
+  }
+
+  public final Expression rewrite_car (Pair pair, ScopeExp templateScope)
+  {
+    if (templateScope == current_scope
 	|| pair.getCar() instanceof SyntaxForm)
       return rewrite_car(pair, false);
-    ScopeExp save_scope = setPushCurrentScope(syntax.getScope());
+    ScopeExp save_scope = setPushCurrentScope(templateScope);
     try
       {
 	return rewrite_car(pair, false);
@@ -316,6 +322,7 @@ public class Translator extends Compilation
           }
         catch (Error ex)
           {
+            ex.printStackTrace();
             throw ex;
           }
         catch (Throwable ex)
@@ -329,6 +336,7 @@ public class Translator extends Compilation
 	StaticFieldLocation loc = StaticFieldLocation.make(decl);
 	obj = loc.get(null);
       }
+
     return obj instanceof Syntax ? (Syntax) obj : null;
   }
 
@@ -430,6 +438,7 @@ public class Translator extends Compilation
     ScopeExp save_scope = current_scope;
     int first_keyword = -1;
     int last_keyword = -1;
+    boolean bad_keyword_reported = false;
     int firstSpliceArg = -1;
     int i = 0;
     while (cdr != LList.Empty)
@@ -453,13 +462,18 @@ public class Translator extends Compilation
                 first_keyword = i;
                 last_keyword = i - 2; // To suppress incorrect warnings
             }
-            if (keywordsAreSelfEvaluating())
+            if (bad_keyword_reported)
                 ;
-            else if (i == last_keyword + 1 || i + 1 == cdr_length)
+            else if (keywordsAreSelfEvaluating())
+                last_keyword = i;
+            else if (i == last_keyword + 1 || i + 1 == cdr_length) {
+                bad_keyword_reported = true;
                 error('w', "missing value after unquoted keyword");
-            else if (i != last_keyword + 2)
+            } else if (i != last_keyword + 2) {
+                bad_keyword_reported = true;
                 error('w', "keyword separated from other keyword arguments");
-            last_keyword = i;
+            } else
+                last_keyword = i;
             arg = QuoteExp.getInstance(cdr_car, this);
             arg.setFlag(QuoteExp.IS_KEYWORD);
         } else if (cdr_cdr instanceof Pair
@@ -468,23 +482,43 @@ public class Translator extends Compilation
             LambdaExp dotsLambda = new LambdaExp();
             pushScanContext(dotsLambda);
             dotsLambda.body = rewrite_car(cdr_pair, false);
-            List<Expression> seqs = currentScanContext.sequences;
-            int nseqs = seqs.size();
-            Expression[] subargs = new Expression[nseqs + 1];
+            ScanContext scanContext = getScanContext();
+            LinkedHashMap<Declaration,Declaration> sdecls
+                = scanContext.decls;
+            int nseqs = sdecls.size();
+            ArrayList<Expression> scanExps = scanContext.scanExpressions;
+            int nexps = scanExps == null ? 0 : scanExps.size();
+            Expression[] subargs = new Expression[nseqs + nexps + 1];
             subargs[0] = dotsLambda;
-            for (int j = 0;  j < nseqs; j++)
-                subargs[j+1] = seqs.get(j);
+            popScanContext();
+            Iterator<Declaration> sit = sdecls.keySet().iterator();
+            int j = 1;
+            while (sit.hasNext()) {
+                Declaration sdecl = sit.next();
+                if (curScanNesting() > 0) {
+                    sdecl = getScanContext().addSeqDecl(sdecl);
+                }
+                ReferenceExp rexp = new ReferenceExp(sdecl);
+                subargs[j++] = rexp;
+            }
+            for (int k = 0; k < nexps; k++) {
+                subargs[j++] = scanExps.get(k);
+            }
             arg = new ApplyExp(Scheme.map, subargs);
             arg = new ApplyExp(MakeSplice.quoteInstance, arg);
-            popScanContext();
             cdr_cdr = ((Pair) cdr_cdr).getCdr();
             if (firstSpliceArg < 0)
                 firstSpliceArg = i + (applyFunction != null ? 1 : 0);
         } else {
+            Object cdr_car_car;
             if (cdr_car instanceof Pair
-                && ((Pair) cdr_car).getCar() == LispLanguage.splice_sym) {
+                && ((cdr_car_car = ((Pair) cdr_car).getCar()) == LispLanguage.splice_sym
+                    || cdr_car_car == LispLanguage.splice_colon_sym)) {
                 arg = rewrite_car((Pair) ((Pair) cdr_car).getCdr(), false);
-                arg = new ApplyExp(MakeSplice.quoteInstance, arg);
+                QuoteExp splicer = cdr_car_car == LispLanguage.splice_sym
+                    ? MakeSplice.quoteInstance
+                    : MakeSplice.quoteKeywordsAllowedInstance;
+                arg = new ApplyExp(splicer, arg);
                 if (firstSpliceArg < 0)
                     firstSpliceArg = i + (applyFunction != null ? 1 : 0);
             }
@@ -670,8 +704,11 @@ public class Translator extends Compilation
 	for (int i = 0;  i < vals.length;  i++)
 	  rewriteInBody(vals[i]);
       }
-    else
-      pushForm(rewrite(exp, false));
+    else {
+        Expression e = rewrite(exp, false);
+        setLineOf(e);
+        pushForm(e);
+    }
   }
 
     public int getCompletions(Environment env,
@@ -757,11 +794,11 @@ public class Translator extends Compilation
             }
         }
         boolean function = mode != 'N';
-        if (exp instanceof PairWithPosition)
-            return rewrite_with_position (exp, function, (PairWithPosition) exp);
-        else if (exp instanceof Pair)
-            return rewrite_pair((Pair) exp, function);
-        else if (exp instanceof Symbol && ! selfEvaluatingSymbol(exp)) {
+        if (exp instanceof Pair) {
+            Expression e = rewrite_pair((Pair) exp, function);
+            setLineOf(e);
+            return e;
+        } else if (exp instanceof Symbol && ! selfEvaluatingSymbol(exp)) {
             Symbol s = (Symbol) exp;
 
             // Check if we're handling a completion request.
@@ -940,7 +977,7 @@ public class Translator extends Compilation
                 // A special kludge to deal with the overloading between the
                 // object macro and object as being equivalent to java.lang.Object.
                 // A cleaner solution would be to use an identifier macro.
-                Field dfield = decl.field;
+                Field dfield = decl.getField();
                 if (! function && dfield != null
                     && isObjectSyntax(dfield.getDeclaringClass(),
                                       dfield.getName()))
@@ -953,20 +990,19 @@ public class Translator extends Compilation
             if (decl == null && function
                 && nameToLookup==LispLanguage.lookup_sym)
                 decl = getNamedPartDecl;
-            int scanNesting = decl == null ? 0 : decl.getScanNesting();
+            int scanNesting = decl == null ? 0
+                : Declaration.followAliases(decl).getScanNesting();
+            if (scanNesting > 0) {
+                if (scanNesting > curScanNesting())
+                    error('e', "using scan variable "+decl.getName()+" while not in scan context");
+                else {
+                    return new ReferenceExp
+                        (scanContextStack.get(scanNesting-1).addSeqDecl(decl));
+                }
+            }
             ReferenceExp rexp = new ReferenceExp (nameToLookup, decl);
             rexp.setContextDecl(cdecl);
             rexp.setLine(this);
-            if (scanNesting > 0) {
-                if (getScanContext() == null)
-                    error('e', "using scan variable "+decl.getName()+" while not in scan context");
-                else {
-                    Declaration paramDecl =
-                        currentScanContext.getLambda().addParameter(null);
-                    currentScanContext.addSeqExpression(rexp);
-                    return new ReferenceExp(paramDecl);
-                }
-            }
             if (function && separate)
                 rexp.setFlag(ReferenceExp.PREFER_BINDING2);
             return rexp;
@@ -985,7 +1021,8 @@ public class Translator extends Compilation
         else {
             if (exp instanceof Keyword && ! keywordsAreSelfEvaluating())
                 error('w', "keyword should be quoted if not in argument position");
-
+            if (exp instanceof String)
+                exp = new IString((String) exp);
             return QuoteExp.getInstance(Quote.quote(exp, this), this);
         }
     }
@@ -1157,7 +1194,7 @@ public class Translator extends Compilation
                         Expression uref = tr.rewrite(usym);
                         IntNum uexp = (IntNum) vec.get(2 * i + 1);
                         if (uexp.longValue() != 1)
-                            uref = new ApplyExp(expt.expt,
+                            uref = new ApplyExp(Expt.expt,
                                                 new Expression[] {
                                     uref, makeQuoteExp(uexp)
                                 });
@@ -1294,6 +1331,18 @@ public class Translator extends Compilation
 
   PairWithPosition positionPair;
 
+  /*
+  public Object pushPositionOfCar(Object pair)
+  {
+    if (pair instanceof Pair)
+      {
+        Object car = ((Pair) pair).getCar();
+        if (car instanceof PairWithPosition)
+          pair = car;
+      }
+    return pushPositionOf(pair);
+    }*/
+
   /** Note current line number position from a PairWithPosition.
    * Return an object to pass to popPositionOf.
    */
@@ -1399,7 +1448,7 @@ public class Translator extends Compilation
 		     + ((ReferenceExp) texp).getName() + '\'');
 	     else
 	       error('e',
-		 "invalid type spec (must be \"type\" or 'type or <type>)");
+		 "invalid type spec");
              type = Type.errorType;
 	   }
         if (decl != null)
@@ -1561,25 +1610,21 @@ public class Translator extends Compilation
           }
         finally
           {
-            if (savedScope != current_scope)
-              setPopCurrentScope(savedScope);
+              if (savedScope != current_scope)
+                setPopCurrentScope(savedScope);
             popPositionOf(savedPosition);
           }
 	if (syntax != null)
 	  {
 	    String save_filename = getFileName();
-	    int save_line = getLineNumber();
-	    int save_column = getColumnNumber();
 	    try
 	      {
-		setLine(st_pair);
 		syntax.scanForm(st_pair, defs, this);
 		return;
 	      }
 	    finally
 	      {
                 macroContext = saveContext;
-		setLine(save_filename, save_line, save_column);
 	      }
 	  }
       }
@@ -1877,13 +1922,14 @@ public class Translator extends Compilation
         ScopeExp defs = (ScopeExp) pendingImports.elementAt(i++);
         Expression posExp = (Expression) pendingImports.elementAt(i++);
         Pair beforeGoal = (Pair) pendingImports.elementAt(i++);
+        DeclSetMapper mapper = (DeclSetMapper) pendingImports.elementAt(i++);
         if (mexp == defs)
           {
             // process(BODY_PARSED);
             savePos.setLine(this);
             setLine(posExp);
             Pair beforeImports = formStack.last;
-            kawa.standard.require.importDefinitions(null, info, null,
+            kawa.standard.require.importDefinitions(null, info, mapper,
                                                     formStack, defs, this);
             if (beforeGoal != beforeImports
                 && beforeImports != formStack.last)
@@ -2096,7 +2142,7 @@ public class Translator extends Compilation
         }
     
         public void push(Object value) {
-            Pair pair = new PairWithPosition(sloc, value, LList.Empty);
+            PairWithPosition pair = new PairWithPosition(sloc, value, LList.Empty);
             last.setCdrBackdoor(pair);
             last = pair;
         }
@@ -2118,7 +2164,7 @@ public class Translator extends Compilation
         public void pushAfter(Object value, Pair position) {
             Pair pair = new PairWithPosition(sloc, value, position.getCdr());
             position.setCdrBackdoor(pair);
-            if(last == position)
+            if (last == position)
                 last = pair;
         }
     }
@@ -2134,29 +2180,40 @@ public class Translator extends Compilation
         }
     }
 
-    private ScanContext currentScanContext;
+    Stack<ScanContext> scanContextStack = new Stack<ScanContext>();
 
-    public ScanContext getScanContext() { return currentScanContext; }
-    public void setScanContext(ScanContext ctx) { currentScanContext = ctx; }
+    public ScanContext getScanContext() { return scanContextStack.peek(); }
+    public int curScanNesting() { return scanContextStack.size(); }
+    public Stack<ScanContext> getScanContextStack() { return scanContextStack; }
 
     public void pushScanContext (LambdaExp lambda) {
         ScanContext newContext = new ScanContext();
-        newContext.outer = currentScanContext;
-        currentScanContext = newContext;
         newContext.lambda = lambda;
+        scanContextStack.push(newContext);
     }
     public void popScanContext() {
-        currentScanContext = currentScanContext.outer;
+        scanContextStack.pop();
     }
     public static class ScanContext {
-        ScanContext outer;
-        ArrayList<Expression> sequences = new ArrayList<Expression>();
+        LinkedHashMap<Declaration,Declaration> decls
+            = new LinkedHashMap<Declaration,Declaration>();
+        ArrayList<Expression> scanExpressions = null;
         LambdaExp lambda;
 
         public LambdaExp getLambda() { return lambda; }
 
-        public void addSeqExpression(Expression exp) {
-            sequences.add(exp);
+        public Declaration addSeqDecl(Declaration scanVar) {
+            Declaration param = decls.get(scanVar);
+            if (param == null) {
+                param = lambda.addParameter(null);
+                decls.put(scanVar, param);
+            }
+            return param;
+        }
+        public void addSeqExpression(Expression scanExp) {
+            if (scanExpressions == null)
+                scanExpressions = new ArrayList<Expression>();
+            scanExpressions.add(scanExp);
         }
     }
 }

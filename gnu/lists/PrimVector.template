@@ -7,6 +7,9 @@ import java.io.*;
 /* #ifdef U8|U16|U32|U64 */
 import gnu.math.$BTYPE$;
 /* #endif */
+/* #ifdef BYTE */
+import java.nio.ByteOrder;
+/* #endif */
 
 /** Simple adjustable-length vector of $DESC$. */
 
@@ -209,6 +212,26 @@ public @Abstract class $CNAME$ extends $SUPER$
         return new $CNAME$(newLength < 0 ? data : new $ptype$[newLength]);
     }
 
+    public static $TAG$Vector castOrNull(Object obj) {
+        if (obj instanceof $ptype$[])
+            return new $TAG$Vector(($ptype$[]) obj);
+        if (obj instanceof $TAG$Vector)
+            return ($TAG$Vector) obj;
+        return null;
+    }
+
+    public static $TAG$Vector cast(Object value) {
+        $TAG$Vector vec = castOrNull(value);
+        if (vec == null) {
+            String msg;
+            if (value == null)
+                msg = "cannot convert null to $CNAME$";
+            else
+                msg = "cannot convert a "+value.getClass().getName()+" to $CNAME$";
+            throw new ClassCastException(msg);
+        }
+        return vec;
+    }
     /* #endif */
     /* #ifdef BIT|S8|S16|S32|S64|U8|U16|U32|U64|F32|F64 */
     public int getElementKind() { return $KIND$_VALUE; }
@@ -378,7 +401,7 @@ public @Abstract class $CNAME$ extends $SUPER$
     }
 
     /** Covert bytes, interpreted as UTF-8 characters, to a String. */
-    public String toUtf8(int start, int length) {
+    public String utf8ToString(int start, int length) {
         if (start+length>size()) throw new IndexOutOfBoundsException();
         int seg = getSegmentReadOnly(start, length);
         byte[] buf;
@@ -390,7 +413,39 @@ public @Abstract class $CNAME$ extends $SUPER$
             for (int i = 0; i < length; i++)
                 buf[i] = getByte(start+i);
         }
-        return Strings.toUtf8(buf, start, length);
+        return Strings.fromUtf8(buf, start, length);
+    }
+
+    static final byte BOM_HI = (byte) 0xFE;
+    static final byte BOM_LO = (byte) 0xFF;
+
+    public String utf16ToString(int start, int length) {
+        boolean bigEndian = ByteOrder.nativeOrder() == ByteOrder.BIG_ENDIAN;
+        if (length >+ 2) {
+            byte b0 = getByte(start);
+            byte b1 = getByte(start+1);
+            if (b0  == BOM_LO && b1 == BOM_HI) {
+                start += 2; length -= 2; bigEndian = false;
+            } else if (b0  == BOM_HI && b1 == BOM_LO) {
+                start += 2; length -= 2; bigEndian = true;
+            }
+        }
+        return utf16ToString(start, length, bigEndian);
+    }
+
+    public String utf16ToString(int start, int length, boolean bigEndian) {
+        if (start+length>size()) throw new IndexOutOfBoundsException();
+        if ((length & 1) != 0)
+            throw new IllegalArgumentException("number of bytes must be even");
+        char[] buf = new char[length>>1];
+        int hi = bigEndian ? 0 : 1;
+        int lo = bigEndian ? 1 : 0;
+        for (int i = 0; i < length; i += 2) {
+            byte bhi = getByte(start+i+hi);
+            byte blo = getByte(start+i+lo);
+            buf[i>>1] = (char) (((bhi & 0xFF) << 8) | (blo & 0xFF));
+        }
+        return new String(buf);
     }
     /* #endif */
 }

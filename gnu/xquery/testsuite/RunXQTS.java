@@ -581,7 +581,7 @@ public class RunXQTS extends FilterConsumer
     if (contextItem != null)
       {
 	gnu.math.IntNum one = gnu.math.IntNum.one();
-        withContextProc.check3(contextItem, one, one, ctx);
+        ctx.setupApply(withContextProc, contextItem, one, one);
       }
     gnu.lists.Consumer save = ctx.consumer;
     CharArrayOutPort out = new CharArrayOutPort();

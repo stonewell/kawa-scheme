@@ -16,12 +16,15 @@ import gnu.xml.*;
 public class MakeWithBaseUri extends NodeConstructor
 {
   public static final MakeWithBaseUri makeWithBaseUri = new MakeWithBaseUri();
+    private MakeWithBaseUri() {
+        this.applyToConsumerMethod =
+            Procedure.lookupApplyHandle(MakeWithBaseUri.class, "applyToConsumer");
+    }
 
   public int numArgs() { return 0x2002; }
 
-  public void apply (CallContext ctx)
-  {
-    Consumer saved = ctx.consumer;
+   public static Object applyToConsumer(Procedure proc, CallContext ctx) throws Throwable {
+     Consumer saved = ctx.consumer;
     Consumer out = NodeConstructor.pushNodeContext(ctx);
     Object baseUri = ctx.getNextArg();
     Object node = ctx.getNextArg();
@@ -37,6 +40,7 @@ public class MakeWithBaseUri extends NodeConstructor
           ((XConsumer) out).endEntity();
 	NodeConstructor.popNodeContext(saved, ctx);
       }
+    return null;
   }
 
 
@@ -50,7 +54,7 @@ public class MakeWithBaseUri extends NodeConstructor
     code.emitLoad(consumer);
     args[0].compile(comp, Target.pushObject);
     code.emitInvokeInterface(beginEntityMethod);
-    compileChild(args[1], stringIsText, comp, target);
+    compileChild(args[1], getStringIsText(), comp, target);
     code.emitLoad(consumer);
     code.emitInvokeInterface(endEntityMethod);
   }

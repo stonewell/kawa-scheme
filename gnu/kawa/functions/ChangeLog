@@ -1,9 +1,34 @@
+2017-05-16  Per Bothner  <per@bothner.com>
+
+	* ApplyToArgs.java (applyRest): Better exception reporting.
+	More helpful WrongType message if operator is invalid.
+
+2017-05-12  Per Bothner  <per@bothner.com>
+
+	* MakeSplice.java (count); Simplify.
+
+2017-04-19  Per Bothner  <per@bothner.com>
+
+	Fix so functions like '=' throw exception on bad arguments.
+	* NumberCompare.java (compareStrict): New method.
+
+2017-03-21  Per Bothner  <per@bothner.com>
+
+	* Expt.java: Moved from from kawa/standard/expt.java.
+
+2017-01-26  Per Bothner  <per@bothner.com>
+
+	* GetModuleClass.java (getModuleClassExp): New method.
+
 2016-12-03  Per Bothner  <per@bothner.com>
 
 	* CompileMisc.java (validateApplyFormat): Generalize optimitation
 	for literal format string.
 
 2016-11-27  Per Bothner  <per@bothner.com>
+
+	* CompileNamedPart.java (combineName): Handle case when prefix
+	matches the name of an existing class.
 
 	* CompileArith.java: Optimization for ADD and SUB.
 	When types are unknown, call AddOp.apply2 rather than Procedure.apply2.

@@ -13,19 +13,11 @@
         dot-product cross-product conjugate
         exp log expt sqrt
         sin cos tan asin acos atan)
-(require <kawa.lib.prim_syntax>)
-(import (only (gnu kawa functions AddOp) + -))
-(import (only (gnu kawa functions DivideOp) /))
-(import (only (gnu kawa functions MultiplyOp) *))
-(import (only (kawa standard expt) expt))
-(import (only (kawa lib numbers)
-              quaternion quaternion? complex?
-              real-part imag-part jmag-part kmag-part
-              unit-vector
-              magnitude angle
-              make-rectangular make-polar
-              exp log sqrt
-              sin cos tan asin acos atan))
+
+(import (kawa base)
+        (only kawa.lib.numbers
+              quaternion quaternion? unit-vector
+              real-part imag-part jmag-part kmag-part))
 
 (define (complex-part x::java.lang.Number) ::complex
   (if (gnu.math.Quaternion? x)

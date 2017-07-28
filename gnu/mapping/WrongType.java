@@ -14,7 +14,7 @@ public class WrongType extends WrappedException
    * Can be an integer {@code >= 1}, or one of the values {@code ARG_UNKNOWN},
    * {@code ARG_VARNAME}, or {@code ARG_DESCRIPTION}.
    */
-  public int number;
+  public final int number;
 
   /** <code>number==ARG_UNKNOWN</code> means unknown argument number. */
   public static final int ARG_UNKNOWN = -1;
@@ -37,7 +37,9 @@ public class WrongType extends WrappedException
   public Procedure proc;
 
   /** The actual argument that was bad. */
-  public Object argValue;
+  public final Object argValue;
+
+    public static final Object UNKNOWN = new String("unknown");
 
   /** The expected parameter type (a Type or TypeValue), or a string name/description. */
   public Object expectedType;
@@ -48,6 +50,7 @@ public class WrongType extends WrappedException
     procname = name;
     number = n;
     expectedType = u;
+    argValue = UNKNOWN;
   }
 
   public WrongType(Procedure proc, int n, ClassCastException ex)
@@ -56,12 +59,16 @@ public class WrongType extends WrappedException
     this.proc = proc;
     this.procname = proc.getName();
     this.number = n;
+    argValue = UNKNOWN;
   }
 
   public WrongType(ClassCastException ex, Procedure proc, int n,
                    Object argValue)
   {
-    this(proc, n, ex);
+    super(ex);
+    this.proc = proc;
+    this.procname = proc.getName();
+    this.number = n;
     this.argValue = argValue;
   }
 
@@ -108,12 +115,15 @@ public class WrongType extends WrappedException
     super(ex);
     this.procname = procname;
     this.number = n;
+    argValue = UNKNOWN;
   }
  
   public WrongType (ClassCastException ex, String procname, int n,
                     Object argValue)
   {
-    this(procname, n, ex);
+    super(ex);
+    this.procname = procname;
+    this.number = n;
     this.argValue = argValue;
   }
 
@@ -133,18 +143,14 @@ public class WrongType extends WrappedException
   public static WrongType make(ClassCastException ex, Procedure proc, int n,
 			       Object argValue)
   {
-    WrongType wex = new WrongType(proc, n, ex);
-    wex.argValue = argValue;
-    return wex;
+    return new WrongType(ex, proc, n, argValue);
   }
 
   /** This interface is designed for a compact call sequence. */
   public static WrongType make(ClassCastException ex, String procname, int n,
 			       Object argValue)
   {
-    WrongType wex = new WrongType(procname, n, ex);
-    wex.argValue = argValue;
-    return wex;
+    return new WrongType(ex, procname, n, argValue);
   }
 
   @Override
@@ -168,7 +174,9 @@ public class WrongType extends WrappedException
             sbuf.append(number);
           }
       }
-    if (argValue != null)
+    if (argValue == null)
+        sbuf.append(" (null)");
+    else if (argValue != UNKNOWN)
       {
 	sbuf.append(" '");
 	String argString = argValue.toString();
@@ -188,7 +196,7 @@ public class WrongType extends WrappedException
         sbuf.append("'");
       }
     sbuf.append(" has wrong type");
-    if (argValue != null)
+    if (argValue != null && argValue != UNKNOWN)
       {
 	sbuf.append(" (");
         Class wrongClass = argValue.getClass();

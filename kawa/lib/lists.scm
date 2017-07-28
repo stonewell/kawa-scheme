@@ -7,7 +7,7 @@
                list? make-list reverse!
 	       memq memv member assq assv assoc list-copy)
 
-(require <kawa.lib.prim_syntax>)
+(require <kawa.lib.prim_imports>)
 (require <kawa.lib.std_syntax>)
 (require <kawa.lib.reflection>)
 

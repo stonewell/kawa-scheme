@@ -161,7 +161,7 @@ public class FieldLocation<T> extends ClassMemberLocation<T>
         ModuleExp mexp = info.getModuleExp();
         for (d = mexp.firstDecl();  d != null; d = d.nextDecl())
           {
-            if (d.field != null && d.field.getName().equals(fname))
+            if (d.getField() != null && d.getField().getName().equals(fname))
               break;
           }
         if (d == null)
@@ -362,7 +362,7 @@ public class FieldLocation<T> extends ClassMemberLocation<T>
 
   public static FieldLocation make (Object instance, Declaration decl)
   {
-    gnu.bytecode.Field fld = decl.field;
+    gnu.bytecode.Field fld = decl.getField();
     ClassType ctype = fld.getDeclaringClass();
     FieldLocation loc = new FieldLocation(instance, ctype, fld.getName());
     loc.setDeclaration(decl);

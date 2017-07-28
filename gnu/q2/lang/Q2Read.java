@@ -63,16 +63,17 @@ public class Q2Read extends LispReader
    * of the next command (on the next line); curIndentation has been
    * updated to that of the initial whitespace of that line; and a
    * mark() has been set at the start of the line. 
-ar  * Exception: If singleLine, returned position is *before* newline,
+   * Exception: If singleLine, returned position is *before* newline,
    * and mark is not set.
    */
   Object readIndentCommand (boolean singleLine)
     throws java.io.IOException, SyntaxException
   {
     int startIndentation = curIndentation;
-    LList rresult = LList.Empty;
+    Pair head = new Pair(null, LList.Empty);
+    Pair last = head;
     Object obj = LList.Empty;
-    PairWithPosition pair = null, last = null;
+    PairWithPosition pair = null;
     Object prev = null;
     ReadTable rtable = ReadTable.getCurrent();
 
@@ -91,23 +92,13 @@ ar  * Exception: If singleLine, returned position is *before* newline,
             Operator rhsNeeded = null;
 	    if (singleLine)
 	      {
-		if (prev instanceof Symbol && ! Q2.instance.selfEvaluatingSymbol(prev))
-		  {
-		    Compilation comp = Compilation.getCurrent();
-		    Expression func = ((Translator) comp).rewrite(prev, true);
-		    Declaration decl;
-		    Object value;
-                    if (func instanceof ReferenceExp
-			&& (decl = ((ReferenceExp) func).getBinding()) != null
-			&& (value = decl.getConstantValue()) instanceof Operator
-			&& (((Operator) value).flags & Operator.RHS_NEEDED) != 0)
-		      
-                        rhsNeeded = (Operator) value;
-		    else
-		      break;
-		  }
-		else
-		  break;
+                  prev = last.getCar();
+                  Q2Translator tr = (Q2Translator) Compilation.getCurrent();
+                  Operator op = tr.checkIfOperator(prev);
+                  if (op != null && (op.flags & Operator.RHS_NEEDED) != 0)
+                      rhsNeeded = op;
+                  else
+                      break;
 	      }
 	    ch = read(); // re-read newline
             port.mark(Integer.MAX_VALUE);
@@ -152,7 +143,9 @@ ar  * Exception: If singleLine, returned position is *before* newline,
               {
                 qresult = new Pair(kawa.standard.begin.begin,
                                    LList.reverseInPlace(qresult));
-                rresult = new Pair(qresult, rresult);
+                Pair t = new Pair(qresult, LList.Empty);
+                last.setCdrBackdoor(t);
+                last = t;
               }
             prev = qresult;
             break;
@@ -162,14 +155,9 @@ ar  * Exception: If singleLine, returned position is *before* newline,
         ch = port.read();
         if (ch < 0)
           break;
-        Object val = readValues(ch, rtable, -1);
-        prev = val;
-        if (val != Values.empty) {
-            val = handlePostfix(val, rtable, line, column);
-          rresult = makePair(val, rresult, line, column);
-        }
+        last = readValuesAndAppend(ch, rtable, last);
       }
-    return makeCommand(LList.reverseInPlace(rresult));
+    return makeCommand(head.getCdr());
   }
 
   Object makeCommand (Object command)
@@ -435,11 +423,32 @@ ar  * Exception: If singleLine, returned position is *before* newline,
       Q2Read reader = (Q2Read) in;
       char saveReadState = reader.pushNesting('(');
       int startLine = reader.getLineNumber();
+      //set('(',  ReaderParens.getInstance('(', ')'));
       int startColumn = reader.getColumnNumber();
+      InPort port = reader.getPort();
+      boolean lambdaParamList = false;
+      if (port.peek() == '|') {
+          lambdaParamList = true;
+          port.skip();
+          ReadTable rtable = ReadTable.getCurrent();
+          Pair head = new Pair(null, LList.Empty);
+          Pair last = head;
+          for (;;) {
+             int ch = reader.read();
+             if (ch < 0)
+               reader.eofError("unexpected EOF in vector starting here",
+                              startLine + 1, startColumn);
+             if (ch == '|' && reader.peek() == ')') {
+                 port.skip();
+                 break;
+             }
+             last = reader.readValuesAndAppend(ch, rtable, last);
+           }
+          return Operator.makeLambda(head.getCdr());
+      }
       try
         {
           Object result = reader.readIndentCommand(false);
-	  InPort port = reader.getPort();
           int ch = port.peek();
           if (ch == ')')
             port.skip();

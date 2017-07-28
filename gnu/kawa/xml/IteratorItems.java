@@ -14,8 +14,12 @@ public class IteratorItems extends MethodProc
 {
   public static IteratorItems iteratorItems = new IteratorItems();
 
-  public void apply (CallContext ctx)
-  {
+    private IteratorItems() {
+        applyToConsumerMethod =
+            Procedure.lookupApplyHandle(IteratorItems.class, "applyToConsumer");
+    }
+
+    public static Object applyToConsumer(Procedure proc, CallContext ctx) throws Throwable {
     Consumer out = ctx.consumer;
     Object arg = ctx.getNextArg();
     ctx.lastArg();
@@ -31,5 +35,6 @@ public class IteratorItems extends MethodProc
 	Object val = iter.next();
 	Values.writeValues(val, out);
       }
+    return null;
   }
 }

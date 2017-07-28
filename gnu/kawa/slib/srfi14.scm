@@ -229,7 +229,7 @@ KNIL. That is, if CS is the empty set, the procedure returns
 KNIL. Otherwise, some element C of CS is chosen; let CS' be the
 remaining, unchosen characters. The procedure returns
   (char-set-fold KONS (KONS C KNIL) CS')"
-  (let loop ((cursor (char-set-cursor cs)) (answer knil))
+  (let loop ((cursor ::int (char-set-cursor cs)) (answer knil))
     (if (end-of-char-set? cursor) answer
         (loop (char-set-cursor-next cs cursor)
               (kons (char-set-ref cs cursor) answer)))))
@@ -265,7 +265,7 @@ use BASE-CS's storage to construct the result."
 CS. Note that the order in which PROC is applied to the characters in
 the set is not specified, and may even change from one procedure
 application to another."
-  (do ((cursor (char-set-cursor cs) (char-set-cursor-next cs cursor)))
+  (do ((cursor ::int (char-set-cursor cs) (char-set-cursor-next cs cursor)))
       ((end-of-char-set? cursor) 'done) ; a single unspecified return
                                         ; value is required (due to
                                         ; R5RS language)
@@ -277,7 +277,7 @@ the char-set CS, and collect the results into a new character set.
 
 Essentially lifts PROC from a char->char procedure to a
 char-set->char-set procedure."
-  (do ((cursor (char-set-cursor cs) (char-set-cursor-next cs cursor))
+  (do ((cursor ::int (char-set-cursor cs) (char-set-cursor-next cs cursor))
        (result-cs (char-set-copy char-set:empty)
                   (char-set-adjoin! result-cs
                                     (proc (char-set-ref cs cursor)))))
@@ -654,7 +654,7 @@ that (PRED C) returns true. If character set BASE-CS is provided, the
 characters specified by PRED are added to it. `char-set-filter!' is
 allowed, but not required, to side-effect and reuse the storage in
 BASE-CS; `char-set-filter' produces a fresh character set."
-  (do ((cursor (char-set-cursor cs) (char-set-cursor-next cs cursor))
+  (do ((cursor ::int (char-set-cursor cs) (char-set-cursor-next cs cursor))
        (result-cs (char-set-copy base-cs)
                   (let ((c ::character (char-set-ref cs cursor)))
                     (if (pred c) (char-set-adjoin! result-cs c)
@@ -669,7 +669,7 @@ that (PRED C) returns true. If character set BASE-CS is provided, the
 characters specified by PRED are added to it. `char-set-filter!' is
 allowed, but not required, to side-effect and reuse the storage in
 BASE-CS; `char-set-filter' produces a fresh character set."
-  (let loop ((cursor (char-set-cursor cs)) (base-cs base-cs))
+  (let loop ((cursor ::int (char-set-cursor cs)) (base-cs base-cs))
     (if (end-of-char-set? cursor) base-cs
         (let ((c ::character (char-set-ref cs cursor)))
           (if (pred c)
@@ -759,7 +759,7 @@ defined, and may be different from one call to another."
 returns true of every character in the character set CS. The order in
 which this procedure sequences through the elements of CS is not
 specified."
-  (let loop ((cursor (char-set-cursor cs)))
+  (let loop ((cursor ::int (char-set-cursor cs)))
     (or (end-of-char-set? cursor)
         (and (pred (char-set-ref cs cursor))
              (loop (char-set-cursor-next cs cursor))))))
@@ -774,7 +774,7 @@ Note that if you need to determine the actual character on which a
 predicate returns true, arrange for the predicate to return the
 character parameter as its true value, e.g.
   (char-set-any (lambda (c) (and (char-upper-case? c) c)) cs)"
-  (let loop ((cursor (char-set-cursor cs)))
+  (let loop ((cursor ::int (char-set-cursor cs)))
     (cond ((end-of-char-set? cursor) #f)
           ((pred (char-set-ref cs cursor)) => values)
           (else (loop (char-set-cursor-next cs cursor))))))

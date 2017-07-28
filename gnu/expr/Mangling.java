@@ -19,10 +19,31 @@ public class Mangling {
         return mangleSymbolic(name, 'Q', false);
     }
 
+    public static String mangleVariable(String name) {
+        return mangleSymbolic(name, 'V', false);
+    }
+
+    public static String mangleField(String name) {
+        return Mangling.mangleNameIfNeeded(name);
+    }
+    public static String demangleField(String name) {
+        return demangleSymbolic(name);
+    }
+
+    public static String mangleMethod(String name) {
+        // Don't use "symbolic" mangling.
+        return mangleName(name);
+    }
+
+    public static String demangleMethod(String name) {
+        // Don't use "symbolic" mangling.
+        return demangleName(name, false);
+    }
+
     /** Mangle according to John Rose's "Symbolic Freedom in the VM".
      * <a href="https://blogs.oracle.com/jrose/entry/symbolic_freedom_in_the_vm">See this article.</a>
      * @param context One of 'C' (class name); 'Q' (qualified name, with dots);
-     *   'F' (field name); 'M' (method name).
+     *   'F' (field name); 'M' (method name); 'V' (local variable name).
      * @param force True if should escape '\\' even if that is the
      *   only disallowed character.  The may cause an already-mangled name
      *   to be doubly mangled.
@@ -218,11 +239,9 @@ public class Mangling {
     }
 
     public static String mangleNameIfNeeded(String name) {
-        return Language.mangleNameIfNeeded(name);
+        if (name == null || Language.isValidJavaName(name))
+            return name;
+        else
+            return mangleSymbolic(name, 'F', false);
     }
-
-    public static String demangleName(String name) {
-        return demangleName(name, false);
-    }
-
 }

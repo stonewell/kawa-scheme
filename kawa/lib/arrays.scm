@@ -1,6 +1,8 @@
 ;;; Procedures for implementing SRFI-25 arrays.
 
-(require <kawa.lib.prim_syntax>)
+(require <kawa.lib.prim_imports>)
+(require <kawa.lib.std_syntax>)
+(require kawa.lib.exceptions)
 
 (define-alias <array>  <gnu.lists.Array>)
 
@@ -13,7 +15,7 @@
 (define (make-array (shape :: <array>) #!rest (obj ::object[])) :: <array>
   (invoke-static <gnu.kawa.functions.Arrays> 'makeFromValues shape obj))
 
-(define (array (shape :: <array>) #!rest (vals :: <Object[]>))
+(define ($array_constructor$ (shape :: <array>) #!rest (vals :: <Object[]>))
   (invoke-static <gnu.kawa.functions.Arrays> 'makeSimple
 		 shape (gnu.lists.FVector vals)))
 

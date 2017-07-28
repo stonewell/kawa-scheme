@@ -25,6 +25,7 @@ public class ThisExp extends ReferenceExp
     return (flags & EVAL_TO_CONTEXT) != 0;
   }
 
+  @Override
   public void apply (CallContext ctx)
     throws Throwable
   {
@@ -72,11 +73,11 @@ public class ThisExp extends ReferenceExp
       {
         // This is an extension used by define_syntax.
         CodeAttr code = comp.getCode();
-        ModuleExp module;
+        ScopeExp context = getContextScope();
         if (context instanceof ModuleExp
-            && (module = (ModuleExp) context).staticInitRun()) {
-            code.emitPushString(module.getMinfo().getClassName());
-        } else if (comp.method.getStaticFlag())
+            && ((ModuleExp) context).isStatic())
+            comp.loadClassRef(((LambdaExp) context).getCompiledClassType(comp));
+        else if (comp.method.getStaticFlag())
           code.emitGetStatic(comp.moduleInstanceMainField);
         else
           code.emitPushThis();

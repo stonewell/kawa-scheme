@@ -12,7 +12,6 @@ import gnu.kawa.io.CharArrayInPort;
 import gnu.kawa.io.CheckConsole;
 import gnu.kawa.io.InPort;
 import gnu.kawa.io.OutPort;
-import gnu.kawa.io.TtyInPort;
 import gnu.kawa.reflect.*;
 import gnu.kawa.format.AbstractFormat;
 import gnu.kawa.functions.GetNamedPart;
@@ -401,7 +400,7 @@ public abstract class Language
    */
   protected void defProcStFld(String name, String cname)
   {
-    defProcStFld(name, cname, mangleNameIfNeeded(name));
+    defProcStFld(name, cname, Mangling.mangleField(name));
   }
   
   /**
@@ -412,7 +411,7 @@ public abstract class Language
    * @param mname The name of the (mangled) field in {@code cname}
    */
   protected void defProcStFldAs(String asName, String cname, String mname) {
-    defProcStFld(asName, cname, mangleNameIfNeeded(mname));
+    defProcStFld(asName, cname, Mangling.mangleField(mname));
   }
 
   /** Enter a named function into the current environment. */
@@ -467,10 +466,7 @@ public abstract class Language
       }
     try
       {
-	Object inst = clas.newInstance ();
-	ClassMemberLocation.defineAll(inst, this, Environment.getCurrent());
-	if (inst instanceof ModuleBody)
-	  ((ModuleBody)inst).run();
+	ClassMemberLocation.defineAll(clas, this, Environment.getCurrent());
       }
     catch (Exception ex)
       {
@@ -537,14 +533,6 @@ public abstract class Language
         }
         return extensions;
     }
-
-  public static String mangleNameIfNeeded (String name)
-  {
-    if (name == null || isValidJavaName(name))
-      return name;
-    else
-      return mangleName(name, 0);
-  }
 
   public static boolean isValidJavaName(String name)
   {
@@ -847,26 +835,34 @@ public abstract class Language
         return t;
     }
 
-  public final Type getTypeFor (Object spec, boolean lenient)
-  {
-    if (spec instanceof Type)
-      return (Type) spec;
-    if (spec instanceof Class)
-      return getTypeFor((Class) spec);
-    if (lenient
-        && (spec instanceof FString
-            || spec instanceof String
-            || (spec instanceof Symbol && ((Symbol) spec).hasEmptyNamespace())
-            || spec instanceof CharSeq))
-      return getTypeFor(spec.toString());
-    if (spec instanceof Namespace)
-      {
-        String uri = ((Namespace) spec).getName();
-        if (uri != null && uri.startsWith("class:"))
-          return getLangTypeFor(getTypeFor(uri.substring(6)));
-      }
-    return null;
-  }
+    /** Convert a "type value" to a Type.
+     * This is used to process types from source code.
+     * Normally, an identifier that resolves to a class name
+     * should resolve to the raw ClassType, rather than a language
+     * specific class (which might e.g. use a different constructor).
+     * These may be exceptions: specifically,  given java.lang.String,
+     * we do want to use language-specific conversion to String.
+     */
+    public Type getTypeFor(Object spec, boolean lenient) {
+        if (spec instanceof Type)
+            return (Type) spec;
+        if (spec instanceof Class) {
+            Class clas = (Class) spec;
+            if (clas.isArray())
+                return ArrayType.make(getTypeFor(clas.getComponentType(), lenient));
+            return Type.make(clas);
+        }
+        if (lenient
+            && (spec instanceof CharSequence
+                || spec instanceof SimpleSymbol))
+            return getTypeFor(spec.toString());
+        if (spec instanceof Namespace) {
+            String uri = ((Namespace) spec).getName();
+            if (uri != null && uri.startsWith("class:"))
+                return getLangTypeFor(getTypeFor(uri.substring(6)));
+        }
+        return null;
+    }
 
     /** Encode this type as a parseable string.
      * Stored in SourceType or SourceMethodType annotations.
@@ -887,8 +883,19 @@ public abstract class Language
 
     public Type decodeType(Type javaType, String annotType,
                            ParameterizedType parameterizedType) {
-        if (annotType != null && annotType.length() > 0)
+        int annotTypeLen;
+        if (annotType != null
+            && (annotTypeLen = annotType.length()) > 0) {
+            String scanPrefix = "$scan-array$[";
+            int scanPrefixLen;
+            if (annotType.startsWith(scanPrefix)
+                && annotTypeLen > (scanPrefixLen = scanPrefix.length()) + 1) {
+                String param = annotType.substring(scanPrefixLen,
+                                                   annotTypeLen-1);
+                return new MappedArrayType(getTypeFor(param));
+            }
             return getTypeFor(annotType);
+        }
         return getLangTypeFor
             (resolveTypeVariables(javaType, parameterizedType));
     }
@@ -955,8 +962,6 @@ public abstract class Language
         Object value = ((QuoteExp) exp).getValue();
         if (value instanceof Type)
           return (Type) value;
-        if (value instanceof Class)
-          return Type.make((Class) value);
         return getTypeFor(value, lenient);
       }
     else if (exp instanceof ReferenceExp)
@@ -1070,12 +1075,12 @@ public abstract class Language
       return t2;
     if (t2 == Type.neverReturnsType)
       return t1;
+    if (t1 == t2)
+      return t1;
     if (t1 == Type.toStringType)
       t1 = Type.javalangStringType;
     if (t2 == Type.toStringType)
       t2 = Type.javalangStringType;
-    if (t1 == t2)
-      return t1;
     if (t1.isVoid() || t2.isVoid())
         return Type.objectType;
     if (t1.isSubtype(t2))
@@ -1097,14 +1102,14 @@ public abstract class Language
         boolean isFinal = (fld.getModifiers() & Access.FINAL) != 0;
         if ((isImportedInstance = fname.endsWith("$instance")))
             fdname = fname;
-        else if (isFinal && ftype == Compilation.typeModuleMethod
+        else if (isFinal && ftype == Compilation.typeCompiledProc
                  && fvalue instanceof Named /* should always be true */)
             fdname = ((Named) fvalue).getSymbol();
         else {
             // FIXME move this to demangleName
             if (externalAccess)
                 fname = fname.substring(Declaration.PRIVATE_PREFIX.length());
-            fdname = Mangling.demangleName(fname, true).intern();
+            fdname = Mangling.demangleField(fname).intern();
         }
         try {
             SourceName sourceName = fld.getAnnotation(SourceName.class);
@@ -1136,6 +1141,9 @@ public abstract class Language
             dtype = decodeType(ftype, annotType, null);
         }
         Declaration fdecl = mod.addDeclaration(fdname, dtype);
+        if (dtype instanceof MappedArrayType) {
+            fdecl.setScanNesting(1);
+        }
         boolean isStatic = (fld.getModifiers() & Access.STATIC) != 0;
         if (isAlias) {
             fdecl.setIndirectBinding(true);
@@ -1155,7 +1163,7 @@ public abstract class Language
         }
         if (isStatic)
             fdecl.setFlag(Declaration.STATIC_SPECIFIED);
-        fdecl.field = fld; 
+        fdecl.setField(fld); 
         if (isFinal && ! isAlias) // FIXME? ok for location?
             fdecl.setFlag(Declaration.IS_CONSTANT);
         if (isImportedInstance)

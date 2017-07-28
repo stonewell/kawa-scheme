@@ -3,6 +3,7 @@ import gnu.mapping.*;
 import gnu.bytecode.*;
 import gnu.text.SourceLocator;
 import gnu.kawa.io.OutPort;
+import gnu.kawa.lispexpr.LangPrimType;
 import gnu.kawa.reflect.MakeAnnotation;
 
 /**
@@ -64,6 +65,7 @@ public class QuoteExp extends Expression
     static public QuoteExp trueObjExp = makeShared(Boolean.TRUE);
   static public QuoteExp falseObjExp = makeShared(Boolean.FALSE);
     static public QuoteExp emptyExp = makeShared(gnu.lists.LList.Empty);
+    static public QuoteExp isTrueTypeExp = makeShared(LangPrimType.isTrueType);
   static public QuoteExp nullExp = makeShared(null, Type.nullType);
   public static final QuoteExp classObjectExp = makeShared(Type.objectType);
 
@@ -111,6 +113,7 @@ public class QuoteExp extends Expression
   
   protected boolean mustCompile () { return false; }
 
+  @Override
   public void apply (CallContext ctx)
   {
     ctx.writeValue(value);
@@ -198,7 +201,9 @@ public class QuoteExp extends Expression
             comp.error('e', msg, args[0]);
           }
       }
-    if (comp.inlineOk(proc) && exp.isSimple()
+    if (comp.inlineOk(proc)
+        // FIXME - should allow non-simple calls to compiled proceures
+        && exp.isSimple()
         && ! ApplyExp.isInlineable(proc))
       {
 	PrimProcedure mproc

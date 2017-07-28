@@ -84,8 +84,8 @@ public class KawaScriptEngine extends AbstractScriptEngine
             while (err.severity == 'w' && err.next != null)
               err = err.next;
           }
-        throw new ScriptException(err.message, err.filename,
-                                  err.line, err.column);
+        throw new ScriptException(err.message, err.getFileName(),
+                                  err.getLineNumber(), err.getColumnNumber());
       }
     catch (Exception ex)
       {

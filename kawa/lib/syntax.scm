@@ -1,17 +1,18 @@
 (module-export defmacro define-macro define-syntax-case
 	       begin-for-syntax define-for-syntax
-               when unless try-finally synchronized
+               when unless try-finally match synchronized
                let-values let*-values case-lambda define-values
                define-alias-parameter $bracket-list$
                $string$ $string-with-default-format$ $format$ $sprintf$
                $string-with-delimiter-marks$ define-simple-constructor)
 
-(require <kawa.lib.prim_syntax>)
+(require <kawa.lib.prim_imports>)
 (require <kawa.lib.std_syntax>)
 (require <kawa.lib.reflection>)
 (require <kawa.lib.lists>)
 (require <kawa.lib.scheme.eval>)
-(require <kawa.lib.prim_imports>)
+(import (only kawa.lib.kawa.istrings string-append))
+(import (only kawa.standard.define_syntax (define_macro %define-macro)))
 
 (define-syntax defmacro
   (syntax-rules ()
@@ -45,15 +46,15 @@
     (syntax-case x ()
       ((_ try-part finally-part)
        (make <gnu.expr.TryExp>
-         (syntax->expression (syntax try-part))
-         (syntax->expression (syntax finally-part)))))))
+         (syntax-pair->expression #'(try-part))
+         (syntax-pair->expression #'(finally-part)))))))
 
 (define-rewrite-syntax synchronized
   (lambda (x)
     (syntax-case x ()
       ((_ object . body)
        (make <gnu.expr.SynchronizedExp>
-         (syntax->expression (syntax object))
+         (syntax-pair->expression #'( object))
          (syntax-body->expression (syntax body)))))))
 
 
@@ -190,6 +191,26 @@
 		 (set! (field wt 'expectedType) type)
 		 (primitive-throw wt))))))))))
 
+(define-syntax %match1
+  (syntax-rules (::)
+    ((%match1 pattern :: type #!if cond . body)
+     (lambda (pattern :: type #!if cond) . body))
+    ((%match1 pattern :: type . body)
+     (lambda (pattern :: type) . body))
+    ((%match1 pattern #!if cond . body)
+     (lambda (pattern #!if cond) . body))
+    ((%match1 pattern . body)
+     (lambda (pattern) . body))))
+
+(define-syntax match
+  (lambda (form)
+    (syntax-case form ()
+      ((match value clause ...)
+       #`(#,gnu.kawa.reflect.TypeSwitch:typeSwitch
+          value
+          (%match1 . clause) ...
+          (lambda (_) (primitive-throw (java.lang.RuntimeException "no match"))))))))
+
 ;; Helper macros for $string$:
 ;; Collect format string (assuming we're *not* inside $<<$ ... $>>$)
 ;; Returns list of format string fragments, to be concatenated.
@@ -300,7 +321,7 @@
   (define-syntax %symbol->construct
     (syntax-rules ()
       ((%symbol->construct sym)
-       (symbol sym $construct$)))))
+       (symbol (sym:toString) $construct$)))))
  (else
   ;; In a Scheme without namespaces (i.e. colon not special)
   ;; construct a regular symbol.

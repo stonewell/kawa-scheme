@@ -1,4 +1,101 @@
+2017-06-08  Per Bothner  <per@bothner.com>
+
+	* PairWithPosition.java: Update for new source position model.
+
+2017-04-25  Per Bothner  <per@bothner.com>
+
+	* Sequences.java (getSize): Use sizeInCodePoints for strings.
+
+2017-04-20  Per Bothner  <per@bothner.com>
+
+	* IString.java (SubString): New constructor for member class.
+
+	* CharBuffer.java (length): Remove method -causes infinite recursion.
+	The inherited method works fine.
+
+2017-04-18  Per Bothner  <per@bothner.com>
+
+	* FString.java (replace): Avoid needlessly making a copy of source.
+
+	* IString.java (subSequence): Fix so it works for SubString.
+
+2017-04-10  Per Bothner  <per@bothner.com>
+
+	* PrimVector.template: Move previous utf16ToString change to right file.
+
+2017-04-09  Per Bothner  <per@bothner.com>
+
+	* ByteVector.java (utf16ToString): Two new methods.
+	* Strings.java (toUtf16): New static method.
+
+2017-04-06  Per Bothner  <per@bothner.com>
+
+	* ByteVector.java (toUtf8): Rename to utf8ToString.
+	* Strings.java (toUtf8): Rename to fromUtf8.
+
+	* PrimVector.template: Fix castOrNull/cast for FVector.
+	FVector.java is a generated class. Fixes bug from 2017-02-03.
+
+2017-03-26  Per Bothner  <per@bothner.com>
+
+	* FString.java (prepend *2): Two new methods.
+
+2017-03-25  Per Bothner  <per@bothner.com>
+
+	* FString.java (prependCharacter): New method.
+
+2017-03-20  Per Bothner  <per@bothner.com>
+
+	* Strings.java (replicate): Change return type to plain String.
+
+2017-03-15  Per Bothner  <per@bothner.com>
+
+	* Strings.java (replicate): New method.
+	(offsetByCodePoints): Add index checking.
+
+	* FString.java (<init>): Minor optimization.
+
+2017-03-10  Per Bothner  <per@bothner.com>
+
+	String viewed as vector works same as string-ref.
+	I.e. a string is a list of Unicode chars (with no #\ignorable-char).
+	* FString.java: Major re-write.
+	* CharSeq.java (subSequence, consume): Remove methods.
+	* SubCharSeq.java: Remove - no longer needed.
+
+2017-02-28  Per Bothner  <per@bothner.com>
+
+	* CharSeq.java (fill): Remove two 'fill' methods.
+	They aren't used any more as they don't work for non-BMP characters.
+	* FString.java (fill): Remove methods.
+	* SubCharSeq.java (fill): Likewise.
+
+2017-02-03  Per Bothner  <per@bothner.com>
+
+	* PrimVector.template (cast, castOrNull): New methods.
+	* CharVector.java (cast, castOrNull): Likewise.
+	* FVector.java (cast, castOrNull): Likewise.
+
+2017-01-17  Per Bothner  <per@bothner.com>
+
+	* IString.java (SubString): New class for substring of an IString.
+	Generalize methods to handle plain IString as well as SubString.
+	(valueOf): New factory method.
+	* Strings.java (compareTo): New static method.
+
 2016-12-03  Per Bothner  <per@bothner.com>
+
+	* FString.java: Simplify set of constructors.
+
+	* IString.java (valueOf): New factory method.
+	(toCharArray, getBytes(String)): New methods.
+
+2016-11-28  Per Bothner  <per@bothner.com>
+
+	* IString.java: Implement Comparable.
+	(compareTo): New method.
+	(hashCode, equals): New methods.
+	* Strings.java (offsetByCodePoints): Fix logic bug.
 
 	* AbstractSequence.java (setAt): New method - more efficient than set.
 

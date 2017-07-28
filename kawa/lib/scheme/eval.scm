@@ -1,5 +1,7 @@
 (module-name (scheme eval))
 (include "eval-exports")
+;;(import (scheme base))
+(require <kawa.lib.prim_imports>)
 (require <kawa.lib.std_syntax>)
 (require <kawa.lib.lists>)
 
@@ -10,7 +12,7 @@
 
 (define (environment #!rest specifiers)::gnu.mapping.Environment
   (define importer kawa.standard.ImportFromLibrary:instance)
-  (define language (kawa.standard.Scheme:getR7rsInstance))
+  (define language (kawa.standard.Scheme:getR7rsInstance)) ;; FIXME??
   (define messages (gnu.text.SourceMessages))
   (define lexical (gnu.expr.NameLookup language))
   (define tr (kawa.standard.SchemeCompilation language messages lexical))

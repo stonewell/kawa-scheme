@@ -32,7 +32,7 @@ public class ImportFromLibrary extends Syntax
         { "2", "and-let*", "gnu.kawa.slib.srfi2" },
         { "5", "let", MISSING },
         { "6", "basic-string-ports", BUILTIN },
-        { "8", "receive", "gnu.kawa.slib.receive" },
+        { "8", "receive", "kawa.lib.srfi.8" },
         { "9", "records", BUILTIN },
         { "11", "let-values", BUILTIN },
         { "13", "strings", "gnu.kawa.slib.srfi13" },
@@ -44,7 +44,7 @@ public class ImportFromLibrary extends Syntax
         { "21", "real-time-multithreading", MISSING },
         { "23", "error", BUILTIN },
         { "25", "multi-dimensional-arrays", BUILTIN },
-        { "26", "cut", "gnu.kawa.slib.cut" },
+        { "26", "cut", "kawa.lib.srfi.26" },
         { "27", "random-bits", MISSING },
         { "28", "basic-format-strings", BUILTIN },
         { "29", "localization", MISSING },
@@ -81,7 +81,7 @@ public class ImportFromLibrary extends Syntax
         { "78", "lightweight-testing", MISSING },
         { "86", "mu-and-nu", MISSING },
         { "87", "case", BUILTIN },
-        { "95", "sorting-and-merging", "kawa.lib.srfi95" },
+        { "95", "sorting-and-merging", "kawa.lib.srfi.95" },
         { "98", "os-environment-variables", BUILTIN },
         { "101", "random-access-lists", "gnu.kawa.slib.ralists" }
     };
@@ -258,12 +258,14 @@ public class ImportFromLibrary extends Syntax
             scanImportSet(cdrPair.getCar(), defs, tr, nmapper);
             return;
         }
+        scanImportSet1(pimport, defs, tr, mapper);
+    }
 
+    boolean scanImportSet1(Object libref, ScopeExp defs, Translator tr, require.DeclSetMapper mapper) {
         String explicitSource = null;
         Object versionSpec = null;
         StringBuilder cbuf = new StringBuilder(); // for class name
         StringBuilder sbuf = new StringBuilder(); // for source file name
-        Object libref = pimport;
         while (libref instanceof Pair) {
             Pair pair = (Pair) libref;
             Object car = pair.getCar();
@@ -288,9 +290,9 @@ public class ImportFromLibrary extends Syntax
             }
             libref = cdr;
         }
-        handleImport(sbuf.toString(), explicitSource,
-                     cbuf.toString(),
-                     defs, tr, mapper);
+        return handleImport(sbuf.toString(), explicitSource,
+                            cbuf.toString(),
+                            defs, tr, mapper);
     }
 
     /** Do the actual work of importing a module.
@@ -299,13 +301,13 @@ public class ImportFromLibrary extends Syntax
      * @param explicitSource If non-null, an exlicitly specified
      *   source file name.
      */
-    public static void handleImport(String implicitSource, String explicitSource, String requestedClass, ScopeExp defs, Translator tr, require.DeclSetMapper mapper) {
-
+    public static boolean handleImport(String implicitSource, String explicitSource, String requestedClass, ScopeExp defs, Translator tr, require.DeclSetMapper mapper) {
+        boolean checkExistsOnly = defs == null;
         ModuleManager mmanager = ModuleManager.getInstance();
         ModuleInfo minfo = null;
         String lname = checkSrfi(requestedClass, tr);
         if (lname == BUILTIN)
-            return; // nothing to do
+            return true; // nothing to do
         boolean foundSrfi = lname != requestedClass;
 
         int classPrefixPathLength = classPrefixPath.length;
@@ -447,6 +449,8 @@ public class ImportFromLibrary extends Syntax
             // before asking the file-system.  FIXME
             long lastModifiedTime = path.getLastModified();
             if (lastModifiedTime != 0) {
+                if (checkExistsOnly)
+                    return true;
                 if (minfo != null) {
                     String pstring = path.toString();
                     Path infoPath = minfo.getSourceAbsPath();
@@ -466,6 +470,8 @@ public class ImportFromLibrary extends Syntax
             }
         }
 
+        if (checkExistsOnly)
+            return existingClass != null || minfo != null;
         if (existingClass != null) {
             if (minfo == null)
                 minfo = mmanager.findWithClass(existingClass);
@@ -476,7 +482,8 @@ public class ImportFromLibrary extends Syntax
             tr.error('e', "unknown library ("+implicitSource.replace('/', ' ')+")");
         else
             require.importDefinitions(lname, minfo, mapper,
-                                      tr.formStack, defs, tr);
+                                          tr.formStack, defs, tr);
+        return minfo != null;
     }
 
     public Expression rewriteForm(Pair form, Translator tr) {
@@ -613,22 +620,9 @@ public class ImportFromLibrary extends Syntax
      * @return if library exists: class name of (existing) library class,
      * or the special BUILTIN value; otherwise null.
      */
-    public String libraryExists(Object list, Translator tr) {
-        String lname = module_name.listToModuleName(list, tr);
-        lname = checkSrfi(lname, tr);
-        if (lname == BUILTIN)
-            return lname;
-        int classPrefixPathLength = classPrefixPath.length;
-        for (int i = 0;  i < classPrefixPathLength;  i++) {
-            String className = classPrefixPath[i] + lname;
-            try {
-                ObjectType.getContextClass(className);
-                return className;
-            } catch (Exception ex) {
-                continue;
-            }
-        }
-        return null;
+    public boolean libraryExists(Object list, Translator tr) {
+        ModuleManager mmanager = ModuleManager.getInstance();
+        return scanImportSet1(list, null, tr, null);
     }
 
     public static final ThreadLocal<List<CharSequence>> searchPath

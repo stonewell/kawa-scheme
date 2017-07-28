@@ -1,3 +1,7 @@
+2017-06-08  Per Bothner  <per@bothner.com>
+
+	* XMLFilter.java: Update for new source position model.
+
 2016-10-29  Per Bothner  <per@bothner.com>
 
 	* XMLPrinter.java:  Partly revert previous changes, for compatibility.

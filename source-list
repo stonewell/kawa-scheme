@@ -16,6 +16,7 @@ GNU_EXPR_JSOURCES = \
   gnu/expr/CommandCompleter.java \
   gnu/expr/Compilation.java \
   gnu/expr/CompiledModule.java \
+  gnu/expr/CompiledProc.java \
   gnu/expr/ConditionalTarget.java \
   gnu/expr/ConsumerTarget.java \
   gnu/expr/Declaration.java \
@@ -47,8 +48,6 @@ GNU_EXPR_JSOURCES = \
   gnu/expr/ModuleContext.java \
   gnu/expr/ModuleInfo.java \
   gnu/expr/ModuleManager.java \
-  gnu/expr/ModuleMethod.java \
-  gnu/expr/ModuleMethodWithContext.java \
   gnu/expr/ModuleSet.java \
   gnu/expr/ModuleExp.java \
   gnu/expr/NameLookup.java \
@@ -170,6 +169,7 @@ GNU_LISTS_JSOURCES = \
   gnu/lists/FVector.java \
   gnu/lists/GeneralArray.java \
   gnu/lists/GeneralArray1.java \
+  gnu/lists/IString.java \
   gnu/lists/ItemPredicate.java \
   gnu/lists/ImmutablePair.java \
   gnu/lists/IndirectIndexedSeq.java \
@@ -196,7 +196,6 @@ GNU_LISTS_JSOURCES = \
   gnu/lists/Sequences.java \
   gnu/lists/ShortVector.java \
   gnu/lists/SimpleVector.java \
-  gnu/lists/SubCharSeq.java \
   gnu/lists/SubSequence.java \
   gnu/lists/StableManager.java \
   gnu/lists/Strings.java \
@@ -212,6 +211,11 @@ GNU_LISTS_JSOURCES = \
   gnu/lists/XConsumer.java
 
 GNU_MAPPING_JSOURCES = \
+  gnu/mapping/ArgList.java \
+  gnu/mapping/ArgListBuilder.java \
+  gnu/mapping/ArgListImpl.java \
+  gnu/mapping/ArgListPair.java \
+  gnu/mapping/ArgListVector.java \
   gnu/mapping/CallContext.java \
   gnu/mapping/ConstrainedLocation.java \
   gnu/mapping/DynamicLocation.java \
@@ -312,6 +316,7 @@ GNU_TEXT_JSOURCES = \
   gnu/text/ResourceStreamHandler.java \
   gnu/text/SourceLocator.java \
   gnu/text/SourceError.java \
+  gnu/text/SourceMapper.java \
   gnu/text/SourceMessages.java \
   gnu/text/StandardNamedChars.java \
   gnu/text/StringCursor.java \
@@ -359,6 +364,7 @@ GNU_KAWA_FUNCTIONS_JSOURCES = \
   gnu/kawa/functions/Curry1.java \
   gnu/kawa/functions/DisplayFormat.java \
   gnu/kawa/functions/DivideOp.java \
+  gnu/kawa/functions/Expt.java \
   gnu/kawa/functions/GetModuleClass.java \
   gnu/kawa/functions/GetNamedInstancePart.java \
   gnu/kawa/functions/GetNamedPart.java \
@@ -434,6 +440,7 @@ GNU_KAWA_REFLECT_JSOURCES = \
   gnu/kawa/reflect/Invoke.java \
   gnu/kawa/reflect/LazyType.java \
   gnu/kawa/reflect/MakeAnnotation.java \
+  gnu/kawa/reflect/MappedArrayType.java \
   gnu/kawa/reflect/MultValuesType.java \
   gnu/kawa/reflect/OccurrenceType.java \
   gnu/kawa/reflect/ProceduralProxy.java \
@@ -453,6 +460,7 @@ GNU_KAWA_UTIL_JSOURCES = \
   gnu/kawa/util/ExitCalled.java \
   gnu/kawa/util/FixupHtmlToc.java \
   gnu/kawa/util/GeneralHashTable.java \
+  gnu/kawa/util/HeapSort.java \
   gnu/kawa/util/IdentityHashTable.java \
   gnu/kawa/util/IntHashTable.java \
   gnu/kawa/util/HashNode.java \
@@ -753,7 +761,6 @@ KAWA_STANDARD_JSOURCES =\
   kawa/standard/define_syntax.java \
   kawa/standard/define_unit.java \
   kawa/standard/export.java \
-  kawa/standard/expt.java \
   kawa/standard/fluid_let.java \
   kawa/standard/IfFeature.java \
   kawa/standard/ImportFromLibrary.java \

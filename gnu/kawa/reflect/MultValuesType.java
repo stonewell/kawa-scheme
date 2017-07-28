@@ -10,6 +10,7 @@ public class MultValuesType extends OccurrenceType {
     public MultValuesType(Type[] itemTypes) {
         super(SingletonType.instance, itemTypes.length, itemTypes.length);
         this.itemTypes = itemTypes;
+        //new Error("new "+this).printStackTrace();
     }
 
     public int getValueCount() { return itemTypes.length; }

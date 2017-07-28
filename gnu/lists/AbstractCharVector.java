@@ -11,7 +11,7 @@ public abstract class AbstractCharVector<E>
     protected char[] data;
     protected static char[] empty = new char[0];
 
-    public int length() { return size(); }
+    public int length() { return super.length(); }
 
     /** Get the allocated length of the data buffer. */
     public int getBufferLength() {
@@ -44,7 +44,8 @@ public abstract class AbstractCharVector<E>
     protected void setBuffer(Object buffer) { data = (char[]) buffer; }
 
     public final char charAt(int index) {
-        return data[effectiveIndex(index)];
+        // Use super.effectiveIndex because FString overrides it
+        return data[super.effectiveIndex(index)];
     }
 
     public final char getCharRaw(int index) {
@@ -56,7 +57,7 @@ public abstract class AbstractCharVector<E>
     public void getChars(int srcBegin, int srcEnd, char dst[], int dstBegin) {
         if (srcBegin < 0 || srcBegin > srcEnd)
             throw new StringIndexOutOfBoundsException(srcBegin);
-        int size = size();
+        int size = length();
         if (srcEnd > size)
             throw new StringIndexOutOfBoundsException(srcEnd);
         if (dstBegin+srcEnd-srcBegin > dst.length)
@@ -82,7 +83,7 @@ public abstract class AbstractCharVector<E>
         /* Matches String.hashCode specification, as updated specification in
            http://www.javasoft.com/docs/books/jls/clarify.html. */
         char[] val = data;
-        int len = size();
+        int len = length();
         int hash = 0;
         if (! isVerySimple()) {
             for (int i = 0;  i < len;  i++)
@@ -99,16 +100,16 @@ public abstract class AbstractCharVector<E>
 
     public static boolean equals(AbstractCharVector<?> c1,
                                  AbstractCharVector<?> c2) {
-        int len1 = c1.size();
-        int len2 = c2.size();
+        int len1 = c1.length();
+        int len2 = c2.length();
         return len1 == len2 && compareTo(c1.data, c2.data, len1) == 0;
     }
 
     public int compareTo(Object obj) {
         AbstractCharVector<?> cv1 = this;
         AbstractCharVector<?> cv2 = (AbstractCharVector) obj;
-        int n1 = cv1.size();
-        int n2 = cv2.size();
+        int n1 = cv1.length();
+        int n2 = cv2.length();
         int n = n1 > n2 ? n2 : n1;
         int d = compareTo(cv1, cv2, n);
         return d != 0 ? d : n1 - n2;
@@ -145,7 +146,7 @@ public abstract class AbstractCharVector<E>
     }
 
     public CharArrayInPort openReader() {
-        return new CharArrayInPort(this, data, 0, size());
+        return new CharArrayInPort(this, data, 0, length());
     }
 
     public CharArrayInPort openReader(int start, int end) {

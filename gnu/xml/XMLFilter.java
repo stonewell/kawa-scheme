@@ -46,6 +46,7 @@ public class XMLFilter implements
   public static final int COPY_NAMESPACES_PRESERVE = 1;
   public static final int COPY_NAMESPACES_INHERIT = 2;
   public transient int copyNamespacesMode = COPY_NAMESPACES_PRESERVE;
+  public static final int COPY_NAMESPACES_MASK = 3;
 
   /** A helper stack.
    * This is logically multiple separate stacks, but we combine them into
@@ -1600,6 +1601,10 @@ public class XMLFilter implements
     int col;
     return in != null && (col = in.getColumnNumber()) > 0 ? col : -1;
   }
+    public int getStartLine() { return getLineNumber(); }
+    public int getStartColumn() { return getColumnNumber(); }
+    public int getEndLine() { return -1; }
+    public int getEndColumn() { return -1; }
 
   public boolean isStableSourceLocation()
   {

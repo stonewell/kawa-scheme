@@ -10,32 +10,20 @@
 	  instance?
 	  as
 	  primitive-throw
+          primitive-get-field primitive-set-field
+          primitive-get-static primitive-set-static
+          primitive-array-new primitive-array-get
+          primitive-array-set primitive-array-length
+          primitive-constructor
 	  )
   (import
-   (only (rename (gnu kawa reflect Invoke)
-		 (invokeStatic invoke-static)
-		 (invokeSpecial invoke-special))
-	 invoke
-	 invoke-static
-	 invoke-special
-	 make)
-
-   (only (rename (gnu kawa reflect SlotGet)
-		 (staticField static-field))
-	 field
-	 static-field)
+   kawa.lib.prim_imports
+   kawa.lib.reflection
 
    (only (gnu kawa reflect SlotSet)
-         set-field!
-         set-static-field!)
-
-   (only (rename (gnu kawa reflect Throw)
-		 (primitiveThrow primitive-throw))
-	 primitive-throw)
-
-   (only (rename (kawa standard Scheme)
-		 (instanceOf instance?))
-	 instance?)
+         (set$Mnfield$Ex set-field!)
+         (set$Mnstatic$Mnfield$Ex set-static-field!))
+   (only kawa.standard.Scheme (instanceOf instance?))
 
    (only (gnu kawa functions Convert)
 	 as)

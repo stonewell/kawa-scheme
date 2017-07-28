@@ -1,3 +1,41 @@
+2017-06-17  Shiro Kawai <shiro.kawai@gmail.com>
+
+	* testing.scm (test-with-runner): Move definition to precede its use.
+	With r6rs it is not necessary, for the expansion of rhs of definitions
+	is deferred, but r7rs doesn't have explicit definition of expansion
+	process and some implementation needs macros to be defined before use.
+
+	* testing.scm: Add some cond-expand clauses for Gauche.
+
+2017-05-08  Peter Lane <peter@peterlane.info>
+	    Per Bothner  <per@bothner.com>
+
+	* srfi1.scm (list=): Fix logic error by variable renaming.
+
+2017-04-20  Per Bothner  <per@bothner.com>
+
+	* srfi13.scm: Add export specifier.
+	Replace some implementations by those in (kawa mstring).
+
+	* testing.scm (%test-error): Fix/update.
+
+2017-04-09  Per Bothner  <per@bothner.com>
+
+	* testing.scm: Some minor performance improvements.
+	Mainly foucusing on reducing bytecode size.
+
+2017-03-15  Per Bothner  <per@bothner.com>
+
+	* srfi14.scm: Add type specifiers for loop variables.
+
+2016-12-09  Per Bothner  <per@bothner.com>
+
+	Move bindings in the default Kawa-Scheme environment to kawa/lib.
+	* enums.scm: Moved to kawa/lib/enums.scm.
+	* cut.scm: Renamed to kawa/lib/srfi/26.scm.
+	* receive.scm: Renamed to kawa/lib/srfi/8.scm
+	* Makefile.am: Update accordingly.
+
 2016-10-23  Per Bothner  <per@bothner.com>
 
 	* swing.scm: Update export 'picture-jpanel' to 'picture->jpanel'.

@@ -1,5 +1,8 @@
+(require <kawa.lib.prim_imports>)
+(require <kawa.lib.std_syntax>)
 (require <kawa.lib.characters>)
 (require <kawa.lib.strings>)
+(require <kawa.lib.lists>)
 (require <kawa.lib.kawa.expressions>)
 (require <kawa.lib.ExceptionClasses>)
 (define-alias MultValuesType gnu.kawa.reflect.MultValuesType)
@@ -32,7 +35,7 @@
 
 (define-validate isEofValidateApply (exp required proc)
   ((exp:isSimple 1 1)
-   (exp:visitArgs visitor)
+   (exp:visitArgs (get-visitor))
    (let* ((e0 (exp:getArg 0))
           (t0 (e0:getType)))
      (cond ((or (eq? t0 character) (eq? t0 character-or-eof))
@@ -169,7 +172,7 @@
      (cond ((atype:isSubtype (Type:make java.util.List))
             (apply-exp invoke arg 'size))
            ((atype:isSubtype (Type:make java.lang.CharSequence))
-            (apply-exp invoke arg 'length))
+            (apply-exp invoke gnu.lists.Strings:sizeInCodePoints arg))
            ((gnu.bytecode.ArrayType? atype)
             (apply-exp field arg 'length))
            (else

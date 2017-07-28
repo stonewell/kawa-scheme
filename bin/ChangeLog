@@ -1,3 +1,7 @@
+2017-05-03  Per Bothner  <per@bothner.com>
+
+	* kawa.sh.in:  Avoid needless bash-specific 'type' command.
+
 2016-11-05  Per Bothner  <per@bothner.com>
 
 	* kawa.sh.in: Set kawa.home property.

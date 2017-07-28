@@ -54,7 +54,8 @@ public class FindCapturedVars extends ExpExpVisitor<Void>
 	    if (value instanceof LambdaExp)
 	      {
 		LambdaExp lexp = (LambdaExp) value;
-		if (! lexp.getNeedsClosureEnv())
+		if (! lexp.getNeedsClosureEnv()
+                    && ! lexp.getFlag(LambdaExp.HAS_NONTRIVIAL_PATTERN))
                   skipFunc = true;
 	      }
 	  }
@@ -114,6 +115,9 @@ public class FindCapturedVars extends ExpExpVisitor<Void>
   {
     super.visitDefaultArgs(exp, ignored);
 
+    if (exp.getClass() != LambdaExp.class)
+        return;
+
     // Check if any default expression "captured" a parameter.
     // If so, evaluating a default expression cannot be done until the
     // heapFrame is allocated in the main-method.  But in most cases, a
@@ -125,7 +129,7 @@ public class FindCapturedVars extends ExpExpVisitor<Void>
       {
 	if (! param.isSimple())
 	  {
-	    exp.setFlag(true, LambdaExp.DEFAULT_CAPTURES_ARG);
+	    exp.setFlag(LambdaExp.DEFAULT_CAPTURES_ARG|LambdaExp.HAS_NONTRIVIAL_PATTERN);
 	    break;
 	  }
       }
@@ -210,7 +214,7 @@ public class FindCapturedVars extends ExpExpVisitor<Void>
 	// It's also necessary in the case of a LambdaExp if it shares
 	// a field with the declaration (see LambdaExp.allocFieldField),
 	// since assigning the nullExp can clobber the field after it has
-	// been initialized with a ModuleMethod.
+	// been initialized with a CompiledProc.
 	Expression[] exps = ((BeginExp) exp.body).exps;
 	int init_index = 0;
 	Declaration decl = exp.firstDecl();
@@ -269,7 +273,7 @@ public class FindCapturedVars extends ExpExpVisitor<Void>
   {
     if (! decl.getCanReadOrCall())
       return;
-    if (decl.field != null && decl.field.getStaticFlag())
+    if (decl.getField() != null && decl.getField().getStaticFlag())
       return;
     // This catches the "(module-instance)" dummy context variable
     // created in Translator.rewrite.
@@ -553,10 +557,10 @@ public class FindCapturedVars extends ExpExpVisitor<Void>
       {
         // This is an extension used by define_syntax.
         // FIXME - not really right, but works in simple cases.
-        LambdaExp curLambda = getCurrentLambda();
-        if (! (curLambda instanceof ModuleExp
-               && ((ModuleExp) curLambda).staticInitRun()))
-            curLambda.setImportsLexVars();
+        ScopeExp context = exp.getContextScope();
+        if (! (context instanceof ModuleExp
+               && ((ModuleExp) context).isStatic()))
+            getCurrentLambda().setImportsLexVars();
         return exp;
       }
     else

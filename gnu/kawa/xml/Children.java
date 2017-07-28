@@ -8,6 +8,11 @@ import gnu.lists.*;
 public class Children extends MethodProc
 {
   public static final Children children = new Children();
+
+    private Children() {
+        applyToConsumerMethod =
+            Procedure.lookupApplyHandle(Children.class, "applyToConsumer");
+    }
   
   public int numArgs() { return 0x1001; }
 
@@ -50,8 +55,7 @@ public class Children extends MethodProc
       }
   }
 
-  public void apply (CallContext ctx)
-  {
+    public static Object applyToConsumer(Procedure proc, CallContext ctx) throws Throwable {
     Consumer consumer = ctx.consumer;
     Object node = ctx.getNextArg();
     ctx.lastArg();
@@ -73,5 +77,6 @@ public class Children extends MethodProc
       }
     else
       children(node, consumer);
+    return null;
   }
 }

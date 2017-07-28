@@ -1,5 +1,10 @@
 package kawa.lang;
 import gnu.mapping.*;
+/* #ifdef use:java.lang.invoke */
+import java.lang.invoke.*;
+/* #else */
+// import gnu.mapping.CallContext.MethodHandle; 
+/* #endif */
 
 /**
  * A Continuation "represents an entire (default) future for the computation.
@@ -16,15 +21,18 @@ public class Continuation extends MethodProc
 
   public Continuation (CallContext ctx)
   {
+      super(true, applyMethodCont);
   }
+    public static final MethodHandle applyMethodCont =
+        lookupApplyHandle(Continuation.class, "applyMethodCont");
 
-  public void apply (CallContext ctx)
-  {
-    if (invoked)
-      throw new GenericError
-	("implementation restriction: continuation can only be used once");
-    throw new CalledContinuation (ctx.values, this, ctx);
-  }
+    public static Object applyMethodCont(Procedure proc, CallContext ctx) throws Throwable {
+        Continuation cont = (Continuation) proc;
+        if (cont.invoked)
+            throw new GenericError
+                ("implementation restriction: continuation can only be used once");
+        throw new CalledContinuation (ctx.getRestArgsArray(), cont, ctx);
+    }
 
   public static void handleException$X (Throwable ex, Continuation cont,
                                         CallContext ctx)

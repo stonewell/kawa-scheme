@@ -1,5 +1,11 @@
 package gnu.mapping;
 
+/* #ifdef use:java.lang.invoke */
+import java.lang.invoke.*;
+/* #else */
+// import gnu.mapping.CallContext.MethodHandle; 
+/* #endif */
+
 /**
  * Abstract class for 1-argument Scheme procedures.
  * @author	Per Bothner
@@ -7,15 +13,13 @@ package gnu.mapping;
 
 public abstract class Procedure1 extends Procedure
 {
-  public Procedure1 ()
-  {
-    super();
-  }
+    public Procedure1() {
+        super(false, Procedure1.applyToObject);
+    }
 
-  public Procedure1(java.lang.String n)
-  {
-    super(n);
-  }
+    public Procedure1(String name) {
+        super(false, Procedure1.applyToObject, name);
+    }
 
   public int numArgs() { return 0x1001; }
 
@@ -48,4 +52,15 @@ public abstract class Procedure1 extends Procedure
       throw new WrongArguments(this, args.length);
     return apply1 (args[0]);
   }
+
+    public static Object applyToObject(Procedure proc, CallContext ctx)
+    throws Throwable {
+        Object x = ctx.getNextArg();
+        if (ctx.checkDone() == 0)
+            return proc.apply1(x);
+        return ctx;
+    }
+
+    public static final MethodHandle applyToObject
+        = lookupApplyHandle(Procedure1.class, "applyToObject");
 }

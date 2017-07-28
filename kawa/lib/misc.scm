@@ -1,9 +1,12 @@
-(require <kawa.lib.prim_syntax>)
+(require <kawa.lib.prim_imports>)
 (require <kawa.lib.std_syntax>)
 (require <kawa.lib.case_syntax>)
 (require <kawa.lib.syntax>)
+(require <kawa.lib.lists>)
+(require <kawa.lib.case_syntax>)
 (require <kawa.lib.strings>)
 (require <kawa.lib.ports>)
+(require kawa.lib.scheme.eval)
 
 #|
 (define (equal? x y) :: <boolean>
@@ -34,7 +37,7 @@
 
 (define (symbol=? s1::symbol s2::symbol #!rest r)::boolean
   (and (gnu.mapping.Symbol:equals s1 s2)
-       (or (null? r) (apply symbol=? s2 r))))
+       (or (eq? r '()) (apply symbol=? s2 r))))
 
 (define (symbol-local-name s::symbol) ::constant-string
   (s:getLocalPart))
@@ -74,15 +77,16 @@
 ;; But since earlier versions of this implementation took 0 arguments,
 ;; we'll make it optional for backwards compatibility, at least for now.
 (define (null-environment #!optional version)
-  (static-field <kawa.standard.Scheme> 'nullEnvironment))
+  ;; should cache - but who cares?
+  (environment '(kawa null-5)))
+;;(static-field <kawa.standard.Scheme> 'nullEnvironment))
 
 (define (scheme-report-environment version)
-  (case version
-    ((4) (static-field <kawa.standard.Scheme> 'r4Environment))
-    ((5) (static-field <kawa.standard.Scheme> 'r5Environment))
-    (else (primitive-throw
-           (kawa.lang.NamedException:makeError
-            "scheme-report-environment version must be 4 or 5")))))
+  (if (eqv? version 5)
+      (kawa.standard.Scheme:getR5rsEnvironment)
+      (primitive-throw
+       (kawa.lang.NamedException:makeError
+        "scheme-report-environment version must be 5"))))
 
 (define (interaction-environment)
   (invoke-static <gnu.mapping.Environment> 'user))

@@ -16,6 +16,10 @@
      (begin (test-expect-fail 1)
             (test-assert message #f)))))
 
+(define (is-number val)
+  (as boolean
+      (and (complex? val) (inexact? val) (not (nan? val)))))
+
 ;; Using 3-operand datum->syntax enables line numbers in reporting.
 (define-syntax test
   (lambda (form)
@@ -27,9 +31,7 @@
        (syntax-case #'rest1 ()
          ((expr)
           #`(let ((val expr) (exp expected))
-              (cond ((and (complex? exp) (complex? val)
-                          (inexact? exp) (inexact? val)
-                          (not (nan? exp)) (not (nan? val)))
+              (cond ((and (is-number exp) (is-number val))
                      #,(datum->syntax form
                                       #'(test-approximate exp val 0.000001)
                                       #'rest1))

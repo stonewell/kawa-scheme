@@ -16,6 +16,7 @@ public class SynchronizedExp extends Expression
 
   protected boolean mustCompile () { return false; }
 
+  @Override
   public void apply (CallContext ctx) throws Throwable
   {
     Object value = object.eval(ctx);

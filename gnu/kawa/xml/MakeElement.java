@@ -7,34 +7,61 @@ import gnu.mapping.*;
 import gnu.bytecode.*;
 import gnu.expr.*;
 import gnu.xml.*;
+import java.io.*;
+/* #ifdef use:java.lang.invoke */
+import java.lang.invoke.*;
+/* #else */
+// import gnu.mapping.CallContext.MethodHandle; 
+/* #endif */
 
-public class MakeElement extends NodeConstructor {
+public class MakeElement extends NodeConstructor implements Externalizable {
+    static final MethodHandle applyToConsumerME =
+        Procedure.lookupApplyHandle(MakeElement.class, "applyToConsumerME");
     public static final MakeElement makeElementS = new MakeElement();
     static { makeElementS.setStringIsText(true); }
 
-  public int numArgs() { return tag == null ? 0xFFFFF001 : 0xFFFFF000; }
+    public MakeElement() {
+        this.applyToConsumerMethod = applyToConsumerME;
+        setCopyNamespacesMode(XMLFilter.COPY_NAMESPACES_PRESERVE);
+    }
 
-  /** Optional tag.  If non-null, the element tag is this value,
-   * rather than the first parameter. */
-  public Symbol tag;
+    public static MakeElement valueOf (Symbol tag, NamespaceBinding namespaceNodes, int options) {
+        MakeElement m = new MakeElement();
+        m.tag = tag;
+        m.namespaceNodes = namespaceNodes;
+        m.options = options;
+        return m;
+    }
 
-  public String toString() { return "makeElement["+tag+"]"; }
+    public int numArgs() { return tag == null ? 0xFFFFF001 : 0xFFFFF000; }
 
-  public int copyNamespacesMode = XMLFilter.COPY_NAMESPACES_PRESERVE;
+    /** Optional tag.  If non-null, the element tag is this value,
+     * rather than the first parameter. */
+    public Symbol tag;
 
-  private boolean handlingKeywordParameters;
+    public String toString() { return "makeElement["+tag+"]"; }
 
-  /** Should {@code KEYWORD: EXPRESSION} be mapped to an
-   * attribute constructor? */
-  public boolean isHandlingKeywordParameters ()
-  {
-    return handlingKeywordParameters;
-  }
+    private static final int HANDLING_KEYWORD_PARAMETERS = 4;
 
-  public void setHandlingKeywordParameters (boolean value)
-  {
-    handlingKeywordParameters = value;
-  }
+    public int getCopyNamespacesMode() {
+        return options & XMLFilter.COPY_NAMESPACES_MASK;
+    }
+    public void setCopyNamespacesMode(int val) {
+        options = val;
+    }
+
+    /** Should {@code KEYWORD: EXPRESSION} be mapped to an
+     * attribute constructor? */
+    public boolean isHandlingKeywordParameters() {
+        return (options & HANDLING_KEYWORD_PARAMETERS) != 0;
+    }
+
+    public void setHandlingKeywordParameters(boolean value) {
+        if (value)
+            options |= HANDLING_KEYWORD_PARAMETERS;
+        else
+            options &= ~HANDLING_KEYWORD_PARAMETERS;
+    }
 
   NamespaceBinding namespaceNodes;
 
@@ -87,29 +114,33 @@ public class MakeElement extends NodeConstructor {
     out.endElement();
   }
 
-  public void apply (CallContext ctx)
-  {
+    public static Object applyToConsumerME(Procedure proc, CallContext ctx) throws Throwable {
     Consumer saved = ctx.consumer;
+    MakeElement mk = (MakeElement) proc;
+    Symbol tag = mk.tag;
     Consumer out = pushNodeContext(ctx);
     try
       {
         Symbol type = tag != null ? tag : (Symbol) ctx.getNextArg();
-	if (namespaceNodes != null)
-	  startElement(out, type, copyNamespacesMode, namespaceNodes);
+        int i = tag != null ? 0 : 1;
+	if (mk.namespaceNodes != null)
+	  startElement(out, type, mk.options, mk.namespaceNodes);
 	else
-	  startElement(out, type, copyNamespacesMode);
-	Object endMarker = Special.dfault;
-	for (;;)
+	  startElement(out, type, mk.options);
+        int len = ctx.numArguments()-1;
+	for (; i <= len;  i++)
 	  {
-	    Object arg = ctx.getNextArg(endMarker);
-	    if (arg == endMarker)
-	      break;
-            if (stringIsText)
+            Object arg = ctx.getArgAsObject(i);
+            String key = ctx.getKeyword(i);
+            if (key != null) {
+                writeContent(Keyword.make(key), out);
+            }
+            if (mk.getStringIsText())
                 writeContentS(arg, out);
             else
                 writeContent(arg, out);
             // Handling Keyword values is actually done by the Consumer.
-            if (isHandlingKeywordParameters())
+            if (mk.isHandlingKeywordParameters())
               out.endAttribute();
 	  }
 	endElement(out, type);
@@ -118,6 +149,7 @@ public class MakeElement extends NodeConstructor {
       {
 	popNodeContext(saved, ctx);
       }
+    return null;
   }
 
   public void compileToNode (ApplyExp exp, Compilation comp,
@@ -143,7 +175,7 @@ public class MakeElement extends NodeConstructor {
       }
     code.emitDup(1, 1); // dup_x1
     // Stack:  consumer, tagtype, consumer, tagtype
-    code.emitPushInt(copyNamespacesMode);
+    code.emitPushInt(options);
     if (namespaceNodes != null)
       {
 	comp.compileConstant(namespaceNodes, Target.pushObject);
@@ -153,7 +185,7 @@ public class MakeElement extends NodeConstructor {
       code.emitInvokeStatic(startElementMethod3);
     for (;  i < nargs;  i++)
       {
-        compileChild(args[i], stringIsText, comp, target);
+        compileChild(args[i], getStringIsText(), comp, target);
         if (isHandlingKeywordParameters())
           {
             code.emitLoad(consumer);
@@ -167,6 +199,19 @@ public class MakeElement extends NodeConstructor {
   {
     return Compilation.typeObject;
   }
+
+    public void writeExternal(ObjectOutput out) throws IOException {
+        out.writeObject(tag);
+        out.writeObject(namespaceNodes);
+        out.writeInt(options);
+    }
+
+    public void readExternal(ObjectInput in)
+        throws IOException, ClassNotFoundException {
+        tag = (Symbol) in.readObject();
+        namespaceNodes = (NamespaceBinding) in.readObject();
+        options = in.readInt();
+    }
 
   static final ClassType typeMakeElement
     = ClassType.make("gnu.kawa.xml.MakeElement");

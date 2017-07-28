@@ -1,4 +1,4 @@
-(require <kawa.lib.prim_syntax>)
+(require <kawa.lib.prim_imports>)
 (require <kawa.lib.std_syntax>)
 (require <kawa.lib.syntax>)
 (require <kawa.lib.misc>)
@@ -18,20 +18,27 @@
            (java.lang.Float? x)
            (java.math.BigInteger? x)
            (java.math.BigDecimal? x))))
-(define (number? x) ::boolean (java.lang.Number? x))
+(define (number? x) ::boolean
+  validate-apply: 'inline-if-constant
+  (java.lang.Number? x))
 (define (quantity? x) ::boolean
+  validate-apply: 'inline-if-constant
   (or (instance? x <quantity>)
       (java.lang.real? x)))
 (define (quaternion? x) ::boolean
+  validate-apply: 'inline-if-constant
   (or (instance? x quaternion)
       (java.lang.real? x)))
 (define (complex? x) ::boolean
+  validate-apply: 'inline-if-constant
   (or (instance? x <complex>)
       (java.lang.real? x)))
 (define (real? x) ::boolean
+  validate-apply: 'inline-if-constant
   (or (instance? x <real>)
       (java.lang.real? x)))
 (define (rational? x)  ::boolean
+  validate-apply: 'inline-if-constant
   (or (instance? x <rational>)
       (and (java.lang.Number? x)
 	   (or (java.lang.Long? x)
@@ -42,6 +49,7 @@
 	       (java.math.BigDecimal? x)))))
 
 (define (integer? x) :: <boolean>
+  validate-apply: 'inline-if-constant
   (or (instance? x <gnu.math.IntNum>)
       (and (instance? x <java.lang.Number>)
            (cond ((or (java.lang.Long? x)
@@ -67,6 +75,7 @@
                   #f)))))
 
 (define (exact-integer? x) :: <boolean>
+  validate-apply: 'inline-if-constant
   (or (instance? x <gnu.math.IntNum>)
       (and (instance? x <java.lang.Number>)
 	   (or (instance? x <java.lang.Long>)
@@ -76,18 +85,21 @@
 	       (instance? x <java.math.BigInteger>)))))
 
 (define (real-valued? x) ::boolean
+  validate-apply: 'inline-if-constant
   (and (quaternion? x)
        (zero? (imag-part x))
        (zero? (jmag-part x))
        (zero? (kmag-part x))
        (real? (real-part x))))
 (define (rational-valued? x) ::boolean
+  validate-apply: 'inline-if-constant
   (and (quaternion? x)
        (zero? (imag-part x))
        (zero? (jmag-part x))
        (zero? (kmag-part x))
        (rational? (real-part x))))
 (define (integer-valued? x) ::boolean
+  validate-apply: 'inline-if-constant
   (and (quaternion? x)
        (zero? (imag-part x))
        (zero? (jmag-part x))
@@ -95,14 +107,17 @@
        (integer? (real-part x))))
 
 (define (exact? x) :: boolean 
+  validate-apply: 'inline-if-constant
   (and (java.lang.Number? x)
        (gnu.kawa.functions.Arithmetic:isExact (as java.lang.Number x))))
 
 (define (inexact? x) :: boolean
+  validate-apply: 'inline-if-constant
   (and (java.lang.Number? x)
        (not (gnu.kawa.functions.Arithmetic:isExact (as java.lang.Number x)))))
 
 (define (zero? (x :: java.lang.Number)) :: boolean
+  validate-apply: 'inline-if-constant
   (cond ((gnu.math.Numeric? x)
 	 ((as gnu.math.Numeric x):isZero))
 	((java.math.BigInteger? x)
@@ -113,12 +128,15 @@
 	 (= 0.0 (x:doubleValue)))))
 
 (define (positive? (x :: <real>)) :: <boolean>
+  validate-apply: 'inline-if-constant
   (> (invoke x 'sign) 0))
 
 (define (negative? (x :: real)) :: <boolean> 
+  validate-apply: 'inline-if-constant
   (invoke x 'isNegative))
 
 (define (finite? (z ::java.lang.Number)) ::boolean
+  validate-apply: 'inline-if-constant
   (if (gnu.math.Quaternion? z)
       (> ((->gnu.math.Quaternion z):classifyFinite) 0)
       (and (java.lang.real? z)
@@ -127,6 +145,7 @@
                   (not (java.lang.Double:isNaN d)))))))
 
 (define (infinite? (z ::java.lang.Number)) ::boolean
+  validate-apply: 'inline-if-constant
   (if (gnu.math.Quaternion? z)
       (let ((zc ::gnu.math.Quaternion z))
         (or (= ((zc:re):classifyFinite) 0)
@@ -255,7 +274,7 @@
         (else (primitive-throw (java.lang.IllegalArgumentException)))))
 
 (define-procedure log
-  (lambda ((x ::java.lang.Number) (base ::java.lang.Number))
+  (lambda ((x ::java.lang.Number) (base ::java.lang.Number)) name: 'log2
     ::java.lang.Number
     (cond ((and (gnu.math.RealNum? x) (gnu.math.RealNum? base))
            (/ (log x) (log base)))
@@ -263,7 +282,7 @@
                 (or (java.lang.real? base) (gnu.math.RealNum? base)))
            (/ (java.lang.Math:log x) (java.lang.Math:log base)))
           (else (/ (log x) (log base)))))
-  (lambda (x ::java.lang.Number)
+  (lambda (x ::java.lang.Number) name: 'log1
     ::java.lang.Number
     (cond ((java.lang.real? x) (java.lang.Math:log x))
           ((gnu.math.Quaternion? x)

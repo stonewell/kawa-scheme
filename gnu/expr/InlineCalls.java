@@ -4,6 +4,7 @@
 package gnu.expr;
 import gnu.bytecode.*;
 import gnu.kawa.reflect.CompileReflect;
+import gnu.kawa.reflect.LazyType;
 import gnu.kawa.reflect.Invoke;
 import gnu.kawa.functions.Convert;
 import gnu.kawa.util.IdentityHashTable;
@@ -27,6 +28,8 @@ import java.lang.reflect.Proxy;
 import java.lang.annotation.ElementType;
 /* #ifdef use:java.lang.invoke */
 import java.lang.invoke.*;
+/* #else */
+// import gnu.mapping.CallContext.MethodHandle; 
 /* #endif */
 
 /**
@@ -83,14 +86,20 @@ public class InlineCalls extends ExpExpVisitor<Type> {
         return checkType(exp, required);
     }
 
+    public static int isCompatibleWithValue(Type required, Type expType) {
+        if (required == null || expType == Type.neverReturnsType
+            || required == Type.neverReturnsType)
+            return 1;
+        if (expType instanceof LazyType && ! LazyType.maybeLazy(required))
+            expType = ((LazyType) expType).getValueType();
+        return required.isCompatibleWithValue(expType);
+    }
+
     public Expression checkType(Expression exp, Type required) {
         Type expType = exp.getType();
         if (expType == Type.toStringType)
             expType = Type.javalangStringType;
-        int cmp = required == null || expType == Type.neverReturnsType
-            || required == Type.neverReturnsType
-            ? 1
-            : required.isCompatibleWithValue(expType);
+        int cmp = isCompatibleWithValue(required, expType);
         if (cmp < 0
             || (cmp == 0 && required.isInterface()
                 && (exp instanceof QuoteExp || exp instanceof LambdaExp))) {
@@ -143,7 +152,7 @@ public class InlineCalls extends ExpExpVisitor<Type> {
                         +" is incompatible with required type "
                         +language.formatType(required)),
                        exp);
-           
+
             // Box if needed to force a run-time ClassCastException.
             if (required instanceof PrimType)
                 required = ((PrimType) required).boxedType();
@@ -171,7 +180,7 @@ public class InlineCalls extends ExpExpVisitor<Type> {
         if (func instanceof LambdaExp) {
             // This optimization in principle should be redundant, but leaving
             // it out currently causes worse type-inference and code generation.
-            Expression inlined = inlineCall((LambdaExp) func, exp.args, false);
+            Expression inlined = inlineCall((LambdaExp) func, exp, false);
             if (inlined != null)
                 return visit(inlined, required);
         }
@@ -352,7 +361,7 @@ public class InlineCalls extends ExpExpVisitor<Type> {
             if (type != null && type.isVoid())
                 return QuoteExp.voidExp;
         }
-        if (decl != null && decl.field == null && ! decl.getCanWrite()
+        if (decl != null && decl.getField() == null && ! decl.getCanWrite()
             && ! exp.getDontDereference()) {
             Expression dval = decl.getValue();
             if (dval instanceof QuoteExp && dval != QuoteExp.undefined_exp)
@@ -416,6 +425,11 @@ public class InlineCalls extends ExpExpVisitor<Type> {
                     test = value;
             }
         }
+        // truth: 1 - test is true; 0: test is false; -1 - test is unknown.
+        int truth = ! (test instanceof QuoteExp) ? -1
+            : comp.getLanguage().isTrue(((QuoteExp) test).getValue()) ? 1 : 0;
+        if (truth == 1 || (truth == 0 && exp.else_clause != null))
+            return visit(exp.select(truth != 0), required);
         exp.test = test;
         VarValueTracker.forkPush(this);
         if (exitValue == null)
@@ -424,9 +438,6 @@ public class InlineCalls extends ExpExpVisitor<Type> {
         if (exitValue == null && exp.else_clause != null)
             exp.else_clause = visit(exp.else_clause, required);
         VarValueTracker.forkPop(this);
-        // truth: 1 - test is true; 0: test is false; -1 - test is unknown.
-        int truth = ! (test instanceof QuoteExp) ? -1
-            : comp.getLanguage().isTrue(((QuoteExp) test).getValue()) ? 1 : 0;
         if (exp.else_clause == null && truth <= 0
             && required instanceof ValueNeededType) {
             if (comp.warnVoidUsed())
@@ -434,8 +445,6 @@ public class InlineCalls extends ExpExpVisitor<Type> {
             if (truth == 0)
                 return QuoteExp.voidObjectExp;
         }
-        if (truth >= 0)
-            return exp.select(truth != 0);
         if (test.getType().isVoid()) {
             boolean voidTrue = comp.getLanguage().isTrue(Values.empty);
 
@@ -779,6 +788,8 @@ public class InlineCalls extends ExpExpVisitor<Type> {
         VarValueTracker.forkPop(this);
         if (exp.finally_clause != null)
             exp.finally_clause = exp.finally_clause.visit(this, null);
+        if (exp.try_clause instanceof QuoteExp && exp.finally_clause == null)
+            return exp.try_clause;
         return exp;
     }
 
@@ -905,6 +916,11 @@ public class InlineCalls extends ExpExpVisitor<Type> {
                 inliner = proc.getProperty(Procedure.validateXApplyKey, null);
                 if (inliner == null && exp.firstSpliceArg < 0)
                     inliner = proc.getProperty(Procedure.validateApplyKey, null);
+                if (inliner == Procedure.inlineIfConstantSymbol) {
+                    Expression e = exp.inlineIfConstant(proc, this);
+                    if (e != exp)
+                        return visit(e, required);
+                }
                 if (inliner instanceof CharSequence) {
                     inliner = resolveInliner(proc, inliner.toString(),
                                              inlinerMethodType);
@@ -947,10 +963,12 @@ public class InlineCalls extends ExpExpVisitor<Type> {
      * @return the inlined expression (a LetExp), or null if we
      *   weren't able to inline.
      */
-    public static Expression inlineCall(LambdaExp lexp, Expression[] args,
+    public static Expression inlineCall(LambdaExp lexp, ApplyExp aexp,
                                         boolean makeCopy) {
-        if (lexp.keywords != null)
+        if (lexp.keywords != null || ! aexp.isSimple()
+            || lexp.getFlag(LambdaExp.CANNOT_INLINE))
             return null;
+        Expression[] args = aexp.getArgs();
         boolean varArgs = lexp.max_args < 0;
         int fixed = lexp.min_args;
         if ((fixed == lexp.max_args
@@ -984,9 +1002,10 @@ public class InlineCalls extends ExpExpVisitor<Type> {
             }
             int i = 0;
             LetExp let = new LetExp();
-            for (Declaration param = lexp.firstDecl(); param != null; i++) {
+            for (Declaration param = lexp.firstDecl(); param != null; ) {
                 Declaration next = param.nextDecl();
-                param.setInitValue(cargs[i]);
+                if (! param.getFlag(Declaration.PATTERN_NESTED))
+                    param.setInitValue(cargs[i++]);
                 if (makeCopy) {
                     Declaration ldecl =
                         let.addDeclaration(param.symbol, param.type);

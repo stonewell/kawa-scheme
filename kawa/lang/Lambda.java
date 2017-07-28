@@ -15,12 +15,16 @@ import kawa.standard.object;
 
 public class Lambda extends Syntax
 {
-
-    public boolean handlePatterns;
-
   public Object optionalKeyword;
   public Object restKeyword;
   public Object keyKeyword;
+
+    static BindDecls defaultBindParser = new LambdaBindDecls();
+    public BindDecls bindParser = defaultBindParser;
+    static {
+        defaultBindParser.allowShadowing = true;
+        defaultBindParser.makeConstant = false;
+    }
 
   public static final Keyword nameKeyword = Keyword.make("name");
 
@@ -77,8 +81,7 @@ public class Lambda extends Syntax
   public void rewriteFormals(LambdaExp lexp, Object formals,
 		      Translator tr, TemplateScope templateScopeRest)
   {
-    if (handlePatterns)
-        tr.pushScope(lexp);
+    tr.pushScope(lexp);
     if (lexp.getSymbol() == null)
       {
         String filename = lexp.getFileName();
@@ -120,6 +123,7 @@ public class Lambda extends Syntax
 	    pair_car = sf.getDatum();
 	    templateScope = sf.getScope();
 	  }
+        Object pccar;
 	if (pair_car == optionalKeyword)
 	  {
 	    if (opt_args >= 0)
@@ -128,14 +132,21 @@ public class Lambda extends Syntax
               tr.syntaxError (optionalKeyword.toString()+" after " + restKeyword + " or " + keyKeyword);
 	    opt_args = 0;
 	  }
+        else if (pair_car instanceof Pair
+                 && ((pccar = ((Pair) pair_car).getCar()) == LispLanguage.splice_sym
+                     || pccar == LispLanguage.splice_colon_sym))
+        {
+	    if (rest_args >= 0)
+              tr.syntaxError ("multiple " + restKeyword
+                              + " keywords in parameter list");
+            mode = null;
+	    rest_args = 0;
+        }
 	else if (pair_car == restKeyword)
 	  {
 	    if (rest_args >= 0)
               tr.syntaxError ("multiple " + restKeyword
                               + " keywords in parameter list");
-	    else if (key_args >= 0)
-              tr.syntaxError (restKeyword.toString()
-                              + " after " + keyKeyword);
 	    rest_args = 0;
 	  }
 	else if (pair_car == keyKeyword)
@@ -145,14 +156,16 @@ public class Lambda extends Syntax
                               + " keywords in parameter list");
 	    key_args = 0;
 	  }
-	else if (key_args >= 0)
+	else if (mode == keyKeyword)
 	  key_args++;
-	else if (rest_args >= 0)
-	  rest_args++;
-	else if (opt_args >= 0)
+	else if (mode == restKeyword) {
+          if (pair_car != Special.ifk)
+            rest_args++;
+	} else if (opt_args >= 0)
 	  opt_args++;
-	else
-	  lexp.min_args++;
+	else if (pair_car != Special.ifk) {
+            lexp.min_args++;
+        }
 	if (pair_car == optionalKeyword
 	    || pair_car == restKeyword || pair_car == keyKeyword)
 	  {
@@ -162,6 +175,7 @@ public class Lambda extends Syntax
 	Object savePos = tr.pushPositionOf(pair);
 	Object name = null;
 	Object defaultValue = defaultDefault;
+        Pair suppliedPair = null;
 	Pair typeSpecPair = null;
         Pair p;
 	if (tr.matches(pair_car, "::"))
@@ -170,112 +184,48 @@ public class Lambda extends Syntax
             break;
 	  }
         pair_car = tr.namespaceResolve(pair_car);
+        Declaration decl = null;
 	if (pair_car instanceof Symbol
-            && ! (handlePatterns && mode == null))
-          {
-            name = pair_car;
-            if (pair.getCdr() instanceof Pair
-                && tr.matches((p = (Pair) pair.getCdr()).getCar(), "::"))
-              {
-                if (! (p.getCdr() instanceof Pair))
-                  {
-                    tr.syntaxError("'::' not followed by a type specifier"
-                                   + " (for parameter '" + name + "')");
-                    bindings = LList.Empty;
-                    break;
-                  }
-                p = (Pair) p.getCdr();
-                typeSpecPair = p;
-                pair = p;
-                next = pair.getCdr();
-              }
-          }
-	else if (pair_car instanceof Pair
-                 && ! (handlePatterns && mode == null))
-	  {
-	    p = (Pair) pair_car;
-	    pair_car = p.getCar();
-	    if (pair_car instanceof SyntaxForm)
-	      {
-		SyntaxForm sf = (SyntaxForm) pair_car;
-		pair_car = sf.getDatum();
-		templateScope = sf.getScope();
-	      }
-            pair_car = tr.namespaceResolve(pair_car);
-	    if (pair_car instanceof Symbol
-		&& p.getCdr() instanceof Pair)
-	      {
-		name = pair_car;
-		p = (Pair) p.getCdr();
-		if (tr.matches(p.getCar(), "::"))
-		  {
-		    if (! (p.getCdr() instanceof Pair))
-		      {
-			tr.syntaxError("'::' not followed by a type specifier"
-				       + " (for parameter '" + name + "')");
-                        break;
-		      }
-		    p = (Pair) p.getCdr();
-		    typeSpecPair = p;
-		    if (p.getCdr() instanceof Pair)
-		      p = (Pair) p.getCdr();
-		    else if (p.getCdr() == LList.Empty)
-		      p = null;
-		    else
-		      {
-			tr.syntaxError("improper list in specifier for parameter '"
-				       + name + "')");
-                        break;
-		      }
-		  }
-		if (p != null && mode != null)
-		  {
-		    defaultValue = p.getCar();
-		    if (p.getCdr() instanceof Pair)
-		      p = (Pair) p.getCdr();
-		    else if (p.getCdr() == LList.Empty)
-		      p = null;
-		    else
-		      {
-			tr.syntaxError("improper list in specifier for parameter '"
-				       + name + "')");
-                        break;
-		      }
-		  }
-		if (p != null)
-		  {
-		    if (typeSpecPair != null)
-		      {
-			tr.syntaxError("duplicate type specifier for parameter '"
-				       + name + '\'');
-                        break;
-		      }
-		    typeSpecPair = p;
-		    if (p.getCdr() != LList.Empty)
-		      {
-			tr.syntaxError("junk at end of specifier for parameter '"
-				       + name + '\''+" after type "+p.getCar());
-			break;
-		      }
-                    tr.error('w', "deprecated type specifier syntax - use (VAR :: TYPE) rather than (VAR TYPE)");
-		  }
-	      }
-	  }
-        Declaration decl;
-        if (handlePatterns && mode == null) {
-            p = (Pair) pair;
-            pair_car = p.getCar();
-            boolean extraParens = false;
-            if (pair_car instanceof Pair) {
-                Object pair_car_cdr = ((Pair) pair_car).getCdr();
-                if (pair_car_cdr instanceof Pair
-                    && tr.matches(((Pair) pair_car_cdr).getCar(), "::"))
-                    extraParens = true;
+            || pair_car == Special.ifk
+            || bindParser.literalPattern(pair_car, tr) != null
+            || (pair_car instanceof Pair
+                && (mode == null
+                    || (pccar = ((Pair) pair_car).getCar()) == LispLanguage.splice_sym
+                    || pccar == LispLanguage.splice_colon_sym)
+                && (Translator.listLength(pair_car) != 3
+                    || ! tr.matches(((Pair) ((Pair) pair_car).getCdr()).getCar(), "::"))))
+        {
+            Object[] r = parsePatternCar(pair, templateScope, lexp, tr);
+            next = r[0];
+            decl = (Declaration) r[1];
+            if (decl == null)
+                decl = new Declaration("<error>");
+            if (decl.getFlag(Declaration.IS_REST_PARAMETER)) {
+                if (rest_args > 0)
+                    tr.syntaxError("multiple rest arguments in parameter list");
+                rest_args = 1;
             }
-            Object[] r = BindDecls.instance.parsePatternCar(extraParens ? (Pair) pair_car : p, 0, lexp, tr);
-            if (! extraParens)
-                next = r[0];
-            else if (r[0] != LList.Empty) {
+            name = decl == null ? null : decl.getSymbol();
+        }
+	else if (pair_car instanceof Pair)
+        {
+            Object[] r = parsePatternCar((Pair) pair_car, templateScope, lexp, tr);
+            Object xrest = r[0];
+            if (xrest instanceof Pair && mode != null) {
+                p = (Pair) xrest;
+                defaultValue = p.getCar();
+                xrest = p.getCdr();
+            }
+            if (xrest instanceof Pair && mode != null) {
+                p = (Pair) xrest;
+                if (p.getCar() instanceof Symbol) {
+                    suppliedPair = p;
+                }
+                else
+                    tr.syntaxError("expected a supplied-parameter name");
+                xrest =  p.getCdr();
+            }
+            if (xrest != LList.Empty) {
                 Object savePos1 = tr.pushPositionOf(r[0]);
                 tr.syntaxError("junk at end of specifier for parameter");
                 tr.popPositionOf(savePos1);
@@ -284,7 +234,9 @@ public class Lambda extends Syntax
             if (decl == null)
                 decl = new Declaration("<error>");
             name = decl == null ? null : decl.getSymbol();
-        } else {
+            next = pair.getCdr();
+        }
+        if (decl == null) {
             if (name == null) {
                 tr.syntaxError ("parameter is neither name nor (name :: type) nor (name default)"+": "+pair);
                 break;
@@ -308,15 +260,29 @@ public class Lambda extends Syntax
             decl.setType(new LangExp(typeSpecPair), null);
 	    decl.setFlag(Declaration.TYPE_SPECIFIED);
 	  }
-        if (mode == restKeyword)
+        if (mode == restKeyword && pair_car != Special.ifk)
 	  {
-	    decl.setFlag(Declaration.IS_REST_PARAMETER);
-	    if (! decl.getFlag(Declaration.TYPE_SPECIFIED))
-	      decl.setType(LangObjType.listType);
-	  }
+            decl.setFlag(Declaration.IS_REST_PARAMETER);
+            if (! decl.getFlag(Declaration.TYPE_SPECIFIED)) {
+                if (key_args >= 0)
+                    decl.setType(LangObjType.listType);
+                else {
+                    decl.setType(LangObjType.argListType);
+                    decl.setFlag(Declaration.KEYWORDS_OK);
+                    lexp.setFlag(LambdaExp.ALLOW_OTHER_KEYWORDS);
+                }
+            }
+          }
         decl.setFlag(Declaration.IS_SINGLE_VALUE);
-        if (! handlePatterns || mode != null)
-            addParam(decl, templateScope, lexp, tr);
+        if (suppliedPair != null) {
+            Declaration suppliedDecl = addParam((Symbol) suppliedPair.getCar(),
+                                                templateScope/*FIXME*/,
+                                                lexp, tr);
+             decl.setFlag(Declaration.IS_SUPPLIED_PARAMETER);
+             suppliedDecl.setFlag(Declaration.IS_SUPPLIED_PARAMETER);
+             suppliedDecl.setType(Type.booleanType);
+             Translator.setLine(suppliedDecl, suppliedPair);
+        }
 	tr.popPositionOf(savePos);
       }
     if (bindings instanceof SyntaxForm)
@@ -335,13 +301,15 @@ public class Lambda extends Syntax
         else
           {
             rest_args = 1;
-            Declaration decl = new Declaration(bindings);
-            decl.setType(LangObjType.listType);
+            Declaration decl = addParam((Symbol) bindings,
+                                        templateScopeRest, lexp, tr);
+            decl.setType(LangObjType.argListType);
             decl.setFlag(Declaration.IS_SINGLE_VALUE
                          |Declaration.IS_PARAMETER
                          |Declaration.IS_REST_PARAMETER);
-            decl.noteValueUnknown();
-            addParam(decl, templateScopeRest, lexp, tr);
+            // For compatibility
+            decl.setFlag(Declaration.KEYWORDS_OK);
+            lexp.setFlag(LambdaExp.ALLOW_OTHER_KEYWORDS);
           }
       }
     else if (bindings != LList.Empty)
@@ -362,23 +330,16 @@ public class Lambda extends Syntax
     if (rest_args > 0)
       lexp.max_args = -1;
     else   // Is this useful?
-      lexp.max_args = lexp.min_args + opt_args + 2 * key_args;
+      lexp.max_args = lexp.min_args + opt_args;
     lexp.opt_args = opt_args;
     if (keywords != null)
       lexp.keywords = keywords.toArray(new Keyword[keywords.size()]);
   }
 
-  protected void addParam (Declaration decl, ScopeExp templateScope,
-                           LambdaExp lexp, Translator tr)
-  {
-    if (templateScope != null)
-      decl = tr.makeRenamedAlias(decl, templateScope);
-    lexp.addDeclaration(decl);
-    if (templateScope != null)
-      decl.context = templateScope;
-    if (handlePatterns)
-        tr.push(decl);
-  }
+    protected Declaration addParam(Symbol name, TemplateScope templateScope,
+                                   LambdaExp lexp, Translator tr) {
+        return bindParser.define(name, templateScope, lexp, tr);
+    }
 
   public Object rewriteAttrs(LambdaExp lexp, Object body, Translator tr)
   {
@@ -546,15 +507,13 @@ public class Lambda extends Syntax
         && lexp.nameDecl != null
         && tr.getModule().getFlag(ModuleExp.SUPERTYPE_SPECIFIED))
       tr.curMethodLambda = lexp;
-    ScopeExp curs = tr.currentScope();
-    if (! handlePatterns)
-        tr.pushScope(lexp);
     if (lexp.nameDecl != null)
       rewriteAnnotations(lexp.nameDecl, tr);
     Declaration prev = null;
     int key_args = lexp.keywords == null ? 0 : lexp.keywords.length;
     int opt_args = lexp.opt_args;
     int arg_i = 0;
+    tr.lexical.pop(lexp);
     for (Declaration cur = lexp.firstDecl(); cur != null; cur = cur.nextDecl())
       {
 	if (cur.isAlias())
@@ -577,20 +536,22 @@ public class Lambda extends Syntax
 	prev = cur;
 
         if (cur.getFlag(Declaration.IS_PARAMETER)) {
-
-        if (arg_i >= lexp.min_args
-            && (arg_i < lexp.min_args + opt_args
-                || lexp.max_args >= 0
-                || arg_i != lexp.min_args + opt_args))
-          {
-            cur.setInitValue(tr.rewrite(cur.getInitValue()));
-          }
-        arg_i++;
+            Expression initValue = cur.getInitValue();
+            if (initValue != null)
+                cur.setInitValue(tr.rewrite(initValue));
+            if (cur.getFlag(Declaration.IS_REST_PARAMETER)
+                && cur.getFlag(Declaration.TYPE_SPECIFIED)) {
+                Type rstType = cur.getType();
+                if (rstType == LangObjType.argListType
+                    || rstType == LangObjType.argVectorType) {
+                    cur.setFlag(Declaration.KEYWORDS_OK);
+                    lexp.setFlag(LambdaExp.ALLOW_OTHER_KEYWORDS);
+                }
+            }
+            arg_i++;
         }
-
-        if (! handlePatterns)
-            tr.lexical.push(cur);
-      }
+        tr.lexical.push(cur);
+     }
 
     if (lexp.isClassMethod()
         && ! lexp.nameDecl.getFlag(Declaration.STATIC_SPECIFIED))
@@ -610,42 +571,37 @@ public class Lambda extends Syntax
     Expression[] exps;
     int len;
     Object val;
-    try { // FIXME re-indent
-    if (tform != null)
-      {
-        Expression texp = tr.rewrite_car((Pair) tform[0],
-                                         (SyntaxForm) tform[1]);
-        lexp.setCoercedReturnValue(texp, tr.getLanguage());
-      }
-    else if (lexp.body instanceof BeginExp
-        && body instanceof Pair
-        && ((Pair) body).getCar() instanceof Symbol
-        && (len = (exps = ((BeginExp) lexp.body).getExpressions()).length) > 1
-        && (exps[0] instanceof ReferenceExp
-            || ((val = exps[0].valueIfConstant()) instanceof Type
-                || val instanceof Class)))
-      {
-	// Handle '<TYPENAME> BODY':
-        tr.error('w', "deprecated return-type specifier - use '::TYPE'");
-        Expression rexp = exps[0];
-        len--;
-        if (len == 1)
-          lexp.body = exps[1];
-        else
-          {
-            Expression[] new_body = new Expression[len];
-            System.arraycopy(exps, 1, new_body, 0, len);
-            lexp.body = BeginExp.canonicalize(new_body);
-          }
-        lexp.setCoercedReturnValue(rexp, tr.getLanguage());
-      }
-    else
-      lexp.setCoercedReturnType(rtype);
+    try {
+        if (tform != null) {
+            Expression texp = tr.rewrite_car((Pair) tform[0],
+                                             (SyntaxForm) tform[1]);
+            lexp.setCoercedReturnValue(texp, tr.getLanguage());
+        } else if (lexp.body instanceof BeginExp
+                   && body instanceof Pair
+                   && ((Pair) body).getCar() instanceof Symbol
+                   && (len = (exps = ((BeginExp) lexp.body).getExpressions()).length) > 1
+                   && (exps[0] instanceof ReferenceExp
+                       || ((val = exps[0].valueIfConstant()) instanceof Type
+                           || val instanceof Class))) {
+             // Handle '<TYPENAME> BODY':
+            tr.error('w', "deprecated return-type specifier - use '::TYPE'");
+            Expression rexp = exps[0];
+            len--;
+            if (len == 1)
+                lexp.body = exps[1];
+            else  {
+                Expression[] new_body = new Expression[len];
+                System.arraycopy(exps, 1, new_body, 0, len);
+                lexp.body = BeginExp.canonicalize(new_body);
+            }
+            lexp.setCoercedReturnValue(rexp, tr.getLanguage());
+        } else
+            lexp.setCoercedReturnType(rtype);
     } finally {
-    tr.pop(lexp);
-    lexp.countDecls();
-    tr.popRenamedAlias(numRenamedAlias);
-    lexp.countDecls();
+        tr.pop(lexp);
+        lexp.countDecls();
+        tr.popRenamedAlias(numRenamedAlias);
+        lexp.countDecls();
     }
     if (tr.curMethodLambda == lexp)
       tr.curMethodLambda = null;
@@ -692,4 +648,31 @@ public class Lambda extends Syntax
           }
       }
   }
+
+    public Object[] parsePatternCar(Pair patList, TemplateScope templateScope,
+                                    LambdaExp lexp, Translator comp) {
+        return bindParser.parsePatternCar(patList, null, templateScope, 0,
+                                          lexp, comp);
+    }
+
+    static class LambdaBindDecls extends BindDecls {
+        @Override
+        public Declaration define(Symbol name,
+                                  TemplateScope templateScope,
+                                  ScopeExp lexp, Translator tr) {
+            Declaration decl0 = new Declaration(name);
+            Declaration decl = decl0;
+            if (templateScope != null)
+                decl = tr.makeRenamedAlias(decl, templateScope);
+            lexp.addDeclaration(decl);
+            if (templateScope != null)
+                decl.context = templateScope;
+            Declaration old = tr.lexical.lookup(name, -1);
+            if (old != null && old.context == decl.context)
+                ScopeExp.duplicateDeclarationError((Declaration) old,
+                                                   decl, tr);
+            tr.push(decl);
+            return decl0;
+        }
+    }
 }

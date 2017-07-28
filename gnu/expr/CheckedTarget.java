@@ -62,7 +62,7 @@ public class CheckedTarget extends StackTarget
             return Target.pushObject;
         StackTarget targ = new CheckedTarget(type, decl.getName(),
                                              WrongType.ARG_VARNAME);
-        if (decl.field != null)
+        if (decl.getField() != null)
             targ.autoTruncates = true;
         return targ;
     }

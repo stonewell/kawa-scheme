@@ -1,4 +1,4 @@
-(require <kawa.lib.prim_syntax>)
+(require <kawa.lib.prim_imports>)
 (require <kawa.lib.std_syntax>)
 (require <kawa.lib.syntax>)
 
@@ -53,15 +53,25 @@
                       (start ::int 0)
                       (end ::int (v:size)))
   ::string
-  (v:toUtf8 start (- end start)))
+  (gnu.lists.IString (v:utf8ToString start (- end start))))
 
-(define (string->utf8
-         (v ::string)
-         #!optional
-         (start ::int 0)
-         (end ::int (v:length)))
-  ::bytevector
-  (gnu.lists.U8Vector
-   (((v:toString):substring start end):getBytes
-    (cond-expand (java-7 java.nio.charset.StandardCharsets:UTF_8)
-                 (else "UTF-8")))))
+(define (utf16->string (v ::bytevector)
+                      #!optional
+                      (start ::int 0)
+                      (end ::int (v:size)))
+  ::string
+  (gnu.lists.IString (v:utf16ToString start (- end start))))
+
+(define (utf16le->string (v ::bytevector)
+                      #!optional
+                      (start ::int 0)
+                      (end ::int (v:size)))
+  ::string
+  (gnu.lists.IString (v:utf16ToString start (- end start) #f)))
+
+(define (utf16be->string (v ::bytevector)
+                      #!optional
+                      (start ::int 0)
+                      (end ::int (v:size)))
+  ::string
+  (gnu.lists.IString (v:utf16ToString start (- end start) #t)))
