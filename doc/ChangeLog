@@ -1,3 +1,8 @@
+2017-07-29  Per Bothner  <per@bothner.com>
+
+	* kawa.texi: Document '?' conditional match form and its use.
+	* news.texi: Note '?' form.
+
 2017-07-26  Per Bothner  <per@bothner.com>
 
 	* kawa.texi (Extended formals): Update and expand.

@@ -10,17 +10,37 @@ changes}.
 Binary release are now built for Java 8.
 The repository source code is now set up for Java 8.
 (Biulding fro Java 6 or 7 is still supported.
-Java 5 might also work, but not not been tested recently.)
+Java 5 might also work, but has not been tested recently.)
 @item
 Most places where you could declare a new identifier
 binding have been generalized to accept @ref{Variables and Patterns,patterns},
 including literals and boolean @stxref{guard}s.
+
+Related changes:
+@itemize
+@item
+The form @code{(! @var{pattern} @var{expression})} creates
+@ref{exclam-syntax,variable bindings} by matching
+the @var{expression} against the @var{pattern}.
+It is like @code{define-constant} but generalized to patterns.
+
+@item
+The conditional match form @code{(! @var{pattern} @var{expression})}
+is similar to @code{?} but can only be
+used @ref{Conditionals,in conditional context}.
+If the match fails, the conidtion is true.
+
 @item
 The new form @ref{def-match,@code{match}} form is a generalization
 of @code{case} using patterns.
 @item
 The internal calling convention used for ``apply'' (ie. calling
 an unknown-at-compile-time procedure) has been completely changed.
+@item
+New types for arguments list (possibly with keywords)
+@ref{Explicit argument list objects, @code{arglist} and @code{argvector}}
+along with @ref{Argument list library,an API} for using them.
+@end itemize
 @item
 Major changes to strings:
 @itemize

@@ -6484,6 +6484,10 @@ respectively.
 @stxdef{boolean} @stxlit{#t} | @stxlit{#f} | @stxlit{#true} | @stxlit{#false}
 @end display
 
+@display
+@stxdef{test-expression} @stxref{expression}
+@end display
+
 What really matters,
 though, are the objects that the Scheme conditional expressions (@code{if},
 @code{cond}, @code{and}, @code{or}, @code{when}, @code{unless}, @code{do})
@@ -6491,8 +6495,10 @@ treat as true or
 false. The phrase ``a true value'' (or sometimes just ``true'')
 means any object treated as true by the conditional expressions, and the phrase ``a false value'' (or ``false'') means any
 object treated as false by the conditional expressions.
+In this document, @var{test-expression} is an expression that is evaluated,
+but we only care about whether the result is a true or a false value.
 
-Of all the ``proper Scheme'' values, only @code{#f} counts as false in
+Of all the standard Scheme values, only @code{#f} counts as false in
 conditional expressions. All other Scheme values, including @code{#t},
 count as true.  A @var{test-expression} is an expression evaluated
 in this manner for whether it is true or false.
@@ -6535,21 +6541,6 @@ is either @code{#t} or @code{#f}, and returns @code{#f} otherwise.
 @end example
 @end deffn
 
-@deffn Procedure not obj
-The @code{not} procedure returns @code{#t} if @var{obj} is false,
-and returns @code{#f} otherwise.
-
-@example
-(not #t)         @result{}  #f
-(not 3)          @result{}  #f
-(not (list 3))   @result{}  #f
-(not #f)         @result{}  #t
-(not ’())        @result{}  #f
-(not (list))     @result{}  #f
-(not ’nil)       @result{}  #f
-@end example
-@end deffn
-
 @deffn Procedure boolean=? boolean1 boolean2 boolean3 ...
 Returns @code{#t} if all the arguments are booleans and all are @code{#t}
 or all are @code{#f}.
@@ -6558,30 +6549,84 @@ or all are @code{#f}.
 @node Conditionals
 @section Conditionals
 
+Kawa Scheme has the usual conditional expression forms,
+such as @code{if}, @code{case}, @code{and}, and @code{or}:
+@example
+(if (> 3 2) 'yes 'no)          @result{} yes
+@end example
+
+Kawa also allows you bind variables in the condition,
+using the @samp{?} operator.
+@example
+(if (and (? x ::integer (get-value)) (> x 0))
+  (* x 10)
+  'invalid)
+@end example
+In the above, if @code{(get-value)} evaluates to an integer, that
+integer is bound to the variable @code{x}, which is visible
+in both following sub-expression of @code{and},
+as well case the true-part of the @code{if}.
+
+Specifically, the first sub-expression of an @code{if}
+is a @stxref{test-or-match}, which can be a @stxref{test-expression},
+or a @samp{?} match expression, or a combination using @code{and}:
+
 @display
-@stxdef{test-expression} @stxref{expression}
+@stxdef{test-or-match} @stxref{test-expression}
+  | @stxlit{(?} @stxref{pattern} @stxref{expression} @stxlit{)}
+  | @stxlit{(and} @arbno{@stxref{test-or-match}}@stxlit{)}
+@end display
+
+A @var{test-or-match} is true if every nested @var{test-expression}
+is true, and every @samp{?} operation succeeds.
+It produces a set of variable bindings which is the union
+of the bindings produced by all the @var{pattern}s.
+In an @code{and} form, bindings produced by a @var{pattern} are visible to
+all subsequent @var{test-or-match} sub-expressions.
+
+@deffn Syntax ? @stxref{pattern} @stxref{expression}
+The form @code{(? @var{P} @var{V})} informally
+is true if the value of @var{V} matches the pattern @var{P}.
+Any variables bound in @var{P} are in scope in the ``true''
+path of the containing conditional.
+
+This has the form of an expression, but it can only be used
+in places where a @stxref{test-or-match} is required.
+For example it can be used as the first clause of an
+@code{if} expression, in which case the scope of the variables bound in
+the @code{pattern} includes the second (@stxref{consequent}) sub-expression.
+On the other hand, a @samp{?} form may not be used
+as an argument to a procedure application.
+@end deffn
+
+@deffn Syntax if @stxref{test-or-match} @stxref{consequent} @stxref{alternate}
+@deffnx Syntax if @stxref{test-or-match} @stxref{consequent}
+
+@display
 @stxdef{consequent} @stxref{expression}
 @stxdef{alternate} @stxref{expression}
 @end display
 
-@deffn Syntax if @stxref{test-expression} @stxref{consequent} @stxref{alternate}
-@deffnx Syntax if @stxref{test-expression} @stxref{consequent}
-
 An @func{if} expression is evaluated as follows:
-first, @meta{test-expression} is
-evaluated.  If it yields a true value, then @meta{consequent} is
+first, the @stxref{test-or-match} is
+evaluated.  If it it true, then @meta{consequent} is
 evaluated and its values are returned.  Otherwise @meta{alternate} is
 evaluated and its values are returned.  If @meta{test} yields @false{}
 and no @meta{alternate} is specified, then the result of the expression
-is unspecified.
+is void.
 
 @example
-(if (> 3 2) 'yes 'no)          @result{} yes
 (if (> 2 3) 'yes 'no)          @result{} no
 (if (> 3 2)
     (- 3 2)
     (+ 3 2))                   @result{} 1
-(if #f #f)                     @result{} unspecified
+(if #f #f)                     @result{} #!void
+(if (? x::integer 3)
+  (+ x 1)
+  'invalid)                    @result{} 4
+(if (? x::integer 3.4)
+  (+ x 1)
+  'invalid)                    @result{} 'invalid
 @end example
 
 The @meta{consequent} and @meta{alternate} expressions are in tail
@@ -6592,26 +6637,27 @@ context if the @func{if} expression itself is.
 @deffnx Syntax cond @arbno{@stxref{cond-clause}} @stxlit{(else} @meta{expression}@dots{}@stxlit{)} 
 
 @display
-@stxdef{cond-clause} @stxlit{(}@stxref{test-expression} @stxref{body}@stxlit{)}
+@stxdef{cond-clause} @stxlit{(}@stxref{test-or-match} @stxref{body}@stxlit{)}
     | @stxlit{(}@meta{test} @stxlit{=>} @meta{expression}@stxlit{)}
 @end display
 
-A @func{cond} expression is evaluated by evaluating the @meta{test-expression}s
+A @func{cond} expression is evaluated by evaluating the @meta{test-or-match}s
 of successive @meta{cond-clause}s in order until one of them
-evaluates to a true value.  When a @meta{test-expression} evaluates to a true
+evaluates to a true value.  When a @meta{test-or-match} is true
 value, then the remaining @meta{expression}s in its @meta{cond-clause}
 are evaluated in order, and the results of the last @meta{expression} in
 the @meta{cond-clause} are returned as the results of the entire
-@func{cond} expression.
-If the selected @meta{cond-clause} contains only the @meta{test-expression} and no
-@meta{expression}s, then the value of the @meta{test-expression} is returned as the
+@func{cond} expression.  Variables bound by the @var{test-or-match}
+are visible in @var{body}.
+If the selected @meta{cond-clause} contains only the @meta{test-or-match} and no
+@meta{expression}s, then the value of the last @meta{test-expression} is returned as the
 result.  If the selected @meta{cond-clause} uses the @code{=>} alternate
 form, then the @meta{expression} is evaluated.  Its value must be a
 procedure.  This procedure should accept one argument; it is called on
 the value of the @meta{test-expression} and the values returned by this procedure
 are returned by the @func{cond} expression.
 
-If all @meta{test-expression}s evaluate to @false{}, and there is no @code{else}
+If all @meta{test-or-match}s evaluate to @false{}, and there is no @code{else}
 clause, then the conditional expression returns unspecified values; if
 there is an @code{else} clause, then its @meta{expression}s are
 evaluated, and the values of the last one are returned.
@@ -6710,7 +6756,7 @@ the @func{case} expression itself is.
 @end deffn
 
 @anchor{def-match}
-@deffn Syntax match @stxref{match-key} @stxref{expression} @atleastone{@stxref{match-clause}}
+@deffn Syntax match @stxref{match-key} @atleastone{@stxref{match-clause}}
 The @code{match} form is a generalization of @code{case} using @stxref{pattern}s,
 @display
 @stxdef{match-key} @stxref{expression}
@@ -6745,20 +6791,35 @@ However, this is easy to simulate using a guard using @code{memq},
 @end example
 @end deffn
 
-@deffn Syntax and @stxref{test-expression} @dots{}
+@deffn Syntax and @arbno{@stxref{test-or-match}}
 
-If there are no @meta{test-expression}s, @true{} is returned.  Otherwise, the
-@meta{test-expression} are evaluated from left to right until a
-@meta{test-expression} returns @false{} or the last @meta{test-expression} is reached.  In the
+If there are no @meta{test-or-match} forms, @true{} is returned.
+
+If the @code{and} is not in @stxref{test-or-match} context,
+then the last sub-expression (if any) must be a @stxref{test-expression},
+and not a @samp{?} form.  In this case the
+@meta{test-or-match} expressions are evaluated from left to right until
+either one of them is false
+(a @meta{test-expression} is false or a @samp{?} match fails),
+or the last @meta{test-expression} is reached.  In the
 former case, the @func{and} expression returns @false{} without
 evaluating the remaining expressions.  In the latter case, the last
 expression is evaluated and its values are returned.
+
+If the @code{and} is in @stxref{test-or-match} context,
+then the last sub-form can be @samp{?} form.
+They are evaluated in order: If one of them is false,
+the entire @code{and} is false; otherwise the @code{and} is true.
+
+Regardless, any bindings made by earlier @samp{?} forms
+are visible in later @var{test-or-match} forms.
 
 @example
 (and (= 2 2) (> 2 1))          @result{}  #t
 (and (= 2 2) (< 2 1))          @result{}  #f
 (and 1 2 'c '(f g))            @result{}  (f g)
 (and)                          @result{}  #t
+(and (? x ::int 23) (> x 0))   @result{}  #t
 @end example
 
 The @func{and} keyword could be defined in terms of @func{if} using
@@ -6810,6 +6871,22 @@ The last @meta{test-expression} is in tail context if the @func{or}
 expression itself is.
 @end deffn
 
+
+@deffn Procedure not test-expression
+The @code{not} procedure returns @code{#t} if @var{test-expression} is false,
+and returns @code{#f} otherwise.
+
+@example
+(not #t)         @result{}  #f
+(not 3)          @result{}  #f
+(not (list 3))   @result{}  #f
+(not #f)         @result{}  #t
+(not ’())        @result{}  #f
+(not (list))     @result{}  #f
+(not ’nil)       @result{}  #f
+(not #!null)     @result{}  #t
+@end example
+@end deffn
 
 @deffn Syntax when @stxref{test-expression} form...
 If @var{test-expression} is true, evaluate each @var{form} in order,
@@ -6951,12 +7028,18 @@ A variable definition binds one or more identifiers and specifies
 an initial value for each of them. The simplest kind of
 variable definition takes one of the following forms:
 
+@anchor{exclam-syntax}
 @deffn Syntax ! @stxref{pattern} @stxref{expression}
 Evaluate @stxref{expression}, and match the result against @var{pattern}.
 Defining variables in @stxref{pattern} becomes bound in the
 current (surrounding) scope.
 
 This is similar to @code{define-constant} except generalized to a @var{pattern}.
+
+@example
+(! [x y] (vector 3 4))
+(format "x is ~w and y is ~w" x y) @result{} "x is 3 and y is 4"
+@end example
 @end deffn
 
 @deffn Syntax define name [@stxlit{::} @stxref{type}] @stxref{expression}
@@ -8563,6 +8646,7 @@ are appended to the resulting argument list, though subject to the restriction
 that keyword arguments must be adjacent in the resulting argument list.
 @end table
 
+@anchor{Explicit argument list objects}
 @subsection Explicit argument list objects
 
 Sometimes it is useful to create an argument list out of
@@ -8645,6 +8729,7 @@ If there is at least one keyword argument creates a special
 usual @code{list} properties but internally wraps a @code{argvector}.
 @end deffn
 
+@anchor{Argument list library}
 @subsection Argument list library
 
 @example
