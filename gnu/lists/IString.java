@@ -197,7 +197,7 @@ public class IString extends AbstractSequence<Char>
                          int jlStart, int jlEnd) {
             super();
             this.str = base.str;
-            this.jlStart = jlStart;
+            this.jlStart = base.jlStart() + jlStart;
             this.jlLength = jlEnd - jlStart;
             this.cpStart = start + base.cpStart();
             this.cplength = end - start;

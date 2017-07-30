@@ -1,3 +1,8 @@
+2017-07-28  Sudarshan S Chawathe  <chaw@eip10.org>
+
+	* gnu/lists/IString.java (SubString): Fix offset for substring of
+	substring for istrings; fixes GitLab issue #16.
+
 2017-07-15  Per Bothner  <per@bothner.com>
 
 	* configure.ac: Configure (and make) bin unconditionally.
