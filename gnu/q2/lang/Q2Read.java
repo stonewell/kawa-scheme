@@ -413,7 +413,11 @@ public class Q2Read extends LispReader
         {
         case '(':  return readParens(in);
         case ';':  return Symbol.valueOf(";");
-        default: throw new Error();
+        case '|':
+            in.error("unexpected '|'");
+            return Values.empty;
+        default:
+            throw new Error();
         }
     }
 

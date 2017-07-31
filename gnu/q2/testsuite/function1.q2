@@ -5,12 +5,15 @@ define bar (|x|)
 define (foo #!optional (x 10))
   counter := counter + 1
   format #t "foo called x=~s counter=~s!~%~!" x counter
+define baz (|x y|) (list y x)
 foo
 foo 5
 foo
 bar 11
+format #t "baz 9 8 => ~w~%~!" (baz 9 8)
 
 # Output: foo called x=10 counter=1!
 # Output: foo called x=5 counter=2!
 # Output: foo called x=10 counter=3!
 # Output: bar called x=11 counter=4!
+# Output: baz 9 8 => (8 9)

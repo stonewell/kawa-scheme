@@ -84,7 +84,7 @@ public class Q2Translator extends SchemeCompilation
                     Pair prefixTail = (Pair) st.get(stsz-3);
                     Object narg = topop.combine(LList.Empty, larg,
                                          oppair);
-                    narg = new Pair(narg, LList.Empty);       
+                    narg = new Pair(narg, LList.Empty);
                     if (prefixTail == null)
                         larg = narg;
                     else {
@@ -164,9 +164,12 @@ public class Q2Translator extends SchemeCompilation
         else {
             Expression exp = super.rewrite_pair(pair, function);
             ApplyExp app;
-            if (exp instanceof ApplyExp
-                && isApplyFunction((app = (ApplyExp) exp).getFunction())) {
-                exp = convertApply(app);
+            if (exp instanceof ApplyExp) {
+                Expression fun = (app = (ApplyExp) exp).getFunction();
+                if (isApplyFunction(fun))
+                    exp = convertApply(app);
+                else if (fun instanceof LambdaExp && app.getArgCount() == 0)
+                    return fun;
             }
             return exp;
         }
@@ -198,8 +201,7 @@ public class Q2Translator extends SchemeCompilation
         return false;
     }
 
-    public static Expression convertApply
-        (ApplyExp exp) {
+    public static Expression convertApply(ApplyExp exp) {
  
         Expression[] args = exp.getArgs();
         int nargs = args.length;

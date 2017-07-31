@@ -1,3 +1,7 @@
+2017-07-31  Per Bothner  <per@bothner.com>
+
+	Tweaks to make lambda syntactic sugar work better.
+
 2016-12-31  Per Bothner  <per@bothner.com>
 
 	Implement new lambda syntax: (|param-list|) body

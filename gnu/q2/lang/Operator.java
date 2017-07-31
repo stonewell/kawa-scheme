@@ -98,7 +98,7 @@ public class Operator extends Syntax
       }
     if (this.getSymbol() == LAMBDA_NAME) {
         funop = kawa.standard.SchemeCompilation.lambda;
-        args = new Pair(this.function, rargs);
+        args = new Pair(this.function, LList.list1(rargs));
     }
     else if (largs == LList.Empty)
       args = LList.list1(rargs);
