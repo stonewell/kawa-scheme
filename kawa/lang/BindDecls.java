@@ -209,7 +209,9 @@ public class BindDecls {
         }
         int count = 0;
         Object cdr = patpair.getCdr();
+        boolean sawSplice = false;
         int ellipsisCount = 0;
+        int spliceCount = 0;
         for (;; count++) {
             if (cdr == LList.Empty)
                 break;
@@ -231,8 +233,18 @@ public class BindDecls {
                     cdr = ((Pair) cdr).getCdr();
                 }
             }
+            Object curCar = patpair.getCar();
+            if (Translator.listLength(curCar) == 2) {
+                Object nextCaar = ((Pair) curCar).getCar();
+                if (nextCaar == LispLanguage.splice_sym
+                    || nextCaar == LispLanguage.splice_colon_sym) {
+                    sawSplice = true;
+                    spliceCount++;
+                    patpair = (Pair) ((Pair) curCar).getCdr();
+                }
+            }
             Expression init;
-            if (sawEllipsis) {
+            if (sawEllipsis || sawSplice) {
                 // FIXME restCount mishandles 'ID :: TYPE', for example.
                 int restCount = Translator.listLength(cdr);
                 Method dropMethod = ClassType.make("gnu.lists.Sequences")
@@ -259,6 +271,8 @@ public class BindDecls {
                 init = new ApplyExp(indexMethod, new Expression[] {
                         new ReferenceExp(decl),
                         new QuoteExp(index, Type.intType) });
+                // if scanNesting:
+                // init = (map (lambda (d) (indexMethod d index)) decl)
             }
             Object[] r = parsePatternCar(patpair, init, null, curScanNesting,
                                          scope, comp);
@@ -269,7 +283,8 @@ public class BindDecls {
             if (sawEllipsis)
                 d.setFlag(Declaration.SCAN_OWNER);
         }
-        decl.setType(new SeqSizeType(count-ellipsisCount, ellipsisCount==0));
+        decl.setType(new SeqSizeType(count-ellipsisCount,
+                                     ellipsisCount+spliceCount==0));
     }
 
     private void setInitializer(Declaration decl, Expression init, ScopeExp scope, Translator comp) {
