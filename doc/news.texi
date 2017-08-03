@@ -31,6 +31,10 @@ used @ref{Conditionals,in conditional context}.
 If the match fails, the conidtion is true.
 
 @item
+@ref{Repeat forms,Repeat patterns and forms} is a
+powerful experimental feature, similar to list comprehensions.
+
+@item
 The new form @ref{def-match,@code{match}} form is a generalization
 of @code{case} using patterns.
 @item

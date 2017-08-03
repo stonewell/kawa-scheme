@@ -6469,6 +6469,7 @@ structure of an entire source file.
 * Definitions::
 * Local binding constructs::
 * Lazy evaluation::
+* Repeat forms::         Repeat patterns and expressions
 * Threads::
 * Exceptions::           Exception handling
 @end menu
@@ -7019,6 +7020,21 @@ No incoming value is used.  Instead the @var{expression} is evaluated.
 If the result is true, matching succeeds (so far);
 otherwise the match fails.
 This form is called a @uref{https://en.wikipedia.org/wiki/Guard_(computer_science),@dfn{guard}}.
+
+@item @stxlit{@@} @stxref{pattern}
+A @dfn{splice pattern} may match multiple (zero or more) elements of a sequence.
+The @var{pattern} is matched against the resulting sub-sequence.
+@example
+(! [x @@r] [2 3 5 7 11])
+@end example
+This binds @code{x} to 2 and @code{r} to @code{[3 5 7 11]}.
+
+@item @stxref{pattern} @stxlit{...}
+Similar to @code{@@@var{pattern}} in that it matches
+multiple elements of a sequence.
+However, each individual element is matched
+against the @var{pattern}, rather than the elements as a sequence.
+This is a @ref{Repeat forms,repeat pattern}.
 @end table
 
 @node Definitions
@@ -7545,6 +7561,97 @@ a mostly-eager language, so the eager type is the default.
 This makes efficient code-generation easier: If an expression
 has an eager type, then the compiler can generate code that
 works on its values directly, without having to check for laziness.
+
+@node Repeat forms
+@section Repeat patterns and expressions
+
+Many programming languages have some variant
+of @uref{https://en.wikipedia.org/wiki/List_comprehension,list comprehension syntax}.
+Kawa splits this into two separate forms,
+that can be in separate parts of the program:
+@itemize
+@item
+@cindex repeat pattern
+A @dfn{repeat pattern} as you might guess
+repeats a pattern by matching the pattern once for each element of a sequence.
+For example, assume @code{A} is a some sequence-valued expression.
+Then:
+@example
+#|kawa:3|# @kbd{(! [a::integer ...] A)}
+@end example
+Here @samp{a::integer ...} is a @var{repeat pattern} that
+matches all the elements pf @code{A}.
+We call @samp{a::integer} the @dfn{repeated pattern} - it matches an
+individual element of @code{A}.
+@cindex repeat variable
+Any variable define in a repeated pattern is a @dfn{repeat variable}.
+In the example, that would be @code{a}.
+@item
+@cindex repeat expression
+A @dfn{repeat expression} creates a sequence by repeating
+an expression for each element of the result.
+@example
+#|kawa:4|# @kbd{[(* 2 a) ...]}
+[4 6 10 14 22]
+@end example
+In this case @samp{(* 2 a) ...} is the repeat expression.
+The @dfn{repeated expression} is @samp{(* 2 a)}.
+The repeated expression is evaluated once for each element
+of any contained repeat variable.
+If there is more than one repeat variable, they are
+repeated in parallel, as many times as the ``shortest'' repeat variable,
+similar to the @code{map} procedure.
+(If there is no repeat variable, the repeated expression is potentially
+evaluated infinitely many times, which is not allowed.
+A planned extension will allow it for lazy repeated expression.)
+@end itemize
+
+The use of @samp{...} for repeat patterns and expressions mirrors
+exactly their use in @code{syntax-rules} patterns and templates.
+
+It is an error to use a repeat variable outside of repeat context:
+@example
+#|kawa:5|# a
+/dev/stdin:2:1: using repeat variable 'a' while not in repeat context
+@end example
+
+The repeat form feature is not yet complete.
+It is missing functionality such as selecting only some elements
+from a repeat sequence, lazy sequences, and it could be optimized more.
+
+A repeat variable can be used multiple times in the
+same repeat expressions, or different repeat expressions:
+@example
+#|kawa:7|# @kbd{[a ... a ...]}
+[2 3 5 7 11 2 3 5 7 11]
+#|kawa:8|# @kbd{[(* a a) ...]}
+[4 9 25 49 121]
+@end example
+
+Repeat expressions are useful not just in sequence literals,
+but in the argument list of a procedure call, where the resulting sequence
+is spliced into the argument list. This is especially useful for functions
+that take a variable number of arguments, because that enables a
+convenient way to do @uref{https://en.wikipedia.org/wiki/Fold_(higher-order_function),fold/accumulate/reduce} operations. For example:
+
+@example
+#|kawa:9|# @kbd{(+ a ...)}
+28
+@end example
+
+because 28 is the result of @code{(+ 2 3 5 7 11)}.
+
+An elegant way to implement @uref{https://en.wikipedia.org/wiki/Dot_product,dot product}:
+@example
+(define (dot-product [x ...] [y ...])
+  (+ (* x y) ...))
+@end example
+
+When an ellipse expression references two or more distinct repeat variables
+then they are processed ``in parallel''.
+That does not (necessarily) imply muliple threads, but that the first element
+of the repeat result is evaluated using the first element of all the repeat sequences,
+the second element of the result uses the second element of all the repeat sequences, and so on. 
 
 @node Threads
 @section Threads
