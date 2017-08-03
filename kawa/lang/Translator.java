@@ -994,7 +994,7 @@ public class Translator extends Compilation
                 : Declaration.followAliases(decl).getScanNesting();
             if (scanNesting > 0) {
                 if (scanNesting > curScanNesting())
-                    error('e', "using scan variable "+decl.getName()+" while not in scan context");
+                    error('e', "using repeat variable '"+decl.getName()+"' while not in repeat context");
                 else {
                     return new ReferenceExp
                         (scanContextStack.get(scanNesting-1).addSeqDecl(decl));
