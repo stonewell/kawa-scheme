@@ -1,4 +1,4 @@
-(test-begin "variables-and-patterns" 15)
+(test-begin "variables-and-patterns" 21)
 
 (let ((foo (lambda ([x::integer ...]) (+ x ...))))
   (test-equal 9 (foo [2 3 4]))
@@ -44,11 +44,31 @@
                (ex java.lang.IllegalArgumentException
                    'caught))))
 
-#| Not working yet
 (let* ((fun (lambda ([[x y] ...]) [[y x] ...]))
-       (A [[11 12] [21 22] [31 32]]))
+       (A [[11 12] [21 22] [31 32]])
+       (B [[11 12] [21 22 23] [31 32]]))
   (test-equal [[12 11] [22 21] [32 31]]
+              (fun A))
+  (test-error (fun B)))
+
+(let* ((fun (lambda ([[x @r] ...])
+              [[@r (+ 100 x)] ...]))
+       (A [[11] [21 22 23 24] [31 32]])
+       (B [[] [21 22 23 24] [31 32]]))
+  (test-equal [[111] [22 23 24 121] [32 131]]
+              (fun A))
+  (test-error (fun B)))
+
+(let* ((fun (lambda ([[x ... y] ...])
+              [[(+ 100 y) (+ 200 x) ...] ...]))
+       (A [[11] [21 22 23 24] [31 32]]))
+  (test-equal [[111] [124 221 222 223] [132 231]]
               (fun A)))
-|#
+
+(let* ((fun (lambda ([[@r x] ...])
+              [[@r (+ 100 x)] ...]))
+       (A [[11] [21 22 23 24] [31 32]]))
+  (test-equal [[111] [21 22 23 124] [31 132]]
+              (fun A)))
 
 (test-end)

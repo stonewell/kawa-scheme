@@ -1,3 +1,7 @@
+2017-08-03  Per Bothner  <per@bothner.com>
+
+	* lang/BindDecls.java: Fixes for patterns nested in repeat patterns.
+
 2017-08-02  Per Bothner  <per@bothner.com>
 
 	* lang/BindDecls.java: Handle splice operator in list pattern.

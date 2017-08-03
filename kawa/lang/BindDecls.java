@@ -14,6 +14,7 @@ import gnu.kawa.lispexpr.LangPrimType;
 import gnu.kawa.lispexpr.LispLanguage;
 import gnu.kawa.reflect.MappedArrayType;
 import gnu.mapping.Procedure;
+import kawa.standard.Scheme;
 
 /** Methods for parsing patterns. */
 
@@ -184,9 +185,7 @@ public class BindDecls {
         if (decl != null) {
             decl.setScanNesting(scanNesting);
             if (type != null) {
-                while (--scanNesting >= 0)
-                    type = new MappedArrayType(type);
-                decl.setType(type);
+                decl.setType(MappedArrayType.maybe(type, scanNesting));
                 decl.setFlag(Declaration.TYPE_SPECIFIED);
             }
         }
@@ -209,7 +208,6 @@ public class BindDecls {
         }
         int count = 0;
         Object cdr = patpair.getCdr();
-        boolean sawSplice = false;
         int ellipsisCount = 0;
         int spliceCount = 0;
         for (;; count++) {
@@ -219,6 +217,7 @@ public class BindDecls {
                 break;  // FIXME ERROR - or handle "rest" pattern
             patpair = (Pair) cdr;
             boolean sawEllipsis = false;
+            boolean sawSplice = false;
             int curScanNesting = scanNesting;
             cdr = parsePatternNext(patpair, comp);
             if (cdr instanceof Pair) {
@@ -227,8 +226,6 @@ public class BindDecls {
                 if (SyntaxPattern.literalIdentifierEq(nextCar, null/*FIXME*/, ellipsis, null)) {
                     sawEllipsis = true;
                     curScanNesting++;
-                    if (ellipsisCount > 0)
-                        comp.error('e', "multiple '...' in pattern");
                     ellipsisCount++;
                     cdr = ((Pair) cdr).getCdr();
                 }
@@ -259,7 +256,7 @@ public class BindDecls {
                 // FIXME Probably better to use an Iterator or "position indexes"
                 Method indexMethod;
                 int index;
-                if (ellipsisCount > 0) {
+                if (ellipsisCount + spliceCount > 0) {
                     index = -1 - Translator.listLength(cdr);
                     indexMethod = ConsumerTarget.typeSequences
                         .getDeclaredMethod("getAt", 2);
@@ -271,9 +268,9 @@ public class BindDecls {
                 init = new ApplyExp(indexMethod, new Expression[] {
                         new ReferenceExp(decl),
                         new QuoteExp(index, Type.intType) });
-                // if scanNesting:
-                // init = (map (lambda (d) (indexMethod d index)) decl)
             }
+            if (scanNesting > 0)
+                init = mapInit(init, decl);
             Object[] r = parsePatternCar(patpair, init, null, curScanNesting,
                                          scope, comp);
             //r[0] is ingnored, instead we use parsePatternNext
@@ -283,8 +280,11 @@ public class BindDecls {
             if (sawEllipsis)
                 d.setFlag(Declaration.SCAN_OWNER);
         }
-        decl.setType(new SeqSizeType(count-ellipsisCount,
-                                     ellipsisCount+spliceCount==0));
+        if (ellipsisCount+spliceCount > 1)
+            comp.error('e', "more than one '...' or '@' in a pattern not supported");
+        Type seqType = new SeqSizeType(count-ellipsisCount-spliceCount,
+                                       ellipsisCount+spliceCount==0);
+        decl.setType(MappedArrayType.maybe(seqType, scanNesting));
     }
 
     private void setInitializer(Declaration decl, Expression init, ScopeExp scope, Translator comp) {
@@ -299,6 +299,29 @@ public class BindDecls {
             decl.setInitValue(init);
             decl.noteValueFromLet(scope);
         }
+    }
+
+    static class ReplaceDecl extends ExpExpVisitor<Void> {
+        Declaration oldDecl;
+        Declaration newDecl;
+        protected Expression visitReferenceExp(ReferenceExp exp, Void ignored) {
+            if (exp.getBinding() == oldDecl)
+                exp.setBinding(newDecl);
+            return exp;
+        }
+    }
+
+    static Expression mapInit(Expression init, Declaration decl) {
+        LambdaExp lambda = new LambdaExp();
+        Declaration param = lambda.addParameter(null);
+        ReplaceDecl v = new ReplaceDecl();
+        v.oldDecl = decl;
+        v.newDecl = param;
+        v.visit(init, null);
+        lambda.body = init;
+        return new ApplyExp(Scheme.map,
+                            lambda,
+                            new ReferenceExp(decl));
     }
 
     Declaration addCondition(ScopeExp scope, Object condition) {

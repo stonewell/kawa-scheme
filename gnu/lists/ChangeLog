@@ -1,3 +1,8 @@
+2017-08-03  Per Bothner  <per@bothner.com>
+
+	* Sequences.java (subList, drop): Use coerceToSequence.
+	This extends the methods to Java arrays and other non-List sequences.
+
 2017-06-08  Per Bothner  <per@bothner.com>
 
 	* PairWithPosition.java: Update for new source position model.

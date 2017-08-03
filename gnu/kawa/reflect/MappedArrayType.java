@@ -24,6 +24,12 @@ public class MappedArrayType extends ObjectType implements TypeValue {
         this.setSignature(implementationType.getSignature());
     }
 
+    public static Type maybe(Type type, int nesting) {
+        while (--nesting >= 0)
+            type = new MappedArrayType(type);
+        return type;
+    }
+
     public Type getComponentType() { return elementType; }
 
     @Override

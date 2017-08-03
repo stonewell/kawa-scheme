@@ -142,7 +142,7 @@ public class Sequences {
     }
 
     public static Object subList(Object base, int fromIndex, int toIndex) {
-        List<?> lbase = (List<?>) base;
+        List<?> lbase = coerceToSequence(base);
         if (toIndex == -1)
             toIndex = lbase.size();
         return lbase.subList(fromIndex, toIndex);
@@ -163,7 +163,7 @@ public class Sequences {
             return subList(base, 0, -count);
     }
     public static Object drop(Object base, int fromStart, int fromEnd) {
-        List<?> lbase = (List<?>) base;
+        List<?> lbase = coerceToSequence(base);
         return subList(base, fromStart, lbase.size() - fromEnd);
     }
 
