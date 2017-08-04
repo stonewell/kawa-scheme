@@ -1,3 +1,9 @@
+2017-08-04  Per Bothner  <per@bothner.com>
+
+	* MappedArrayType.java (isCompatibleWithValue): Always convert.
+	Don't return 2 (meaning no-runtime conversion needed), because it
+	always is.
+
 2017-08-03  Per Bothner  <per@bothner.com>
 
 	* MappedArrayType.java (maybe): New static convenience method.

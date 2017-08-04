@@ -1,4 +1,4 @@
-(test-begin "variables-and-patterns" 21)
+(test-begin "variables-and-patterns" 22)
 
 (let ((foo (lambda ([x::integer ...]) (+ x ...))))
   (test-equal 9 (foo [2 3 4]))
@@ -70,5 +70,9 @@
        (A [[11] [21 22 23 24] [31 32]]))
   (test-equal [[111] [21 22 23 124] [31 132]]
               (fun A)))
+
+(let* ((A [[11 12] [21 22] [31 32]])
+       ([[x::integer y] ...] A))
+  (test-equal [23 43 63] [(+ x y) ...]))
 
 (test-end)

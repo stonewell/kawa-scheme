@@ -116,12 +116,13 @@ public class MappedArrayType extends ObjectType implements TypeValue {
         return "scan-array["+elementType+"]";
     }
     public String getName() {
-        return "scan-array-"+elementType;
+        return "scan-array-"+elementType.getName();
     }
 
     @Override
     public int isCompatibleWithValue(Type valueType) {
-        return sequenceType.isCompatibleWithValue(valueType);
+        int r = sequenceType.isCompatibleWithValue(valueType);
+        return r == 2 ? 1 : r;
     }
 
     @Override
