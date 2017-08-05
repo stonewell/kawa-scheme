@@ -1,10 +1,7 @@
 BEFORE Kawa 3.0
 
-- Fix nested scan patterns.
-- Document scan patterns.
 - Go through Savannah and GitLab bugs.
 - Document in-http-server and in-servlet cond-expand options.
-- Update "Extended formal arguments list" documentation.
 - Fix awkward or missing errors for wrong argument with keys for rest.
 
 A GRAB-BAG OF IDEAS AND THINGS TO DO, SOME QUITE OLD

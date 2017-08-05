@@ -1,3 +1,7 @@
+2017-08-05  Per Bothner  <per@bothner.com>
+
+	* kawa.texi (Repeat forms): Add subsection on sub-patterns.
+
 2017-08-02  Per Bothner  <per@bothner.com>
 
 	* kawa.texi (Repeat forms): New section.

@@ -7651,7 +7651,43 @@ When an ellipse expression references two or more distinct repeat variables
 then they are processed ``in parallel''.
 That does not (necessarily) imply muliple threads, but that the first element
 of the repeat result is evaluated using the first element of all the repeat sequences,
-the second element of the result uses the second element of all the repeat sequences, and so on. 
+the second element of the result uses the second element of all the repeat sequences, and so on.
+
+@subsubheading Sub-patterns in repeat patterns
+
+While the repeated pattern before the @samp{...}
+is commonly in identifier, it may be a more complex pattern.
+We showed earlier the repeated pattern with a type specifier,
+which applies to each element:
+@example
+#|kawa:11|# @kbd{(define (isum [x::integer ...]) (+ x ...))}
+#|kawa:12|# @kbd{(isum [4 5 6])}
+15
+#|kawa:12|# @kbd{(isum [4 5.1 6])}
+Argument #1 (null) to 'isum' has wrong type
+	at gnu.mapping.CallContext.matchError(CallContext.java:189)
+	at atInteractiveLevel-6.isum$check(stdin:11)
+	...
+@end example
+(The stack trace line number @code{stdin:11} is that of the @code{isum} definition.)
+
+You can nest repeat patterns, allowing matching against sequences whose elements are sequences.
+@example
+#|kawa:31|# @kbd{(define (fun2 [[x ...] ...] [y ...])}
+#|.....32|# @kbd{  [[(+ x y) ...] ...])}
+#|kawa:33|# @kbd{(fun2 [[1 2 3] [10 11 12]] [100 200])}
+[[101 102 103] [210 211 212]]
+@end example
+Note that @code{x} is double-nested, while @code{y} is singly-nested.
+
+Here each element is constrained to be a pair (a -element sequence):
+@example
+#|kawa:1|# @kbd{(! [[x y] ...] [[11 12] [21 22] [31 32]])}
+#|kawa:2|# @kbd{[(+ x y) ...]}
+#(23 43 63)
+#|kawa:3|# @kbd{[[x ...] [y ...]]}
+#(#(11 21 31) #(12 22 32))
+@end example
 
 @node Threads
 @section Threads
