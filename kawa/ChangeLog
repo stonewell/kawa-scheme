@@ -1,3 +1,8 @@
+2017-08-05  Per Bothner  <per@bothner.com>
+
+	* lang/BindDecls.java: Set SKIP_FOR_METHOD_PARAMETER one more place.
+	This lets avoids having to create a field for this declaration.
+
 2017-08-03  Per Bothner  <per@bothner.com>
 
 	* lang/BindDecls.java: Fixes for patterns nested in repeat patterns.

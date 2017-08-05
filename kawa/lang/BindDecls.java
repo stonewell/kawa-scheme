@@ -146,8 +146,9 @@ public class BindDecls {
                 if (type != null)
                     ; // FIXME
                 decl.setPrivate(true);
-                decl.setFlag(Declaration.IS_CONSTANT);
-                decl.setFlag(Declaration.IS_SINGLE_VALUE);
+                decl.setFlag(Declaration.IS_CONSTANT
+                             |Declaration.SKIP_FOR_METHOD_PARAMETER
+                             |Declaration.IS_SINGLE_VALUE);
                 // FIXME pass templateScope?
                 parseBracketListPattern(patpair, scanNesting, scope, decl, comp);
             }
