@@ -1,3 +1,10 @@
+2017-08-08  Per Bothner  <per@bothner.com>
+
+	* lang/Lambda.java: More correct and simpler line number setting.
+	Use the generic position-setting code rather than specific logic.
+	(rewriteForm): Remove override - don't call setLine here.
+	(rewrite): Don't call setLine here either.
+
 2017-08-05  Per Bothner  <per@bothner.com>
 
 	* lang/BindDecls.java: Set SKIP_FOR_METHOD_PARAMETER one more place.

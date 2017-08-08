@@ -39,14 +39,6 @@ public class Lambda extends Syntax
   }
 
   @Override
-  public Expression rewriteForm (Pair form, Translator tr)
-  {
-    Expression exp = rewrite(form.getCdr(), tr);
-    Translator.setLine(exp, form);
-    return exp;
-  }
-
-  @Override
   public Expression rewrite (Object obj, Translator tr)
   {
     if (! (obj instanceof Pair))
@@ -54,7 +46,6 @@ public class Lambda extends Syntax
     int old_errors = tr.getMessages().getErrorCount();
     LambdaExp lexp = new LambdaExp();
     Pair pair = (Pair) obj;
-    Translator.setLine(lexp, pair);
     rewrite(lexp, pair.getCar(), pair.getCdr(), tr, null);
     if (tr.getMessages().getErrorCount() > old_errors)
       return new ErrorExp("bad lambda expression");
