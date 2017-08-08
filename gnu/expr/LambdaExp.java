@@ -1271,7 +1271,9 @@ public class LambdaExp extends ScopeExp {
                 // Later, we copy it from its incoming register
                 // to its home location heapFrame.  Here we just create and
                 // assign a Variable for the incoming (register) value.
-                String vname = Mangling.mangleName(decl.getName()).intern();
+                String vname = decl.getName();
+                if (vname != null)
+                    vname = Mangling.mangleName(vname).intern();
                 Type vtype = decl.getType().promoteIfUnsigned().getImplementationType();
                 var = decl.var = getVarScope().addVariable(null, vtype, vname);
                 //getVarScope().addVariableAfter(var, decl);

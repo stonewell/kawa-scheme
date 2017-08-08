@@ -1,3 +1,7 @@
+2017-08-08  Per Bothner  <per@bothner.com>
+
+	* LambdaExp.java (allocChildClasses): Handle unnamed declaration.
+
 2017-08-05  Per Bothner  <per@bothner.com>
 
 	* ModuleExp.java (allocFields): Skip creating field
