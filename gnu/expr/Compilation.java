@@ -1829,96 +1829,96 @@ public class Compilation implements SourceLocator
       }
   }
 
-  /** The guts of compiling a module to one or more classes.
-   * Assumes walkModule has been done.
-   */
-  void generateBytecode ()
-  {
-    ModuleExp module = getModule();
-    if (debugPrintFinalExpr)
-      {
-	OutPort dout = OutPort.errDefault();
-	dout.println ("[Compiling final "+module.getName()
-                     + " to " + mainClass.getName() + ":");
-	module.print(dout);
-	dout.println(']');
-	dout.flush();
-      }
+    /** The guts of compiling a module to one or more classes.
+     * Assumes walkModule has been done.
+     */
+    void generateBytecode()
+    {
+        ModuleExp module = getModule();
+        if (debugPrintFinalExpr) {
+            OutPort dout = OutPort.errDefault();
+            dout.println ("[Compiling final "+module.getName()
+                          + " to " + mainClass.getName() + ":");
+            module.print(dout);
+            dout.println(']');
+            dout.flush();
+        }
 
-    ClassType neededSuper = getModuleType();
-    moduleClass = mainClass;
+        ClassType neededSuper = getModuleType();
+        moduleClass = mainClass;
 
-    curClass = module.compiledType;
-    LambdaExp saveLambda = curLambda;
-    curLambda = module;
+        curClass = module.compiledType;
+        LambdaExp saveLambda = curLambda;
+        curLambda = module;
 
-    CodeAttr code;
-    Variable heapFrame = module.heapFrame;
-    boolean staticModule = module.isStatic();
+        CodeAttr code;
+        Variable heapFrame = module.heapFrame;
+        boolean staticModule = module.isStatic();
 
-    if (curClass.getSuperclass() != typeModuleBody
-        && ! module.staticInitRun()) {
-        Field runDoneField = curClass.addField("$runDone$", Type.booleanType,
-                             Access.PROTECTED);
-        Method runDoneMethod =
-            curClass.addMethod ("checkRunDone", new Type[] { Type.booleanType },
-                                Type.booleanType, Access.PUBLIC);
-        method = runDoneMethod;
-        code = method.startCode();
-        code.emitLoad(code.getArg(0));
-        code.emitGetField(runDoneField);
-        code.emitLoad(code.getArg(0));
-        code.emitLoad(code.getArg(1));
-        code.emitPutField(runDoneField);
-        code.emitReturn();
-    }
+        if (curClass.getSuperclass() != typeModuleBody
+            && ! module.staticInitRun()) {
+            Field runDoneField = curClass.addField("$runDone$",
+                                                   Type.booleanType,
+                                                   Access.PROTECTED);
+            Method runDoneMethod =
+                curClass.addMethod ("checkRunDone",
+                                    new Type[] { Type.booleanType },
+                                    Type.booleanType, Access.PUBLIC);
+            method = runDoneMethod;
+            code = method.startCode();
+            code.emitLoad(code.getArg(0));
+            code.emitGetField(runDoneField);
+            code.emitLoad(code.getArg(0));
+            code.emitLoad(code.getArg(1));
+            code.emitPutField(runDoneField);
+            code.emitReturn();
+        }
     
-    Method apply_method;
-    if (module.staticInitRun()) {
-        apply_method = startClassInit();
-    } else {
-        Type[] arg_types = { typeCallContext };
-        ClassType sup = module.getSuperType();
-        Method srun = sup.getMethod("run", arg_types);
-        String mname = "run";
-        if (srun != null && ! srun.isAbstract()) {
-            Method srunx = sup.getMethod("$run$", arg_types);
-            if (srunx != null && srunx.isAbstract())
-                mname = "$run$";
+        Method apply_method;
+        if (module.staticInitRun()) {
+            apply_method = startClassInit();
+        } else {
+            Type[] arg_types = { typeCallContext };
+            ClassType sup = module.getSuperType();
+            Method srun = sup.getMethod("run", arg_types);
+            String mname = "run";
+            if (srun != null && ! srun.isAbstract()) {
+                Method srunx = sup.getMethod("$run$", arg_types);
+                if (srunx != null && srunx.isAbstract())
+                    mname = "$run$";
+            }
+            apply_method = curClass.addMethod (mname, arg_types, Type.voidType,
+                                               Access.PUBLIC+Access.FINAL);
+            apply_method.initCode();
         }
-        apply_method = curClass.addMethod (mname, arg_types, Type.voidType,
-                                           Access.PUBLIC+Access.FINAL);
-        apply_method.initCode();
-    }
-    method = apply_method;
-    // For each parameter, assign it to its proper slot.
-    // If a parameter !isSimple(), we cannot assign it to a local slot,
-    // so instead create an artificial Variable for the incoming argument.
-    // Below, we assign the value to the slot.
-    code = getCode();
-    // if (usingCPStyle())   code.addParamLocals();
+        method = apply_method;
+        // For each parameter, assign it to its proper slot.
+        // If a parameter !isSimple(), we cannot assign it to a local slot,
+        // so instead create an artificial Variable for the incoming argument.
+        // Below, we assign the value to the slot.
+        code = getCode();
+        // if (usingCPStyle())   code.addParamLocals();
 
-    thisDecl = method.getStaticFlag() ? null : module.declareThis(module.compiledType);
-    module.closureEnv = module.thisVariable;
-    module.heapFrame = module.isStatic() ? null : module.thisVariable;
-    module.allocChildClasses(this);
+        thisDecl = method.getStaticFlag() ? null : module.declareThis(module.compiledType);
+        module.closureEnv = module.thisVariable;
+        module.heapFrame = module.isStatic() ? null : module.thisVariable;
+        module.allocChildClasses(this);
 
-    callContextVar = new Variable ("$ctx", typeCallContext);
-    module.getVarScope().addVariableAfter(thisDecl, callContextVar);
-    callContextVar.setParameter(true);
+        callContextVar = new Variable ("$ctx", typeCallContext);
+        module.getVarScope().addVariableAfter(thisDecl, callContextVar);
+        callContextVar.setParameter(true);
 
-    if (! module.staticInitRun()) {
-        module.allocParameters(this);
-        module.enterFunction(this);
-        if (usingCPStyle()) {
-            loadCallContext();
-            code.emitGetField(pcCallContextField);
-            fswitch = code.startSwitch();
-            fswitch.addCase(0, code);
+        if (! module.staticInitRun()) {
+            module.allocParameters(this);
+            module.enterFunction(this);
+            if (usingCPStyle()) {
+                loadCallContext();
+                code.emitGetField(pcCallContextField);
+                fswitch = code.startSwitch();
+                fswitch.addCase(0, code);
+            }
+            module.compileBody(this);
         }
-        module.compileBody(this);
-    }
-
 
 	Method save_method = method;
         Variable callContextSave = callContextVar;
@@ -1948,12 +1948,11 @@ public class Compilation implements SourceLocator
         Label afterLiterals = new Label(code);
         code.fixupChain(afterLiterals, startLiterals);
 
-	if (staticModule && ! module.staticInitRun())
-	  {
+	if (staticModule && ! module.staticInitRun()) {
             if (! module.getFlag(ModuleExp.USE_DEFINED_CLASS))
-              generateConstructor(module);
+                generateConstructor(module);
             else if (moduleClass.constructor == null)
-              moduleClass.constructor = getConstructor(module);
+                moduleClass.constructor = getConstructor(module);
               
 	    code.emitNew(moduleClass);
 	    code.emitDup(moduleClass);
@@ -1964,16 +1963,15 @@ public class Compilation implements SourceLocator
             // (The latter should probably be fixed by moving this code
             // to moduleClass's <clinit>.)
 	    moduleInstanceMainField
-	      = moduleClass.addField("$instance", moduleClass,
-				     Access.STATIC|Access.PUBLIC);
+                = moduleClass.addField("$instance", moduleClass,
+                                       Access.STATIC|Access.PUBLIC);
 	    code.emitPutStatic(moduleInstanceMainField);
-	  }
+        }
         Initializer init;
-        while ((init = clinitChain) != null)
-          {
+        while ((init = clinitChain) != null) {
             clinitChain = null;
             dumpInitializers(init);
-          }
+        }
 
         if (! module.staticInitRun())
             code.emitReturn();
@@ -1981,176 +1979,155 @@ public class Compilation implements SourceLocator
         method = save_method;
         callContextVar = callContextSave;
 
-    curLambda = saveLambda;
+        curLambda = saveLambda;
 
-    module.heapFrame = heapFrame;  // Restore heapFrame.
-    if (usingCPStyle())
-      {
-	code = getCode();
-	fswitch.finish(code);
-      }
+        module.heapFrame = heapFrame;  // Restore heapFrame.
+        if (usingCPStyle()) {
+            code = getCode();
+            fswitch.finish(code);
+        }
 
-    if (startLiterals != null || callContextVar != null)
-      {
-	method = initMethod;
-	code = getCode();
+        if (startLiterals != null || callContextVar != null) {
+            method = initMethod;
+            code = getCode();
 
-	Label endLiterals = new Label(code);
-	code.fixupChain(startLiterals, endLiterals);
+            Label endLiterals = new Label(code);
+            code.fixupChain(startLiterals, endLiterals);
 
-        if (callContextVarForInit != null)
-          {
-            code.emitInvokeStatic(getCallContextInstanceMethod);
-            code.emitStore(callContextVarForInit);
-          }
+            if (callContextVarForInit != null) {
+                code.emitInvokeStatic(getCallContextInstanceMethod);
+                code.emitStore(callContextVarForInit);
+            }
 
-	try
-	  {
-            if (immediate)
-              {
-                code.emitPushInt(registerForImmediateLiterals(this));
-                code.emitInvokeStatic(ClassType.make("gnu.expr.Compilation")
-                                      .getDeclaredMethod("setupLiterals", 1));
-              }
-            else
-              litTable.emit();
-	  }
-	catch (Exception ex)
-	  {
-	    error('e', "Literals: Internal error:" + ex);
-	  }
-	code.fixupChain(endLiterals, afterLiterals);
-      }
-    if (module.staticInitRun()) {
-        code.fixupChain(afterInits, beforeBody);
-        code.emitReturn();
-    }
+            try {
+                if (immediate) {
+                    code.emitPushInt(registerForImmediateLiterals(this));
+                    code.emitInvokeStatic(ClassType.make("gnu.expr.Compilation")
+                                          .getDeclaredMethod("setupLiterals", 1));
+                }
+                else
+                    litTable.emit();
+            }
+            catch (Exception ex) {
+                error('e', "Literals: Internal error:" + ex);
+            }
+            code.fixupChain(endLiterals, afterLiterals);
+        }
+        if (module.staticInitRun()) {
+            code.fixupChain(afterInits, beforeBody);
+            code.emitReturn();
+        }
 
-    if (generateMainMethod() && curClass == mainClass)
-      {
-	Type[] args = { new ArrayType(javaStringType) };
-	method = curClass.addMethod("main", Access.PUBLIC|Access.STATIC,
-				    args, Type.voidType);
+        if (generateMainMethod() && curClass == mainClass) {
+            Type[] args = { new ArrayType(javaStringType) };
+            method = curClass.addMethod("main", Access.PUBLIC|Access.STATIC,
+                                        args, Type.voidType);
 				    
-	code = method.startCode();
+            code = method.startCode();
 
-	if (Shell.defaultFormatName != null)
-	  {
-	    code.emitPushString(Shell.defaultFormatName);
-	    code.emitInvokeStatic(ClassType.make("kawa.Shell")
-				  .getDeclaredMethod("setDefaultFormat", 1));
-	  }
-	code.emitLoad(code.getArg(0));
-	code.emitInvokeStatic(ClassType.make("gnu.expr.ApplicationMainSupport")
-                              .getDeclaredMethod("processArgs", 1));
-	if (moduleInstanceMainField != null)
-	  code.emitGetStatic(moduleInstanceMainField);
-	else
-	  {
-	    code.emitNew(curClass);
-	    code.emitDup(curClass);
-	    code.emitInvokeSpecial(curClass.constructor);
-	  }
-        Method runAsMainMethod = null;
-        ClassType superClass = curClass.getSuperclass();
-        if (superClass != typeModuleBody)
-           runAsMainMethod = superClass.getDeclaredMethod("runAsMain", 0);
-        if (runAsMainMethod == null)
-            runAsMainMethod = typeModuleBody.getDeclaredMethod("runAsMain", 1);
-        code.emitInvoke(runAsMainMethod);
-	code.emitReturn();
-      }
+            if (Shell.defaultFormatName != null) {
+                code.emitPushString(Shell.defaultFormatName);
+                code.emitInvokeStatic(ClassType.make("kawa.Shell")
+                                      .getDeclaredMethod("setDefaultFormat", 1));
+            }
+            code.emitLoad(code.getArg(0));
+            code.emitInvokeStatic(ClassType.make("gnu.expr.ApplicationMainSupport")
+                                  .getDeclaredMethod("processArgs", 1));
+            if (moduleInstanceMainField != null)
+                code.emitGetStatic(moduleInstanceMainField);
+            else {
+                code.emitNew(curClass);
+                code.emitDup(curClass);
+                code.emitInvokeSpecial(curClass.constructor);
+            }
+            Method runAsMainMethod = null;
+            ClassType superClass = curClass.getSuperclass();
+            if (superClass != typeModuleBody)
+                runAsMainMethod = superClass.getDeclaredMethod("runAsMain", 0);
+            if (runAsMainMethod == null)
+                runAsMainMethod = typeModuleBody.getDeclaredMethod("runAsMain", 1);
+            code.emitInvoke(runAsMainMethod);
+            code.emitReturn();
+        }
 
-    String uri;
-    if (getMinfo() != null && (uri = getMinfo().getNamespaceUri()) != null)
-      {
-        // Need to generate a ModuleSet for this class, so XQuery can find
-        // this module and other modules in the same namespace.
-        ModuleManager manager = ModuleManager.getInstance();
-        String mainPrefix = mainClass.getName();
-        int dot = mainPrefix.lastIndexOf('.');
-        if (dot < 0)
-          {
-            mainPrefix = "";
-          }
-        else
-          {
-            String mainPackage = mainPrefix.substring(0, dot);
-            try
-              {
-                manager.loadPackageInfo(mainPackage);
-              }
-            catch (ClassNotFoundException ex)
-              {
-                // Do nothing.
-              }
-            catch (Exception ex)
-              {
-                error('e', "error loading map for "+mainPackage+" - "+ex);
-              }
-            mainPrefix = mainPrefix.substring(0, dot+1);
-          }
-        ClassType mapClass = new ClassType(mainPrefix + ModuleSet.MODULES_MAP);
-        ClassType typeModuleSet = ClassType.make("gnu.expr.ModuleSet");
-        mapClass.setSuper(typeModuleSet);
-        registerClass(mapClass);
-
-        method = mapClass.addMethod("<init>", Access.PUBLIC,
-                                apply0args, Type.voidType);
-        Method superConstructor
-          = typeModuleSet.addMethod("<init>", Access.PUBLIC,
-                                    apply0args, Type.voidType);
-        code = method.startCode();
-        code.emitPushThis();
-        code.emitInvokeSpecial(superConstructor);
-        code.emitReturn();
-
-        ClassType typeModuleManager = ClassType.make("gnu.expr.ModuleManager");
-        Type[] margs = { typeModuleManager };
-        method = mapClass.addMethod("register", margs, Type.voidType,
-                                    Access.PUBLIC);
-        code = method.startCode();
-        Method reg = typeModuleManager.getDeclaredMethod("register", 3);
-
-        for (int i = manager.numModules;  --i >= 0; )
-          {
-            ModuleInfo mi = manager.modules[i];
-            String miClassName = mi.getClassName();
-            if (miClassName == null
-                || ! miClassName.startsWith(mainPrefix))
-              continue;
-            String moduleSource = mi.sourcePath;
-            String moduleUri = mi.getNamespaceUri();
-            code.emitLoad(code.getArg(1));
-            compileConstant(miClassName);
-            if (! Path.valueOf(moduleSource).isAbsolute())
-              try
-                {
-                  // If the source path was relative, emit it as relative.
-                  // But make it relative to the compilation directory,
-                  // to allow sources to be moved along with binaries.
-                  String path = Path.toURL(manager.getCompilationDirectory())
-                      + mainPrefix.replace('.', '/');
-                  int plen = path.length();
-                  if (plen > 0 && path.charAt(plen-1) != '/')
-                    path = path + '/';
-                  String sourcePath =
-                      Path.toURL(mi.getSourceAbsPathname()).toString();
-                  moduleSource = Path.relativize(sourcePath, path);
+        String uri;
+        if (getMinfo() != null && (uri = getMinfo().getNamespaceUri()) != null) {
+            // Need to generate a ModuleSet for this class, so XQuery can find
+            // this module and other modules in the same namespace.
+            ModuleManager manager = ModuleManager.getInstance();
+            String mainPrefix = mainClass.getName();
+            int dot = mainPrefix.lastIndexOf('.');
+            if (dot < 0)
+                mainPrefix = "";
+            else {
+                String mainPackage = mainPrefix.substring(0, dot);
+                try {
+                    manager.loadPackageInfo(mainPackage);
+                } catch (ClassNotFoundException ex) {
+                    // Do nothing.
                 }
-              catch (Exception ex)
-                {
-                  throw new WrappedException("exception while fixing up '"
-                                             +moduleSource+'\'',
-                                             ex);
+                catch (Exception ex) {
+                    error('e', "error loading map for "+mainPackage+" - "+ex);
                 }
-            compileConstant(moduleSource);
-            compileConstant(moduleUri);
-            code.emitInvokeVirtual(reg);
-          }
-        code.emitReturn();
-      }
-  }
+                mainPrefix = mainPrefix.substring(0, dot+1);
+            }
+            ClassType mapClass = new ClassType(mainPrefix + ModuleSet.MODULES_MAP);
+            ClassType typeModuleSet = ClassType.make("gnu.expr.ModuleSet");
+            mapClass.setSuper(typeModuleSet);
+            registerClass(mapClass);
+
+            method = mapClass.addMethod("<init>", Access.PUBLIC,
+                                        apply0args, Type.voidType);
+            Method superConstructor
+                = typeModuleSet.addMethod("<init>", Access.PUBLIC,
+                                          apply0args, Type.voidType);
+            code = method.startCode();
+            code.emitPushThis();
+            code.emitInvokeSpecial(superConstructor);
+            code.emitReturn();
+
+            ClassType typeModuleManager = ClassType.make("gnu.expr.ModuleManager");
+            Type[] margs = { typeModuleManager };
+            method = mapClass.addMethod("register", margs, Type.voidType,
+                                        Access.PUBLIC);
+            code = method.startCode();
+            Method reg = typeModuleManager.getDeclaredMethod("register", 3);
+
+            for (int i = manager.numModules;  --i >= 0; )  {
+                ModuleInfo mi = manager.modules[i];
+                String miClassName = mi.getClassName();
+                if (miClassName == null
+                    || ! miClassName.startsWith(mainPrefix))
+                    continue;
+                String moduleSource = mi.sourcePath;
+                String moduleUri = mi.getNamespaceUri();
+                code.emitLoad(code.getArg(1));
+                compileConstant(miClassName);
+                if (! Path.valueOf(moduleSource).isAbsolute())
+                    try {
+                        // If the source path was relative, emit it as relative.
+                        // But make it relative to the compilation directory,
+                        // to allow sources to be moved along with binaries.
+                        String path = Path.toURL(manager.getCompilationDirectory())
+                            + mainPrefix.replace('.', '/');
+                        int plen = path.length();
+                        if (plen > 0 && path.charAt(plen-1) != '/')
+                            path = path + '/';
+                        String sourcePath =
+                            Path.toURL(mi.getSourceAbsPathname()).toString();
+                        moduleSource = Path.relativize(sourcePath, path);
+                    } catch (Exception ex) {
+                        throw new WrappedException("exception while fixing up '"
+                                                   +moduleSource+'\'',
+                                                   ex);
+                    }
+                compileConstant(moduleSource);
+                compileConstant(moduleUri);
+                code.emitInvokeVirtual(reg);
+            }
+            code.emitReturn();
+        }
+    }
 
   int localFieldIndex; 
   public Field allocLocalField (Type type, String name)
