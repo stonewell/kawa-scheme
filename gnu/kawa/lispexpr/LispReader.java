@@ -383,17 +383,9 @@ public class LispReader extends Lexer
 	    unread(ch);
 	    break;
 	  }
-        if (ch == rtable.postfixLookupOperator && ! inEscapes)
-          {
-            int next = port.peek();
-            if (next == rtable.postfixLookupOperator)
-              { // Looking at '::'
-                unread(ch);
-                break;
-              }
-            if (validPostfixLookupStart(next, rtable))
-              kind = ReadTable.TERMINATING_MACRO;
-          }
+        if (! inEscapes && isTerminatingChar(ch, rtable)) {
+            kind = ReadTable.TERMINATING_MACRO;
+        }
                   
 	if (kind == ReadTable.SINGLE_ESCAPE)
 	  {
@@ -452,6 +444,22 @@ public class LispReader extends Lexer
 	  }
       }
   }
+
+    protected boolean isTerminatingChar(int ch, ReadTable rtable)
+        throws java.io.IOException, SyntaxException
+    {
+        if (ch == rtable.postfixLookupOperator) {
+            int next = port.peek();
+            if (next == rtable.postfixLookupOperator)
+              { // Looking at '::'
+                //unread(ch);
+                  return true;
+              }
+            if (validPostfixLookupStart(next, rtable))
+                return true;
+          }
+        return false;
+    }
 
     public String readTokenString(int ch, ReadTable rtable)
             throws java.io.IOException, SyntaxException {

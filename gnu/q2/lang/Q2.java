@@ -17,6 +17,8 @@ public class Q2 extends Scheme
 {
   static Q2 instance;
   static final Object emptyForm = new FString();
+    public static final Symbol defineSym =
+        Namespace.EmptyNamespace.getSymbol("$define$");
 
   public Q2 ()
   {

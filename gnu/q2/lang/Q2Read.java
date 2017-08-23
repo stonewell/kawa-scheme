@@ -203,6 +203,34 @@ public class Q2Read extends LispReader
       }
  }
 
+    @Override
+    protected boolean isTerminatingChar(int ch, ReadTable rtable)
+        throws java.io.IOException, SyntaxException
+    {
+        return ch == '^' || super.isTerminatingChar(ch, rtable);
+    }
+
+    @Override
+    protected Object handlePostfix(Object value, ReadTable rtable,
+                                   int line, int column)
+        throws java.io.IOException, SyntaxException {
+        if (port.peek() == '^') {
+            port.read();
+            int ch = port.read();
+            LList r = LList.Empty;
+            if (ch < 0 || ch == ']' || ch == ')' || ch == '}' ||
+                Character.isWhitespace(ch))
+                ;
+            else {
+                Object rightOperand = readValues(ch, rtable.lookup(ch), rtable, -1);
+                r = Pair.make(rightOperand, r);
+            }
+            r = Pair.make(value, r);
+            return Pair.make(Q2.defineSym, r);
+        }
+        return super.handlePostfix(value, rtable, line, column);
+    }
+
   // RULE: Every newline (not preceded by backslash)
   //   is equivalent to ';'
   // RULE: If a line is followed by one or more lines that are
