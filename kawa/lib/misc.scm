@@ -163,3 +163,10 @@
 
 (define (features) ::list
   (kawa.standard.IfFeature:featureList))
+
+(define (environment-fold env::gnu.mapping.Environment proc::procedure init)
+  (let ((e (env:enumerateAllLocations)))
+    (let loop ((v init))
+      (if (e:hasMoreElements)
+          (loop (proc ((e:nextLocation):getKey) v))
+          v))))

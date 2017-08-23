@@ -1,3 +1,8 @@
+2017-08-23  Per Bothner  <per@bothner.com>
+
+	* misc.scm (environment-fold): New procedure.
+	* kawa/base.scm: Add environment-fold.
+
 2017-07-24  Per Bothner  <per@bothner.com>
 
 	* parameters.scm (make-parameter): Allow non-Procedure as converter.

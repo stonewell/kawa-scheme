@@ -63,7 +63,7 @@
         defmacro disassemble
         div div0 mod mod0 div-and-mod div0-and-mod0
         duration dynamic
-        eager environment-bound?
+        eager environment-bound? environment-fold
         error error-object? error-object-message error-object-irritants
         export module-export
         f32vector f32vector? f32vector-length
