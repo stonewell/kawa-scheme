@@ -5,10 +5,8 @@ package gnu.mapping;
 
 public class LocationEnumeration
   implements
-  /* #ifdef JAVA2 */
-  java.util.Iterator<Location>,
-  /* #endif */
-  java.util.Enumeration<Location>
+  java.util.Iterator<NamedLocation<Object>>,
+  java.util.Enumeration<NamedLocation<Object>>
 {
   SimpleEnvironment env;
   NamedLocation prevLoc;
@@ -35,12 +33,12 @@ public class LocationEnumeration
     return env.hasMoreElements(this);
   }
 
-  public Location nextElement()
+  public NamedLocation nextElement()
   {
     return nextLocation();
   }
 
-  public Location nextLocation()
+  public NamedLocation nextLocation()
   {
     if (nextLoc == null && ! hasMoreElements())
       throw new java.util.NoSuchElementException();
@@ -53,7 +51,7 @@ public class LocationEnumeration
       }
     while (prevLoc != null && prevLoc.next != nextLoc)
       prevLoc = prevLoc.next;
-    Location r = nextLoc;
+    NamedLocation r = nextLoc;
     nextLoc = nextLoc.next;
     return r;
   }
@@ -63,9 +61,9 @@ public class LocationEnumeration
     return hasMoreElements();
   }
 
-  public Location next ()
+  public NamedLocation next ()
   {
-    return nextElement();
+    return nextLocation();
   }
 
   public void remove ()
