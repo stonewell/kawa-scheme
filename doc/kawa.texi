@@ -15715,6 +15715,28 @@ Return true @code{#t} if there is a binding for @var{symbol}
 in @var{environment};  otherwise returns @code{#f}.
 @end deffn
 
+@deffn Procedure environment-fold environment proc init
+Call @var{proc} for each key in the @var{environment},
+which may be any argument to @code{eval}, such as
+@code{(interaction-environment)} or a call to
+the @code{environment} procedure.
+The @var{proc} is called with two arguments:
+The binding's key, and an accumulator value.
+The @var{init} is the initial accumulator value;
+the result returned by @var{proc} is used for subsequent accumulator values.
+The value returned by @code{environment-fold} is the final
+acumulator value.
+
+A key is normally a symbol,
+but can also be a @code{KeyPair} object (a pair of a symbol and a
+property symbol used to implement Common Lisp-style property lists).
+@example
+(environment-fold (environment '(scheme write)) cons '())
+  @result{} (display write-shared write write-simple)
+@end example
+To get all the predefined bindings use @code{(environment '(kawa base))}.
+@end deffn
+
 @deffn Syntax fluid-let ((variable init) ...) body ...
 Evaluate the @var{init} expressions.
 Then modify the dynamic bindings for the @var{variables} to the

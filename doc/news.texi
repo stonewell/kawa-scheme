@@ -155,6 +155,9 @@ to match the @uref{https://blogs.oracle.com/jrose/entry/symbolic_freedom_in_the_
 @item
 Internally, expressions now record their ending position (line/column),
 in addition to the starting position.
+@item
+The new procedure @code{environment-fold} can be used to iterate
+over the bindings of an environment.
 @end itemize
 
 @c @subheading In Git repository (master branch) since last release
