@@ -5,6 +5,7 @@ import gnu.lists.*;
 import gnu.xml.*;
 import gnu.expr.*;
 import gnu.text.*;
+import gnu.kawa.functions.Unify;
 import gnu.kawa.io.InPort;
 import gnu.kawa.lispexpr.*;
 
@@ -34,9 +35,12 @@ public class Q2 extends Scheme
   protected static final SimpleEnvironment q2Environment
   = Environment.make("q2-environment", Scheme.kawaEnvironment);
 
+  public static final Unify unify;
+
   static
   {
     instance = new Q2();
+    unify = new Unify(instance, "=");
     Environment saveEnv = Environment.setSaveCurrent(q2Environment);
     try
       {
@@ -57,6 +61,7 @@ public class Q2 extends Scheme
 
   public void initQ2 ()
   {
+    defSntxStFld("$define$", "gnu.q2.lang.DefineOp", "defineOp");
     defSntxStFld(";", "gnu.q2.lang.Operator", "SEMI");
     defSntxStFld("+", "gnu.q2.lang.Operator", "PLUS");
     defSntxStFld("-", "gnu.q2.lang.Operator", "MINUS");
@@ -67,6 +72,7 @@ public class Q2 extends Scheme
     defSntxStFld("==", "gnu.q2.lang.Operator", "EQ");
     defSntxStFld("<=", "gnu.q2.lang.Operator", "LE");
     defSntxStFld(">=", "gnu.q2.lang.Operator", "GE");
+    defSntxStFld("=", "gnu.q2.lang.Operator", "UNIFY");
     defSntxStFld(":=", "gnu.q2.lang.Operator", "ASSIGN");
     defSntxStFld("?>", "gnu.q2.lang.Operator", "IF_THEN");
   }

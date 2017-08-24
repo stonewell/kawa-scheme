@@ -135,8 +135,11 @@ public class IsEqual extends gnu.mapping.Procedure2
 
     public boolean apply (Object arg1, Object arg2,
                                  Map<Object,ArrayList<Object>> map) {
-        arg1 = Promise.force(arg1);
-        arg2 = Promise.force(arg2);
+        return match(Promise.force(arg1), Promise.force(arg2), map);
+    }
+
+    public boolean match(Object arg1, Object arg2,
+                                 Map<Object,ArrayList<Object>> map) {
         if (arg1 == arg2)
             return true;
         if (arg1 == null || arg2 == null)

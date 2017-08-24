@@ -216,14 +216,19 @@ public class Q2Read extends LispReader
         throws java.io.IOException, SyntaxException {
         if (port.peek() == '^') {
             port.read();
+            int rline = port.getLineNumber();
+            int rcolumn = port.getColumnNumber();
             int ch = port.read();
-            LList r = LList.Empty;
+            LList r;
             if (ch < 0 || ch == ']' || ch == ')' || ch == '}' ||
-                Character.isWhitespace(ch))
-                ;
-            else {
-                Object rightOperand = readValues(ch, rtable.lookup(ch), rtable, -1);
-                r = Pair.make(rightOperand, r);
+                Character.isWhitespace(ch)) {
+                unread(ch);
+                r = LList.Empty;
+            } else {
+                Object rightOperand
+                    = readValues(ch, rtable.lookup(ch), rtable, -1);
+                r = makePair(rightOperand, rline, rcolumn,
+                             port.getLineNumber(), port.getColumnNumber());
             }
             r = Pair.make(value, r);
             return Pair.make(Q2.defineSym, r);

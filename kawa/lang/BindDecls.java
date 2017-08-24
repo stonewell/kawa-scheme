@@ -288,7 +288,7 @@ public class BindDecls {
         decl.setType(MappedArrayType.maybe(seqType, scanNesting));
     }
 
-    private void setInitializer(Declaration decl, Expression init, ScopeExp scope, Translator comp) {
+    public static void setInitializer(Declaration decl, Expression init, ScopeExp scope, Translator comp) {
         if ((scope instanceof ModuleExp)
             || (scope instanceof LetExp
                 && scope.getFlag(LetExp.IS_BODY_SCOPE))) {

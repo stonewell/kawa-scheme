@@ -1,3 +1,11 @@
+2017-08-24  Per Bothner  <per@bothner.com>
+
+	* Q2Read.java (handlePostfix): Handle VAR^ or VAR^TYPE.
+	* DefineOp.java: New Syntax for '($define$ VAR [TYPE-SPECIFIER])'.
+	* Operator.java (UNIFY): New operator.
+	* Q2.java (unify): New static.
+	(initQ2): define 'unify' and '$define$'.
+
 2017-08-23  Per Bothner  <per@bothner.com>
 
 	* Q2Read.java: Recognize definition syntax VAR^ or VAR^TYPE.

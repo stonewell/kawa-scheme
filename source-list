@@ -303,6 +303,7 @@ GNU_MATH_JSOURCES =\
   gnu/math/UShort.java
 
 GNU_Q2_LANG_JSOURCES = \
+  gnu/q2/lang/DefineOp.java \
   gnu/q2/lang/Operator.java \
   gnu/q2/lang/Q2.java \
   gnu/q2/lang/Q2Read.java \
@@ -389,6 +390,7 @@ GNU_KAWA_FUNCTIONS_JSOURCES = \
   gnu/kawa/functions/SetNamedPart.java \
   gnu/kawa/functions/Setter.java \
   gnu/kawa/functions/UnicodeUtils.java \
+  gnu/kawa/functions/Unify.java \
   gnu/kawa/functions/ValuesMap.java \
   gnu/kawa/functions/Format.java \
   gnu/kawa/functions/LispFormat.java \

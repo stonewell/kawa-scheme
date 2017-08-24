@@ -44,11 +44,15 @@ public class Operator extends Syntax
   public static final Operator GE =
     new Operator(">=", 3, 3, RHS_NEEDED, 
                  new StaticFieldLocation("kawa.standard.Scheme", "numGEq"));
+  // FIXME should use IsEqual
   public static final Operator EQ =
     new Operator("==", 3, 3, RHS_NEEDED, 
                  new StaticFieldLocation("kawa.standard.Scheme", "numEqu"));
   public static final Operator ASSIGN =
     new Operator(":=", 2, 2, RHS_NEEDED|ASSIGN_OP, null);
+  public static final Operator UNIFY =
+    new Operator("=", 2, 2, RHS_NEEDED,
+                 new StaticFieldLocation("gnu.q2.lang.Q2", "unify"));
   public static final Operator IF_THEN =
     new Operator("?>", 2, 2, RHS_NEEDED,
                  new StaticFieldLocation("kawa.lib.prim_imports", "if"));
