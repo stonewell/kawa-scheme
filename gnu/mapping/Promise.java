@@ -42,6 +42,8 @@ public class Promise<T> implements Printable, Lazy<T> {
         this.thunk = thunk;
     }
 
+    public static <T> Promise<T> makeBlank() { return new Promise<T>(); }
+
     /** Wrap value as a forced Promise. */
     public static <T> Lazy<T> makeBoundPromise (T value) {
         Promise<T> p = new Promise<T>(null);
@@ -49,7 +51,7 @@ public class Promise<T> implements Printable, Lazy<T> {
         return p;
     }
 
-    public static  Lazy<Object> coerceToLazy (Object value) {
+    public static Lazy<Object> coerceToLazy (Object value) {
         if (value instanceof Lazy<?>)
             return (Lazy<Object>) value;
         Promise<Object> p = new Promise<Object>(null);
@@ -157,6 +159,10 @@ public class Promise<T> implements Printable, Lazy<T> {
          checkBlank();
          this.thunk = thunk;
          notifyAll();
+    }
+
+    public Lazy checkAlias() {
+        return result instanceof Lazy ? (Lazy) result : null;
     }
 
     /** Forces the argument, if needed.
