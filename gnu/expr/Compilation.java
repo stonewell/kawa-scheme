@@ -1852,7 +1852,6 @@ public class Compilation implements SourceLocator
         curLambda = module;
 
         CodeAttr code;
-        Variable heapFrame = module.heapFrame;
         boolean staticModule = module.isStatic();
 
         if (curClass.getSuperclass() != typeModuleBody
@@ -1901,7 +1900,6 @@ public class Compilation implements SourceLocator
 
         thisDecl = method.getStaticFlag() ? null : module.declareThis(module.compiledType);
         module.closureEnv = module.thisVariable;
-        module.heapFrame = module.isStatic() ? null : module.thisVariable;
         module.allocChildClasses(this);
 
         callContextVar = new Variable ("$ctx", typeCallContext);
@@ -1948,24 +1946,25 @@ public class Compilation implements SourceLocator
         Label afterLiterals = new Label(code);
         code.fixupChain(afterLiterals, startLiterals);
 
-	if (staticModule && ! module.staticInitRun()) {
+	if (! module.staticInitRun()) {
             if (! module.getFlag(ModuleExp.USE_DEFINED_CLASS))
-                generateConstructor(module);
+                generateConstructor(module.getCompiledClassType(this), module);
             else if (moduleClass.constructor == null)
                 moduleClass.constructor = getConstructor(module);
-              
-	    code.emitNew(moduleClass);
-	    code.emitDup(moduleClass);
-	    code.emitInvokeSpecial(moduleClass.constructor);
-            // The $instance field needs to be public so
-            // ModuleContext.findInstance can find it.
-            // It needs to be non-final in case moduleClass!=mainClass.
-            // (The latter should probably be fixed by moving this code
-            // to moduleClass's <clinit>.)
-	    moduleInstanceMainField
-                = moduleClass.addField("$instance", moduleClass,
-                                       Access.STATIC|Access.PUBLIC);
-	    code.emitPutStatic(moduleInstanceMainField);
+            if (staticModule) {
+                code.emitNew(moduleClass);
+                code.emitDup(moduleClass);
+                code.emitInvokeSpecial(moduleClass.constructor);
+                // The $instance field needs to be public so
+                // ModuleContext.findInstance can find it.
+                // It needs to be non-final in case moduleClass!=mainClass.
+                // (The latter should probably be fixed by moving this code
+                // to moduleClass's <clinit>.)
+                moduleInstanceMainField
+                    = moduleClass.addField("$instance", moduleClass,
+                                           Access.STATIC|Access.PUBLIC);
+                code.emitPutStatic(moduleInstanceMainField);
+            }
         }
         Initializer init;
         while ((init = clinitChain) != null) {
@@ -1981,7 +1980,6 @@ public class Compilation implements SourceLocator
 
         curLambda = saveLambda;
 
-        module.heapFrame = heapFrame;  // Restore heapFrame.
         if (usingCPStyle()) {
             code = getCode();
             fswitch.finish(code);

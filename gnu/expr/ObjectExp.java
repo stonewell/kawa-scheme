@@ -32,8 +32,9 @@ public class ObjectExp extends ClassExp
         if (! comp.usingCallContext())
            getOwningLambda().loadHeapFrame(comp);
         else {
-            Variable closureEnv = caller.heapFrame != null ? caller.heapFrame
-                : caller.closureEnv;
+            Variable closureEnv = caller.getHeapFrame();
+            if (closureEnv == null)
+                closureEnv = caller.closureEnv;
             if (closureEnv == null)
                 code.emitPushThis();
             else

@@ -388,8 +388,6 @@ public class ModuleExp extends LambdaExp
 
     public void allocChildClasses(Compilation comp) {
         declareClosureEnv();
-        if (! comp.usingCPStyle())
-            return;
         allocFrame(comp);
     }
 

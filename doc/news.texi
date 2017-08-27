@@ -158,6 +158,11 @@ in addition to the starting position.
 @item
 The new procedure @code{environment-fold} can be used to iterate
 over the bindings of an environment.
+@item
+Change in how closure objects are allocated for inlined functions.
+This sometimes reduces the number of objection allocations
+and also of helper classes, though in pathological cases it could cause
+objects to be retained (leak) where it didn't before.
 @end itemize
 
 @c @subheading In Git repository (master branch) since last release

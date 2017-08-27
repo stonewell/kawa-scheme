@@ -46,19 +46,22 @@ public class FindCapturedVars extends ExpExpVisitor<Void>
       {
 	Declaration decl
 	  = Declaration.followAliases(((ReferenceExp) exp.func).binding);
-	if (decl != null && decl.context instanceof ModuleExp
-            && ! decl.isPublic()
-            && ! decl.getFlag(Declaration.NONSTATIC_SPECIFIED))
-	  {
-	    Expression value = decl.getValue();
-	    if (value instanceof LambdaExp)
-	      {
-		LambdaExp lexp = (LambdaExp) value;
-		if (! lexp.getNeedsClosureEnv()
-                    && ! lexp.getFlag(LambdaExp.HAS_NONTRIVIAL_PATTERN))
-                  skipFunc = true;
-	      }
-	  }
+        if (decl != null && ! decl.isPublic()) {
+            Expression value = decl.getValue();
+            if (decl.context instanceof ModuleExp
+                && ! decl.getFlag(Declaration.NONSTATIC_SPECIFIED)) {
+                if (value instanceof LambdaExp) {
+                    LambdaExp lexp = (LambdaExp) value;
+                    if (! lexp.getNeedsClosureEnv()
+                        && ! lexp.getFlag(LambdaExp.HAS_NONTRIVIAL_PATTERN))
+                        skipFunc = true;
+                }
+            } else if (value instanceof LambdaExp) {
+                Declaration ndecl = ((LambdaExp) value).nameDecl;
+                if (ndecl != null)
+                    capture(ndecl, null);
+            }
+        }
       }
     // Similar hack for constructor calls, but here we want to
     // avoid visiting the type argument.
@@ -437,7 +440,7 @@ public class FindCapturedVars extends ExpExpVisitor<Void>
                     methodLambda = outer;
                 }
             }
-            if (! decl.isFluid()) {
+            if (decl.isLexical()) {
                 heapLambda.setImportsLexVars();
             }
 	    LambdaExp parent = heapLambda.outerLambda();
@@ -462,6 +465,9 @@ public class FindCapturedVars extends ExpExpVisitor<Void>
 		outer = heapLambda.outerLambda();
 	      }
 	  }
+        while (declLambda.getInlineOnly() && declLambda.getCaller() != null) {
+            declLambda = declLambda.getCaller();
+        }
         declLambda.capture(decl);
       }
   }

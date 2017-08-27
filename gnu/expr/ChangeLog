@@ -1,3 +1,14 @@
+2017-08-26  Per Bothner  <per@bothner.com>
+
+	Move heap-frame for an inlined function "out" to its caller.
+	This reduces number of classes and number of object allocations.
+	This also fixes Issue #11 on GitLab
+	'"attempting to push dead variable" error on loading Alexpander'.
+	* LambdaExp.java (getHeapFrame): New method. Loop through inlineHome.
+	(useClassForFrame): New method.
+	* Compilation.java: Related changes for modules instances and frames.
+	* ModuleExp.java (allocChildClasses): Do call allocFrame.
+
 2017-08-08  Per Bothner  <per@bothner.com>
 
 	* LambdaExp.java (allocChildClasses): Handle unnamed declaration.
