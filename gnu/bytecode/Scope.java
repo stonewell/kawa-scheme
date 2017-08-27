@@ -17,7 +17,7 @@ public class Scope
 
   Label start;
   Label end;
-  Variable vars;
+  private Variable vars;
   Variable last_var;
 
   public Scope()
