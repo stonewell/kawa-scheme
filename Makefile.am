@@ -488,6 +488,6 @@ $(srcdir)/gnu/text/StandardNamedChars.java:
 	      -e '}}' \
 	> $@
 
-distall:  distcheck dist-kawa.jar kawa-doc-$(VERSION).tar.gz
+distall:  distcheck kawa.zip kawa-doc-$(VERSION).tar.gz
 # Consider also:
 # kawa-@VERSION@-src.zip jemacs-@JEMACS_VERSION@.jar bytecode-@BYTECODE_VERSION@.jar

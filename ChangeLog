@@ -1,3 +1,7 @@
+2017-08-27  Per Bothner  <per@bothner.com>
+
+	* Makefile.am (distall): Buld kawa.zip.
+
 2017-07-28  Sudarshan S Chawathe  <chaw@eip10.org>
 
 	* gnu/lists/IString.java (SubString): Fix offset for substring of
