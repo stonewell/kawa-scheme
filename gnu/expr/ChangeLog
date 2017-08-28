@@ -1,3 +1,9 @@
+2017-08-28  Per Bothner  <per@bothner.com>
+
+	* InlineCalls.java (visitSetExp): Fix value tracker.
+	Specifically, update variable value *after* visiting new value.
+	This fixes gitlab issue #3 "Crash (JVM exit) on malformed letrec".
+
 2017-08-26  Per Bothner  <per@bothner.com>
 
 	Move heap-frame for an inlined function "out" to its caller.

@@ -834,17 +834,17 @@ public class InlineCalls extends ExpExpVisitor<Type> {
 
     protected Expression visitSetExp(SetExp exp, Type required) {
         Declaration decl = exp.getBinding();
-        if (decl != null && decl.values != Declaration.unknownValueValues
-            && exp.valueIndex >= 0) {
-            IntNum setterMask = IntNum.make(~exp.valueIndex);
-            valueTracker.noteSet(decl, setterMask);
-        }
         if (decl != null && decl.getValueRaw() == exp.new_value
             && deferableInit(exp.new_value))
             ; // defer
         else {
             Type dtype = decl == null || decl.isAlias() ? null : decl.type;
             exp.new_value = visit(exp.new_value, ValueNeededType.make(dtype));
+        }
+        if (decl != null && decl.values != Declaration.unknownValueValues
+            && exp.valueIndex >= 0) {
+            IntNum setterMask = IntNum.make(~exp.valueIndex);
+            valueTracker.noteSet(decl, setterMask);
         }
         if (! exp.isDefining() && decl != null && decl.isClassMethod())
             comp.error('e', "can't assign to method "+decl.getName(), exp);
