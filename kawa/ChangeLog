@@ -1,3 +1,7 @@
+2017-08-28  Per Bothner  <per@bothner.com>
+
+	* DomTermBackend.java (close): Add work-around for jline.
+
 2017-08-08  Per Bothner  <per@bothner.com>
 
 	* lang/Lambda.java: More correct and simpler line number setting.

@@ -236,9 +236,12 @@ public class DomTermBackend extends Backend implements Runnable {
     }
 
     @Override public void close(boolean isLast) {
-        if (inPipe != null) {
+        if (inOutS != null) {
             try {
-                inPipe.close();
+                // Kludge - jline doesn't seem to treat close as EOF
+                // when using ExternalTerminal.
+                inOutS.write(4); // ctrl-D
+                inOutS.close();
             } catch (Throwable ex) {
                 // ignore
             }
