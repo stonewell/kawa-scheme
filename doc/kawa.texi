@@ -5425,6 +5425,10 @@ The identifier @code{class-exists:org.example.MyClass}
 is roughly equivalent to the test @code{(library (org example MyClass))}.
 (The latter has some special handling for @code{(srfi ...)} as well
 as builtin Kawa classes.)
+
+The feature @code{in-http-server} is defined in a
+@ref{Self-configuring page scripts,self-configuring web page scripts},
+and more specifically @code{in-servlet} in a @ref{Servlets,servlet container}.
 @end deffn
 
 @deffn Procedure features
@@ -21427,6 +21431,10 @@ that is relative to the current web application. Thus a request for
 @example
 servlet-path: /this/is/a/test
 @end example
+
+You can use the feature variable @code{in-http-server}
+in a @code{cond-expand} to test if the code is executing
+in a web server.
 
 @subsection Using the OpenJDK built-in web server
 
