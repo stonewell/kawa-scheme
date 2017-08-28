@@ -338,7 +338,8 @@ public class InlineCalls extends ExpExpVisitor<Type> {
             if (vals != null) {
                 if (VarValueTracker.maybeUninitialized(vals)
                     && ! decl.getFlag(Declaration.MAYBE_UNINITIALIZED_ACCESS)) {
-                    comp.error('w', "variable '"+exp.getName()+"' may be uninitialized here", exp);
+                    if (comp.warnUninitialized())
+                        comp.error('w', "variable '"+exp.getName()+"' may be uninitialized here", exp);
                     decl.setFlag(Declaration.MAYBE_UNINITIALIZED_ACCESS);
                 }
             }

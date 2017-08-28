@@ -646,7 +646,7 @@ check-life-grid:
 LARCENY_IMPORT_PATH = \
   -Dkawa.import.path="$(abs_srcdir)/larceny-tests/*.sld"
 LARCENY_TEST_OPTIONS = $(LARCENY_IMPORT_PATH) \
-  $(OPTIONS) --r7rs --no-warn-unused
+  $(OPTIONS) --r7rs --no-warn-unused --no-warn-uninitialized
 
 LARCENY_SIMPLE_TESTS1 = case-lambda char complex cxr eval file inexact \
   lazy read time

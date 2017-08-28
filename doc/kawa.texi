@@ -3374,6 +3374,10 @@ to turn it off use the @code{--no-warn-invoke-unknown-method} flag.
 @item --warn-unused
 Emit a warning if a variable is unused or code never executed. This defaults
 to on; to turn it off use the @code{--no-warn-unused} flag.
+@pindex warn-uninitialized
+@item --warn-uninitialized
+Warn if accessing an uninitialized variable.
+This defaults to on; to turn it off use the @code{--no-warn-uninitialized} flag.
 @cindex warn-unreachable
 @item --warn-unreachable
 Emit a warning if the code can never be executed. This defaults to on;
@@ -19081,6 +19085,9 @@ option keys are:
 
 @item
 @stxlit{warn-unused:} - Warn if a variable is usused or code never executed.
+
+@item
+@stxlit{warn-uninitialized:} - Warn if accessing an uninitialized variable.
 
 @item
 @stxlit{warn-unreachable:} - Warn if this code can never be executed.

@@ -1,6 +1,8 @@
 2017-08-28  Per Bothner  <per@bothner.com>
 
 	* kawa.texi: Document in-http-server and in-servlet.
+	* kawa.texi (Options): Document --warn-uninitialized.
+	* news.texi: Likewise.
 
 2017-08-23  Per Bothner  <per@bothner.com>
 

@@ -1,3 +1,7 @@
+2017-08-28  Per Bothner  <per@bothner.com>
+
+	* Makefile.am (LARCENY_TEST_OPTIONS): Add --no-warn-uninitialized.
+
 2017-08-27  Per Bothner  <per@bothner.com>
 
 	* Makefile.am (EXTRA_DIST): Update with two new files.

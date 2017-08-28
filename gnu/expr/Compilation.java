@@ -142,6 +142,10 @@ public class Compilation implements SourceLocator
     options.add("warn-void-used",
                 Options.BOOLEAN_OPTION, Boolean.TRUE,
 		"warn if void-valued expression is used");
+  public static Options.OptionInfo warnUninitialized =
+    options.add("warn-uninitialized",
+                Options.BOOLEAN_OPTION, Boolean.TRUE,
+		"warn if a uninitialized variable may be used");
   public static Options.OptionInfo warnUndefinedVariable =
     options.add("warn-undefined-variable",
                 Options.BOOLEAN_OPTION, Boolean.TRUE,
@@ -188,6 +192,10 @@ public class Compilation implements SourceLocator
   public boolean warnUnused()
   {
     return currentOptions.getBoolean(warnUnused);
+  }
+  public boolean warnUninitialized()
+  {
+    return currentOptions.getBoolean(warnUninitialized);
   }
   public boolean warnVoidUsed()
   {

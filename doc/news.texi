@@ -4,7 +4,11 @@ most recent changes first.
 See also the list of @uref{../qexo/news.html,Qexo (XQuery)-specific
 changes}.
 
-@subheading In Git repository (invoke branch) since last release
+@c @subheading In Git repository (master branch) since last release
+@c @anchor{#in-git-repository-since-last-release}
+
+@subheading Kawa 3.0 (August 2017)
+
 @itemize
 @item
 Binary release are now built for Java 8.
@@ -163,10 +167,11 @@ Change in how closure objects are allocated for inlined functions.
 This sometimes reduces the number of objection allocations
 and also of helper classes, though in pathological cases it could cause
 objects to be retained (leak) where it didn't before.
-@end itemize
 
-@c @subheading In Git repository (master branch) since last release
-@c @anchor{#in-git-repository-since-last-release}
+@item
+New command-line flag @code{--warn-uninitialized}
+(by default on) to control warning about using uninitialized variables.
+@end itemize
 
 @subheading Kawa 2.4 (April 30, 2017)
 
