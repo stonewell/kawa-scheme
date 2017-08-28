@@ -27,6 +27,9 @@ bin/kawa.bat
 bin/kawa.sh
 bin/kawa
 bin/qexo
+bin/cgi-servlet
+bin/cgi-servlet.o
+bin/kawapath.o
 doc/kawa-manual.epub
 doc/kawa.xml
 doc/ebook
