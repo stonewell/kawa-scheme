@@ -1,9 +1,3 @@
-BEFORE Kawa 3.0
-
-- Go through Savannah and GitLab bugs.
-- Document in-http-server and in-servlet cond-expand options.
-- Fix awkward or missing errors for wrong argument with keys for rest.
-
 A GRAB-BAG OF IDEAS AND THINGS TO DO, SOME QUITE OLD
 
 Consider using Unsafe.defineAnonymousClass
@@ -199,9 +193,6 @@ Parser accumulates list of syntax errors.
 When done, if errors or warnings, throw SyntaxErrors.
 Printing SyntaxError prints error log.
 
-Should print warnings in interactive mode, before evaluation.
-Awkward, because ModuleExp.evalModule is used.
-
 Make closure representation consistent with inner classes wrt
 use of Attributes (for possible improved debugging).
 
@@ -209,8 +200,6 @@ Optionally issue a warning if a symbol is rebound.
 
 Inline calls to simple methods, especially builtins.
 Ties in with module specifications (to determine which bindings are builtin).
-
-Load should take an optional environment argument.
 
 Quantities:
 Arithmetic involving Units should return Units.
