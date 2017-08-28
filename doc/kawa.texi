@@ -3952,10 +3952,10 @@ Thus @code{-wbrowser=firefox} is the same as @code{-wbrowser="firefox %U"}.
 @item @code{-wgoogle-chrome}
 Creates a new Google Chrome window in ``app mode'' - i.e. with no location or menu bar.
 This is the same as @code{-wbrowser="google-chrome --app=%U"}.
-@item @code{-wqtdomterm}
-Uses the @code{QtDomTerm} application.
-Same as @code{-wbrowser="qtdomterm --connect localhost:%W"}, where @code{%W}
-is the port of the WebSocke server that Kawa starts.
+@c @item @code{-wqtdomterm}
+@c Uses the @code{QtDomTerm} application.
+@c Same as @code{-wbrowser="qtdomterm --connect localhost:%W"}, where @code{%W}
+@c is the port of the WebSocke server that Kawa starts.
 @item @code{-wjavafx}
 Creates a new window using JavaFX WebView, which runs in the same JVM as Kawa.
 While this doesn't currently have much in the way of Kawa-specific menus
