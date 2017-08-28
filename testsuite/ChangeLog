@@ -1,3 +1,7 @@
+2017-08-27  Per Bothner  <per@bothner.com>
+
+	* Makefile.am (EXTRA_DIST): Update with two new files.
+
 2017-08-04  Per Bothner  <per@bothner.com>
 
 	* vars-test.scm:: Test type specifier nested in reeat pattern.

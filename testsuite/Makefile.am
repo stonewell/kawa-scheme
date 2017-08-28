@@ -765,6 +765,7 @@ EXTRA_DIST = testing.scm test-utils.scm \
   lib-test.scm bridge.scm \
   $(MISC_TESTS_WITH_SRFI64) system-test.scm xml-test.scm \
   text-test.scm regex-test.scm java-array-test.scm lazy-test.scm \
+  strings-test.scm vars-test.scm \
   jmc.scm jmc.expected sva31180.scm use-slots.scm ASupport.scm Base.java \
   MyFunc.java MyModule.java MyDate.java MyTimestamp.java \
   misc-test.scm polytype.scm formatst.scm scribble.scm moduleFT.scm \
