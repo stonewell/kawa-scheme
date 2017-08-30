@@ -1,3 +1,9 @@
+2017-08-29  Per Bothner  <per@bothner.com>
+
+	* Compilation.java (loadCallContext): Use auto-poppable scope for $ctx.
+	Fixes bug reported by Kay Zheng, where Android's dex would
+	complain about overlapping entries in LocalVariableTable attribute.
+
 2017-08-28  Per Bothner  <per@bothner.com>
 
 	* Compilation.java (warnUninitialized): New option.

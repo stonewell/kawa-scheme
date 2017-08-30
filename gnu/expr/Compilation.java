@@ -2165,7 +2165,7 @@ public class Compilation implements SourceLocator
         // The variable is initialized just after literals.
         callContextVar = new Variable("$ctx", typeCallContext);
         // To make sure it doesn't clash with variables that have already
-        // allocated and freed for previous initialzier.
+        // allocated and freed for previous initializer.
         callContextVar.reserveLocal(code.getMaxLocals(), code);
         code.emitLoad(callContextVar);
         callContextVarForInit = callContextVar;
@@ -2175,7 +2175,8 @@ public class Compilation implements SourceLocator
         code.emitInvokeStatic(getCallContextInstanceMethod);
         code.emitDup();
         callContextVar = new Variable("$ctx", typeCallContext);
-        code.getCurrentScope().addVariable(code, callContextVar);
+        Scope scope = code.pushAutoPoppableScope();
+        scope.addVariable(code, callContextVar);
         code.emitStore(callContextVar);
       }
   }
