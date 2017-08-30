@@ -125,7 +125,7 @@ public class LocalVarsAttr extends Attribute
     VarEnumerator vars = allVars ();
     Variable var;
     dstr.writeShort (getCount());
-	    
+
     for (vars.reset (); (var = vars.nextVar ()) != null; )
       {
 	if (var.shouldEmit())

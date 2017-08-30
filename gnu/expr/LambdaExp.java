@@ -1245,7 +1245,7 @@ public class LambdaExp extends ScopeExp {
     // Can we merge this with allocParameters?
     public void allocChildClasses(Compilation comp) {
         Method main = getMainMethod();
-	
+
         if (main != null && ! main.getStaticFlag()) {
             CodeAttr code = comp.getCode();
             // So this gets declared in the parameter_scope.
