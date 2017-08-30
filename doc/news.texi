@@ -13,7 +13,7 @@ changes}.
 @item
 Binary release are now built for Java 8.
 The repository source code is now set up for Java 8.
-(Biulding fro Java 6 or 7 is still supported.
+(Building for Java 6 or 7 is still supported.
 Java 5 might also work, but has not been tested recently.)
 @item
 Most places where you could declare a new identifier
