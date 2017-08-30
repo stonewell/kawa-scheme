@@ -371,10 +371,10 @@ $(srcdir)/patch-source-list: $(top_srcdir)/configure
 	  | sed -e 's|./||' | sort > $@
 
 kawa/Version.class: kawa/Version.java
-	$(JAVAC) -d . $^
+	$(JAVAC) -d . $(JAVACFLAGS) $^
 
 gnu/kawa/util/PreProcess.class: gnu/kawa/util/PreProcess.java
-	$(JAVAC) -d . $^
+	$(JAVAC) -d . $(JAVACFLAGS) $^
 
 JAVA_PREPROCESS_OPTIONS = @JAVA_SOURCE_SELECTOR@ $(PREPROCESS_HTTPSERVER) $(PREPROCESS_XML) $(PREPROCESS_JLINE3) $(PREPROCESS_AWT)
 
