@@ -21,8 +21,7 @@
    kawa.lib.reflection
 
    (only (gnu kawa reflect SlotSet)
-         (set$Mnfield$Ex set-field!)
-         (set$Mnstatic$Mnfield$Ex set-static-field!))
+         (setField set-field!) (setStaticField set-static-field!))
    (only kawa.standard.Scheme (instanceOf instance?))
 
    (only (gnu kawa functions Convert)

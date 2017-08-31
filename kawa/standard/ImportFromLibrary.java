@@ -32,7 +32,7 @@ public class ImportFromLibrary extends Syntax
         { "2", "and-let*", "gnu.kawa.slib.srfi2" },
         { "5", "let", MISSING },
         { "6", "basic-string-ports", BUILTIN },
-        { "8", "receive", "kawa.lib.srfi.8" },
+        { "8", "receive", Mangling.mangleQualifiedName("kawa.lib.srfi.8") },
         { "9", "records", BUILTIN },
         { "11", "let-values", BUILTIN },
         { "13", "strings", "gnu.kawa.slib.srfi13" },
@@ -81,7 +81,8 @@ public class ImportFromLibrary extends Syntax
         { "78", "lightweight-testing", MISSING },
         { "86", "mu-and-nu", MISSING },
         { "87", "case", BUILTIN },
-        { "95", "sorting-and-merging", "kawa.lib.srfi.95" },
+        { "95", "sorting-and-merging",
+          Mangling.mangleQualifiedName("kawa.lib.srfi.95") },
         { "98", "os-environment-variables", BUILTIN },
         { "101", "random-access-lists", "gnu.kawa.slib.ralists" }
     };
@@ -101,7 +102,8 @@ public class ImportFromLibrary extends Syntax
 
     public static String checkSrfi(String lname, Translator tr) {
         if (lname.startsWith("srfi.")) {
-            String demangled = Mangling.demangleSymbolic(lname.substring(5));
+            String demangled =
+                Mangling.demangleQualifiedName(lname.substring(5));
             int dot = demangled.indexOf('.');
             String srfiName;
             StringBuilder badNameBuffer = null;

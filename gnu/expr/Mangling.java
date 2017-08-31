@@ -7,27 +7,58 @@ package gnu.expr;
  */
 
 public class Mangling {
+    /* #ifdef Android */
+    //  public static final boolean USE_SYMBOLIC = false;
+    /* #else */
+    public static final boolean USE_SYMBOLIC = true;
+    /* #endif */
+
     /** Mangle a simple class or package name.
      * Does not handle qualified names.
      */
     public static String mangleClassName(String name) {
-        return mangleSymbolic(name, 'C', false);
+        if (USE_SYMBOLIC)
+            return mangleSymbolic(name, 'C', false);
+        else
+            return mangleNameIfNeeded(name);
     }
 
     /** Mangle a possibly-qualified class name. */
     public static String mangleQualifiedName(String name) {
-        return mangleSymbolic(name, 'Q', false);
+        if (USE_SYMBOLIC)
+            return mangleSymbolic(name, 'Q', false);
+        else {
+            StringBuilder sbuf = new StringBuilder();
+            int prev = 0;
+            for (;;) {
+                int dot = name.indexOf('.', prev);
+                String part =
+                    name.substring(prev, dot >= 0 ? dot : name.length());
+                sbuf.append(mangleNameIfNeeded(part));
+                if (dot < 0)
+                    break;
+                prev = dot + 1;
+                sbuf.append('.');
+            }
+            return sbuf.toString();
+        }
     }
 
     public static String mangleVariable(String name) {
-        return mangleSymbolic(name, 'V', false);
+        if (USE_SYMBOLIC)
+            return mangleSymbolic(name, 'V', false);
+        else
+            return Mangling.mangleNameIfNeeded(name);
     }
 
     public static String mangleField(String name) {
         return Mangling.mangleNameIfNeeded(name);
     }
     public static String demangleField(String name) {
-        return demangleSymbolic(name);
+        if (USE_SYMBOLIC)
+            return demangleSymbolic(name);
+        else
+            return demangleName(name, true);
     }
 
     public static String mangleMethod(String name) {
@@ -38,6 +69,13 @@ public class Mangling {
     public static String demangleMethod(String name) {
         // Don't use "symbolic" mangling.
         return demangleName(name, false);
+    }
+
+    public static String demangleQualifiedName(String name) {
+        if (USE_SYMBOLIC)
+            return Mangling.demangleSymbolic(name);
+        else
+            return Mangling.demangleName(name, false);
     }
 
     /** Mangle according to John Rose's "Symbolic Freedom in the VM".
@@ -241,7 +279,9 @@ public class Mangling {
     public static String mangleNameIfNeeded(String name) {
         if (name == null || Language.isValidJavaName(name))
             return name;
-        else
+        else if (USE_SYMBOLIC)
             return mangleSymbolic(name, 'F', false);
+        else
+            return Language.mangleName(name, 0);
     }
 }

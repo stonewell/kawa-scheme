@@ -13,7 +13,7 @@ import gnu.mapping.*;
 
 public class MultiplyOp extends ArithOp
 {
-  public static final MultiplyOp $St = new MultiplyOp("*");
+  public static final MultiplyOp TIMES = new MultiplyOp("*");
 
   public MultiplyOp(String name)
   {

@@ -23,7 +23,7 @@ public class Range<E> extends AbstractSequence<E> implements AVector<E> {
     public E get (int index) {
         if (index >= size && size >= 0)
                 throw new IndexOutOfBoundsException();
-        return (E) AddOp.$Pl(start, MultiplyOp.apply(index, step));
+        return (E) AddOp.PLUS(start, MultiplyOp.apply(index, step));
     }
    
     @Override

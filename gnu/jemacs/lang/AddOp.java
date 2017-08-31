@@ -12,8 +12,8 @@ public class AddOp extends ProcedureN
     this.plusOrMinus = plusOrMinus;
   }
 
-  public static final AddOp $Pl = new AddOp("+", 1);
-  public static final AddOp $Mn = new AddOp("-", -1);
+  public static final AddOp PLUS = new AddOp("+", 1);
+  public static final AddOp MINUS = new AddOp("-", -1);
 
   public static Object apply2(int plusOrMinus, Object arg1, Object arg2)
   {
@@ -22,28 +22,28 @@ public class AddOp extends ProcedureN
     return num1.add(num2, plusOrMinus);
   }
 
-  public static Object $Pl(Object arg1, Object arg2)
+  public static Object PLUS(Object arg1, Object arg2)
   {
     return apply2(1, arg1, arg2);
   }
 
-  public static Object $Mn(Object arg1, Object arg2)
+  public static Object MINUS(Object arg1, Object arg2)
   {
     return apply2(-1, arg1, arg2);
   }
 
-  public static Object $Mn(Object arg1)
+  public static Object MINUS(Object arg1)
   {
     return ELisp.asNumber(arg1).neg();
   }
 
-  public static Object $Pl$V (Object arg1, Object arg2,
+  public static Object PLUS$V (Object arg1, Object arg2,
 			       Object arg3, Object[] rest)
   {
     return applyN(1, apply2(1,apply2(1, arg1, arg2), arg3), rest);
   }
 
-  public static Object $Mn$V (Object arg1, Object arg2,
+  public static Object MINUS$V (Object arg1, Object arg2,
 			       Object arg3, Object[] rest)
   {
     return applyN(-1, apply2(-1,apply2(-1, arg1, arg2), arg3), rest);
@@ -56,7 +56,7 @@ public class AddOp extends ProcedureN
       return IntNum.zero ();
     Object result = args[0];
     if (len == 1 && plusOrMinus < 0)
-      return $Mn(result);
+      return MINUS(result);
     for (int i = 1; i < len; i++)
       result = apply2(plusOrMinus, result, args[i]);
     return result;

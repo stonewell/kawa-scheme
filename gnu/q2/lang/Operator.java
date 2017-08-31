@@ -22,16 +22,16 @@ public class Operator extends Syntax
   public static final Operator SEMI = new Operator(";", 1, 1, 0, null);
   public static final Operator PLUS =
     new Operator("+", 5, 5, RHS_NEEDED, 
-                 new StaticFieldLocation("gnu.kawa.functions.AddOp", "$Pl"));
+                 new StaticFieldLocation("gnu.kawa.functions.AddOp", "PLUS"));
   public static final Operator MINUS =
     new Operator("-", 5, 5, RHS_NEEDED, 
-                 new StaticFieldLocation("gnu.kawa.functions.AddOp", "$Mn"));
+                 new StaticFieldLocation("gnu.kawa.functions.AddOp", "MINUS"));
   public static final Operator STAR =
     new Operator("*", 6, 6, RHS_NEEDED, 
-                 new StaticFieldLocation("gnu.kawa.functions.MultiplyOp", "$St"));
+                 new StaticFieldLocation("gnu.kawa.functions.MultiplyOp", "TIMES"));
   public static final Operator SLASH =
     new Operator("/", 6, 6, RHS_NEEDED, 
-                 new StaticFieldLocation("gnu.kawa.functions.DivideOp", "$Sl"));
+                 new StaticFieldLocation("gnu.kawa.functions.DivideOp", "SLASH"));
   public static final Operator LT =
     new Operator("<", 3, 3, RHS_NEEDED, 
                  new StaticFieldLocation("kawa.standard.Scheme", "numLss"));

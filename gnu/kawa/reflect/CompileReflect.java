@@ -332,7 +332,7 @@ public class CompileReflect
     Procedure p;
     if (slot instanceof Field)
       {
-        p = SlotSet.set$Mnfield$Ex;
+        p = SlotSet.setField;
       }
     else
       {

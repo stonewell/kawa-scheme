@@ -42,7 +42,7 @@
               (invokeStatic invoke-static)))
 (import (only gnu.kawa.reflect.SlotGet
               field (staticField static-field) (slotRef slot-ref))
-        (only gnu.kawa.reflect.SlotSet (set$Mnfield$Ex slot-set!)))
+        (only gnu.kawa.reflect.SlotSet (setField slot-set!)))
 (import (only gnu.kawa.reflect.Throw (primitiveThrow primitive-throw)))
 (import (only kawa.standard.constant_fold (constant_fold constant-fold)))
 (import (only kawa.standard.define_class
@@ -70,7 +70,7 @@
 (import (only kawa.standard.thisRef (thisSyntax this)))
 (import (only kawa.standard.with_compile_options
               (with_compile_options with-compile-options)))
-(import (only (gnu kawa functions AddOp) ($Pl +) ($Mn -)))
+(import (only (gnu kawa functions AddOp) (PLUS +) (MINUS -)))
 (import (only (gnu kawa functions CallCC)
               (callcc call-with-current-continuation)
               (callcc call/cc)))
@@ -80,10 +80,11 @@
               (modulo floor-remainder)
               (quotient truncate-quotient)
               (remainder truncate-remainder)))
-(import (only (gnu kawa functions DivideOp) ($Sl /) modulo quotient remainder))
+(import (only (gnu kawa functions DivideOp)
+              (SLASH /) modulo quotient remainder))
 (import (only gnu.kawa.functions.Format format))
 (import (only gnu.kawa.functions.MakeProcedure (makeProcedure make-procedure)))
-(import (only gnu.kawa.functions.MultiplyOp ($St *)))
+(import (only gnu.kawa.functions.MultiplyOp (TIMES *)))
 (import (only gnu.kawa.functions.Setter setter))
 (import (only gnu.kawa.io.PrettyWriter
               (isSharing *print-circle*)

@@ -1204,8 +1204,8 @@ public class Translator extends Compilation
                     if (nunits == 1)
                         unit = units[0];
                     else
-                        unit = new ApplyExp(MultiplyOp.$St, units);
-                    return new ApplyExp(MultiplyOp.$St,
+                        unit = new ApplyExp(MultiplyOp.TIMES, units);
+                    return new ApplyExp(MultiplyOp.TIMES,
                                         new Expression[] {
                             makeQuoteExp(num),
                             unit

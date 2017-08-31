@@ -101,7 +101,7 @@ public class ArithOp extends Procedure1or2
       case '-':
         return AddOp.apply2(-1, arg1, arg2);
       case '*':
-        return MultiplyOp.$St.apply2(arg1, arg2);
+        return MultiplyOp.TIMES.apply2(arg1, arg2);
       }
     int code1 = Arithmetic.classifyValue(arg1);
     int code2 = Arithmetic.classifyValue(arg2);

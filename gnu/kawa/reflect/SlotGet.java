@@ -14,11 +14,11 @@ public class SlotGet extends Procedure2
 
   Procedure setter;
   public static final SlotGet field
-    = new SlotGet("field", false, SlotSet.set$Mnfield$Ex);
+    = new SlotGet("field", false, SlotSet.setField);
   public static final SlotGet slotRef
-    = new SlotGet("slot-ref", false, SlotSet.set$Mnfield$Ex);
+    = new SlotGet("slot-ref", false, SlotSet.setField);
   public static final SlotGet staticField
-    = new SlotGet("static-field", true, SlotSet.set$Mnstatic$Mnfield$Ex);
+    = new SlotGet("static-field", true, SlotSet.setStaticField);
 
   public SlotGet(String name, boolean isStatic)
   {

@@ -16,7 +16,7 @@ public class DivideOp extends ArithOp
   public int getRoundingMode() { return rounding_mode; }
   int rounding_mode;
 
-  public static final DivideOp $Sl = new DivideOp("/", DIVIDE_GENERIC);
+  public static final DivideOp SLASH = new DivideOp("/", DIVIDE_GENERIC);
   public static final DivideOp idiv = new DivideOp("idiv", QUOTIENT_EXACT);
   public static final DivideOp iceil = new DivideOp("iceil", QUOTIENT_EXACT);
   public static final DivideOp floorQuotient = new DivideOp("floor-quotient", QUOTIENT);

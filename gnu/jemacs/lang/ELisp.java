@@ -99,9 +99,9 @@ public class ELisp extends Lisp2
     defSntxStFld("if", "gnu.jemacs.lisp.MiscOps", "if");
     defProcStFld("invoke", "gnu.kawa.reflect.Invoke", "invoke");
 
-    defProcStFld("+", "gnu.jemacs.lang.AddOp", "$Pl");
-    defProcStFld("-", "gnu.jemacs.lang.AddOp", "$Mn");
-    defProcStFld("/", "gnu.jemacs.lang.DivideOp", "$Sl");
+    defProcStFld("+", "gnu.jemacs.lang.AddOp", "PLUS");
+    defProcStFld("-", "gnu.jemacs.lang.AddOp", "MINUS");
+    defProcStFld("/", "gnu.jemacs.lang.DivideOp", "SLASH");
     defProcStFld("=", "gnu.jemacs.lang.NumberCompare", "$Eq");
     defProcStFld("<", "gnu.jemacs.lang.NumberCompare", "$Ls");
     defProcStFld(">", "gnu.jemacs.lang.NumberCompare", "$Gr");
@@ -137,7 +137,8 @@ public class ELisp extends Lisp2
     defun("let", new kawa.standard.fluid_let(false, false, nilExpr));
     defun("%let", kawa.standard.let.let);
     defun("let*", new kawa.standard.fluid_let(true, false, nilExpr));
-    defProcStFld("concat", "kawa.lib.kawa.mstrings", "string-append");
+    defProcStFld("concat", "kawa.lib.kawa.mstrings",
+                 Mangling.mangleField("string-append"));
     Procedure not = new gnu.kawa.functions.Not(this);
     defun("not", not);
     defun("null", not);

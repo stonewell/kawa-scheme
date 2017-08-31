@@ -1,3 +1,8 @@
+2017-08-31  Per Bothner  <per@bothner.com>
+
+	Some fields renamed to avoid depending on mangling scheme.
+	Some source file names made explicit for same reason.
+
 2017-08-23  Per Bothner  <per@bothner.com>
 
 	* misc.scm (environment-fold): New procedure.

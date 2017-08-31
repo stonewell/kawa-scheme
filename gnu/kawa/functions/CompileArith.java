@@ -11,8 +11,8 @@ public class CompileArith implements Inlineable
   int op;
   Procedure proc;
 
-  public static CompileArith $Pl = new CompileArith(AddOp.$Pl, ADD);
-  public static CompileArith $Mn = new CompileArith(AddOp.$Mn, SUB);
+  public static CompileArith PLUS = new CompileArith(AddOp.PLUS, ADD);
+  public static CompileArith MINUS = new CompileArith(AddOp.MINUS, SUB);
 
   CompileArith(Object proc, int op)
   {
@@ -367,7 +367,7 @@ public class CompileArith implements Inlineable
             lval = 0;
           }
         if (negateOk)
-          return $Pl.compileIntNum(arg1,
+          return PLUS.compileIntNum(arg1,
                                    QuoteExp.getInstance(Integer.valueOf((int) - lval)),
                                    kind1, Arithmetic.INT_CODE, comp);
       }

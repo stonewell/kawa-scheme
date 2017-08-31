@@ -8,8 +8,8 @@ public class SlotSet extends Procedure3 implements Inlineable
   /** True if this is a "static-field" operation. */
   boolean isStatic;
 
-  public static final SlotSet set$Mnfield$Ex = new SlotSet("set-field!", false);
-  public static final SlotSet set$Mnstatic$Mnfield$Ex
+  public static final SlotSet setField = new SlotSet("set-field!", false);
+  public static final SlotSet setStaticField
   = new SlotSet("set-static-field!", true);
 
   public SlotSet(String name, boolean isStatic)

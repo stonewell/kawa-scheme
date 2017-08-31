@@ -178,7 +178,7 @@ public class CompileNamedPart
     ApplyExp original = exp;
     if (typeval instanceof ClassType)
       {
-        exp = new ApplyExp(SlotSet.set$Mnstatic$Mnfield$Ex, args);
+        exp = new ApplyExp(SlotSet.setStaticField, args);
       }
     else if (type instanceof ClassType)
       {
@@ -310,13 +310,13 @@ public class CompileNamedPart
         if (exp.getArgCount() == 1)
           {
             xargs[0] = QuoteExp.getInstance(get.container);
-            slotProc = SlotSet.set$Mnstatic$Mnfield$Ex;
+            slotProc = SlotSet.setStaticField;
           }
         else if (exp.getArgCount() == 2)
           {
             xargs[0]
               = Compilation.makeCoercion(exp.getArgs()[0], new QuoteExp(get.container));
-           slotProc = SlotSet.set$Mnfield$Ex;
+           slotProc = SlotSet.setField;
           }
         else
           return exp;
@@ -377,7 +377,7 @@ public class CompileNamedPart
     String pname = ((SetNamedInstancePart) proc).pname;
     Expression[] xargs = new Expression[]
       { args[0], new QuoteExp(pname), args[1] };
-    return visitor.visitApplyOnly(new ApplyExp(SlotSet.set$Mnfield$Ex, xargs), required);
+    return visitor.visitApplyOnly(new ApplyExp(SlotSet.setField, xargs), required);
   }
 }
 

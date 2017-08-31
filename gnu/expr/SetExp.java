@@ -376,9 +376,9 @@ public class SetExp extends AccessExp
         Expression funcExp = aexp.getFunction();
         Object func = funcExp.valueIfConstant();
         int sign;
-        if (func == AddOp.$Pl)
+        if (func == AddOp.PLUS)
           sign = 1;
-        else if (func == AddOp.$Mn)
+        else if (func == AddOp.MINUS)
           sign = -1;
         else
           break body;

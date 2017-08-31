@@ -9,14 +9,14 @@ public class DivideOp extends ProcedureN
     setName(name);
   }
 
-  public static final DivideOp $Sl = new DivideOp("/");
+  public static final DivideOp SLASH = new DivideOp("/");
 
-  public static Object $Sl(Object arg1)
+  public static Object SLASH(Object arg1)
   {
-    return $Sl(IntNum.one(), arg1);
+    return SLASH(IntNum.one(), arg1);
   }
 
-  public static Object $Sl(Object arg1, Object arg2)
+  public static Object SLASH(Object arg1, Object arg2)
   {
     Numeric num1 = ELisp.asNumber(arg1);
     Numeric num2 = ELisp.asNumber(arg2);
@@ -25,10 +25,10 @@ public class DivideOp extends ProcedureN
     return num1.div(num2);
   }
 
-  public static Object $Sl$V (Object arg1, Object arg2,
+  public static Object SLASH$V (Object arg1, Object arg2,
 			      Object arg3, Object[] rest)
   {
-    return applyN($Sl($Sl(arg1, arg2), arg3), rest);
+    return applyN(SLASH(SLASH(arg1, arg2), arg3), rest);
   }
 
   public static Object applyN(Object init, Object[] args)
@@ -36,7 +36,7 @@ public class DivideOp extends ProcedureN
     int len = args.length;
     Object result = init;
     for (int i = 0; i < len; i++)
-      result = $Sl(result, args[i]);
+      result = SLASH(result, args[i]);
     return result;
   }
 
@@ -44,10 +44,10 @@ public class DivideOp extends ProcedureN
   {
     int len = args.length;
     if (len <= 1)
-      return $Sl(args[0]);
+      return SLASH(args[0]);
     Object result = args[0];
     for (int i = 1; i < len; i++)
-      result = $Sl(result, args[i]);
+      result = SLASH(result, args[i]);
     return result;
   }
 }

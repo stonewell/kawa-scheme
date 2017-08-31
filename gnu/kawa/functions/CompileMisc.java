@@ -433,8 +433,8 @@ public class CompileMisc
                         Expression signBit =
                             QuoteExp.makeShared(Integer.MIN_VALUE,
                                                 Type.intType);
-                        arg0 = new ApplyExp(AddOp.$Pl, arg0, signBit);
-                        arg1 = new ApplyExp(AddOp.$Pl, arg1, signBit);
+                        arg0 = new ApplyExp(AddOp.PLUS, arg0, signBit);
+                        arg1 = new ApplyExp(AddOp.PLUS, arg1, signBit);
                         kind0 = kind1 = Arithmetic.INT_CODE;
                         commonType = Type.intType;
                     }
@@ -447,8 +447,8 @@ public class CompileMisc
                     // (Mix of unsigned long and signed int/long handled above.)
                     Expression signBit =
                         QuoteExp.makeShared(Long.MIN_VALUE, Type.longType);
-                    arg0 = new ApplyExp(AddOp.$Pl, arg0, signBit);
-                    arg1 = new ApplyExp(AddOp.$Pl, arg1, signBit);
+                    arg0 = new ApplyExp(AddOp.PLUS, arg0, signBit);
+                    arg1 = new ApplyExp(AddOp.PLUS, arg1, signBit);
                     kind0 = kind1 = Arithmetic.LONG_CODE;
                     commonType = Type.longType;
                 } else

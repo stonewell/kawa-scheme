@@ -60,7 +60,7 @@ public class require extends Syntax
     static java.util.Hashtable featureMap = new java.util.Hashtable();
 
     static void map(String featureName, String className) {
-        featureMap.put(featureName, className);
+        featureMap.put(featureName, Mangling.mangleQualifiedName(className));
     }
 
     private static final String SLIB_PREFIX = "gnu.kawa.slib.";

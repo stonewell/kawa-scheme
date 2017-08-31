@@ -36,7 +36,7 @@ public class RangeUtils {
             return Range.upto(iistart, iistep, iiend, orEqual);
         }
         
-        Object size = AddOp.$Mn(end, start);
+        Object size = AddOp.MINUS(end, start);
         if (iistep == null || ! iistep.isOne())
             size = (orEqual ? DivideOp.idiv : DivideOp.iceil).apply2(size, step);
         if (size instanceof Number)
@@ -59,9 +59,9 @@ public class RangeUtils {
             return Range.downto(iistart, iistep, iiend, orEqual);
         }
         
-        Object size = AddOp.$Mn(start, end);
+        Object size = AddOp.MINUS(start, end);
         if (iistep == null || ! iistep.isMinusOne())
-            size = (orEqual ? DivideOp.idiv : DivideOp.iceil).apply2(size, AddOp.$Mn(step));
+            size = (orEqual ? DivideOp.idiv : DivideOp.iceil).apply2(size, AddOp.MINUS(step));
         if (size instanceof Number)
             return new Range<Object>(start, step,
                                      ((Number) size).intValue() + (orEqual ? 1 : 0));

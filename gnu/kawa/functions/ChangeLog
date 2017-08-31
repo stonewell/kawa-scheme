@@ -1,3 +1,9 @@
+2017-08-31  Per Bothner  <per@bothner.com>
+
+	* AddOp.java ($Pl, $Mn): Rename to be mangling-independent.
+	* DivideOp.java ($Sl): Likewise.
+	* MultiplyOp.java ($St): Likewise.
+
 2017-08-24  Per Bothner  <per@bothner.com>
 
 	* IsEqual.java (match): New method, to support re-used by Unify.

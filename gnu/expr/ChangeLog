@@ -1,3 +1,8 @@
+2017-08-30  Per Bothner  <per@bothner.com>
+
+	* Mangling.java: Use old-style non-symbolic mangling for Android.
+	(USE_SYMBOLIC): Static to control mangling style.
+
 2017-08-29  Per Bothner  <per@bothner.com>
 
 	* Compilation.java (loadCallContext): Use auto-poppable scope for $ctx.

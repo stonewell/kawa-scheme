@@ -158,12 +158,12 @@ public class CompileMisc
         Declaration posIncoming = new Declaration(null, Type.intType);
         posIncoming.setCanRead(true);
 	Expression init
-	  = new ApplyExp(AddOp.$Mn,
+	  = new ApplyExp(AddOp.MINUS,
 			 new Expression[] {
 			   new ReferenceExp(lastArg),
 			   new ReferenceExp(posIncoming)});
 	init
-	  = new ApplyExp(AddOp.$Pl,
+	  = new ApplyExp(AddOp.PLUS,
 			 new Expression[] {
 			   init,
 			   new QuoteExp(IntNum.one())});
