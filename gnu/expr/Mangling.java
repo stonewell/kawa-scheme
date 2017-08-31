@@ -8,7 +8,7 @@ package gnu.expr;
 
 public class Mangling {
     /* #ifdef Android */
-    //  public static final boolean USE_SYMBOLIC = false;
+    // public static final boolean USE_SYMBOLIC = false;
     /* #else */
     public static final boolean USE_SYMBOLIC = true;
     /* #endif */
