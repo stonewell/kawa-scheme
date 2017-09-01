@@ -1,3 +1,7 @@
+2017-08-31  Per Bothner  <per@bothner.com>
+
+	* Makefile.am: Fix handling of man pages.
+
 2017-08-28  Per Bothner  <per@bothner.com>
 
 	* kawa.texi: Document in-http-server and in-servlet.

@@ -27,14 +27,7 @@ TEXI2PDF = texi2pdf
 	TEXINPUTS=$(top_srcdir)/../texinfo/texinfo.tex:$$TEXINPUTS \
 	  MAKEINFO='$(MAKEINFO) -I $(srcdir)' $(TEXI2PDF) -E $<
 
-man_MANS = kawa.1 qexo.1
-kawa.1: $(srcdir)/kawa.man
-	nroff -man $(srcdir)/kawa.man > tpm-kawa.1
-	mv tpm-kawa.1 kawa.1
-
-qexo.1: $(srcdir)/qexo.man
-	nroff -man $(srcdir)/qexo.man > tpm-qexo1
-	mv tpm-qexo1 qexo.1
+man1_MANS = kawa.man qexo.man
 
 ../kawa-doc-$(VERSION).tar.gz: kawa.info $(KAWA_HTMLDIR)/index.html kawa.pdf
 	tar cf - $(KAWA_HTMLDIR)/*.html kawa.pdf|gzip -c --best >$@
