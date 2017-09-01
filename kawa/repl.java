@@ -910,8 +910,19 @@ public class repl extends Procedure0or1 {
             File manualFile = new File(kawaHome+"/doc/kawa-manual.epub");
             if (! manualFile.exists())
                 return manualFile+" does not exist";
-            if (browserCommand == null || browserCommand.length() == 0)
-                browserCommand = "browser";
+            if (browserCommand == null || browserCommand.length() == 0) {
+                try {
+                    Class.forName("gnu.kawa.servlet.KawaHttpHandler");
+                    browserCommand = "browser";
+                } catch (Throwable ex1) {
+                    try {
+                        Class.forName("gnu.kawa.javafx.KawaJavafxApplication");
+                        browserCommand = "javafx";
+                    } catch (Throwable ex2) {
+                        return "don't know how to display manual (neither JavaFX or HttpServer classes found)";
+                    }
+                }
+            }
             if (browserCommand.equals("javafx")) {
                 // FIXME ignores 'path' argument
                 String filename = kawaHome+"/doc/browse-kawa-manual";
@@ -919,6 +930,7 @@ public class repl extends Procedure0or1 {
                 Shell.runFileOrClass(filename, false, 0);
                 return null;
             }
+            /* #ifdef use:com.sun.net.httpserver */
             String defaultUrl = "index.html";
             String pathPrefix = "jar:file:" + manualFile + "!/OEBPS";
             gnu.kawa.servlet.KawaHttpHandler.addStaticFileHandler("/kawa-manual/",
@@ -932,21 +944,24 @@ public class repl extends Procedure0or1 {
             String webUrl = "http://127.0.0.1:"+htport+"/kawa-manual/" + path;
             if (browserCommand.equals("google-chrome"))
                 browserCommand = "google-chrome --app=%U";
-             if (browserCommand.equals("browser")) {
+            if (browserCommand.equals("browser")) {
                 if (! Desktop.isDesktopSupported())
                     return "using default desktop browser not supported";
                 Desktop.getDesktop().browse(new URI(webUrl));
                 return null;
-             } else {
-                 if (browserCommand.indexOf('%') < 0)
-                        browserCommand = browserCommand  + " %U";
-                 try {
-                     Runtime.getRuntime().exec(browserCommand.replace("%U", webUrl));
-                 } catch (Throwable ex) {
-                     return "cannot read manual (using command: "+browserCommand+")";
-                 }
-                 return null;   
+            } else {
+                if (browserCommand.indexOf('%') < 0)
+                    browserCommand = browserCommand  + " %U";
+                try {
+                    Runtime.getRuntime().exec(browserCommand.replace("%U", webUrl));
+                } catch (Throwable ex) {
+                    return "cannot read manual (using command: "+browserCommand+")";
+                }
+                return null;
             }
+            /* #else */
+            // return "cannot read manual using builin http server";
+            /* #endif */
         } catch (Throwable ex) {
             return "caught exception "+ex.toString();
         }

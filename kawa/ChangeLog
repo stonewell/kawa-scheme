@@ -1,3 +1,8 @@
+2017-09-01  Per Bothner  <per@bothner.com>
+
+	* repl.java (browseManual): rap with #ifdef for httpserver.
+	This is to avoid link problems when the HttpServer is missing.
+
 2017-08-31  Per Bothner  <per@bothner.com>
 
 	* ImportFromLibrary.java: Add classname mangling.
