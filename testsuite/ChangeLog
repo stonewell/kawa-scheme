@@ -1,3 +1,9 @@
+2017-09-03  Timo Myyrä <timo.myyra@wickedbsd.net>
+
+	* system-test.scm: Fixme GitLb issue #17
+	"Test failure on system-test on OpenBSD" since the
+	latter has true and false in /usr/bin, not /bin.
+
 2017-08-28  Per Bothner  <per@bothner.com>
 
 	* Makefile.am (LARCENY_TEST_OPTIONS): Add --no-warn-uninitialized.

@@ -146,7 +146,7 @@
 
 (test-equal 0 (process-exit-wait (run-process "echo foo")))
 (test-equal #t (process-exit-ok? (run-process "echo foo")))
-(test-equal #f (process-exit-ok? (run-process "/bin/false")))
-(test-equal #t (process-exit-ok? (run-process "/bin/true")))
+(test-equal #f (process-exit-ok? (run-process "false")))
+(test-equal #t (process-exit-ok? (run-process "true")))
 
 (test-end)
