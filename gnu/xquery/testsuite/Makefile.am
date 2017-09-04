@@ -80,8 +80,8 @@ check-xsltest1:
 
 check-format-users:
 	$(KAWA) --xslt $(srcdir)/format-users.xsl $(srcdir)/users.xml \
-	  |sed 's/^ *//'>tmp-format-users.html
-	@if diff -b -B $(srcdir)/exp-format-users.html tmp-format-users.html; then echo '#  format-users test passes'; else echo FAIL format-users test; fi
+	  |sed 's/^ *//; /^\s*$$/d' >tmp-format-users.html
+	@if diff -b $(srcdir)/exp-format-users.html tmp-format-users.html; then echo '#  format-users test passes'; else echo FAIL format-users test; fi
 
 ./Mod1/mod1.class: mod1.xql
 	$(CLASSPATH_ENV) $(KAWA) --module-static -d ../../.. -C $<
