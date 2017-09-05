@@ -80,8 +80,7 @@ is started.
 Per Bothner <per@bothner.com>.
 .SH "SEE ALSO"
 .BR "info kawa" " - the complete Kawa manual."
-.P
-.UR "http://www.gnu.org/software/kawa/" 
+.UR "http://www.gnu.org/software/kawa/"
 .IR "http://www.gnu.org/software/kawa/"
 .UE
 - the

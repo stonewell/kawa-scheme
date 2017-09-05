@@ -84,22 +84,19 @@ Per Bothner <per@bothner.com>.
 .B kawa(1)
 .P
 .BR "info kawa" " - the complete Kawa manual."
-.P
 .UR "http://www.gnu.org/software/qxeo/"
 .I http://www.gnu.org/software/qxeo/
 .UE
 - the
 .B qexo
 home page.
-.P
-.UR "http://www.gnu.org/software/kawa/" 
-.I "http://www.gnu.org/software/kawa/" 
+.UR "http://www.gnu.org/software/kawa/"
+.I "http://www.gnu.org/software/kawa/"
 .UE
 - the
 .B kawa
 home page.
-.P
-.UR "htpp://www.w3.org/XML/Query""
+.UR "htpp://www.w3.org/XML/Query"
 .I "htpp://www.w3.org/XML/Query"
 .UE
 - the W3C XQuery home page.
