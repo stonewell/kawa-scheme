@@ -14,7 +14,9 @@ import gnu.mapping.Values;
  * arithmetic on a mix of Java and Kawa types.
  */
 
-public class LangPrimType extends PrimType implements TypeValue {
+public class LangPrimType extends PrimType
+    implements TypeValue, HasOwningField
+{
     Language language;
     PrimType implementationType;
     boolean isUnsigned;
@@ -97,6 +99,14 @@ public class LangPrimType extends PrimType implements TypeValue {
 
     public Type getImplementationType() {
         return implementationType;
+    }
+
+    public Field getOwningField() {
+        if (language != null) {
+            return ((ClassType) Type.make(language.getClass()))
+                .getDeclaredField(getName()+ "Type");
+        }
+        return null;
     }
 
     public boolean isUnsigned() { return isUnsigned; }

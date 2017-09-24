@@ -318,6 +318,14 @@ public class LitTable extends GeneralHashTable<Object,Object>
 	if ((literal == null || literal.value != value)
 	    && valueType instanceof ClassType)
 	  {
+              if (value instanceof HasOwningField) {
+                  Field fld = ((HasOwningField) value).getOwningField();
+                  if (fld != null) {
+                      Literal lit = new Literal (value, fld, this);
+                      staticTable.put(value, null, lit);
+                      return lit;
+                  }
+              }
 	    // Add all the static final public fields to staticTable.
 	    int needed_mod = Access.STATIC | Access.FINAL | Access.PUBLIC;
 	    Class fldClass = valueClass;

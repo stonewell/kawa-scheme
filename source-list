@@ -31,6 +31,7 @@ GNU_EXPR_JSOURCES = \
   gnu/expr/GenericProc.java \
   gnu/expr/IfExp.java \
   gnu/expr/CaseExp.java \
+  gnu/expr/HasOwningField.java \
   gnu/expr/IgnoreTarget.java \
   gnu/expr/Initializer.java \
   gnu/expr/Inlineable.java \

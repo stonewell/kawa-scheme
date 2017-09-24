@@ -1,3 +1,9 @@
+2017-09-24  Per Bothner  <per@bothner.com>
+
+	* LitTable.java: Tweak how literal values are mapped to static fields.
+	If the value implements HasOwningField, use specified field.
+	* HasOwningField.java: New interface.
+
 2017-08-30  Per Bothner  <per@bothner.com>
 
 	* Mangling.java: Use old-style non-symbolic mangling for Android.
