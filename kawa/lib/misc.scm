@@ -147,10 +147,6 @@
 #|
 (define (identity-function x)
   x)
-
-(define (make-parameter init #!optional converter :: <procedure> identity-function)
-
-  (make <gnu.kawa.util.Parameter> init converter))
 |#
 
 (define (gentemp) :: <symbol>
