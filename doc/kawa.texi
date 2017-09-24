@@ -3451,7 +3451,7 @@ implementations that did not have the @code{java.lang.Console} class.
 See the @ref{REPL Console} section.
 @item @code{console:prompt1=@var{prompt1}}
 @itemx @code{console:prompt2=@var{prompt2}}
-Initialize @ref{input-prompt1,@code{input-promp1} and @code{input-prompt2}}, respectively.
+Initialize @ref{input-prompt1,@code{input-prompt1} and @code{input-prompt2}}, respectively.
 @end table
 See also the @code{--output-format} flag.
 
@@ -17137,7 +17137,7 @@ arguments @code{console:prompt1=@var{prompt1}} and
 @code{console:prompt2=@var{prompt2}}, respectively.  If these are
 not specified, languages-specific defaults are used.
 For example for Scheme the default value of @code{input-prompt1}
-is @code{"#|kawa:%N|# "} and @code{input-prompt2} is @code{"#|$P.%N| "}.
+is @code{"#|kawa:%N|# "} and @code{input-prompt2} is @code{"#|%P.%N| "}.
 These have the form of Scheme comments, to make it easier to cut-and-paste.
 
 If @code{input-prompt1} (respectively @code{input-prompt2}) does not contain
