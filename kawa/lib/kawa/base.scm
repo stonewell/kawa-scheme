@@ -141,7 +141,7 @@
         s64vector s64vector? s64vector-length
         s64vector-ref s64vector-set! s64vector->list
         scan scheme-implementation-version scheme-report-environment
-        scheme-window sequence set-input-port-line-number! sleep
+        sequence set-input-port-line-number! sleep
         set-input-port-prompter! set-port-line!
         slot-ref slot-set! srfi-13-string-for-each static-field
         string-append! string-any string-contains string-contains-right
@@ -216,7 +216,6 @@
    kawa.lib.system
    kawa.lib.trace
    kawa.lib.uniform
-   kawa.lib.windows
    (scheme case-lambda)
    (scheme cxr)
    (scheme eval)
@@ -319,3 +318,6 @@
 (cond-expand (class-exists:kawa.DomTermBackend
               (import kawa.lib.kawa.domterm)
               (export domterm-load-stylesheet)))
+(cond-expand (class-exists:kawa.GuiConsole
+              (import kawa.lib.windows)
+              (export scheme-window)))
