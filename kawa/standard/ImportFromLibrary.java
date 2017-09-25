@@ -542,7 +542,8 @@ public class ImportFromLibrary extends Syntax
                     else {
                         Expression old = decls.get(oldsym);
                         if (old == null)
-                            tr.error('e', "unknown symbol in import set: "+oldsym);
+                            tr.error(kind == 'E' ? 'w' : 'e',
+                                     "unknown symbol in import set: "+oldsym);
                         else if (kind == 'E')
                             nmap.remove(oldsym);
                         else

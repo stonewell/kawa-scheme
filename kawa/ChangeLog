@@ -1,3 +1,9 @@
+2017-09-24  Per Bothner  <per@bothner.com>
+
+	Partial fix GitLab issue#19 "(import (except (srfi 1) make-list)) fails"
+	* ImportFromLibrary.java (ImportSetMapper.map): If 'except' specifies
+	an unknown variable, emit warning rather than error.
+
 2017-09-01  Per Bothner  <per@bothner.com>
 
 	* repl.java (browseManual): rap with #ifdef for httpserver.

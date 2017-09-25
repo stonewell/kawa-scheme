@@ -3,7 +3,7 @@
 ;; Diagnostic: errors5.scm:2:28: unknown symbol in import set: regexp-match
 
 (import (except (kawa regex) regex-replace regexp-match))
-;; Diagnostic: errors5.scm:5:44: unknown symbol in import set: regexp-match
+;; Diagnostic: errors5.scm:5:44: warning - unknown symbol in import set: regexp-match
 
 (import (rename (except (kawa regex) regex-replace)
                 (regexp-split regex-split)))

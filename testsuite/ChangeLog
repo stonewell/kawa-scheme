@@ -1,3 +1,7 @@
+2017-09-24  Per Bothner  <per@bothner.com>
+
+	* errors5.scm: One error is now a warning.
+
 2017-09-03  Timo Myyrä <timo.myyra@wickedbsd.net>
 
 	* system-test.scm: Fixme GitLb issue #17
