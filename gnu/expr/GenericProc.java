@@ -116,7 +116,6 @@ public class GenericProc extends MethodProc
         if (count == 0)
             return methods[0].getApplyToConsumerMethod().invokeExact((Procedure) methods[0], ctx);
         int startState = ctx.getMode();
-        //System.err.println("applyToConsumerGP "+proc+" state:"+startState+"  c.proc:"+ctx.proc+" consumer:"+ctx.consumer);
         int methodState = startState;
         if (startState == CallContext.MATCH_THROW_ON_EXCEPTION)
             methodState = CallContext.MATCH_CHECK;
@@ -125,7 +124,6 @@ public class GenericProc extends MethodProc
             ctx.rewind(methodState);
             Object r = method.getApplyToConsumerMethod().invokeExact(method, ctx);
             if (r != ctx) {
-                //System.err.println("->applyToConsumerGP r:"+r+" state:"+Integer.toHexString(ctx.getMode())+" c.p:"+ctx.proc+" method:"+method+" app:"+java.lang.invoke.MethodHandles.lookup().revealDirect(method.getApplyToConsumerMethod())+" consumer:"+ctx.consumer+"::"+ctx.consumer.getClass().getName());
                 //ctx.consumer.dump();
                 return r;
             }
