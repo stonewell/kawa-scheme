@@ -1,3 +1,14 @@
+2017-09-27  Per Bothner  <per@bothner.com>
+
+	* MethodProc.java (mostSpecific): Use isCompatibleWithValue.
+	This fixes a problem for Scheme.booleanType, in that it was considered
+	incompatible with (say) CharSequence, rather than just less specific.
+	Then if resolving (string-builder:append "foo") at run-rime, and
+	append(boolean) is tried first (as on Java 9) we get append(boolean)
+	because it is compatible (even if it is unspecific),
+	which we don't want.  If append(CharSequence) is considered more
+	specific than append(boolean), than it will be ordered before it.
+
 2017-08-24  Per Bothner  <per@bothner.com>
 
 	* Promise.java (makeBlank, checkAlias): New utility methods.
