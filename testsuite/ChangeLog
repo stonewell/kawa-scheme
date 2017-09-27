@@ -1,3 +1,8 @@
+2017-09-27  Per Bothner  <per@bothner.com>
+
+	* convert1.scm: Change output to pattern so it works for Java 9.
+	* errors3.scm: Likewise.
+
 2017-09-24  Per Bothner  <per@bothner.com>
 
 	* errors5.scm: One error is now a warning.
