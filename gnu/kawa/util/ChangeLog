@@ -1,3 +1,8 @@
+2017-09-27  Per Bothner  <per@bothner.com>
+
+	* PrimArrayUtils.java: New class.
+	(initArray6Int): New static method.
+
 2016-09-03  Per Bothner  <per@bothner.com>
 
 	* PreProcess.java: Add JAVA9 support.

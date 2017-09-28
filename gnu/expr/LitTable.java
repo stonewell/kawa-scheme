@@ -599,8 +599,29 @@ public class LitTable extends GeneralHashTable<Object,Object>
 	  }
       }
     else if (literal.type instanceof ArrayType)
-      {
-	code.emitPushPrimArray(literal.value, (ArrayType) literal.type);
+    {
+        int length = java.lang.reflect.Array.getLength(literal.value);
+        int nchunks = 0;
+        int count = length;
+        int chunkSize = 6;
+        // "Optimize" big primitive arrays, to reduce code size.
+        // For now only optimize big int[] literals; maybe more later. FIXME
+        // Otherwise srfi14.class becomes bigger than the 64k limit.
+        if (length >= 8 && literal.value instanceof int[]) {
+            nchunks = length / chunkSize;
+            count -= chunkSize * nchunks;
+        }
+	code.emitPushPrimArray(literal.value, length, count, (ArrayType) literal.type);
+        for (int ichunk = 0; ichunk < nchunks; ichunk++) {
+            Method chunkMethod = ClassType.make("gnu.kawa.util.PrimArrayUtils")
+                .getDeclaredMethod("initArray6Int", 2+chunkSize);
+            code.emitPushInt(count);
+            int[] iarr = (int[]) literal.value;
+            for (int j = 0; j < chunkSize; j++) {
+                code.emitPushInt(iarr[count++]);
+            }
+            code.emitInvokeStatic(chunkMethod);
+        }
 	store(literal, ignore, code);
       }
     else if (literal.value instanceof Class)

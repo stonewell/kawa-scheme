@@ -1013,18 +1013,24 @@ public class CodeAttr extends Attribute implements AttrContainer
     emitLoad(locals.used[0]);
   }
 
+    public final void emitPushPrimArray(Object value, ArrayType arrayType)
+    {
+        int len = java.lang.reflect.Array.getLength(value);
+        emitPushPrimArray(value, len, len, arrayType);
+    }
+
   /** Emit code to push a constant primitive array.
    * @param value The array value that we want the emitted code to re-create.
    * @param arrayType The ArrayType that matches value.
    */
-  public final void emitPushPrimArray(Object value, ArrayType arrayType)
+  public final void emitPushPrimArray(Object value, int len, int count,
+                                      ArrayType arrayType)
   {
     Type elementType = arrayType.getComponentType();
-    int len = java.lang.reflect.Array.getLength(value);
     emitPushInt(len);
     emitNewArray(elementType);
     char sig = elementType.getSignature().charAt(0);
-    for (int i = 0;  i < len;  i++)
+    for (int i = 0;  i < count;  i++)
       {
 	long ival = 0;  float fval = 0;  double dval = 0;
 	switch (sig)
