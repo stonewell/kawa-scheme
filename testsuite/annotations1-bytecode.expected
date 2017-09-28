@@ -16,10 +16,6 @@ Attribute "RuntimeVisibleAnnotations", length:0, number of entries: 1
     chvalue => B
     etype => enum[java.lang.annotation.ElementType PACKAGE]
 Field name: y public Signature: gnu.math.IntNum
-Attribute "RuntimeVisibleAnnotations", length:0, number of entries: 1
-  @javax.annotation.Resource
-    authenticationType => enum[javax.annotation.Resource$AuthenticationType CONTAINER]
-    type => java.util.ArrayList
 
 Methods (count: 2):
 
@@ -45,8 +41,8 @@ Attribute "Code", length:74, max_stack:5, max_locals:1, code_length:28
  24: invokestatic <Method gnu.kawa.functions.Format.formatToString (int,java.lang.Object[])java.lang.String>
  27: areturn
 Attribute "LineNumberTable", length:10, count: 2
+  line: 25 at pc: 0
   line: 30 at pc: 0
-  line: 35 at pc: 0
 Attribute "LocalVariableTable", length:12, count: 1
   slot#0: name: this, type: annotations1$MyClass (pc: 0 length: 28)
 Attribute "RuntimeVisibleAnnotations", length:0, number of entries: 1
@@ -77,5 +73,5 @@ Scheme
 *F
 1 annotations1.scm
 *L
-30#1,6:30
+25#1,6:25
 *E

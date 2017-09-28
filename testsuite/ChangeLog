@@ -1,5 +1,9 @@
 2017-09-27  Per Bothner  <per@bothner.com>
 
+	* annotations1.scm: Remove an annotation seemingly missing in Java9.
+	This might be a modules issue.
+	* annotations1-bytecode.expected: Update accordingly.
+
 	* convert1.scm: Change output to pattern so it works for Java 9.
 	* errors3.scm: Likewise.
 
