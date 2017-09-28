@@ -1,5 +1,7 @@
 2017-09-27  Per Bothner  <per@bothner.com>
 
+	* lib-test.scm: Tests are now expected to fail on Java 8 or older.
+
 	* annotations1.scm: Remove an annotation seemingly missing in Java9.
 	This might be a modules issue.
 	* annotations1-bytecode.expected: Update accordingly.

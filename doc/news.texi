@@ -7,7 +7,7 @@ changes}.
 @c @subheading In Git repository (master branch) since last release
 @c @anchor{#in-git-repository-since-last-release}
 
-@subheading Kawa 3.0 (August 2017)
+@subheading Kawa 3.0 (September 2017)
 
 @itemize
 @item
@@ -171,6 +171,9 @@ objects to be retained (leak) where it didn't before.
 @item
 New command-line flag @code{--warn-uninitialized}
 (by default on) to control warning about using uninitialized variables.
+@item
+The pre-defined @ref{Character sets,character sets} are now based
+on Java 9's Unicode 8 support.
 @end itemize
 
 @subheading Kawa 2.4 (April 30, 2017)

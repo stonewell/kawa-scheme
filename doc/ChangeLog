@@ -1,3 +1,7 @@
+2017-09-27  Per Bothner  <per@bothner.com>
+
+	* kawa.texi: Clarifications about type specifiers and invoke.
+
 2017-09-04  Timo Myyrä <timo.myyra@wickedbsd.net>
 
 	* kawa.man, qexo.man: Fix some style errors reported by mandoc lint.

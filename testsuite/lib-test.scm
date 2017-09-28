@@ -646,36 +646,36 @@
                  (lambda (c) (java.lang.Character:title-case?
                               (char->integer c))) char-set:full)))
 
-;; Some of these tests only succeed on Java 8 (or later), which
-;; supports Unicode 6.2. On earlier Javas, the java.lang.Character
+;; Some of these tests only succeed on Java 9 (or later), which
+;; supports Unicode 8.0. On earlier Javas, the java.lang.Character
 ;; predicates will disagree with the char-set definitions.
-(define-syntax expect-fail-unless-unicode-6_2
+(define-syntax expect-fail-unless-unicode-8
   (syntax-rules ()
     ((_ count)
-     (cond-expand (java-8)
+     (cond-expand (java-9)
                   (else (test-expect-fail count))))))
 (define-syntax expect-fail-unless
   (syntax-rules ()
     ((_ version count)
      (cond-expand (version)
                   (else (test-expect-fail count))))))
-(expect-fail-unless java-8 6)
-(test-equal #t (char-set=               ; only on Java 8
+(expect-fail-unless java-9 6)
+(test-equal #t (char-set=               ; only on Java 9
                 char-set:lower-case
                 (char-set-filter
                  (lambda (c) (java.lang.Character:lower-case?
                               (char->integer c))) char-set:full)))
-(test-equal #t (char-set=               ; only on Java 8
+(test-equal #t (char-set=               ; only on Java 9
                 char-set:upper-case
                 (char-set-filter
                  (lambda (c) (java.lang.Character:upper-case?
                               (char->integer c))) char-set:full)))
-(test-equal #t (char-set=               ; only on Java 8
+(test-equal #t (char-set=               ; only on Java 9
                 char-set:letter
                 (char-set-filter
                  (lambda (c) (java.lang.Character:letter?
                               (char->integer c))) char-set:full)))
-(test-equal #t (char-set=               ; only on Java 8
+(test-equal #t (char-set=               ; only on Java 9
                 char-set:digit
                 (char-set-filter
                  (lambda (c) (java.lang.Character:digit?
@@ -695,7 +695,7 @@
               (= type java.lang.Character:FINAL_QUOTE_PUNCTUATION)
               (= type java.lang.Character:OTHER_PUNCTUATION))))
       char-set:full)))
-(test-equal                             ; only on Java 8
+(test-equal                             ; only on Java 9
  #t (char-set=
      char-set:symbol
      (char-set-filter
@@ -707,7 +707,7 @@
               (= type java.lang.Character:MODIFIER_SYMBOL)
               (= type java.lang.Character:OTHER_SYMBOL))))
       char-set:full)))
-(expect-fail-unless java-7 2)
+(expect-fail-unless java-9 2)
 (test-equal
  #t (char-set=
      char-set:whitespace
@@ -779,7 +779,7 @@
 
 (test-equal #f (char-set-any char-upper-case? char-set:lower-case))
 
-(expect-fail-unless java-8 1)
+(expect-fail-unless java-9 1)
 (test-equal #t (char-set-every char-upper-case? char-set:upper-case))
 ; char-set-adjoin, char-set-adjoin!
 (test-equal #t (char-set= abc
