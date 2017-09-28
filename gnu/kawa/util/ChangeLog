@@ -1,5 +1,7 @@
 2017-09-27  Per Bothner  <per@bothner.com>
 
+	* generate-charsets.scm: Constant-fold the int arrays used.
+
 	* PrimArrayUtils.java: New class.
 	(initArray6Int): New static method.
 

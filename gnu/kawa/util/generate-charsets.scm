@@ -17,7 +17,7 @@
     ;;(format (current-error-port) "print-list ~a n:~d arr-len:~d~%~!" name n iarr:length)
     (format out
             &{(define-early-constant %&[name] ::int[]
-              &|    [~@<~{~:_~d ~}~:_~d~:>])
+              &|    (constant-fold int[] ~@<~{~:_~d ~}~:_~d~:>))
               &|}
               (ivec:subList 0 (- n 1))
               (ivec (- n 1)))))
