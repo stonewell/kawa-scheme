@@ -468,6 +468,7 @@ GNU_KAWA_UTIL_JSOURCES = \
   gnu/kawa/util/IntHashTable.java \
   gnu/kawa/util/HashNode.java \
   gnu/kawa/util/HashUtils.java \
+  gnu/kawa/util/PrimArrayUtils.java \
   gnu/kawa/util/RangeTable.java \
   gnu/kawa/util/RunTestScript.java \
   gnu/kawa/util/Signals.java \
