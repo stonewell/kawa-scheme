@@ -5144,6 +5144,8 @@ Note you can't use colon notation to invoke instance methods
 of a @code{Class}, because it will match a previous rule.
 For example if you want to invoke the @code{getDeclaredMethod}
 method of the @code{java.util.List} , you can't write @code{(java.util.List:getDeclaredMethod} because that will look for a static method in @code{java.util.List}.
+Instead, use the @code{invoke} or @code{invoke-sttic} method.  For example:
+@code{(invoke java.util.List 'getDeclaredMethod)}.
 @end itemize
 
 If the colon form is on the left-hand-side of an assignment (@code{set!}),
@@ -17894,19 +17896,13 @@ run-time object, as well as an associated type (the set of values
 of that class, plus its sub-classes, plus @code{null}).
 
 Kawa, like Java, has first-class types, that is types exist as
-objects you can pass around at run-time.  For each Java type,
-there is a corresponding Kawa type (but not necessarily vice
-versa).  It would be nice if we could represent run-time
-type values using @code{java.lang.Class} objects, but unfortunately
-that does not work very well.  One reason is that we need
-to be able to refer to types and classes that do not exist yet,
-because we are in the processing of compiling them.  Another
-reason is that we want to be able to distinguish between different
-types that are implemented using the same Java class.
+objects you can pass around at run-time.  The most used types
+correspond to Java classes and primitive types,
+but Kawa also has other non-Java types.
 
-Various Kawa constructs require or allow a type to be specified.
-Those specifications consist of @dfn{type expressions}, and a type expression
-is evaluated to yield a type value.  The current Kawa compiler
+Type specifiers have a @dfn{type expressions}, and a type expression
+is conceptually an expression that is evaluated to yield a type value.
+The current Kawa compiler
 is rather simple-minded, and in many places only allows simple
 types that the compiler can evaluate at compile-time.
 More specifically, it only allows simple @dfn{type names}
@@ -17916,6 +17912,21 @@ that map to primitive Java types or Java classes.
 @stxdef{type} @stxref{expression}
 @stxdef{opt-type-specifier} [@stxlit{::} @stxref{type}]
 @end display
+
+Various Kawa constructs require or allow a type to be specified.
+You can use a type specifier most places where you
+@ref{Variables and Patterns,define a variable or match a pattern}.
+Types specifiers can appear in other placess, such as procedure return
+type specifiers.  For example in this procedure definition,
+@code{::vector} is an argument type specifier
+(and @code{vec::vector} is a pattern),
+while @code{::boolean} is a return type specifier.
+@example
+(define (vector-even? vec::vector)::boolean
+  (not (odd? (vector-length vec))))
+(vector-even? #(3 4 5)) @result{} #f
+(vector-even? (list 3 4 5 6)) @result{} @i{error}
+@end example
 
 @menu
 * Standard Types::
