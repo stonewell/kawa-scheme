@@ -970,8 +970,16 @@ public class LangObjType extends SpecialObjectType implements TypeValue
         return gnu.kawa.functions.MakeList.list;
       case STRING_TYPE_CODE:
         return new PrimProcedure("kawa.lib.kawa.istrings", "$make$string$"+VARARGS_SUFFIX, 1);
-      case REGEX_TYPE_CODE:
-        return new PrimProcedure("java.util.regex.Pattern", "compile", 1);
+      case REGEX_TYPE_CODE: {
+          PrimProcedure p = regexConstructor;
+          if (p == null) {
+              p = new PrimProcedure(ClassType.make("java.util.regex.Pattern")
+                                    .getDeclaredMethod("compile", 1),
+                                    this, new Type[]{ jstringType });
+              regexConstructor = p;
+          }
+          return p;
+      }
       case DYNAMIC_TYPE_CODE:
           return MakeDynamic.instance;
       case ARGLIST_TYPE_CODE:
@@ -982,6 +990,7 @@ public class LangObjType extends SpecialObjectType implements TypeValue
         return null;
       }
   }
+    private static PrimProcedure regexConstructor;
 
     public String encodeType(Language language) {
         switch (typeCode) {
