@@ -24253,8 +24253,8 @@ Some examples:
 A math program can display equations and graphs as the
 output of an expression.
 @item
-An expression can evaluate to a "picture" which would
-be @uref{http://per.bothner.com/blog/2007/ReplPane/,displayed inline}.
+An expression can evaluate to a``@ref{Composable pictures,picture}''
+which would be displayed inline.
 @item
 An HTML/XML obj can be insert into the output in visual
 form if the console understands HTML.  (There is a prototype
