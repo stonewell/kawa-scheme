@@ -1,3 +1,9 @@
+2017-09-29  Per Bothner  <per@bothner.com>
+
+	* Makefile.am: Use JDK_JAVA_OPTIONS to pass --add-modules for Java 9.
+	(annotations1.scm, annotations1-bytecode.expected):
+	Revert previous change.
+
 2017-09-27  Per Bothner  <per@bothner.com>
 
 	* lib-test.scm: Tests are now expected to fail on Java 8 or older.

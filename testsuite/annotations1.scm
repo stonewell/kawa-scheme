@@ -1,3 +1,5 @@
+(define-alias Resource javax.annotation.Resource)
+(define-alias AuthenticationType javax.annotation.Resource:AuthenticationType)
 (define-alias ElementType java.lang.annotation.ElementType)
 ;(define-constant CC javax.annotation.Resource:AuthenticationType:CONTAINER)
 ;(define-constant XX 20)
@@ -21,6 +23,9 @@
     )
    ::integer)
   (y
+   (@javax.annotation.Resource
+    authenticationType: Resource:AuthenticationType:CONTAINER
+    type: java.util.ArrayList)
    :: integer)
   ((toString)
    (@java.lang.Override)
@@ -33,3 +38,7 @@
      (@java.beans.ConstructorProperties value: #("abc" "def"))
      ::integer))
 |#
+
+;; A bonus test for using an alias to a sub-class.
+(define (authentication-identity x::AuthenticationType) ::AuthenticationType
+  x)

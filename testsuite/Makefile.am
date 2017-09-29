@@ -481,6 +481,7 @@ check-pitfalls:
 MyAnnotType.class: $(srcdir)/MyAnnotType.java
 	CLASSPATH="..$(CLASSPATH_SEPARATOR).$(CLASSPATH_SEPARATOR)$$CLASSPATH" $(JAVAC) -g -d . $?
 annotations1.class: $(srcdir)/annotations1.scm MyAnnotType.class
+	JDK_JAVA_OPTIONS='--add-modules java.xml.ws.annotation' \
 	CLASSPATH=".$(CLASSPATH_SEPARATOR)$$CLASSPATH" $(KAWA) -C $<
 tmp-annotations1.bytecode: annotations1.class
 	$(CPJAVA) gnu.bytecode.dump 'annotations1$$MyClass'.class >tmp-annotations1.bytecode
@@ -490,8 +491,9 @@ check-annotations1: tmp-annotations1.bytecode
 	  else echo FAIL annotations1 test; fi
 
 tmp-bad-annotations2.err: bad-annotations2.scm MyAnnotType.class
-	-$(CPKAWA) -C $< 2>&1 \
-        | sed -e '1d' -e 's|^.*/$(<F)|$(<F)|' >tmp-bad-annotations2.err
+	-JDK_JAVA_OPTIONS='--add-modules java.xml.ws.annotation' \
+	$(CPKAWA) -C $< 2>&1 \
+        | sed -e '/Picked up JDK_JAVA_OPTIONS/d' -e '/[(]compiling/d' -e 's|^.*/$(<F)|$(<F)|' >tmp-bad-annotations2.err
 check-annotations2: tmp-bad-annotations2.err
 	@if $(DIFF) $(srcdir)/bad-annotations2.expected tmp-bad-annotations2.err; \
 	  then echo '# annotations2 test passes'; \
@@ -499,9 +501,11 @@ check-annotations2: tmp-bad-annotations2.err
 
 JaxbAnnotations3.class: $(srcdir)/jaxb-annotations3.scm
 	CLASSPATH="..$(CLASSPATH_SEPARATOR)@conf_classpath@.$(CLASSPATH_SEPARATOR)$$CLASSPATH" \
+	JDK_JAVA_OPTIONS='--add-modules java.xml.bind' \
 	$(KAWA) -d .. -P testsuite. -T JaxbAnnotations3 -C $<
 tmp-jaxb-annotations3.out: JaxbAnnotations3.class
 	CLASSPATH="..$(CLASSPATH_SEPARATOR)@conf_classpath@.$(CLASSPATH_SEPARATOR)$$CLASSPATH" \
+	JDK_JAVA_OPTIONS='--add-modules java.xml.bind' \
 	$(KAWA) testsuite.JaxbAnnotations3 <$(top_srcdir)/gnu/xquery/testsuite/bib.xml >tmp-jaxb-annotations3.out
 check-jaxb-annotations3: tmp-jaxb-annotations3.out
 	@if $(DIFF) $(srcdir)/jaxb-annotations3.expected tmp-jaxb-annotations3.out; \
