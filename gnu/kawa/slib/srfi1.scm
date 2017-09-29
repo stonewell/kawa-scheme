@@ -22,49 +22,65 @@
 ;;; This implementation is intended as a portable reference implementation
 ;;; for SRFI-1. See the porting notes below for more information.
 
-;;; Exported:
-;;; xcons tree-copy make-list list-tabulate cons* list-copy 
-;;; proper-list? circular-list? dotted-list? not-pair? null-list? list=
-;;; circular-list length+
-;;; iota
-;;; first second third fourth fifth sixth seventh eighth ninth tenth
-;;; car+cdr
-;;; take       drop       
-;;; take-right drop-right 
-;;; take!      drop-right!
-;;; split-at   split-at!
-;;; last last-pair
-;;; zip unzip1 unzip2 unzip3 unzip4 unzip5
-;;; count
-;;; append! append-reverse append-reverse! concatenate concatenate! 
-;;; unfold       fold       pair-fold       reduce
-;;; unfold-right fold-right pair-fold-right reduce-right
-;;; append-map append-map! map! pair-for-each filter-map map-in-order
-;;; filter  partition  remove
-;;; filter! partition! remove! 
-;;; find find-tail any every list-index
-;;; take-while drop-while take-while!
-;;; span break span! break!
-;;; delete delete!
-;;; alist-cons alist-copy
-;;; delete-duplicates delete-duplicates!
-;;; alist-delete alist-delete!
-;;; reverse! 
-;;; lset<= lset= lset-adjoin  
-;;; lset-union  lset-intersection  lset-difference  lset-xor  lset-diff+intersection
-;;; lset-union! lset-intersection! lset-difference! lset-xor! lset-diff+intersection!
-;;; 
+(export
+ xcons
+ ;tree-copy
+ make-list list-tabulate cons* list-copy
+ proper-list? circular-list? dotted-list? not-pair? null-list? list=
+ circular-list length+
+ iota
+ first second third fourth fifth sixth seventh eighth ninth tenth
+ car+cdr
+ take       drop
+ take-right drop-right
+ take!      drop-right!
+ split-at   split-at!
+ last last-pair
+ zip unzip1 unzip2 unzip3 unzip4 unzip5
+ count
+ append! append-reverse append-reverse! concatenate concatenate!
+ unfold       fold       pair-fold       reduce
+ unfold-right fold-right pair-fold-right reduce-right
+ append-map append-map! map! pair-for-each filter-map map-in-order
+ filter  partition  remove
+ filter! partition! remove!
+ find find-tail any every list-index
+ take-while drop-while take-while!
+ span break span! break!
+ delete delete!
+ alist-cons alist-copy
+ delete-duplicates delete-duplicates!
+ alist-delete alist-delete!
+ reverse!
+ lset<= lset= lset-adjoin
+ lset-union  lset-intersection  lset-difference  lset-xor  lset-diff+intersection
+ lset-union! lset-intersection! lset-difference! lset-xor! lset-diff+intersection!)
+
+(import (only (kawa base)
+              cons pair? null? car cdr set-car! set-cdr!
+              caar cadr cdar cddr
+              caaar caadr cadar caddr cdaar cdadr cddar cdddr
+              caaaar caaadr caadar caaddr cadaar cadadr caddar cadddr
+              cdaaar cdaadr cdadar cdaddr cddaar cddadr cdddar cddddr
+              list-copy make-list reverse!
+              list length append reverse list-ref memq memv assq assv
+              map for-each member assoc))
+
 ;;; In principle, the following R4RS list- and pair-processing procedures
 ;;; are also part of this package's exports, although they are not defined
 ;;; in this file:
-;;;   Primitives: cons pair? null? car cdr set-car! set-cdr!
-;;;   Non-primitives: list length append reverse cadr ... cddddr list-ref
-;;;                   memq memv assq assv
-;;;   (The non-primitives are defined in this file, but commented out.)
-;;;
-;;; These R4RS procedures have extended definitions in SRFI-1 and are defined
-;;; in this file:
-;;;   map for-each member assoc
+(export
+ ;; Primitives:
+ cons pair? null? car cdr set-car! set-cdr!
+ ;; Non-primitives:
+ caar cadr cdar cddr
+ caaar caadr cadar caddr cdaar cdadr cddar cdddr
+ caaaar caaadr caadar caaddr cadaar cadadr caddar cadddr
+ cdaaar cdaadr cdadar cdaddr cddaar cddadr cdddar cddddr
+ list length append reverse list-ref memq memv assq assv
+ ;; These R4RS procedures have extended definitions in SRFI-1 and are defined
+ ;; in this file:
+ map for-each member assoc)
 ;;;
 ;;; The remaining two R4RS list-processing procedures are not included: 
 ;;;   list-tail (use drop)
