@@ -540,7 +540,8 @@ support and other contributions.
 @uref{http://google.com/,Google} through their
 @uref{http://code.google.com/soc/,Summer of Code} project
 sponsored Charles Turner during Summer 2011 and 2012,
-and sponsored Andrea Bernardini Summer 2014.
+Andrea Bernardini Summer 2014 and 2015,
+and Tom Bousso Summer 2017.
 
 Thomas Kirk and AT&T provided financial support, and useful bug reports.
 
@@ -563,6 +564,9 @@ Bruce R. Lewis implemented @ref{KRL,,KRL} and made other contributions.
 
 Geoff Berry: Handle Exceptions attribute.  Other improvements.
 
+Tom Bousso re-implemented @code{gnu.bytecode} to make use
+of @uref{asm.ow2.org,ASM}; plus other changes,
+
 Shad Gregory improved JEmacs.
 
 Al Petrofsky improved gnu.math printing and added some IntNum methods.
@@ -582,11 +586,14 @@ Anthony Green for Fedora packaging.
 Charles Turner for pretty-printer improvements,
 improvements in the Common Lips support, and other changes.
 
-Andrea Bernardini optimized the implementation of @code{case}.
+Andrea Bernardini optimized the implementation of @code{case}, and
+implemented full continuation support (in experimental @code{callcc} branch.
 
 Julien Rousseau and Marius Kjeldahl contributed to Android support.
 
 Peter Lane for many documentation improvements.
+
+William D Clinger for test-cases.
 
 @subsubheading Small fixes and improvements
 
@@ -597,6 +604,7 @@ Alexander Bunkenburg;
 Harold Carr;
 Emmanuel Castro;
 Álvaro Castro-Castilla;
+Sudarshan S Chawathe;
 Heather Downs;
 Francisco Vides Fernández;
 Nic Ferrier;
@@ -613,8 +621,10 @@ Mike Kenne;
 Brian Jones;
 Gerardo Jorvilleur;
 Simon Josefsson (JEmacs menu);
+Shiro Kawai;
 Thomas Kirk;
 Jay Krell;
+Timo Myyrä;
 Edouard Parmelan;
 Walter C. Pelissero;
 Rafael Jesus Alcantara Perez;
@@ -622,15 +632,18 @@ Lynn Quam;
 Marcus Otto;
 Terje Pedersen (some XQuery functions);
 Matthias Radestock;
+Jim Rees;
 Ola Rinta-Koski;
 Andreas Schlapbach;
 Robert D. Skeels;
 Benny Tsai;
 Vladimir Tsichevski;
 Matthieu Vachon;
+Vasantha Ganesh;
 Phil Walker;
 Knut Wannheden;
-Chris Wegrzyn.
+Chris Wegrzyn,
+Kay Zheng,
 
 @subsubheading Bug reports and test cases
 
@@ -658,7 +671,9 @@ Mirko Luedde;
 Leonardo Valeri Manera;
 Kjetil S. Matheussen;
 Alex Mitchell;
-Alex Moiseenko
+Alex Moiseenko;
+Marc Nieper-Wißkirchen;
+Okumura Yuki;
 Edouard Parmelan;
 Walter C. Pelissero;
 Stephen L. Peters;
