@@ -7,7 +7,7 @@ changes}.
 @c @subheading In Git repository (master branch) since last release
 @c @anchor{#in-git-repository-since-last-release}
 
-@subheading Kawa 3.0 (September 2017)
+@subheading Kawa 3.0 (October 2, 2017)
 
 @itemize
 @item
@@ -15,6 +15,8 @@ Binary release are now built for Java 8.
 The repository source code is now set up for Java 8.
 (Building for Java 6 or 7 is still supported.
 Java 5 might also work, but has not been tested recently.)
+@item
+Tested and updated for Java 9.
 @item
 Most places where you could declare a new identifier
 binding have been generalized to accept @ref{Variables and Patterns,patterns},
