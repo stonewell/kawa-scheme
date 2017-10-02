@@ -31,8 +31,8 @@ the @var{expression} against the @var{pattern}.
 It is like @code{define-constant} but generalized to patterns.
 
 @item
-The conditional match form @code{(! @var{pattern} @var{expression})}
-is similar to @code{?} but can only be
+The conditional match form @code{(? @var{pattern} @var{expression})}
+is similar to @code{!} but can only be
 used @ref{Conditionals,in conditional context}.
 If the match fails, the conidtion is true.
 

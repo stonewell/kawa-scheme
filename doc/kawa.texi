@@ -7609,7 +7609,7 @@ matches all the elements pf @code{A}.
 We call @samp{a::integer} the @dfn{repeated pattern} - it matches an
 individual element of @code{A}.
 @cindex repeat variable
-Any variable define in a repeated pattern is a @dfn{repeat variable}.
+Any variable defined in a repeated pattern is a @dfn{repeat variable}.
 In the example, that would be @code{a}.
 @item
 @cindex repeat expression
@@ -7636,7 +7636,7 @@ exactly their use in @code{syntax-rules} patterns and templates.
 
 It is an error to use a repeat variable outside of repeat context:
 @example
-#|kawa:5|# a
+#|kawa:5|# @kbd{a}
 /dev/stdin:2:1: using repeat variable 'a' while not in repeat context
 @end example
 
