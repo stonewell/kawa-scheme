@@ -1,3 +1,9 @@
+2017-10-02  Per Bothner  <per@bothner.com>
+
+	* configure.in (AC_INIT): Set version to 3.0.
+	* bin/configure.in (AC_INIT): Likewise.
+	* build.xml (version.release): Likewise.
+
 2017-08-29  Kay Zheng <l04m33@gmail.com>
 
 	* Makefile.am: Use JAVACFLAGS two more places.
@@ -26,9 +32,9 @@
 
 2017-04-30  Per Bothner  <per@bothner.com>
 
-        * configure.in (AC_INIT): Set version to 2.93.
-        * bin/configure.in (AC_INIT): Likewise.
-        * build.xml (version.release): Likewise.
+	* configure.in (AC_INIT): Set version to 2.93.
+	* bin/configure.in (AC_INIT): Likewise.
+	* build.xml (version.release): Likewise.
 
 2017-04-30  Per Bothner  <per@bothner.com>
 
