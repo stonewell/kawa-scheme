@@ -34,7 +34,7 @@ It is like @code{define-constant} but generalized to patterns.
 The conditional match form @code{(? @var{pattern} @var{expression})}
 is similar to @code{!} but can only be
 used @ref{Conditionals,in conditional context}.
-If the match fails, the conidtion is true.
+If the match fails, the condition is true.
 
 @item
 @ref{Repeat forms,Repeat patterns and forms} is a
