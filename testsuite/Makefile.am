@@ -4,7 +4,7 @@ SUFFIXES = .java .class .scm .el .lisp
 
 KAWALIB = ../lib/kawa.jar
 KAWARTLIB = ../lib/kawart.jar
-KAWA = ../bin/kawa.sh
+KAWA = ../bin/kawa
 CPJAVA = CLASSPATH="..$(CLASSPATH_SEPARATOR)@conf_classpath@.$(CLASSPATH_SEPARATOR)$$CLASSPATH" $(JAVA)
 CPKAWA = CLASSPATH="@conf_classpath@.$(CLASSPATH_SEPARATOR)$$CLASSPATH" $(KAWA)
 KAWATEST = CLASSPATH=".$(CLASSPATH_SEPARATOR)$$CLASSPATH" $(KAWA) $(OPTIONS) -e '(load "testing.zip")'

@@ -192,6 +192,17 @@ AM_CONDITIONAL(WITH_XQTS, test "$with_XQTS" != "" -a "$with_XQTS" != "no")
 AM_CONDITIONAL(ENABLE_KAWA_FRONTEND, test "$enable_kawa_frontend" = "yes")
 AM_CONDITIONAL(ON_WINDOWS, test "$CLASSPATH_SEPARATOR" = ";")
 
+if test -z "${ON_WINDOWS_FALSE}${ENABLE_KAWA_FRONTEND_FALSE}"
+then
+  KAWA_SCRIPT=kawa
+else
+  KAWA_SCRIPT=kawa.sh
+fi
+AC_SUBST(KAWA_SCRIPT)
+AS_IF([test "${KAWA_SCRIPT}" == "kawa"],
+  AC_CONFIG_FILES([bin/kawa:bin/kawa.sh.in],[chmod +x bin/kawa]),
+  AC_CONFIG_FILES([bin/kawa.sh:bin/kawa.sh.in],[chmod +x bin/kawa.sh]))
+
 if test "$with_docbook_stylesheets" == "" -o "$with_docbook_stylesheets" == "no" -o  "$with_docbook_stylesheets" == "yes"
 then
 DOCBOOK_STYLESHEETS_PATH='$(TOP_BUILDDIR)/docbook-xsl'
@@ -267,6 +278,5 @@ AC_CONFIG_FILES([Makefile gnu/bytecode/Makefile
   gnu/kawa/javafx/Makefile
   doc/Makefile testsuite/Makefile
   bin/kawa.bat])
-AC_CONFIG_FILES([bin/kawa.sh],[chmod +x bin/kawa.sh])
 AC_CONFIG_FILES([bin/qexo],[chmod +x bin/qexo])
 AC_OUTPUT

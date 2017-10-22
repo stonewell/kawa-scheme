@@ -1,3 +1,12 @@
+2017-10-22  Per Bothner  <per@bothner.com>
+
+	Normally convert kawa.sh.in to plain kawa rather than kawa.sh.
+	This avoids bin/kawa being a symlink to bin/kawa.sh, which avoids a
+	dependency on 'readlink -f' (not supported on Mac) in typical use.
+	* configure.ac: Process 'bin/kawa.sh.in' to 'bin/kawa', or bin/kawa.sh'
+	when either on Windows or --enable-kawa-frontend.
+	* Makefile.am: Use KAWA_SCRIPT variable as appropriate.
+
 2017-10-02  Per Bothner  <per@bothner.com>
 
 	* configure.in (AC_INIT): Set version to 3.0.

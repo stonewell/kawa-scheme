@@ -1,7 +1,7 @@
 (test-begin "system")
 
 (define split-with-kawa
-  ["../bin/kawa.sh" "-e" "(format #t \"|~{~a|~}~%\" command-line-arguments)"])
+  ["../bin/kawa" "-e" "(format #t \"|~{~a|~}~%\" command-line-arguments)"])
 
 (define-syntax test-str-equal
   (syntax-rules ()

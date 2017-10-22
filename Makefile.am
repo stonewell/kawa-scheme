@@ -143,7 +143,7 @@ kawa-$(ZIP_VERSION).zip: dist-kawa.jar doc/kawa-manual.epub bin/kawa.bat
 	  $(LN_S) $$docsrcdir/README-epub README-epub; \
 	  $(LN_S) $$docsrcdir/+default+ +default+
 	cd kawa-$(VERSION)/bin; \
-	  $(LN_S) ../../bin/kawa.sh kawa; \
+	  $(LN_S) ../../bin/@KAWA_SCRIPT@ kawa; \
 	  $(LN_S) ../../bin/kawa.bat kawa.bat
 	zip $@ kawa-$(VERSION)/bin/kawa -r kawa-$(VERSION)
 
@@ -199,7 +199,7 @@ EXTRA_DIST = debian/control debian/rules debian/changelog debian/dirs \
 
 MOSTLYCLEANFILES = tmp* *.o bin/*.o *.stamp */*.class */*/*.class */*/*/*.class classes.list classes-rt.list
 CLEANFILES = *.jar lib/*.jar *.zip bin/kawa bin/qexo kawa/Version.java $(META_ScriptEngineFactory)
-DISTCLEANFILES = selected-java-source bin/kawa.sh bin/kawa.bat
+DISTCLEANFILES = selected-java-source bin/kawa.sh bin/kawa bin/kawa.bat
 MAINTAINERCLEANFILES = \
   $(GENERATED_SIMPLEVECTOR_FILES) $(srcdir)/patch-source-list
 
@@ -267,7 +267,7 @@ endif
 install-data-am:  install-jar
 	$(mkinstalldirs) $(DESTDIR)$(datadir)/kawa \
 	  $(DESTDIR)$(datadir)/kawa/bin $(DESTDIR)$(datadir)/kawa/lib
-	$(INSTALL_SCRIPT) bin/kawa.sh $(DESTDIR)$(datadir)/kawa/bin/kawa
+	$(INSTALL_SCRIPT) bin/@KAWA_SCRIPT@ $(DESTDIR)$(datadir)/kawa/bin/kawa
 
 install-jar:
 	@$(NORMAL_INSTALL)
@@ -453,15 +453,9 @@ if ON_WINDOWS
 # kawa.sh is still needed for 'make check', even on Windows.
 KAWASCRIPTS_KAWA = bin/kawa.bat bin/kawa.sh
 else
-if ENABLE_KAWA_FRONTEND
-KAWASCRIPTS_KAWA = bin/kawa.sh
-else
-KAWASCRIPTS_KAWA = bin/kawa.sh bin/kawa
-bin/kawa: bin/kawa.sh
-	cd bin && $(LN_S) kawa.sh kawa
+KAWASCRIPTS_KAWA = bin/@KAWA_SCRIPT@
 endif
-endif
-noinst_SCRIPTS = bin/kawa.sh
+noinst_SCRIPTS = bin/@KAWA_SCRIPT@
 bin_SCRIPTS = bin/qexo $(KAWASCRIPTS_KAWA)
 
 #bin/kawa.bat: $(srcdir)/bin/kawa.bat.in

@@ -1,5 +1,5 @@
 KAWALIB = ../../..
-KAWA = ../../../bin/kawa.sh
+KAWA = ../../../bin/@KAWA_SCRIPT@
 DOTEST = $(KAWA) --elisp\
  -e '(load "$(KAWALIB)/testsuite/testing.zip")' $(OPTIONS)
 
