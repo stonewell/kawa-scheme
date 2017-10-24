@@ -234,7 +234,7 @@
          ($construct$:append_PD $construct$:|>>|))
    (only kawa.lib.system ($construct$:cmd $construct$:|`|))
    (only kawa.lib.numbers( bitwise-bit-field bit-extract))
-   (only (kawa lib srfif 8 "kawa/lib/srfi/8.scm") receive)
+   (only (kawa lib srfi 8 "kawa/lib/srfi/8.scm") receive)
    (rnrs arithmetic bitwise)
    (except (rnrs unicode)
            string-upcase string-foldcase string-downcase string-titlecase)
