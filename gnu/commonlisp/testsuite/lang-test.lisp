@@ -1,4 +1,4 @@
-(test-init "Common Lisp tests" 87)
+(test-init "Common Lisp tests" 117)
 
 (setq y 100)
 (defun foo1 (x)
@@ -168,3 +168,43 @@
       (multiple-value-bind (f r)
 	  (floor 130 11)
 	(list f r)))
+
+(test 't 'read-symbol-with-package-1 'COMMON-LISP:t)
+(test 't 'read-symbol-with-package-2 'CL:t)
+(test ':abc 'read-symbol-with-package-3 'KEYWORD:abc)
+
+(test t 'keywordp-1 (keywordp ':test))
+(test nil 'keywordp-2 (keywordp 'CL:symbol))
+(test nil 'keywordp-3 (keywordp 123))
+(test t 'keywordp-4 (keywordp 'KEYWORD:test))
+
+(test t 'symbol-package-1 (not (null (symbol-package nil))))
+(test t 'symbol-package-2 (not (null (symbol-package ':test))))
+(test t 'symbol-package-3 (not (eq (symbol-package nil)
+				   (symbol-package ':test))))
+
+(test t '*package*-exists (boundp '*package*))
+
+(test t 'packagep-1 (packagep *package*))
+(test nil 'packagep-2 (packagep nil))
+(test t 'packagep-3 (packagep (symbol-package nil)))
+(test t 'packagep-4 (packagep (symbol-package ':x)))
+(test t 'packagep-5 (packagep (symbol-package 'KAWA:car)))
+(test nil 'packagep-6 (packagep "foo"))
+(test nil 'packagep-7 (packagep 123))
+
+(test nil 'find-package-1 (packagep (find-package "not-a-package")))
+(test t 'find-package-2 (packagep (find-package "CL")))
+(test t 'find-package-3 (packagep (find-package '|CL|)))
+(test nil 'find-package-4 (packagep (find-package #\x)))
+(test t 'find-package-5 (packagep (find-package "KEYWORD")))
+(test t 'find-package-6 (eq (find-package *package*) *package*))
+
+;; Kawa's EmptyNamespace doesn't count as a package
+(test nil 'empty-namespace-is-not-a-package (find-package ""))
+
+(test t 'intern-1 (symbolp (intern "foo")))
+(test t 'intern-2 (keywordp (intern "foo" (symbol-package ':x))))
+(test nil 'intern-3 (intern (symbol-name 'nil) (symbol-package 'nil)))
+(test t 'intern-4 (intern (symbol-name 't) (symbol-package 't)))
+(test ':FOO 'intern-5 (intern "FOO" ':KEYWORD))

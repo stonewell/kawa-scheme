@@ -11,7 +11,7 @@
       ((lambda () 'a)))
 
 (test 'z 'lambda.4
-      ((lambda (x) (declare (type symbol x)) x) 'z))
+      ((lambda (x) (KAWA:declare (KAWA:type KAWA:symbol x)) x) 'z))
 
 ;; BUGS!
 ;; (deftest lambda.5

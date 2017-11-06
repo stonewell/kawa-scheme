@@ -4,6 +4,7 @@ import gnu.mapping.*;
 import gnu.lists.*;
 import java.util.Iterator;
 import java.util.Stack;
+import gnu.expr.Keyword;
 
 /** Implement a Common Lisp "package" value.
  * 
@@ -37,8 +38,10 @@ public class LispPackage extends Namespace
   
   public static final LispPackage CLNamespace = 
       (LispPackage) valueOf("COMMON-LISP");
+  /* Symbols in the KeywordNamespace have type gnu.expr.Keyword. */
   public static final LispPackage KeywordNamespace =
       (LispPackage) valueOf("KEYWORD");
+  /* Symbols in the KawaNamespace have type SimpleSymbol. */
   public static final LispPackage KawaNamespace =
       (LispPackage) valueOf("KAWA");
   /* The class namespace is used to resolve Java class names in the context of
@@ -436,13 +439,13 @@ public class LispPackage extends Namespace
     for (NamespaceUse used = imported;  used != null;
 	 used = used.nextImported)
       {
-	sym = lookup(name, hash, false);
+	sym = used.imported.exported.lookup(name, hash, false);
 	if (sym != null)
 	  return sym;
       }
 
     if (create)
-      return add(Symbol.makeUninterned(name, this), hash); // Optimization
+      return add(makeUninternedSymbol(name), hash); // Optimization
     else
       return null;
   }
@@ -527,7 +530,46 @@ public class LispPackage extends Namespace
       unintern(old);
     addToShadowingSymbols(symbol);
   }
-  
+
+    private Symbol makeUninternedSymbol(String name) {
+	if (this == KeywordNamespace)
+	    return new Keyword (Keyword.keywordNamespace, name);
+	if (this == KawaNamespace) return new SimpleSymbol (name);
+	return Symbol.makeUninterned (name, this);
+    }
+
+    public static boolean keywordp (Object x) {
+	return x instanceof Keyword;
+    }
+
+    public static Object symbolPackage (Object x) {
+	Object nil = CommonLisp.FALSE;
+	if (x == nil) return CLNamespace;
+	else if (x instanceof Symbol) {
+	    Namespace ns = ((Symbol)x).getNamespace();
+	    if (ns instanceof LispPackage) return (LispPackage)ns;
+	    else if (keywordp (x)) return KeywordNamespace;
+	    else if (x instanceof SimpleSymbol) return KawaNamespace;
+	    else return nil;
+	}
+	else throw new RuntimeException("nyi: argument not a symbol: " + x);
+    }
+
+    // FIXME: what's the right time to call String.intern? Here or in
+    // makeUninternedSymbol?
+    public static Object intern(String name, LispPackage pkg) {
+	name = name.intern();
+	if (name == "nil" && pkg == CLNamespace) return CommonLisp.FALSE;
+	return pkg.lookup(name.intern(), name.hashCode(), true);
+    }
+
+    /** Returns null if no package exists. */
+    public static LispPackage findPackage(String name) {
+	Namespace ns = Namespace.valueOfNoCreate(name);
+	if (ns instanceof LispPackage) return (LispPackage)ns;
+	return null;
+    }
+
   /**
    * Temporary stub until Kawa supports conditional restarts.
    */
