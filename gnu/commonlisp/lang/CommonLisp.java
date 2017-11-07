@@ -302,8 +302,7 @@ class CLReadTable extends ReadTable {
 	    String pkgName = token.substring(0, colon);
 	    pkg = LispPackage.findPackage (pkgName);
 	    if (pkg == null)
-		throw new RuntimeException("nyi: no package with name: "
-					   + pkgName);
+		throw new RuntimeException("no package with name: " + pkgName);
 	    token = token.substring(colon + 1);
 	}
 	return LispPackage.intern(token, pkg);

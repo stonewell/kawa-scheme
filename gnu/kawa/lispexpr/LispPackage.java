@@ -552,15 +552,13 @@ public class LispPackage extends Namespace
 	    else if (x instanceof SimpleSymbol) return KawaNamespace;
 	    else return nil;
 	}
-	else throw new RuntimeException("nyi: argument not a symbol: " + x);
+	else throw new RuntimeException("argument not a symbol: " + x);
     }
 
-    // FIXME: what's the right time to call String.intern? Here or in
-    // makeUninternedSymbol?
     public static Object intern(String name, LispPackage pkg) {
 	name = name.intern();
 	if (name == "nil" && pkg == CLNamespace) return CommonLisp.FALSE;
-	return pkg.lookup(name.intern(), name.hashCode(), true);
+	return pkg.lookup(name, name.hashCode(), true);
     }
 
     /** Returns null if no package exists. */
