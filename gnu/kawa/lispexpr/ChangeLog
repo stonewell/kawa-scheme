@@ -1,3 +1,13 @@
+2017-11-07  Helmut Eller  <eller.helmut@gmail.com>
+
+	* LispPackage.java (makeUninternedSymbol): New helper that ensures
+	that we create SimpleSymbols resp. Keywords for the KAWA
+	resp. KEYWORD package. (lookup): Fix a bug. The previous code
+	would go into an endless recursion when it had to search inherited
+	symbols. (keywordp, symbolPackage, intern, findPackage): New. Java
+	part of the implementation for the corresponding CL functions.
+	LispPackage seemed like the right place for this code.
+
 2017-09-27  Per Bothner  <per@bothner.com>
 
 	* LangObjType.java (getConstructor): Add parameter type for regex.

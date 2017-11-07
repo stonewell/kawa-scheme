@@ -1,3 +1,11 @@
+2017-11-07  Helmut Eller  <eller.helmut@gmail.com>
+
+	* CommonLisp.java (CLReadTable): New CL specific readtable.
+	The package aware interning is done by overriding makeSymbol.
+	For the time beeing, the very approximate handling of ':' is also
+	done in makeSymbol.
+	(createReadTable): Override it and use the new readtable.
+
 2015-04-03  Per Bothner  <per@bothner.com>
 
 	* Lisp2.java (isTrueLisp): New static method.

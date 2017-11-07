@@ -1,3 +1,9 @@
+2017-11-07  Helmut Eller  <eller.helmut@gmail.com>
+
+	* lang-test.lisp: Add tests for FOO:BAR syntax, intern, keywordp etc.
+	* lambda.lisp: Add KAWA: prefix where necessary.
+	* warnings.lisp: Change to new expected output which includes namespace.
+
 2017-04-20  Per Bothner  <per@bothner.com>
 
 	* lang-test.lisp: Some new expected failures.
