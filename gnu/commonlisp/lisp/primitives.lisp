@@ -1,6 +1,6 @@
 (defun car (x)
   (if x
-      (invoke (the pair x) '|getCar|)
+      (invoke (the KAWA:pair x) '|getCar|)
       nil))
 
 (defun first (x)
@@ -8,7 +8,7 @@
 
 (defun cdr (x)
   (if x
-      (invoke (the pair x) '|getCdr|)
+      (invoke (the KAWA:pair x) '|getCdr|)
       nil))
 
 (defun rest (x)
@@ -21,7 +21,7 @@
   (first (rest (rest x))))
 
 (defun nthcdr (n lst)
-  (declare (int n))
+  (KAWA:declare (KAWA:int n))
   (do ((i n (1- i))
        (result lst (cdr result)))
       ((= i 0) result)))
@@ -36,10 +36,10 @@
   (cons (cons key datum) alist))
 
 (defun listp (obj)
-  (typep obj 'list))
+  (typep obj 'KAWA:list))
 
 (defun numberp (obj)
-  (typep obj 'number))
+  (typep obj 'KAWA:number))
 
 (defun atom (obj)
   (not (consp obj)))
@@ -52,19 +52,19 @@
     (not (apply pred arguments))))
 
 (defun member-with-test (x lst test key)
-  (declare (list lst))
+  (KAWA:declare (KAWA:list lst))
   (cond ((null lst) nil)
 	((funcall test x (funcall key (car lst))) lst)
 	(t (member-with-test x (cdr lst) test key))))
 
 (defun member-with-key (x lst key)
-  (declare (list lst))
+  (KAWA:declare (KAWA:list lst))
   (cond ((null lst) nil)
 	((eql x (funcall key (car lst))) lst)
 	(t (member-with-key x (cdr lst) key))))
 
 (defun member-plain (x lst)
-  (declare (list lst))
+  (KAWA:declare (KAWA:list lst))
   (cond ((null lst) nil)
 	((eql x (car lst)) lst)
 	(t (member-plain x (cdr lst)))))
@@ -72,7 +72,7 @@
 (defun member (x lst &key key
 		       (test nil test-supplied)
 		       (test-not nil test-not-supplied))
-  (declare (list lst))
+  (KAWA:declare (KAWA:list lst))
   (cond (test-supplied
 	 (member-with-test x lst test key))
 	(test-not-supplied
@@ -125,3 +125,39 @@
 
 (defun floor (number &optional (divisor 1))
   (values (div number divisor) (remainder number divisor)))
+
+(defun keywordp (x)
+  (invoke-static "gnu.kawa.lispexpr.LispPackage" "keywordp" x))
+
+(defun symbol-package (symbol)
+  ;; FIXME: type decl not working yet
+  ;; (declare (type symbol symbol))
+  (invoke-static "gnu.kawa.lispexpr.LispPackage" "symbolPackage" symbol))
+
+;; Coerce a string-designator to a string
+(defun %to-string (x)
+  (cond ((stringp x) x)
+	;; FIXME: use characterp
+	((typep x 'KAWA:character) (string x))
+	(t (symbol-name x))))
+
+(defun find-package (name)
+  ;;(declare (type (or string symbol character package) name))
+  (if (packagep name)
+      name
+      (let ((pkg (invoke-static "gnu.kawa.lispexpr.LispPackage" "findPackage"
+				(as "String" (%to-string name)))))
+	(if (eq pkg #!null) nil pkg))))
+
+;; Convert a package designator to a package
+(defun %to-package (x)
+  (or (find-package x)
+      (error "Invalid package designator" x)))
+
+(defun intern (name &optional (pkg *package*))
+  ;;(declare (type string name) (type (or package string symbol) pkg))
+  (invoke-static "gnu.kawa.lispexpr.LispPackage" "intern"
+		 (as "String" name)
+		 (%to-package pkg)))
+
+(defun packagep (x) (typep x 'KAWA:gnu.kawa.lispexpr.LispPackage))

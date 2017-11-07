@@ -19,7 +19,7 @@
   (let* ((x y)
          (x (cdr (list-of-numbers x (+ x 3)))))
     (write (/ (car (cdr x)) 2)) (newline)))
-;; Diagnostic: warnings.lisp:19:13: warning - no declaration seen for y
+;; Diagnostic: warnings.lisp:19:13: warning - no declaration seen for {COMMON-LISP}:y
 
 (write (apply #'list-of-numbers '(1 5))) (newline)
 ;; Output: (1 2 3 4 5)

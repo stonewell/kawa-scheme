@@ -13,6 +13,8 @@ import gnu.kawa.format.AbstractFormat;
 import gnu.kawa.lispexpr.LangPrimType;
 import gnu.kawa.functions.DisplayFormat;
 import gnu.kawa.functions.NumberCompare;
+import gnu.kawa.lispexpr.ReadTable;
+import gnu.kawa.lispexpr.LispPackage;
 
 public class CommonLisp extends Lisp2
 {
@@ -227,6 +229,11 @@ public class CommonLisp extends Lisp2
     defProcStFld("labels", "gnu.commonlisp.lisp.primitives");
     defProcStFld("multiple-value-bind", "gnu.commonlisp.lisp.primitives");
     defProcStFld("floor", "gnu.commonlisp.lisp.primitives");
+    defProcStFld("keywordp", "gnu.commonlisp.lisp.primitives");
+    defProcStFld("symbol-package", "gnu.commonlisp.lisp.primitives");
+    defProcStFld("intern", "gnu.commonlisp.lisp.primitives");
+    defProcStFld("find-package", "gnu.commonlisp.lisp.primitives");
+    defProcStFld("packagep", "gnu.commonlisp.lisp.primitives");
   }
 
   public static CommonLisp getInstance()
@@ -271,5 +278,33 @@ public class CommonLisp extends Lisp2
             return this.booleanType;
         }
         return super.getNamedType(name);
+    }
+
+    @Override
+    public ReadTable createReadTable () { return new CLReadTable(); }
+
+}
+
+class CLReadTable extends ReadTable {
+
+    CLReadTable() {
+	initialize(false);
+	setInitialColonIsKeyword(true);
+    }
+
+    @Override
+    protected Object makeSymbol(String token) {
+	LispPackage pkg = null;
+	int colon = token.indexOf(':');
+	if (colon == -1)
+	    pkg = LispPackage.currentPackage.get();
+	else {
+	    String pkgName = token.substring(0, colon);
+	    pkg = LispPackage.findPackage (pkgName);
+	    if (pkg == null)
+		throw new RuntimeException("no package with name: " + pkgName);
+	    token = token.substring(colon + 1);
+	}
+	return LispPackage.intern(token, pkg);
     }
 }
