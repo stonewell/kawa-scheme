@@ -882,7 +882,7 @@ public class LangObjType extends SpecialObjectType implements TypeValue
 
   public Expression convertValue (Expression value)
   {
-    // In these cases, using the coercion metod would by-pass
+    // In these cases, using the coercion method would by-pass
     // the static type-checking in InlineCalls#checkType, to no benefit.
     if (typeCode == INTEGER_TYPE_CODE
         || typeCode == NUMERIC_TYPE_CODE
