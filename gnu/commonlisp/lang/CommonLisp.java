@@ -75,6 +75,9 @@ public class CommonLisp extends Lisp2
   public static final Symbol inheritedKeyword = Keyword.make("INHERITED");
   public static final Symbol externalKeyword = Keyword.make("EXTERNAL");
 
+    public static ThreadLocation<LList> features =
+	new ThreadLocation<>("*features*");
+
   static
   {
     instance = new CommonLisp();
@@ -164,6 +167,10 @@ public class CommonLisp extends Lisp2
     defProcStFld("prin1", "gnu.commonlisp.lisp.PrimOps");
 
     defAliasStFld("*package*", "gnu.kawa.lispexpr.LispPackage", "currentPackage");
+    defAliasStFld("*features*", "gnu.commonlisp.lang.CommonLisp", "features");
+    features.setGlobal (LList.list3 (Keyword.make("kawa"),
+				     Keyword.make("common-lisp"),
+				     Keyword.make("ansi-cl")));
     defProcStFld("=", "gnu.commonlisp.lang.CommonLisp", "numEqu");
     defProcStFld("<", "gnu.commonlisp.lang.CommonLisp", "numLss");
     defProcStFld(">", "gnu.commonlisp.lang.CommonLisp", "numGrt");
@@ -284,28 +291,4 @@ public class CommonLisp extends Lisp2
     @Override
     public ReadTable createReadTable () { return new CLReadTable(); }
 
-}
-
-class CLReadTable extends ReadTable {
-
-    CLReadTable() {
-	initialize(false);
-	setInitialColonIsKeyword(true);
-    }
-
-    @Override
-    protected Object makeSymbol(String token) {
-	LispPackage pkg = null;
-	int colon = token.indexOf(':');
-	if (colon == -1)
-	    pkg = LispPackage.currentPackage.get();
-	else {
-	    String pkgName = token.substring(0, colon);
-	    pkg = LispPackage.findPackage (pkgName);
-	    if (pkg == null)
-		throw new RuntimeException("no package with name: " + pkgName);
-	    token = token.substring(colon + 1);
-	}
-	return LispPackage.intern(token, pkg);
-    }
 }

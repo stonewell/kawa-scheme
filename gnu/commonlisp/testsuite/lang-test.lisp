@@ -1,4 +1,4 @@
-(test-init "Common Lisp tests" 131)
+(test-init "Common Lisp tests" 150)
 
 (setq y 100)
 (defun foo1 (x)
@@ -249,3 +249,25 @@
 				(as "String" name))))
 	(and (not found?)
 	     (eq s1 s2))))
+
+(test t '*features*-variable-exists (boundp '*features*))
+(test t '*features*-is-a-list (listp *features*))
+(test ':kawa '*features*-contains-kawa (car (member ':kawa *features*)))
+(test ':common-lisp '*features*-contains-common-lisp
+      (car (member ':common-lisp *features*)))
+
+(test '(1 2) 'sharp-plus-reader-1 (list 1 #+kawa 2))
+(test '(1) 'sharp-plus-reader-2 (list 1 #+not-a-feature 2))
+(test '(1 2) 'sharp-plus-reader-3 (list 1 #+common-lisp 2))
+(test '(1) 'sharp-minus-reader-1 (list 1 #-kawa 2))
+(test '(1 2) 'sharp-minus-reader-2 (list 1 #-not-a-feature 2))
+(test '(1 3) 'sharp-plus-or-empty (list 1 #+(or) 2 3))
+(test '(1 3) 'sharp-plus-or-false (list 1 #+(or not-a-feature) 2 3))
+(test '(1 2 3) 'sharp-plus-or-some (list 1 #+(or not-a-feature kawa) 2 3))
+(test '(1 2 3) 'sharp-plus-and-empty (list 1 #+(and) 2 3))
+(test '(1 3) 'sharp-plus-and-false (list 1 #+(and not-a-feature) 2 3))
+(test '(1 3) 'sharp-plus-and-some (list 1 #+(and not-a-feature kawa) 2 3))
+(test '(1 2 3) 'sharp-plus-and-all (list 1 #+(and kawa kawa) 2 3))
+(test '(1 3) 'sharp-plus-not (list 1 #+(not kawa) 2 3))
+(test '(1 2 3) 'sharp-plus-not (list 1 #+(not not-a-feature) 2 3))
+(test '(1 3) 'sharp-plus-nested (list 1 #+(not (or kawa sbcl)) 2 3))
