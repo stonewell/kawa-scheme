@@ -1,5 +1,14 @@
 2017-11-08  Helmut Eller  <eller.helmut@gmail.com>
 
+	* CLReadTable.java: New file.
+	(CLReadTable): Moved here from CommonLisp.java
+	(SharpPlus): The new readtable entry for #+.
+
+	* CommonLisp.java (features): New. Holds *features*.
+	(initLisp): Register and initialize *features*.
+
+2017-11-08  Helmut Eller  <eller.helmut@gmail.com>
+
 	* CommonLisp.java (initLisp): Add bindings for find-symbol,
 	multiple-value-list, and nth-value.
 

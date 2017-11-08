@@ -669,7 +669,8 @@ GNU_COMMONLISP_LANG_JSOURCES =\
   gnu/commonlisp/lang/setq.java \
   gnu/commonlisp/lang/Symbols.java \
   gnu/commonlisp/lang/UnwindProtect.java \
-  gnu/commonlisp/lang/CommonLisp.java
+  gnu/commonlisp/lang/CommonLisp.java \
+  gnu/commonlisp/lang/CLReadTable.java
 
 GNU_XQUERY_LANG_JSOURCES =\
   gnu/xquery/lang/XQuery.java \

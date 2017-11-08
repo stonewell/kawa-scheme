@@ -1,3 +1,7 @@
+2017-11-08  Helmut Eller  <eller.helmut@gmail.com>
+
+	* source-list (GNU_COMMONLISP_LANG_JSOURCES): Add CLReadTable.java.
+
 2017-10-22  Per Bothner  <per@bothner.com>
 
 	Normally convert kawa.sh.in to plain kawa rather than kawa.sh.
