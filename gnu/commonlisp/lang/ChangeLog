@@ -1,3 +1,8 @@
+2017-11-08  Helmut Eller  <eller.helmut@gmail.com>
+
+	* CommonLisp.java (initLisp): Add bindings for find-symbol,
+	multiple-value-list, and nth-value.
+
 2017-11-07  Helmut Eller  <eller.helmut@gmail.com>
 
 	* CommonLisp.java (CLReadTable): New CL specific readtable.

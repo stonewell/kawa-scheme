@@ -233,16 +233,18 @@
 
 (test t 'keyword-package-in-sync-with-keyword-namespace
       (let* ((name "a-fresh-keyword")
-	     (found? (nth-value 1 (find-symbol name "KEYWORD")))
-	     (s1 (intern name "KEYWORD"))
+	     (pkg "KEYWORD")
+	     (found? (nth-value 1 (find-symbol name pkg)))
+	     (s1 (intern name pkg))
 	     (s2 (invoke-static "gnu.expr.Keyword" "make" (as "String" name))))
 	(and (not found?)
 	     (eq s1 s2))))
 
 (test t 'kawa-package-in-sync-with-empty-namespace
       (let* ((name "a-fresh-kawa-symbol")
-	     (found? (nth-value 1 (find-symbol name "KEYWORD")))
-	     (s1 (intern name "KAWA"))
+	     (pkg "KAWA")
+	     (found? (nth-value 1 (find-symbol name pkg)))
+	     (s1 (intern name pkg))
 	     (s2 (invoke-static "gnu.mapping.Symbol" "valueOf"
 				(as "String" name))))
 	(and (not found?)

@@ -1,3 +1,9 @@
+2017-11-08  Helmut Eller  <eller.helmut@gmail.com>
+
+	* lang-test.lisp: Add tests to ensure that newly created Keywords
+	and Kawa symbols are automatically exported from the LispPackage
+	and inserted their Namespace.
+
 2017-11-07  Helmut Eller  <eller.helmut@gmail.com>
 
 	* lang-test.lisp: Add tests for FOO:BAR syntax, intern, keywordp etc.

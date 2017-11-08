@@ -1,3 +1,11 @@
+2017-11-08  Helmut Eller  <eller.helmut@gmail.com>
+
+	* LispPackage.java (KeywordNamespace): Set
+	Keyword.keywordNamespace as the exported namespace, analogous to
+	EmptyNamespace and KAWA package.
+	(createSymbol): New helper.
+	(makeUninternedSymbol): Deleted.
+
 2017-11-07  Helmut Eller  <eller.helmut@gmail.com>
 
 	* LispPackage.java (makeUninternedSymbol): New helper that ensures

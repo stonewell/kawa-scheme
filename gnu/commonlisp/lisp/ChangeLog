@@ -1,3 +1,8 @@
+2017-11-08  Helmut Eller  <eller.helmut@gmail.com>
+
+	* primitives.lisp (find-symbol, multiple-value-list, nth-value):
+	New. Needed for testing.
+
 2017-11-07  Helmut Eller  <eller.helmut@gmail.com>
 
 	* primitives.lisp (keywordp, symbol-package, find-package, intern,
