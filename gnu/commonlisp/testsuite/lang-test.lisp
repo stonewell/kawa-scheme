@@ -1,4 +1,4 @@
-(test-init "Common Lisp tests" 117)
+(test-init "Common Lisp tests" 131)
 
 (setq y 100)
 (defun foo1 (x)
@@ -183,6 +183,10 @@
 (test t 'symbol-package-3 (not (eq (symbol-package nil)
 				   (symbol-package ':test))))
 
+(test t 'symbols-are-interned-in-current-package
+      (eq (symbol-package 'some-new-sym)
+	  *package*))
+
 (test t '*package*-exists (boundp '*package*))
 
 (test t 'packagep-1 (packagep *package*))
@@ -208,3 +212,40 @@
 (test nil 'intern-3 (intern (symbol-name 'nil) (symbol-package 'nil)))
 (test t 'intern-4 (intern (symbol-name 't) (symbol-package 't)))
 (test ':FOO 'intern-5 (intern "FOO" ':KEYWORD))
+
+(test '(1) 'multiple-value-list-one (multiple-value-list 1))
+(test '(1 2) 'multiple-value-list-two (multiple-value-list (values 1 2)))
+(test '() 'multiple-value-list-zero (multiple-value-list (values)))
+
+(test 1 'nth-value-1 (nth-value 1 (values 0 1 2 3)))
+(test nil 'nth-value-10 (nth-value 10 (values 0 1 2 3)))
+(test 0 'nth-value-0 (nth-value 0 0))
+(test nil 'nth-value-2 (nth-value 2 0))
+
+(test '(car :INHERITED) 'find-symbol-car
+      (multiple-value-list (find-symbol "car")))
+(test '(nil nil) 'find-symbol-not-interned
+      (multiple-value-list (find-symbol "not interned")))
+(test '(car :EXTERNAL) 'find-symbol-kawa
+      (multiple-value-list (find-symbol "car" "KAWA")))
+(test '(:foo :EXTERNAL) 'find-symbol-keyword
+      (multiple-value-list (find-symbol "foo" "KEYWORD")))
+
+(test t 'keyword-package-in-sync-with-keyword-namespace
+      (let* ((name "a-fresh-keyword")
+	     (pkg "KEYWORD")
+	     (found? (nth-value 1 (find-symbol name pkg)))
+	     (s1 (intern name pkg))
+	     (s2 (invoke-static "gnu.expr.Keyword" "make" (as "String" name))))
+	(and (not found?)
+	     (eq s1 s2))))
+
+(test t 'kawa-package-in-sync-with-empty-namespace
+      (let* ((name "a-fresh-kawa-symbol")
+	     (pkg "KAWA")
+	     (found? (nth-value 1 (find-symbol name pkg)))
+	     (s1 (intern name pkg))
+	     (s2 (invoke-static "gnu.mapping.Symbol" "valueOf"
+				(as "String" name))))
+	(and (not found?)
+	     (eq s1 s2))))

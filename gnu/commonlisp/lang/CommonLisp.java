@@ -11,8 +11,6 @@ import gnu.kawa.functions.*;
 import gnu.bytecode.Type;
 import gnu.kawa.format.AbstractFormat;
 import gnu.kawa.lispexpr.LangPrimType;
-import gnu.kawa.functions.DisplayFormat;
-import gnu.kawa.functions.NumberCompare;
 import gnu.kawa.lispexpr.ReadTable;
 import gnu.kawa.lispexpr.LispPackage;
 
@@ -234,6 +232,9 @@ public class CommonLisp extends Lisp2
     defProcStFld("intern", "gnu.commonlisp.lisp.primitives");
     defProcStFld("find-package", "gnu.commonlisp.lisp.primitives");
     defProcStFld("packagep", "gnu.commonlisp.lisp.primitives");
+    defProcStFld("find-symbol", "gnu.commonlisp.lisp.primitives");
+    defProcStFld("multiple-value-list", "gnu.commonlisp.lisp.primitives");
+    defProcStFld("nth-value", "gnu.commonlisp.lisp.primitives");
   }
 
   public static CommonLisp getInstance()

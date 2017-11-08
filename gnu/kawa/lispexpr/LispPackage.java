@@ -60,6 +60,7 @@ public class LispPackage extends Namespace
     /* Package CL inherits from this package to facilitate cross language
      * lookups */
     KawaNamespace.setExportedNamespace(EmptyNamespace);
+    KeywordNamespace.setExportedNamespace(Keyword.keywordNamespace);
     LispPackage.use(CLNamespace, KawaNamespace); // FIXME: Should be used from CL-USER
     LispPackage.use(CLNamespace, ClassNamespace);
     currentPackage.setGlobal(CLNamespace);
@@ -445,7 +446,7 @@ public class LispPackage extends Namespace
       }
 
     if (create)
-      return add(makeUninternedSymbol(name), hash); // Optimization
+      return createSymbol (name, hash); // Optimization
     else
       return null;
   }
@@ -531,11 +532,10 @@ public class LispPackage extends Namespace
     addToShadowingSymbols(symbol);
   }
 
-    private Symbol makeUninternedSymbol(String name) {
-	if (this == KeywordNamespace)
-	    return new Keyword (Keyword.keywordNamespace, name);
-	if (this == KawaNamespace) return new SimpleSymbol (name);
-	return Symbol.makeUninterned (name, this);
+    private Symbol createSymbol(String name, int hash) {
+	if (this == KeywordNamespace) return Keyword.make(name);
+	if (this == KawaNamespace) return Symbol.valueOf(name);
+	return add(Symbol.makeUninterned(name, this), hash);
     }
 
     public static boolean keywordp (Object x) {
