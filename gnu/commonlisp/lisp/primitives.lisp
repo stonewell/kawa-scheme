@@ -174,3 +174,49 @@
 (define-syntax nth-value
   (syntax-rules ()
     ((_ n form) (nth n (multiple-value-list form)))))
+
+(define-syntax progn
+  (syntax-rules ()
+    ((_) nil)
+    ((_ form ...) (begin form ...))))
+
+(define-syntax when
+  (syntax-rules ()
+    ((_ test form ...) (if test (progn form ...) nil))))
+
+(define-syntax unless
+  (syntax-rules ()
+    ((_ test form ...) (if test nil (progn form ...)))))
+
+(define-syntax dolist
+  (syntax-rules ()
+    ((_ (var list) body ...)
+     (let loop ((l list))
+	  (cond ((null l) nil)
+		(t (let ((var (car l)))
+		     body ...)
+		   (loop (cdr l))))))))
+
+(defun mapcar (fun list) (map fun list))
+
+(defun make-package (name &key nicknames use)
+  (let* ((name (%to-string name))
+	 (nicknames (mapcar #'%to-string nicknames)))
+    (dolist (n (cons name nicknames))
+      (when (find-package n)
+	(error "A package with that name arleady exists" n)))
+    (invoke-static "gnu.kawa.lispexpr.LispPackage" "valueOf"
+		   (as "String" name))))
+
+;; Convert a list-of-symbols designator to a list-of-symbols
+(defun %to-list-of-symbols (x)
+  (cond ((symbolp x) (list x))
+	((listp x) x)
+	(t (error "Not a list-of-symbol designator" x))))
+
+(defun export (symbols &optional (pkg *package*))
+  (invoke-static "gnu.kawa.lispexpr.LispPackage" "exportPkg"
+		 (%to-list-of-symbols symbols)
+		 (%to-package pkg))
+  t)
+

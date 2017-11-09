@@ -1,3 +1,9 @@
+2017-11-09  Helmut Eller  <eller.helmut@gmail.com>
+
+	* primitives.lisp (export, make-package, mapcar, unless, when)
+	(progn):  New.
+	(%to-list-of-symbols): New helper.
+
 2017-11-08  Helmut Eller  <eller.helmut@gmail.com>
 
 	* primitives.lisp (find-symbol, multiple-value-list, nth-value):
