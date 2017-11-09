@@ -271,3 +271,30 @@
 (test '(1 3) 'sharp-plus-not (list 1 #+(not kawa) 2 3))
 (test '(1 2 3) 'sharp-plus-not (list 1 #+(not not-a-feature) 2 3))
 (test '(1 3) 'sharp-plus-nested (list 1 #+(not (or kawa sbcl)) 2 3))
+
+(test 't 'make-package-1 (packagep (make-package "p1")))
+(test 't 'make-package-2 (packagep (make-package "p2" :use ':CL)))
+
+(test ':EXTERNAL 'export-1
+      (let* ((pkg (make-package "p3"))
+	     (name "TEMP-SYM")
+	     (sym (intern name pkg)))
+	(export sym pkg)
+	(nth-value 1 (find-symbol name pkg))))
+
+(test '() 'test-mapacar-1 (mapcar #'1+ ()))
+(test '(2) 'test-mapacar-2 (mapcar #'1+ '(1)))
+(test '(2 3) 'test-mapacar-4 (mapcar #'1+ '(1 2)))
+
+(test nil 'unless-1 (unless nil))
+(test nil 'unless-2 (unless t))
+(test 3 'unless-3 (unless nil 1 2 3))
+(test nil 'unless-4 (unless t 1 2 3))
+
+(test nil 'when-1 (when nil))
+(test nil 'when-2 (when t))
+(test nil 'when-3 (when nil 1 2 3))
+(test 3 'when-4 (when t 1 2 3))
+
+(test nil 'progn-1 (progn))
+(test 3 'progn-2 (progn 1 2 3))

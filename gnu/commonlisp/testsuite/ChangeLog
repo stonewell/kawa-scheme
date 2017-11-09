@@ -1,3 +1,8 @@
+2017-11-09  Helmut Eller  <eller.helmut@gmail.com>
+
+	* lang-test.lisp: Add basic tests for EXPORT, MAKE-PACKAGE,
+	MAPCAR, UNLESS, WHEN, PROGN.
+
 2017-11-08  Helmut Eller  <eller.helmut@gmail.com>
 
 	* lang-test.lisp: Add tests for *features*, #+, and #-.

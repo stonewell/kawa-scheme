@@ -155,7 +155,6 @@ public class CommonLisp extends Lisp2
     defun("setq", new setq());
     defun("prog1", new prog1("prog1", 1));
     defun("prog2", prog1.prog2);
-    defun("progn", new kawa.standard.begin());
     defun("unwind-protect", new gnu.commonlisp.lang.UnwindProtect());
     defun("null", not);
     defun("eq", new IsEq(this, "eq"));
@@ -242,6 +241,12 @@ public class CommonLisp extends Lisp2
     defProcStFld("find-symbol", "gnu.commonlisp.lisp.primitives");
     defProcStFld("multiple-value-list", "gnu.commonlisp.lisp.primitives");
     defProcStFld("nth-value", "gnu.commonlisp.lisp.primitives");
+    defProcStFld("make-package", "gnu.commonlisp.lisp.primitives");
+    defProcStFld("export", "gnu.commonlisp.lisp.primitives");
+    defProcStFld("mapcar", "gnu.commonlisp.lisp.primitives");
+    defProcStFld("when", "gnu.commonlisp.lisp.primitives");
+    defProcStFld("unless", "gnu.commonlisp.lisp.primitives");
+    defProcStFld("progn", "gnu.commonlisp.lisp.primitives");
   }
 
   public static CommonLisp getInstance()

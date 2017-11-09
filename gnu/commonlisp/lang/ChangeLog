@@ -1,3 +1,9 @@
+2017-11-09  Helmut Eller  <eller.helmut@gmail.com>
+
+	* CommonLisp.java (initLisp): Bind make-package, export, mapcar
+	when, unless.  Also use the more CL like version for progn than
+	Scheme's begin.
+
 2017-11-08  Helmut Eller  <eller.helmut@gmail.com>
 
 	* CLReadTable.java: New file.
