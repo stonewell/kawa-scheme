@@ -247,6 +247,7 @@ public class ConsumerTarget extends Target
       }
     else
       code.emitSwap();
+    code.fixUnsigned(stackType);
     if (methodClass == typeSequences)
       {
         method = methodClass.getDeclaredMethod(methodName, 2);

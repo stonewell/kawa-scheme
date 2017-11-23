@@ -1,3 +1,9 @@
+2017-11-22  Per Bothner  <per@bothner.com>
+
+	* ConsumerTarget.java (compileFromStack): Fix unsigned value.
+	Fixes GitLab issue #27
+	"unsigned uniform vector refs returning signed values".
+
 2017-09-24  Per Bothner  <per@bothner.com>
 
 	* LitTable.java: Tweak how literal values are mapped to static fields.
