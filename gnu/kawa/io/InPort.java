@@ -205,14 +205,15 @@ public class InPort extends Reader implements Printable
     }
 
     public void resetAndKeep() {
-        int lineno = getLineNumber();
         mark(-1);
-        pos = 0;
-        limit = 0;
+        if (lineStartPos < limit)
+            System.arraycopy(buffer, lineStartPos, buffer, 0,
+                             limit - lineStartPos);
+        pos -= lineStartPos;
+        limit -= lineStartPos;
         lineStartPos = 0;
         markPos = 0;
         highestPos = 0;
-        lineNumber = lineno;
         flags |= KEEP_ALL;
     }
 

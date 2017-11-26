@@ -1,3 +1,11 @@
+2017-11-25  Per Bothner  <per@bothner.com>
+
+	* InPort.java (resetAndKeep): Only delete up to lineStartPos.
+	This fixes a line-number increment bug when calling read from a REPL.
+	See "Prompt on read" thread on mailing list.
+	* JLineInPort.java (fill): Set LINE_OFFSET.  This fixes line numbers
+	when calling read-line from REPL using jline3.
+
 2017-03-09  Per Bothner  <per@bothner.com>
 
 	* JLineInPort.java: Don't NPE if doing a plain non-language read.

@@ -161,6 +161,8 @@ public class JLineInPort extends TtyInPort
             line = stringRest;
         else {
             try {
+                jlreader.setVariable(LineReader.LINE_OFFSET,
+                                     getLineNumber()+1);
                 line = jlreader.readLine(prompt, null, null, null);
             } catch (UserInterruptException ex) {
                 return -1;
