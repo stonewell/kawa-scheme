@@ -7,7 +7,7 @@ import gnu.kawa.lispexpr.LangObjType;
  * is equivalent to: {@code (apply-with-values (prod) cons)}.
  * (However, the latter isn't expressible in Scheme because you can't
  * bind multiple values to an argument or variable in Scheme.
- * The Kawa compiler supports it internally, due to it's use by XQuery.)
+ * The Kawa compiler supports it internally, due to its use by XQuery.)
  */
 
 public class ApplyWithValues extends Procedure2 {
