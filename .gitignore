@@ -1,3 +1,4 @@
+aclocal.m4
 dist-kawa.jar
 classes-rt.list
 classes.list
