@@ -1,3 +1,9 @@
+2017-11-30  Per Bothner  <per@bothner.com>
+
+	Fix gitlab issue #29 "with-exception-handler miscompiled".
+	* CompileMisc.java (validateApplyWithExceptionHandler):
+	Don't pass wrong required type when validating thunk.
+
 2017-08-31  Per Bothner  <per@bothner.com>
 
 	* AddOp.java ($Pl, $Mn): Rename to be mangling-independent.

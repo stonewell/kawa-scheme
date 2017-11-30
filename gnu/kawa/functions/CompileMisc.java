@@ -695,7 +695,7 @@ public class CompileMisc
             LambdaExp lthunk = (LambdaExp) thunk;
             if (lthunk.min_args == 0 && lthunk.max_args == 0) {
                 LambdaExp.maybeSetReturnType(lthunk, required);
-                thunk = visitor.visit(lthunk, required);
+                thunk = visitor.visit(lthunk, null);
                 args[1] = thunk;
 
                 /* Rewrite to:
