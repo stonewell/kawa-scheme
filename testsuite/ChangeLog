@@ -1,3 +1,9 @@
+2017-11-30  Per Bothner  <per@bothner.com>
+
+	* inline5.scm: New test for inlining of more complex lambdas.
+	Includes test from Helmut Eller for GitLab issues @28
+	"ArrayIndexOutOfBoundsException in inlineCall".
+
 2017-09-29  Per Bothner  <per@bothner.com>
 
 	* Makefile.am: Use JDK_JAVA_OPTIONS to pass --add-modules for Java 9.

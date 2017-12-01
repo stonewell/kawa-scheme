@@ -972,41 +972,43 @@ public class InlineCalls extends ExpExpVisitor<Type> {
         Expression[] args = aexp.getArgs();
         boolean varArgs = lexp.max_args < 0;
         int fixed = lexp.min_args;
-        if ((fixed == lexp.max_args
-             && fixed == args.length)
-            || (varArgs && args.length >= fixed)) {
+        if (args.length >= fixed
+            && (varArgs || args.length <= fixed + lexp.opt_args)) {
             Declaration prev = null;
             IdentityHashTable mapper;
-            Expression[] cargs;
             if (makeCopy) {
                 mapper = new IdentityHashTable();
-                cargs = Expression.deepCopy(args, mapper);
-                if (cargs == null && args != null)
+                args = Expression.deepCopy(args, mapper);
+                if (args == null)
                     return null;
             } else {
                 mapper = null;
-                cargs = args;
             }
-            if (varArgs) {
-                cargs = new Expression[fixed+1];
-                // Copy over fixed arguments.
-                System.arraycopy(args, 0, cargs, 0, fixed);
-                // Create list/array constructor for rest args.
-                Expression[] xargs = new Expression[args.length-fixed+1];
-                Declaration restArg = lexp.firstDecl();
-                for (int i = fixed;  --i >= 0; )
-                    restArg = restArg.nextDecl();
-                xargs[0] = QuoteExp.getInstance(restArg.type);
-                // Copy over rest args.
-                System.arraycopy(args, fixed, xargs, 1, args.length-fixed);
-                cargs[fixed] = new ApplyExp(Invoke.make, xargs);
-            }
+            int fixed_opt = fixed + lexp.opt_args;
             int i = 0;
             LetExp let = new LetExp();
             for (Declaration param = lexp.firstDecl(); param != null; ) {
                 Declaration next = param.nextDecl();
-                if (! param.getFlag(Declaration.PATTERN_NESTED))
-                    param.setInitValue(cargs[i++]);
+                if (param.getFlag(Declaration.IS_SUPPLIED_PARAMETER)
+                    && ! param.getFlag(Declaration.IS_PARAMETER)) {
+                    i--;
+                    Object value = Language.getDefaultLanguage()
+                        .booleanObject(i < args.length);
+                    param.setInitValue(QuoteExp.getInstance(value));
+                } else if (param.getFlag(Declaration.IS_REST_PARAMETER)) {
+                    int rest_args = args.length - fixed_opt;
+                    if (rest_args < 0)
+                        rest_args = 0;
+                    Expression[] rargs = new Expression[rest_args+1];
+                    rargs[0] = QuoteExp.getInstance(param.type);
+                    System.arraycopy(args, args.length-rest_args,
+                                     rargs, 1, rest_args);
+                    param.setInitValue(new ApplyExp(Invoke.make, rargs));
+                }
+                else if (i < fixed_opt && i < args.length
+                         && ! param.getFlag(Declaration.PATTERN_NESTED))
+                    param.setInitValue(args[i]);
+                i++;
                 if (makeCopy) {
                     Declaration ldecl =
                         let.addDeclaration(param.symbol, param.type);

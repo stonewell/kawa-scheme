@@ -1,3 +1,8 @@
+2017-11-30  Per Bothner  <per@bothner.com>
+
+	* InlineCalls.java (inlineCall): Handle optional arguments.
+	Fixes GitLab issue #28 "ArrayIndexOutOfBoundsException in inlineCall".
+
 2017-11-22  Per Bothner  <per@bothner.com>
 
 	* ConsumerTarget.java (compileFromStack): Fix unsigned value.
