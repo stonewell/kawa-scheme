@@ -1,4 +1,4 @@
-(test-init "Common Lisp tests" 150)
+(test-init "Common Lisp tests" 166)
 
 (setq y 100)
 (defun foo1 (x)
