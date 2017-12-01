@@ -1,3 +1,9 @@
+2017-11-30  Per Bothner  <per@bothner.com>
+
+	* kawa.texi: Fix typos '--full-tail-calls' to '--full-tailcalls'.
+	This fixes GitLab issue #26
+	"Minor --full-tailcalls discrepancy in Kawa manual".
+
 2017-10-02  Per Bothner  <per@bothner.com>
 
 	* news.texi, kawa.text: Fix some typos.

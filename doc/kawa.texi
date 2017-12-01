@@ -424,16 +424,16 @@ These restricted continuations can be used to implement catch/throw
 (such as the examples in R4RS), but not co-routines or backtracking.
 
 Kawa now does general tail-call elimination, but only if
-you use the flag @code{--full-tail-calls}.  (Currently, the
+you use the flag @code{--full-tailcalls}.  (Currently, the
 @code{eval} function itself is not fully tail-recursive, in violation
-of R5RS.)   The @code{--full-tail-calls} flag is not on by default,
+of R5RS.)   The @code{--full-tailcalls} flag is not on by default,
 partly because it is noticably slower (though I have not measured how
 much), and partly I think it is more useful for Kawa to be compatible
 with standard Java calling conventions and tools.
-Code compiled with @code{--full-tail-calls} can call code
+Code compiled with @code{--full-tailcalls} can call code
  compiled without it and vice versa.
 
-Even without @code{--full-tail-calls}, if the
+Even without @code{--full-tailcalls}, if the
 compiler can prove that the procedure being called is the current
 function, then the tail call will be replaced by a jump.
 This includes must ``obvious'' cases of calls to the
