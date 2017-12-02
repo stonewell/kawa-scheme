@@ -1257,7 +1257,7 @@ public class LambdaExp extends ScopeExp {
 
         Declaration decl = firstDecl();
         for (;;) {
-            if (! getInlineOnly()
+            if (! getInlineOnly() && ! inlinedInCheckMethod()
                 && getCallConvention() >= Compilation.CALL_WITH_CONSUMER
                 && decl == null) {
                 Variable var =
@@ -1478,9 +1478,7 @@ public class LambdaExp extends ScopeExp {
                 Type stackType = paramType;
                 // If the parameter is captured by an inferior lambda,
                 // then the incoming parameter needs to be copied into its
-                // slot in the heapFrame.  Thus we emit an aaload instruction.
-                // Unfortunately, it expects the new value *last*,
-                // so first push the heapFrame array and the array index.
+                // slot in the heapFrame.
                 if (!param.isSimple())
                     param.loadOwningObject(null, comp);
                 // This part of the code pushes the incoming argument.

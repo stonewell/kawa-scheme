@@ -1238,18 +1238,17 @@ public class Compilation implements SourceLocator
 	    code.putLineNumber(lexp.getFileName(), line);
 	Variable ctxVar = code.getArg(method.getStaticFlag()?1:2);
         callContextVar = ctxVar;
-	//int kin = 0;
-	//int scopesToPop = 0;
-        Scope scope = code.pushScope();
-        lexp.scope = scope;
         if (lexp.inlinedInCheckMethod()) {
             Variable clEnv = lexp.declareClosureEnv();
             if (clEnv != null)
                 clEnv.allocateLocal(code);
             lexp.allocFrame(this);
+            lexp.allocChildClasses(this);
+            lexp.allocParameters(this);
             lexp.allocChildMethods(this);
             lexp.enterFunction(this);
-        }
+        } else
+            lexp.scope = code.pushScope();
         Declaration[] keyDecls = generateCheckKeywords(lexp);
         ArrayList<Variable> argVariables = new ArrayList<Variable>();
 	Declaration param = lexp.firstDecl();
@@ -1324,11 +1323,15 @@ public class Compilation implements SourceLocator
             code.emitLoad(ctxVar);
             code.emitPushString((String) keyDecl.getSymbol());
             String mname = allowOtherKeys ? "nextKeywordAllowOthers" : "nextKeyword";
+            boolean convertNeeded = param.getType() != Type.objectType;
             if (simple) {
-                var = scope.addVariable(code, Type.objectType, null);
+                // var gets keyword value or dfault if not found
+                var = param.var != null && ! convertNeeded ? param.var
+                    : scope.addVariable(code, Type.objectType, null);
                 dfault.compile(this, Target.pushObject);
                 code.emitInvoke(typeCallContext.getDeclaredMethod(mname, 2));
             } else {
+                // var gets  keyword index or -1 if not found
                 var = scope.addVariable(code, Type.intType, null);
                 code.emitInvoke(typeCallContext.getDeclaredMethod(mname, 1));
             }
@@ -1492,6 +1495,8 @@ public class Compilation implements SourceLocator
         int line = param.getLineNumber();
         if (line > 0)
             code.putLineNumber(param.getFileName(), line);
+        // The uncoerced parameter value is either in incoming (if non-null),
+        // or on the stack (if incoming is null).
         if (incoming != null && ! convertNeeded)
             param.var = incoming;
         else {
@@ -1504,8 +1509,14 @@ public class Compilation implements SourceLocator
             argVariables.add(param.var);
         }
         if (! convertNeeded) {
-            if (incoming == null)
-                code.emitStore(param.var);
+            if (! param.isSimple() || incoming != param.var) {
+                if (lexp.inlinedInCheckMethod()) {
+                    if (incoming != null)
+                        code.emitLoad(incoming);
+                    param.compileStore(this);
+                } else if (incoming == null)
+                    code.emitStore(param.var);
+            }
         }
         else if (ptype instanceof TypeValue ||
                  ptype instanceof PrimType /*FIXME only if number */) {
@@ -1561,10 +1572,10 @@ public class Compilation implements SourceLocator
                 code.emitFi();
             }
             ptype.emitCoerceFromObject(code);
-            code.emitStore(param.var);
-        }
-        if (lexp.inlinedInCheckMethod()) {
-            lexp.saveParameter(param, this);
+            if (lexp.inlinedInCheckMethod())
+                param.compileStore(this);
+            else
+                code.emitStore(param.var);
         }
 	if (recurseNeeded)
 	    generateCheckArg(param.nextDecl(), lexp, knext, code, keyDecls, argVariables, suppliedParameterVar);

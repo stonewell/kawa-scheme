@@ -80,3 +80,22 @@
 (f8 1 2)
 ;; Output: f8-default-z
 ;; Output: f8 x:1 y:2 z:c z-p:#f
+
+;; GitLab issue #30: Keyword arg with type
+(define (f11 #!key k ::boolean)
+  (lambda () k))
+(format #t "f11 ~w~%" ((f11 k: #t)))
+;; Output: f11 #t
+(define f12 (lambda (x ::boolean #!key y) (lambda () (list x y))))
+(format #t "f12 ~w~%" ((f12 #t y: 2)))
+;; Output: f12 (#t 2)
+(define (f13 #!key k)
+  (lambda () k))
+(format #t "f13 ~w~%" ((f13 k: 13)))
+;; Output: f13 13
+(define (f14 x #!key (k ::boolean (not x)))
+  (lambda () (list x k)))
+(format #t "f14 ~w~%" ((f14 3)))
+;; Output: f14 (3 #f)
+
+

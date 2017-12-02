@@ -1,3 +1,7 @@
+2017-12-02  Per Bothner  <per@bothner.com>
+
+	* func1.scm: New tests including GitLab #30 "Keyword arg with type".
+
 2017-11-30  Per Bothner  <per@bothner.com>
 
 	* inline5.scm: New test for inlining of more complex lambdas.
