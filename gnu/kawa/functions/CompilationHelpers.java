@@ -131,8 +131,8 @@ public class CompilationHelpers
                         int r;
                         if (listIndexCompat > 0)
                             resultRank++;
-                        else if (ptype instanceof GenArrayType
-                                 && (r = ((GenArrayType) ptype).rank()) >= 0)
+                        else if (itype instanceof GenArrayType
+                                 && (r = ((GenArrayType) itype).rank()) >= 0)
                             resultRank += r;
                         else
                             resultRank = -1;

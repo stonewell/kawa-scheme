@@ -1,3 +1,8 @@
+2017-12-04  Per Bothner  <per@bothner.com>
+
+	* CompilationHelpers.java (validateApplyToArgs): Fix thinko.
+	We were using the wrong type to calculate general array idnexing rank.
+
 2017-11-30  Per Bothner  <per@bothner.com>
 
 	Fix gitlab issue #29 "with-exception-handler miscompiled".
