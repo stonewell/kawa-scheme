@@ -25,6 +25,7 @@ import org.jline.terminal.Terminal;
 import org.jline.terminal.TerminalBuilder;
 import org.jline.terminal.impl.ExternalTerminal;
 import java.nio.charset.Charset;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -48,7 +49,8 @@ public class JLineInPort extends TtyInPort
     }
     private static Terminal makeTerminal(InputStream in, OutputStream out) throws IOException {
           Terminal terminal = new ExternalTerminal("Kawa", "xterm-256color",
-                                                   in, out, "UTF-8");
+                                                   in, out,
+                                                   StandardCharsets.UTF_8);
           terminal.getAttributes().setOutputFlag(org.jline.terminal.Attributes.OutputFlag.ONLCR, true);
           terminal.getAttributes().setOutputFlag(org.jline.terminal.Attributes.OutputFlag.OPOST, true);
           return terminal;
@@ -163,7 +165,7 @@ public class JLineInPort extends TtyInPort
             try {
                 jlreader.setVariable(LineReader.LINE_OFFSET,
                                      getLineNumber()+1);
-                line = jlreader.readLine(prompt, null, null, null);
+                line = jlreader.readLine(prompt);
             } catch (UserInterruptException ex) {
                 return -1;
             } catch (EndOfFileException ex) {
@@ -283,7 +285,7 @@ public class JLineInPort extends TtyInPort
             Language saveLanguage = inp.language; // Normally null
             inp.language = language;
             try {
-                jlreader.readLine(inp.prompt, null, null, null);
+                jlreader.readLine(inp.prompt);
                 if (inp.tie != null)
                     inp.tie.setColumnNumber(0);
                 KawaParsedLine parsedLine = (KawaParsedLine) jlreader.getParsedLine();

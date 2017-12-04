@@ -1,3 +1,7 @@
+2017-12-04  Per Bothner  <per@bothner.com>
+
+	* JLineInPort.java: Some updates needed due to recent JLine3 changes.
+
 2017-11-25  Per Bothner  <per@bothner.com>
 
 	* InPort.java (resetAndKeep): Only delete up to lineStartPos.
