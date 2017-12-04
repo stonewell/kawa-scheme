@@ -56,8 +56,7 @@ public class GenArrayType extends ParameterizedType implements TypeValue {
                 return elcomp;
             return -2;
         }
-        int r = typeArray.compare(other);
-        return r == 0 || r == -1 ? -1 : r == -3 ? -3 : -2;
+        return typeArray.compare(other);
     }
 
     @Override

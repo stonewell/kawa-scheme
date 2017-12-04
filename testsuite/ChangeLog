@@ -1,3 +1,9 @@
+2017-12-04  Per Bothner  <per@bothner.com>
+            Helmut Eller  <eller.helmut@gmail.com>
+
+	* array1.scm: New tests of array type specifier, using -f.
+	One of test is GitLab issue #31 "no such class: array".
+
 2017-12-02  Per Bothner  <per@bothner.com>
 
 	* func1.scm: New tests including GitLab #30 "Keyword arg with type".

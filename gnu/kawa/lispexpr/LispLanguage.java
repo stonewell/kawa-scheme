@@ -323,11 +323,26 @@ public abstract class LispLanguage extends Language
         return null;
     }
 
+    public static Type decodeArrayType(String name) {
+        int nlen = name.length();
+        if (nlen == 5)
+            return GenArrayType.generalInstance;
+        try {
+            int rank = Integer.parseInt(name.substring(5));
+            if (rank >= 0)
+                    return new GenArrayType(rank, Type.objectType);
+        } catch (Throwable ex) {
+        }
+        return null;
+    }
+
     @Override
     // FIXME: getNamedType is over-specialised....
     public Type getNamedType (String name) {
         // Initialise the type map if necessary.
         Type type = getTypeMap().get(name);
+        if (type == null && name.startsWith("array"))
+            return decodeArrayType(name);
         return (type != null) ? type : getPackageStyleType(name);
     }
 

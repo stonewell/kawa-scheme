@@ -1,3 +1,8 @@
+2017-12-04  Per Bothner  <per@bothner.com>
+
+	* lang/Translator.java (checkDefaultBinding):
+	Use new method LispLanguage.decodeArrayType.
+
 2017-09-24  Per Bothner  <per@bothner.com>
 
 	Partial fix GitLab issue#19 "(import (except (srfi 1) make-list)) fails"

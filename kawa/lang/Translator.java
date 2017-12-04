@@ -1291,15 +1291,9 @@ public class Translator extends Compilation
         } catch (Exception ex) {
         }
         if (name.startsWith("array")) {
-            int nlen = name.length();
-            if (nlen == 5)
-                return makeQuoteExp(GenArrayType.generalInstance);
-            try {
-                rank = Integer.parseInt(name.substring(5));
-                if (rank >= 0)
-                    return makeQuoteExp(new GenArrayType(rank, Type.objectType));
-            } catch (Throwable ex) {
-            }
+            Type atype = LispLanguage.decodeArrayType(name);
+            if (atype != null)
+                return makeQuoteExp(atype);
         }
 
         return null;

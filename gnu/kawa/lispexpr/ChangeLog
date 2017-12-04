@@ -1,3 +1,9 @@
+2017-12-04  Per Bothner  <per@bothner.com>
+
+	* LispPackage.java (getNamedType): Handle "array" and "arrayN".
+	This fixes GitLab issue #31 "no such class: array".
+	(decodeArrayType): New helper method.
+
 2017-11-08  Helmut Eller  <eller.helmut@gmail.com>
 
 	* LispPackage.java (KeywordNamespace): Set
