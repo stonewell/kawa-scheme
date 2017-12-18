@@ -240,20 +240,10 @@ public class LispFormat extends CompoundFormat
 	    start_nesting = ((IntNum) stack.pop()).intValue();
 	    continue;
 	  case '<':
-	    LispPrettyFormat pfmt = new LispPrettyFormat();
-	    pfmt.seenAt = seenAt;
-	    if (seenColon)
-	      {
-		pfmt.prefix = "(";
-		pfmt.suffix = ")";
-	      }
-	    else
-	      {
-		pfmt.prefix = "";
-		pfmt.suffix = "";
-	      }
+            TildeLessThan tlt = new TildeLessThan(stack, speci,
+						  seenAt, seenColon);
 	    stack.setSize(speci);
-	    stack.push(pfmt);
+	    stack.push(tlt);
 	    stack.push(IntNum.make(start_nesting));
 	    stack.push(IntNum.make(choices_seen));
 	    start_nesting = speci;
@@ -262,17 +252,20 @@ public class LispFormat extends CompoundFormat
 	  case '>':
 	    if (start_nesting < 0
 		|| ! (stack.elementAt(start_nesting)
-		      instanceof LispPrettyFormat))
+		      instanceof TildeLessThan))
 	      throw new ParseException("saw ~> without matching ~<", i);
 	    fmt = popFormats(stack, start_nesting + 3 + choices_seen, speci);
 	    stack.push(fmt);
-	    pfmt = (LispPrettyFormat) stack.elementAt(start_nesting);
-	    pfmt.segments = getFormats(stack, start_nesting + 3, stack.size());
+	    tlt = (TildeLessThan) stack.elementAt(start_nesting);
+	    tlt.segments = getFormats(stack, start_nesting + 3, stack.size());
 	    stack.setSize(start_nesting + 3);
 	    start_nesting = ((IntNum) stack.pop()).intValue();
 	    start_nesting = ((IntNum) stack.pop()).intValue();
+	    tlt = (TildeLessThan) stack.pop();
 	    if (seenColon)
 	      { // Logical Block for pretty-printing
+		LispPrettyFormat pfmt = new LispPrettyFormat(tlt);
+		stack.push(pfmt);
 		int nsegments = pfmt.segments.length;
 		if (nsegments > 3)
 		  throw new ParseException("too many segments in Logical Block format", i);
@@ -293,7 +286,7 @@ public class LispFormat extends CompoundFormat
 		  }
 	      }
 	    else // Justification
-	      throw new ParseException("not implemented: justfication i.e. ~<...~>", i);
+		stack.push(new LispJustificationFormat(tlt));
 	    continue;
 	  case '[':
 	    LispChoiceFormat afmt = new LispChoiceFormat();
@@ -327,11 +320,11 @@ public class LispFormat extends CompoundFormat
 		    continue;
 		  }
 		else if (stack.elementAt(start_nesting)
-		    instanceof LispPrettyFormat)
+		    instanceof TildeLessThan)
 		  {
-		    pfmt = (LispPrettyFormat) stack.elementAt(start_nesting);
+		    tlt = (TildeLessThan) stack.elementAt(start_nesting);
 		    if (seenAt)
-		      pfmt.perLine = true;
+		      tlt.perLine = true;
 		    fmt = popFormats(stack,
 				     start_nesting + 3 + choices_seen, speci);
 		    stack.push(fmt);
@@ -570,6 +563,24 @@ public class LispFormat extends CompoundFormat
       }
     return arr;
   }
+
+    /** Helper to parse {@code ~<...~[:]>} - logical block or justification. */
+    static class TildeLessThan {
+	final int arg0, arg1, arg2, arg3;
+	final boolean seenAt, seenColon;
+	boolean perLine; // FIXME: should probably be part of segment
+	Format[] segments;
+	TildeLessThan (java.util.Stack stack, int argstart,
+		       boolean seenAt, boolean seenColon) {
+	    arg0 = getParam(stack, argstart);
+	    arg1 = getParam(stack, argstart+1);
+	    arg2 = getParam(stack, argstart+2);
+	    arg3 = getParam(stack, argstart+3);
+	    this.seenAt = seenAt;
+	    this.seenColon = seenColon;
+	}
+    }
+
 }
 
 /** Add plural suffixes ("s" or "y/ies") of English words.
@@ -885,10 +896,10 @@ class LispEscapeFormat extends ReportFormat
 
   public final static int ESCAPE_NORMAL = 0xF1;
   public final static int ESCAPE_ALL = 0xF2;
+
 }
 
-/** Handle {@code ~<...~:>} - pretty-printing logical block.
- * (Justification is not implemented.) */
+/** Handle {@code ~<...~:>} - pretty-printing logical block. */
 
 class LispPrettyFormat extends ReportFormat
 {
@@ -898,6 +909,20 @@ class LispPrettyFormat extends ReportFormat
   String suffix;
   boolean perLine;
   boolean seenAt;
+
+    LispPrettyFormat(LispFormat.TildeLessThan tlt) {
+	segments = tlt.segments;
+	perLine = tlt.perLine;
+	seenAt = tlt.seenAt;
+	if (tlt.seenColon) {
+	    prefix = "(";
+	    suffix = ")";
+	}
+	else {
+	    prefix = "";
+	    suffix = "";
+	}
+    }
 
   public int format(Object[] args, int start, Appendable dst, FieldPosition fpos)  
     throws java.io.IOException
@@ -947,6 +972,91 @@ class LispPrettyFormat extends ReportFormat
     sbuf.append("]");
     return sbuf.toString();
   }
+}
+
+/** Handle {@code ~<...~>} - justification. */
+
+class LispJustificationFormat extends ReportFormat {
+    final Format[] segments;
+    final int mincol;
+    private int start2; // used to return secondary value
+
+    LispJustificationFormat(LispFormat.TildeLessThan tlt) {
+	segments = tlt.segments;
+	mincol = (tlt.arg0 == PARAM_UNSPECIFIED ? 0 : tlt.arg0);
+	if (tlt.arg1 != PARAM_UNSPECIFIED)
+	    throw new RuntimeException("colinc parameter not implemented");
+	if (tlt.arg2 != PARAM_UNSPECIFIED)
+	    throw new RuntimeException("minpad parameter not implemented");
+	if (tlt.arg3 != PARAM_UNSPECIFIED)
+	    throw new RuntimeException("padchar parameter not implemented");
+	if (tlt.seenAt)
+	    throw new RuntimeException("@ modifier not implemented");
+	if (tlt.seenColon)
+	    throw new RuntimeException(": modifier not implemented");
+    }
+
+    String[] segmentStrings(Object[] args, int start, FieldPosition fpos) {
+	String[] strings = new String[segments.length];
+	StringBuffer buffer = new StringBuffer();
+	for (int i = 0; i < segments.length; i++) {
+	    Format seg = segments[i];
+	    start = ReportFormat.format(seg, args, start, buffer, fpos);
+	    strings[i] = buffer.toString();
+	    buffer.setLength(0);
+	}
+	start2 = start;
+	return strings;
+    }
+
+    static int sumlengths(String[] strings) {
+	int sum = 0;
+	for (String s : strings)
+	    sum += s.length();
+	return sum;
+    }
+
+    // The first segment is righ-justified, so has 0 padding.
+    int[] computePaddings(String[] strings) {
+	int width = mincol;
+	int nchars = sumlengths(strings);
+	int nspaces = Math.max(0, width - nchars);
+	int nsegs = segments.length;
+	int[] paddings = new int[nsegs];
+	if (nsegs > 1) {
+	    int q = nspaces / (nsegs - 1);
+	    int r = nspaces % (nsegs - 1);
+	    for (int i = 1; i < nsegs - r; i++)
+		paddings[i] = q;
+	    // Assign remaining spaces, to the segments on the right.
+	    for (int i = nsegs - r ; i < nsegs; i++)
+		paddings[i] = q + 1;
+	}
+	return paddings;
+    }
+
+    static void appendPadding(Appendable dst, int n)
+	throws java.io.IOException {
+	for (; n > 0; n--)
+	    dst.append(' ');
+    }
+
+    public int format(Object[] args, int start, Appendable dst,
+		      FieldPosition fpos)
+	throws java.io.IOException {
+	String[] strings = segmentStrings(args, start, fpos);
+	start = start2;
+	int[] paddings = computePaddings(strings);
+	for (int i = 0; i < strings.length; i++) {
+	    appendPadding(dst, paddings[i]);
+	    dst.append(strings[i]);
+	}
+	return start;
+    }
+
+    public String toString () {
+	return ("LispJustificationFormat[" + mincol + "]");
+    }
 }
 
 class LispIterationFormat extends ReportFormat

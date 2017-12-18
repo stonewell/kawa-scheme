@@ -1,3 +1,7 @@
+2017-12-18  Helmut Eller  <eller.helmut@gmail.com>
+
+	* formatst.scm: Add tests for ~<...~> justification.
+
 2017-12-04  Per Bothner  <per@bothner.com>
             Helmut Eller  <eller.helmut@gmail.com>
 
