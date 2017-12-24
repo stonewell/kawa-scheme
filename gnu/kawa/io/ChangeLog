@@ -3,6 +3,8 @@
 	* URIPath.java (toURL): Use toURIString.
 	This fixes a problem with relative names containing spaces.
 
+	* CheckConsole.java (forDomTerm(Appendable)): New method.
+
 	* TermErrorStream.java: Use more robust escape sequences for DomTerm.
 
 2017-12-04  Per Bothner  <per@bothner.com>

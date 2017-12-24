@@ -75,6 +75,15 @@ public class CheckConsole {
             && ((OutPort) out).isDomTerm();
     }
 
+    /** Check if parameter is a DomTerm console. */
+    public static boolean forDomTerm(Appendable out) {
+        if (out instanceof OutPort)
+            return ((OutPort) out).isDomTerm();
+        if (out instanceof TermErrorStream)
+            return ((TermErrorStream) out).isDomTerm();
+        return false;
+    }
+
     /** Return DomTerm version info, or null if not running under DomTerm.
      * The version info is found from either the "org.domterm" property,
      * or the DOMTERM environment variable, tried in that order.
