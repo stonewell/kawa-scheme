@@ -71,6 +71,7 @@ public class SourceError extends SourceLocator.Simple
    
     public void appendTo(Appendable out, boolean stripDirectories,
                          String newLine) {
+        boolean isDomTerm = gnu.kawa.io.CheckConsole.forDomTerm(out);
         try {
             String fname;
             if (filename == null)
@@ -80,17 +81,36 @@ public class SourceError extends SourceLocator.Simple
                 if (stripDirectories)
                     fname = new File(fname).getName();
             }
-            out.append(fname);
+            StringBuilder position = new StringBuilder();
             int line = getStartLine();
             int column = getStartColumn();
             if (line > 0 || column > 0) {
-                out.append(':');
-                out.append(Integer.toString(line));
+                // out.append(':');
+                position.append(Integer.toString(line));
                 if (column > 0) {
-                    out.append(':');
-                    out.append(Integer.toString(column));
+                    position.append(':');
+                    position.append(Integer.toString(column));
                 }
                 // FIXME show end position if non-empty
+            }
+            if (isDomTerm) {
+                out.append("\033]72;");
+                out.append("<a class='subtle' href='");
+                out.append(new File(fname).toURI().toString());
+                if (position.length() > 0) {
+                    out.append("#position=");
+                    out.append(position);
+                }
+                out.append("'>");
+            }
+            // FIXME if (isDomTerm) escape for html text:
+            out.append(fname);
+            if (position.length() > 0) {
+                out.append(':');
+                out.append(position);
+            }
+            if (isDomTerm) {
+                out.append("</a>\007");
             }
             out.append(": ");
             if (severity == 'w')
