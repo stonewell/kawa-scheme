@@ -274,7 +274,7 @@ public class URIPath
 
   public URL toURL ()
   {
-    return Path.toURL(uri.toString());
+    return Path.toURL(toURIString());
   }
 
     public File toFile() {
