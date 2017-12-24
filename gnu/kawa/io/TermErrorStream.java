@@ -13,18 +13,24 @@ import java.io.*;
 
 public class TermErrorStream extends PrintStream {
     public static final byte[] DOMTERM_START_ERR_MARKER = {
-        27 /* escape */,
+        19, // urgent-begin
+        21, // urgent-counted
+        27, // escape
         (byte) '[',
         (byte) '1',
         (byte) '2',
-        (byte) 'u'
+        (byte) 'u',
+        20 // urgent-end
     };
     public static final byte[] DOMTERM_END_ERR_MARKER = {
-        27 /* escape */,
+        19, // urgent-begin
+        21, // urgent-counted
+        27, // escape
         (byte) '[',
         (byte) '1',
         (byte) '1',
-        (byte) 'u'
+        (byte) 'u',
+        20 // urgent-end
     };
     public static final byte[] ANSI_START_ERR_MARKER = {
         27 /* escape */,
@@ -56,6 +62,9 @@ public class TermErrorStream extends PrintStream {
             endErrMarker = DOMTERM_END_ERR_MARKER;
         }
     }
+    public boolean isDomTerm() {
+        return startErrMarker == DOMTERM_START_ERR_MARKER;
+    }
 
     public static void setSystemErr(boolean ansi) {
         // KLUDGE because our DomTermErrorStream is a copy of the
@@ -69,9 +78,12 @@ public class TermErrorStream extends PrintStream {
     @Override
     public void write(int b) {
         synchronized (out) {
-            out.write(startErrMarker, 0, startErrMarker.length);
+            boolean escape = b != '\r' && b != '\n';
+            if (escape)
+                out.write(startErrMarker, 0, startErrMarker.length);
             out.write(b);
-            out.write(endErrMarker, 0, endErrMarker.length);
+            if (escape)
+                out.write(endErrMarker, 0, endErrMarker.length);
             if (b == '\n')
                 out.flush();
         }
@@ -79,13 +91,30 @@ public class TermErrorStream extends PrintStream {
 
     @Override
     public void write(byte buf[], int off, int len) {
-        if (len > 0) {
+        while (len > 0) {
+            int i;
+            for (i = 0; i < len; i++) {
+                byte b = buf[off+i];
+                if (b == '\r' || b == '\n') {
+                    break;
+                }
+            }
             synchronized (out) {
-                out.write(startErrMarker, 0, startErrMarker.length);
-                out.write(buf, off, len);
-                out.write(endErrMarker, 0, endErrMarker.length);
+                if (i == 0) {
+                    i = 1;
+                    if (len >= 2 && buf[off] == '\r'
+                        && buf[off+1] == '\n')
+                        i = 2;
+                    out.write(buf, off, i);
+                } else {
+                    out.write(startErrMarker, 0, startErrMarker.length);
+                    out.write(buf, off, i);
+                    out.write(endErrMarker, 0, endErrMarker.length);
+                }
                 out.flush();
             }
+            off += i;
+            len -= i;
         }
     }
 }
