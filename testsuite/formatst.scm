@@ -28,7 +28,7 @@
 ;      (newline)
 ;      (format:abort)))
 
-(test-begin "format" 425)
+(test-begin "format" 432)
 (define-syntax test 
   (syntax-rules ()
     ((test format-args out-str)
@@ -721,6 +721,17 @@ Does not match implementation - or Common Lisp.
 
 (test '("<~a~a>" 3 4) "<34>")
 (test `("<~a>" ,(values 3 4)) "<3 4>")
+
+;; Pretty-Printing
+(test '("~<~a~:>" abc) "abc")
+
+;; Justification
+(test '("~<~a~>" 123) "123")
+(test '("~10<~a~;~a~>" 12 34) "12      34")
+(test '("~10<~a~;~a~;~a~>" 1 2 3) "1   2    3")
+(test '("~10<~a~;~a~;~a~;~a~>" 1 2 3 4) "1  2  3  4")
+(test '("~10<~a~;~a~;~a~>" 1 2 34567) "1 2  34567")
+(test '("~<~a~;~a~;~a~>" 1 2 34567) "1234567")
 
 ; inquiry test
 

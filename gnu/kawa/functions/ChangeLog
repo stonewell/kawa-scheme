@@ -1,3 +1,15 @@
+2017-12-18  Helmut Eller  <eller.helmut@gmail.com>
+
+	Add basic support for justification ~<...~> in format.
+
+	* LispFormat.java (ReportFormat.TildeLessThan): New helper class.
+	(ReportFormat.LispFormat): Create a TildeLessThan on ~<. When we
+	we see the corresponding ~> or ~:> we decide wether to create a
+	LispPrettyFormat or a LispJustificationFormat.
+	(LispPrettyFormat): Add constructur that takes values for
+	TildeLessThan object.
+	(LispJustificationFormat): New class.
+
 2017-12-04  Per Bothner  <per@bothner.com>
 
 	* CompilationHelpers.java (validateApplyToArgs): Fix thinko.
